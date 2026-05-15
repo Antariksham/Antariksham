@@ -9,19 +9,19 @@ const crimsonPro = Crimson_Pro({
   subsets: ['latin'],
   weight: ['300', '400', '600'],
   style: ['normal', 'italic'],
-  variable: '--font-serif',
+  display: 'swap',
 })
 
 const dmMono = DM_Mono({
   subsets: ['latin'],
   weight: ['300', '400'],
-  variable: '--font-mono',
+  display: 'swap',
 })
 
 const outfit = Outfit({
   subsets: ['latin'],
-  weight: ['200', '300', '400', '500', '600'],
-  variable: '--font-sans',
+  weight: ['300', '400', '500', '600'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -44,7 +44,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${crimsonPro.variable} ${dmMono.variable} ${outfit.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning style={{
+      '--font-serif': crimsonPro.style.fontFamily,
+      '--font-mono':  dmMono.style.fontFamily,
+      '--font-sans':  outfit.style.fontFamily,
+    } as React.CSSProperties}>
       <body>
         <Navbar />
         <main>{children}</main>
