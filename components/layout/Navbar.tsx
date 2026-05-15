@@ -10,71 +10,74 @@ export function Navbar() {
 
   return (
     <>
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', background: 'rgba(7,9,12,0.95)', backdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', background: 'rgba(7,9,12,0.95)', backdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
 
-        {/* LOGO */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'baseline', gap: '2px', textDecoration: 'none', flexShrink: 0 }}>
-          <span style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '22px', fontWeight: 400, color: '#ffffff' }}>
+        {/* LOGO — no .org */}
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
+          <span style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '24px', fontWeight: 400, color: '#ffffff', letterSpacing: '0.02em' }}>
             {siteConfig.name}
-          </span>
-          <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px', color: '#3b9eff', marginLeft: '1px' }}>
-            {siteConfig.tld}
           </span>
         </Link>
 
         {/* DESKTOP NAV */}
-        <ul style={{ display: 'flex', alignItems: 'center', gap: '32px', listStyle: 'none', margin: 0, padding: 0, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} className="desktop-nav">
+        <ul style={{ display: 'flex', alignItems: 'center', gap: '36px', listStyle: 'none', margin: 0, padding: 0 }} className="desktop-nav">
           {mainNav.map((item) => (
             <li key={item.href}>
-              <Link href={item.href} style={{ fontFamily: 'DM Mono, monospace', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', color: item.isLive ? '#34d897' : 'rgba(240,244,250,0.8)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                {item.isLive && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#34d897', boxShadow: '0 0 6px #34d897', display: 'inline-block' }} />}
+              <Link href={item.href} style={{ fontFamily: 'DM Mono, monospace', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', color: item.isLive ? '#34d897' : '#ffffff', display: 'flex', alignItems: 'center', gap: '7px', opacity: item.isLive ? 1 : 0.9 }}>
+                {item.isLive && (
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34d897', boxShadow: '0 0 8px #34d897', display: 'inline-block', flexShrink: 0, animation: 'blink 2s infinite' }} />
+                )}
                 {item.label}
               </Link>
             </li>
           ))}
         </ul>
 
-        {/* HAMBURGER */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', padding: '8px 10px', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}
-          className="mobile-menu-btn"
-        >
-          <span style={{ width: '18px', height: '1.5px', background: '#ffffff', display: 'block' }} />
-          <span style={{ width: '18px', height: '1.5px', background: '#ffffff', display: 'block' }} />
-          <span style={{ width: '18px', height: '1.5px', background: '#ffffff', display: 'block' }} />
-        </button>
+        {/* DESKTOP RIGHT — search bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="desktop-nav">
+          <Link href="/search" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', color: 'rgba(240,244,250,0.75)', fontFamily: 'DM Mono, monospace', fontSize: '12px', letterSpacing: '0.08em', textDecoration: 'none' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Search
+            <span style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '3px', padding: '1px 6px', fontSize: '10px', color: 'rgba(240,244,250,0.5)' }}>⌘K</span>
+          </Link>
+        </div>
+
+        {/* MOBILE RIGHT — search icon + hamburger */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} className="mobile-nav">
+          <Link href="/search" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '38px', height: '38px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', background: 'rgba(255,255,255,0.04)', color: '#ffffff', textDecoration: 'none' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </Link>
+          <button onClick={() => setMenuOpen(!menuOpen)} style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'center', justifyContent: 'center', width: '38px', height: '38px', background: 'none', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', cursor: 'pointer', padding: 0 }}>
+            <span style={{ width: '16px', height: '1.5px', background: '#ffffff', display: 'block', transition: 'all 0.2s', transform: menuOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none' }} />
+            <span style={{ width: '16px', height: '1.5px', background: '#ffffff', display: 'block', opacity: menuOpen ? 0 : 1 }} />
+            <span style={{ width: '16px', height: '1.5px', background: '#ffffff', display: 'block', transition: 'all 0.2s', transform: menuOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none' }} />
+          </button>
+        </div>
 
       </nav>
 
-      {/* MOBILE MENU */}
+      {/* MOBILE MENU OVERLAY */}
       {menuOpen && (
-        <div style={{ position: 'fixed', top: '60px', left: 0, right: 0, bottom: 0, zIndex: 49, background: 'rgba(7,9,12,0.98)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', padding: '32px 24px' }}>
+        <div style={{ position: 'fixed', top: '64px', left: 0, right: 0, bottom: 0, zIndex: 49, background: 'rgba(7,9,12,0.98)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', padding: '24px 32px', overflowY: 'auto' }}>
           {mainNav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMenuOpen(false)}
-              style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '28px', fontWeight: 300, color: item.isLive ? '#34d897' : '#ffffff', textDecoration: 'none', padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px' }}
-            >
-              {item.isLive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34d897', boxShadow: '0 0 8px #34d897', display: 'inline-block', flexShrink: 0 }} />}
+            <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '32px', fontWeight: 300, color: item.isLive ? '#34d897' : '#ffffff', textDecoration: 'none', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              {item.isLive && <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#34d897', boxShadow: '0 0 8px #34d897', display: 'inline-block', flexShrink: 0 }} />}
               {item.label}
             </Link>
           ))}
-          <Link href="/search" onClick={() => setMenuOpen(false)} style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '28px', fontWeight: 300, color: 'rgba(240,244,250,0.6)', textDecoration: 'none', padding: '14px 0', marginTop: '8px' }}>
-            Search
-          </Link>
         </div>
       )}
 
       <style>{`
-        @media (min-width: 769px) {
-          .mobile-menu-btn { display: none !important; }
+        @media (min-width: 900px) {
+          .mobile-nav { display: none !important; }
+          .desktop-nav { display: flex !important; }
         }
-        @media (max-width: 768px) {
+        @media (max-width: 899px) {
+          .mobile-nav { display: flex !important; }
           .desktop-nav { display: none !important; }
         }
       `}</style>
     </>
   )
-}
+      }
