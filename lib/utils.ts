@@ -1,170 +1,71 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --font-sans:  'Outfit', system-ui, sans-serif;
-  --font-serif: 'Crimson Pro', Georgia, serif;
-  --font-mono:  'DM Mono', monospace;
-
-  --black:      #07090c;
-  --deep:       #0b0e13;
-  --surface:    #10151c;
-  --panel:      #151c26;
-  --raised:     #1a2230;
-  --white:      #f0f4fa;
-  --dim:        rgba(240,244,250,0.75);
-  --faint:      rgba(240,244,250,0.45);
-  --accent:     #3b9eff;
-  --accent-dim: rgba(59,158,255,0.10);
-  --gold:       #c9a96e;
-  --gold-dim:   rgba(201,169,110,0.10);
-  --green:      #34d897;
-  --green-dim:  rgba(52,216,151,0.10);
-  --red:        #f05a5a;
-  --purple:     #9f7aea;
-  --border:     rgba(255,255,255,0.08);
-  --border-hi:  rgba(255,255,255,0.16);
-  --nav-height: 64px;
-  --max-width:  1380px;
+export function cn(...classes: (string | undefined | null | boolean)[]) {
+  return classes.filter(Boolean).join(' ')
 }
 
-*, *::before, *::after { box-sizing: border-box; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  background:              var(--black);
-  color:                   var(--white);
-  font-family:             var(--font-sans);
-  font-size:               16px;
-  font-weight:             400;
-  line-height:             1.75;
-  -webkit-font-smoothing:  antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x:              hidden;
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    year:  'numeric',
+    month: 'long',
+    day:   'numeric',
+  })
 }
 
-::-webkit-scrollbar       { width: 4px; }
-::-webkit-scrollbar-track { background: var(--black); }
-::-webkit-scrollbar-thumb { background: var(--raised); border-radius: 2px; }
-
-::selection {
-  background: rgba(59,158,255,0.25);
-  color:      #ffffff;
+export function formatDateShort(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day:   'numeric',
+    year:  'numeric',
+  })
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  line-height: 1.15;
-  color:       #ffffff;
-  margin:      0;
+export function timeAgo(dateString: string): string {
+  const now  = new Date()
+  const date = new Date(dateString)
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000)
+  if (diff < 60)     return `${diff}s ago`
+  if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`
+  return formatDateShort(dateString)
 }
 
-h1 { font-size: clamp(48px, 6vw, 88px); }
-h2 { font-size: clamp(28px, 3vw, 38px); }
-h3 { font-size: clamp(20px, 2vw, 26px); }
-
-p {
-  margin: 0;
-  color: var(--dim);
-  font-size: 16px;
-  line-height: 1.75;
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
-a { color: inherit; text-decoration: none; }
-
-.font-serif { font-family: var(--font-serif); }
-.font-mono  { font-family: var(--font-mono); }
-.font-sans  { font-family: var(--font-sans); }
-
-.page-container {
-  max-width: var(--max-width);
-  margin:    0 auto;
-  padding:   0 48px;
+export function truncate(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text
+  return text.slice(0, maxLength).trim() + '...'
 }
 
-.glow-divider {
-  height:     1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(59,158,255,0.25) 35%,
-    transparent 100%
-  );
+export function readingTime(content: string): number {
+  const words = content.trim().split(/\s+/).length
+  return Math.max(1, Math.ceil(words / 200))
 }
 
-.eyebrow {
-  font-family:    var(--font-mono);
-  font-size:      10px;
-  font-weight:    400;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color:          var(--accent);
-  display:        block;
-  margin-bottom:  10px;
+export function formatNumber(num: number): string {
+  if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(1)}B`
+  if (num >= 1_000_000)     return `${(num / 1_000_000).toFixed(1)}M`
+  if (num >= 1_000)         return `${(num / 1_000).toFixed(1)}K`
+  return num.toString()
 }
 
-.section-title {
-  font-family: var(--font-serif);
-  font-size:   clamp(28px, 3vw, 36px);
-  font-weight: 300;
-  color:       #ffffff;
+export function pad(n: number): string {
+  return String(n).padStart(2, '0')
 }
 
-.card-label {
-  font-family:    var(--font-mono);
-  font-size:      10px;
-  font-weight:    400;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+export function getCountdown(targetDate: Date) {
+  const now  = new Date()
+  let diff   = Math.max(0, Math.floor((targetDate.getTime() - now.getTime()) / 1000))
+  const days  = Math.floor(diff / 86400); diff %= 86400
+  const hours = Math.floor(diff / 3600);  diff %= 3600
+  const mins  = Math.floor(diff / 60)
+  const secs  = diff % 60
+  return { days, hours, mins, secs }
 }
-
-.card-title {
-  font-family: var(--font-serif);
-  font-size:   20px;
-  font-weight: 400;
-  line-height: 1.3;
-  color:       #ffffff;
-}
-
-.card-body {
-  font-size:   14px;
-  font-weight: 400;
-  line-height: 1.7;
-  color:       var(--dim);
-}
-
-.meta-text {
-  font-family:    var(--font-mono);
-  font-size:      11px;
-  letter-spacing: 0.08em;
-  color:          var(--faint);
-}
-
-*:focus-visible {
-  outline:        2px solid var(--accent);
-  outline-offset: 3px;
-  border-radius:  3px;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.2; }
-}
-
-@keyframes rise {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadein {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-6px); }
-  }
