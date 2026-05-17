@@ -1,29 +1,43 @@
-import { supabase } from '@/lib/supabase'
 import type { NASAApod } from '@/types/api'
 
-// Read APOD from Supabase cache — never call NASA directly from frontend
+// Fetch APOD directly from NASA — runs server-side only
+// NASA_API_KEY is never exposed to the browser
 export async function getAPOD(): Promise<NASAApod | null> {
-  const { data, error } = await supabase
-    .from('live_data')
-    .select('value, synced_at, expires_at')
-    .eq('key', 'apod_today')
-    .single()
+  const NASA_KEY = process.env.NASA_API_KEY
+  if (!NASA_KEY) {
+    console.error('NASA_API_KEY not set')
+    return null
+  }
 
-  if (error || !data) return null
+  try {
+    const res = await fetch(
+      `https://api.nasa.gov/planetary/apod?api_key=${NASA_KEY}`,
+      {
+        next: { revalidate: 3600 }, // Next.js caches this for 1 hour automatically
+      }
+    )
 
-  return data.value as NASAApod
-}
+    if (!res.ok) {
+      console.error('NASA API error:', res.status)
+      return null
+    }
 
-// Check if APOD cache is stale (older than 24 hours)
-export async function isAPODStale(): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('live_data')
-    .select('expires_at')
-    .eq('key', 'apod_today')
-    .single()
+    const data = await res.json()
 
-  if (error || !data) return true
+    // Map NASA's snake_case to our camelCase type
+    return {
+      date:           data.date,
+      title:          data.title,
+      explanation:    data.explanation,
+      url:            data.url,
+      hdurl:          data.hdurl || null,
+      mediaType:      data.media_type,
+      copyright:      data.copyright || null,
+      serviceVersion: data.service_version || 'v1',
+    }
 
-  const expiresAt = new Date(data.expires_at)
-  return expiresAt < new Date()
+  } catch (err) {
+    console.error('getAPOD error:', err)
+    return null
+  }
 }
