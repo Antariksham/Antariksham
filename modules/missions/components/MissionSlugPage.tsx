@@ -1,3 +1,5 @@
+'use client'
+
 import type { Mission, MissionCard } from '@/types/mission'
 import { StatusBadge } from './MissionsPage'
 import { formatDate } from '@/lib/utils'
