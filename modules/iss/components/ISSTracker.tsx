@@ -87,31 +87,32 @@ export function ISSTracker({ initialPosition, crew }: Props) {
 
         {/* World Map Tracker */}
         <div style={{ width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '28px', background: '#020a14', position: 'relative' }}>
+
+          {/* World map — <img> behind SVG so CSS filter works on all browsers including mobile */}
+          <img
+            src="/world-map.svg"
+            alt=""
+            aria-hidden="true"
+            style={{
+              position:      'absolute',
+              inset:         0,
+              width:         '100%',
+              height:        '100%',
+              objectFit:     'fill',
+              filter:        'brightness(0) invert(1)',
+              opacity:       0.13,
+              pointerEvents: 'none',
+              userSelect:    'none',
+            }}
+          />
+
           <svg
             viewBox={`0 0 ${MAP_W} ${MAP_H}`}
-            style={{ width: '100%', display: 'block' }}
+            style={{ width: '100%', display: 'block', position: 'relative' }}
             xmlns="http://www.w3.org/2000/svg"
           >
-            {/* Ocean */}
-            <rect width={MAP_W} height={MAP_H} fill="#020a14" />
-
-            {/* World map SVG background
-                The simplemaps SVG has viewBox 0 0 2000 857
-                We scale it to fit our 1000x500 space
-                brightness(0) converts #ececec grey to black, invert(1) flips to white
-            */}
-            <image
-              href="/images/world-map.svg"
-              x={0}
-              y={0}
-              width={MAP_W}
-              height={MAP_H}
-              preserveAspectRatio="xMidYMid meet"
-              style={{
-                filter:  'brightness(0) invert(1)',
-                opacity: 0.1,
-              }}
-            />
+            {/* Transparent base so world map img shows through */}
+            <rect width={MAP_W} height={MAP_H} fill="transparent" />
 
             {/* Latitude lines */}
             {[-60,-30,0,30,60].map(lat => {
