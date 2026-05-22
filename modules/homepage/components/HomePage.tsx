@@ -6,16 +6,23 @@ import { LatestNewsSection } from './LatestNewsSection'
 import { MissionsSection }   from './MissionsSection'
 import { LearnSection }      from './LearnSection'
 import { AboutSection }      from './AboutSection'
+import type { ArticleCard }  from '@/types/article'
+import type { MissionCard }  from '@/types/mission'
 
-export function HomePage() {
+interface Props {
+  articles: ArticleCard[]
+  missions: MissionCard[]
+}
+
+export function HomePage({ articles, missions }: Props) {
   return (
     <>
       <HeroSection />
       <StatusStrip />
       <div className="glow-divider" />
       <div className="page-container">
-        <LatestNewsSection />
-        <MissionsSection />
+        <LatestNewsSection articles={articles} />
+        <MissionsSection   missions={missions} />
         <LearnSection />
         <AboutSection />
       </div>
