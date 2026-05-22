@@ -1,0 +1,113 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+export default function AdminLoginPage() {
+  const router   = useRouter()
+  const [password, setPassword] = useState('')
+  const [error,    setError]    = useState('')
+  const [loading,  setLoading]  = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/admin/login', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ password }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        router.push('/admin')
+        router.refresh()
+      } else {
+        setError(data.error || 'Authentication failed.')
+        setPassword('')
+      }
+    } catch {
+      setError('Something went wrong. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#07090c', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ width: '100%', maxWidth: '360px' }}>
+
+        {/* Logo mark */}
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #1e4080, #060f22)', border: '1px solid rgba(59,158,255,0.3)', margin: '0 auto 16px' }} />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.3)' }}>
+            Restricted Access
+          </span>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '16px' }}>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Enter access key"
+              required
+              autoComplete="current-password"
+              style={{
+                width:        '100%',
+                padding:      '14px 16px',
+                background:   '#0b0f18',
+                border:       `1px solid ${error ? 'rgba(240,90,90,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: '8px',
+                color:        '#f0f4fa',
+                fontFamily:   'var(--font-mono)',
+                fontSize:     '14px',
+                letterSpacing:'0.05em',
+                outline:      'none',
+                boxSizing:    'border-box',
+                transition:   'border-color 0.2s',
+              }}
+              onFocus={e  => (e.target.style.borderColor = 'rgba(59,158,255,0.5)')}
+              onBlur={e   => (e.target.style.borderColor = error ? 'rgba(240,90,90,0.4)' : 'rgba(255,255,255,0.1)')}
+            />
+          </div>
+
+          {error && (
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#f05a5a', marginBottom: '16px', letterSpacing: '0.05em' }}>
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading || !password}
+            style={{
+              width:        '100%',
+              padding:      '14px',
+              background:   loading ? 'rgba(59,158,255,0.4)' : '#3b9eff',
+              color:        '#07090c',
+              border:       'none',
+              borderRadius: '8px',
+              fontFamily:   'var(--font-mono)',
+              fontSize:     '12px',
+              fontWeight:   700,
+              letterSpacing:'0.15em',
+              textTransform:'uppercase',
+              cursor:       loading ? 'not-allowed' : 'pointer',
+              transition:   'background 0.2s',
+            }}
+          >
+            {loading ? 'Verifying...' : 'Enter'}
+          </button>
+        </form>
+
+      </div>
+    </div>
+  )
+}

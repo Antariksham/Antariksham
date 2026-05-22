@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Crimson_Pro, DM_Mono, Outfit } from 'next/font/google'
+import { headers } from 'next/headers'
 import { siteConfig } from '@/config/site'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
@@ -8,20 +9,20 @@ import '@/styles/responsive.css'
 
 const crimsonPro = Crimson_Pro({
   subsets: ['latin'],
-  weight: ['300', '400', '600'],
-  style: ['normal', 'italic'],
+  weight:  ['300', '400', '600'],
+  style:   ['normal', 'italic'],
   display: 'swap',
 })
 
 const dmMono = DM_Mono({
   subsets: ['latin'],
-  weight: ['300', '400'],
+  weight:  ['300', '400'],
   display: 'swap',
 })
 
 const outfit = Outfit({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
+  weight:  ['300', '400', '500', '600'],
   display: 'swap',
 })
 
@@ -39,21 +40,33 @@ export const viewport: Viewport = {
   colorScheme: 'dark',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Middleware sets x-pathname on every request
+  const pathname = headers().get('x-pathname') || ''
+  const isAdmin  = pathname.startsWith('/admin')
+
   return (
-    <html lang="en" suppressHydrationWarning style={{
-      '--font-serif': crimsonPro.style.fontFamily,
-      '--font-mono':  dmMono.style.fontFamily,
-      '--font-sans':  outfit.style.fontFamily,
-    } as React.CSSProperties}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      style={{
+        '--font-serif': crimsonPro.style.fontFamily,
+        '--font-mono':  dmMono.style.fontFamily,
+        '--font-sans':  outfit.style.fontFamily,
+      } as React.CSSProperties}
+    >
       <body>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        {isAdmin ? (
+          // Admin — no Navbar or Footer, AdminLayout handles its own chrome
+          <>{children}</>
+        ) : (
+          // Public — full site chrome
+          <>
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+          </>
+        )}
       </body>
     </html>
   )
