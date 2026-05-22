@@ -191,8 +191,7 @@ export default async function ArticlePage(
                 <a key={r.id} href={`/news/${r.slug}`} style={{ textDecoration: 'none' }}>
                   <div
                     style={{ background: '#10151c', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s' }}
-                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)')}
-                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+                    
                   >
                     {r.categories[0] && (
                       <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: CAT_COLORS[r.categories[0]] || '#3b9eff', display: 'block', marginBottom: '10px' }}>
