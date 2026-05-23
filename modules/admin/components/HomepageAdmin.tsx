@@ -188,7 +188,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                     )}
                   </div>
                   {desc && (
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(240,244,250,0.3)', margin: '2px 0 0', letterSpacing: '0.04em' }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.55)', margin: '2px 0 0', letterSpacing: '0.04em' }}>
                       {desc}
                     </p>
                   )}
