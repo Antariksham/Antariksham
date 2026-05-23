@@ -1,4 +1,3 @@
-'use client'
 
 import { HeroSection }       from './HeroSection'
 import { StatusStrip }       from './StatusStrip'
