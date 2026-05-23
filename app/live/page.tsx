@@ -3,6 +3,8 @@ import Link              from 'next/link'
 import { siteConfig }   from '@/config/site'
 import { Satellite, Rocket, Camera, Globe } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title:       `Live — ${siteConfig.name}`,
   description: 'Live space intelligence systems — ISS tracker, launch countdowns, NASA APOD and deep space telemetry.',
