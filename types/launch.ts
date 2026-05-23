@@ -34,12 +34,17 @@ export interface LaunchLibraryResponse {
 }
 
 export interface LaunchLibraryLaunch {
-  id:     string
-  name:   string
-  net:    string
-  status: { name: string; abbrev: string }
-  rocket: { configuration: { name: string; family: string } }
+  id:           string
+  name:         string
+  net:          string
+  window_start: string | null
+  window_end:   string | null
+  probability:  number | null
+  last_updated: string
+  mission?:     { description: string | null }
+  status:       { name: string; abbrev: string }
+  rocket:       { configuration: { name: string; family: string } }
   launch_service_provider: { name: string; abbrev: string }
-  pad: { name: string; location: { name: string } }
-  vidURLs: Array<{ url: string }>
+  pad:          { name: string; location: { name: string } }
+  vidURLs:      Array<{ url: string }>
 }
