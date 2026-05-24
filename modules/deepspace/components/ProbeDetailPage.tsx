@@ -327,7 +327,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
       const updated = data.probes.find((p: DeepSpaceProbe) => p.id === probe.id)
       if (updated) setCurrentProbe(updated)
       setLastUpdated(data.updatedAt)
-    } catch {
+    } catch (_e) {
       // fail silently
     } finally {
       setRefreshing(false)
