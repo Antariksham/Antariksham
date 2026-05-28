@@ -41,7 +41,7 @@ const LIVE_PAGES = [
     label: 'Deep Space',
     desc:  'Live telemetry for Voyager 1, Voyager 2, Europa Clipper, Parker Solar Probe and more.',
     color: 'rgba(180,140,255,0.9)',
-    badge: 'SOON',
+    badge: 'LIVE',
   },
 ]
 
