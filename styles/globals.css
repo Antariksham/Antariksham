@@ -1,5 +1,5 @@
 /* KaTeX — math rendering for Learn section */
-@import url('https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css');
+
 
 @tailwind base;
 @tailwind components;
