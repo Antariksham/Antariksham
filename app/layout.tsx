@@ -56,12 +56,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       } as React.CSSProperties}
     >
       <head>
-        {/* KaTeX JS — loaded globally, used by LearnArticlePage */}
-        <script
-          defer
-          src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"
-        />
-      </head>
+  {/* KaTeX — CSS must load before JS for fonts/symbols to render */}
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css"
+  />
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"
+  />
+</head>
       <body>
         {isAdmin ? (
           // Admin — no Navbar or Footer, AdminLayout handles its own chrome
