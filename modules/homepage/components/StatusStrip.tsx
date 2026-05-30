@@ -1,24 +1,129 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+
+interface StripData {
+  issSpeed:        string
+  voyagerDistance: string
+  voyagerStatus:   string
+}
+
+const FALLBACK: StripData = {
+  issSpeed:        '27,600 km/h',
+  voyagerDistance: '23.6 billion km',
+  voyagerStatus:   'Interstellar · 46 yrs',
+}
+
 export function StatusStrip() {
+  const [data, setData] = useState<StripData>(FALLBACK)
+  const fetchRef        = useRef<() => void>()
+
+  fetchRef.current = async () => {
+    try {
+      const [issRes, dsRes] = await Promise.allSettled([
+        fetch('/api/iss'),
+        fetch('/api/deep-space'),
+      ])
+
+      const next = { ...FALLBACK }
+
+      if (issRes.status === 'fulfilled' && issRes.value.ok) {
+        const iss = await issRes.value.json()
+        if (iss?.velocity) {
+          next.issSpeed = `${Math.round(iss.velocity).toLocaleString()} km/h`
+        }
+      }
+
+      if (dsRes.status === 'fulfilled' && dsRes.value.ok) {
+        const ds = await dsRes.value.json()
+        const v1 = Array.isArray(ds) ? ds.find((p: any) => p.id === 'voyager-1') : null
+        if (v1?.distanceFromSun) {
+          const au  = parseFloat(v1.distanceFromSun)
+          const bkm = (au * 149597870.7 / 1e9).toFixed(1)
+          next.voyagerDistance = `${bkm} billion km`
+          next.voyagerStatus   = v1.velocity
+            ? `Interstellar · ${Math.round(v1.velocity)} km/s`
+            : 'Interstellar · 46 yrs'
+        }
+      }
+
+      setData(next)
+    } catch { /* keep fallback */ }
+  }
+
+  useEffect(() => {
+    fetchRef.current?.()
+    const id = setInterval(() => fetchRef.current?.(), 30_000)
+    return () => clearInterval(id)
+  }, [])
+
+  const items = [
+    {
+      icon:      '🛸',
+      label:     'ISS Position',
+      value:     data.issSpeed,
+      sub:       '● Live tracking',
+      subColor:  '#34d897',
+      href:      '/live/iss-tracker',   // ← fixed: was missing
+    },
+    {
+      icon:      '🚀',
+      label:     'Next Launch',
+      value:     'View Schedule',
+      sub:       'Launch Library 2',
+      subColor:  'rgba(240,244,250,0.6)',
+      href:      '/live/launches',
+    },
+    {
+      icon:      '🌌',
+      label:     'NASA APOD',
+      value:     "Today's Image",
+      sub:       'Updated daily',
+      subColor:  'rgba(240,244,250,0.6)',
+      href:      '/live/apod',
+    },
+    {
+      icon:      '🛰️',
+      label:     'Voyager 1',
+      value:     data.voyagerDistance,
+      sub:       data.voyagerStatus,
+      subColor:  'rgba(240,244,250,0.6)',
+      href:      '/live/deep-space/voyager-1',
+    },
+    {
+      icon:      '🌍',
+      label:     'Deep Space',
+      value:     '5 Probes',
+      sub:       'Live telemetry',
+      subColor:  'rgba(240,244,250,0.6)',
+      href:      '/live/deep-space',
+    },
+  ]
+
   return (
     <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', background: '#0b0e13', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
       <div style={{ display: 'flex', alignItems: 'stretch', padding: '0 24px', minWidth: 'max-content' }}>
-        {[
-          { icon: '🛸', label: 'ISS Position',   value: '27,580 km/h',          sub: '● Live tracking',       subColor: '#34d897' },
-          { icon: '🚀', label: 'Next Launch',     value: 'Falcon 9 · Crew Dragon', sub: 'T−2d 14h 32m',       subColor: 'rgba(240,244,250,0.7)' },
-          { icon: '🌌', label: 'NASA APOD',       value: 'M42 — Orion Nebula',   sub: 'Updated today',        subColor: 'rgba(240,244,250,0.7)' },
-          { icon: '🛰️', label: 'Voyager 1',       value: '23.6 billion km',      sub: 'Interstellar · 46 yrs', subColor: 'rgba(240,244,250,0.7)' },
-          { icon: '🌍', label: 'Active Missions', value: '47 worldwide',         sub: 'All agencies tracked',  subColor: 'rgba(240,244,250,0.7)' },
-        ].map((item, i, arr) => (
-          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '20px 28px 20px 0', marginRight: '28px', borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+        {items.map((item, i) => (
+          <a
+            key={item.label}
+            href={item.href}
+            style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '14px', padding: '20px 28px 20px 0', marginRight: '28px', borderRight: i < items.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none', whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
             <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '19px', flexShrink: 0 }}>
               {item.icon}
             </div>
             <div>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.5)', marginBottom: '2px' }}>{item.label}</div>
-              <div style={{ fontSize: '16px', fontWeight: 500, color: '#ffffff', marginBottom: '2px' }}>{item.value}</div>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: item.subColor }}>{item.sub}</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.5)', marginBottom: '2px' }}>
+                {item.label}
+              </div>
+              <div style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 500, color: '#ffffff', marginBottom: '2px' }}>
+                {item.value}
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: item.subColor }}>
+                {item.sub}
+              </div>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </div>
