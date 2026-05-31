@@ -25,11 +25,10 @@ interface Props {
 export function NewsPage({ articles, featured, total }: Props) {
   const [activeCategory, setActiveCategory] = useState<ArticleCategory | null>(null)
 
-  const allArticles = featured.length > 0 ? featured : articles
-  const lead        = allArticles[0] || null
-  const gridItems   = activeCategory
+  const lead      = (featured.length > 0 ? featured[0] : articles[0]) || null
+  const gridItems = activeCategory
     ? articles.filter(a => a.categories.includes(activeCategory))
-    : allArticles.slice(1)
+    : articles.filter(a => a.id !== lead?.id)
 
   return (
     <div style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>

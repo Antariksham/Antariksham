@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link                                  from 'next/link'
 import type { DeepSpaceProbe }               from '@/types/api'
 
@@ -316,6 +316,7 @@ function SignalVisualizer({ delayHours, color }: { delayHours: number; color: st
 
 export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
   const [currentProbe,  setCurrentProbe]  = useState<DeepSpaceProbe>(probe)
+  const [liveProbes,    setLiveProbes]    = useState<DeepSpaceProbe[]>(allProbes)
   const [lastUpdated,   setLastUpdated]   = useState(updatedAt)
   const [refreshing,    setRefreshing]    = useState(false)
   const mounted = useMounted()
@@ -323,14 +324,19 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
   const color  = probeColor(probe.id)
   const sColor = statusColor(currentProbe.communicationStatus)
   const facts  = PROBE_FACTS[probe.id]
-  const otherProbes = allProbes.filter(p => p.id !== probe.id)
+  const otherProbes = liveProbes.filter(p => p.id !== probe.id)
 
-  const refresh = useCallback(async () => {
+  // useRef holds fetch logic — interval always calls the latest version
+  // avoids stale closure problem with useCallback + setInterval
+  const fetchRef = useRef<() => Promise<void>>(async () => {})
+
+  fetchRef.current = async () => {
     setRefreshing(true)
     try {
       const res  = await fetch('/api/deep-space', { cache: 'no-store' })
       if (!res.ok) return
       const data = await res.json()
+      if (data.probes?.length) setLiveProbes(data.probes)
       const updated = data.probes.find((p: DeepSpaceProbe) => p.id === probe.id)
       if (updated) setCurrentProbe(updated)
       setLastUpdated(data.updatedAt)
@@ -339,12 +345,17 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
     } finally {
       setRefreshing(false)
     }
-  }, [probe.id])
+  }
+
+  // Stable refresh for manual button — always calls latest fetchRef
+  const refresh = () => { fetchRef.current() }
 
   useEffect(() => {
-    const id = setInterval(refresh, 60 * 60 * 1000)
-    return () => clearInterval(id)
-  }, [refresh])
+    // Fetch fresh data immediately on mount — props may be stale from server render
+    const timer = setTimeout(() => fetchRef.current(), 800)
+    const id    = setInterval(() => fetchRef.current(), 60 * 60 * 1000)
+    return () => { clearTimeout(timer); clearInterval(id) }
+  }, []) // empty deps — interval never needs to re-register
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 24px 80px' }}>
