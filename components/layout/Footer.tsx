@@ -55,10 +55,11 @@ export function Footer() {
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
             {[
-              { label: 'Privacy Policy', href: '/privacy' },
+              { label: 'Privacy Policy',   href: '/privacy'          },
+              { label: 'Terms',            href: '/terms'            },
               { label: 'Editorial Policy', href: '/editorial-policy' },
-              { label: 'Sources', href: '/sources' },
-              { label: 'Contact', href: '/contact' },
+              { label: 'Sources',          href: '/sources'          },
+              { label: 'Contact',          href: '/contact'          },
             ].map((item) => (
               <Link key={item.href} href={item.href} style={{ fontSize: '13px', color: 'rgba(240,244,250,0.6)', textDecoration: 'none', fontFamily: 'DM Mono, monospace' }}>
                 {item.label}

@@ -2,6 +2,7 @@ import { getArticleBySlug, getAllArticleSlugs, getRelatedArticles } from '@/modu
 import { notFound } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 
 export const revalidate = 300
 
@@ -114,10 +115,12 @@ export default async function ArticlePage(
           {article.author && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {article.author.avatar && (
-                <img
+                <Image
                   src={article.author.avatar}
                   alt={article.author.name}
-                  style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }}
+                  width={28}
+                  height={28}
+                  style={{ borderRadius: '50%', objectFit: 'cover' }}
                 />
               )}
               <span style={{ color: 'rgba(240,244,250,0.7)' }}>{article.author.name}</span>
@@ -137,11 +140,14 @@ export default async function ArticlePage(
             overflow:     'hidden',
             marginBottom: '44px',
             background:   'var(--surface)',
+            position:     'relative',
           }}>
-            <img
+            <Image
               src={article.featuredImage}
               alt={article.title}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              fill
+              style={{ objectFit: 'cover' }}
+              sizes="(max-width: 800px) 100vw, 800px"
             />
           </div>
         )}
