@@ -113,7 +113,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
             </div>
             {result.excerpt && (
               <p style={{
-                fontFamily:  'var(--font-sans)',
+                fontFamily:  'var(--font-serif)',
                 fontSize:    '13px',
                 lineHeight:  1.65,
                 color:       'rgba(240,244,250,0.55)',
@@ -213,7 +213,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
             </div>
             {result.description && (
               <p style={{
-                fontFamily:      'var(--font-sans)',
+                fontFamily:      'var(--font-serif)',
                 fontSize:        '13px',
                 lineHeight:      1.65,
                 color:           'rgba(240,244,250,0.55)',
@@ -280,7 +280,7 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
           </div>
           {result.excerpt && (
             <p style={{
-              fontFamily:      'var(--font-sans)',
+              fontFamily:      'var(--font-serif)',
               fontSize:        '13px',
               lineHeight:      1.65,
               color:           'rgba(240,244,250,0.55)',

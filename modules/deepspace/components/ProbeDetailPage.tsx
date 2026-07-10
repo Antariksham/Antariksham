@@ -482,7 +482,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
               {/* Description */}
               {facts && (
                 <p style={{
-                  fontFamily:  'var(--font-sans)',
+                  fontFamily:  'var(--font-serif)',
                   fontSize:    '16px',
                   color:       'rgba(240,244,250,0.8)',
                   lineHeight:  1.8,
@@ -664,7 +664,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                   <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                     <span style={{ color: color, fontSize: '16px', flexShrink: 0, marginTop: '1px' }}>✦</span>
                     <span style={{
-                      fontFamily: 'var(--font-sans)',
+                      fontFamily: 'var(--font-serif)',
                       fontSize:   '15px',
                       color:      'rgba(240,244,250,0.85)',
                       lineHeight: 1.6,

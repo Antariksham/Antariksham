@@ -89,7 +89,7 @@ export function MissionsSection({ missions }: Props) {
                       {mission.launchDate && ` · ${formatDate(mission.launchDate)}`}
                     </div>
                     {mission.description && (
-                      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', lineHeight: 1.7, color: 'rgba(240,244,250,0.75)', margin: '4px 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{mission.description}</p>
+                      <p style={{ fontFamily: 'var(--font-serif)', fontSize: '14px', lineHeight: 1.7, color: 'rgba(240,244,250,0.75)', margin: '4px 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{mission.description}</p>
                     )}
                   </div>
                 </div>

@@ -123,7 +123,7 @@ export function NewsPage({ articles, featured, total }: Props) {
                 </h2>
 
                 {lead.excerpt && (
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(14px,1.5vw,16px)', color: 'rgba(240,244,250,0.6)', lineHeight: 1.65, margin: '0 0 20px', maxWidth: '680px' }}>
+                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(14px,1.5vw,16px)', color: 'rgba(240,244,250,0.6)', lineHeight: 1.65, margin: '0 0 20px', maxWidth: '680px' }}>
                     {lead.excerpt}
                   </p>
                 )}
@@ -251,7 +251,7 @@ function GridCard({ article }: { article: ArticleCard }) {
 
           {/* Excerpt */}
           {article.excerpt && (
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'rgba(240,244,250,0.5)', lineHeight: 1.6, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '13px', color: 'rgba(240,244,250,0.5)', lineHeight: 1.6, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
               {article.excerpt}
             </p>
           )}

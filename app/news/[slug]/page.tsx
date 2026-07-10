@@ -88,7 +88,7 @@ export default async function ArticlePage(
         {/* Excerpt */}
         {article.excerpt && (
           <p style={{
-            fontFamily:  'var(--font-sans)',
+            fontFamily:  'var(--font-serif)',
             fontSize:    'clamp(16px, 2vw, 19px)',
             color:       'rgba(240,244,250,0.65)',
             lineHeight:  1.6,
@@ -154,7 +154,7 @@ export default async function ArticlePage(
 
         {/* Article body */}
         <div style={{
-          fontFamily:  'var(--font-sans)',
+          fontFamily:  'var(--font-serif)',
           fontSize:    'clamp(16px, 1.8vw, 18px)',
           lineHeight:  1.9,
           color:       'rgba(240,244,250,0.72)',

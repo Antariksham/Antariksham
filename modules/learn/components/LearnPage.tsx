@@ -47,7 +47,7 @@ export function LearnPage({ articles }: Props) {
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.1 }}>
           Learn Space Science
         </h1>
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', color: 'rgba(240,244,250,0.6)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '16px', color: 'rgba(240,244,250,0.6)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
           Deep-dive articles on orbital mechanics, astrophysics, and the mathematics powering space exploration. From beginner introductions to advanced physics.
         </p>
       </div>
@@ -172,7 +172,7 @@ function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
         </h2>
 
         {/* Excerpt */}
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', lineHeight: 1.7, color: 'rgba(240,244,250,0.65)', margin: '0 0 20px' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '14px', lineHeight: 1.7, color: 'rgba(240,244,250,0.65)', margin: '0 0 20px' }}>
           {article.excerpt}
         </p>
 

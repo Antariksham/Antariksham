@@ -85,7 +85,7 @@ export function MissionSlugPage({ mission, related }: Props) {
         </div>
 
         {/* Description */}
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(16px,1.8vw,18px)', lineHeight: 1.9, color: 'rgba(240,244,250,0.72)', margin: '0 0 48px', letterSpacing: '0.01em' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(16px,1.8vw,18px)', lineHeight: 1.9, color: 'rgba(240,244,250,0.72)', margin: '0 0 48px', letterSpacing: '0.01em' }}>
           {mission.description}
         </p>
 
@@ -110,7 +110,7 @@ export function MissionSlugPage({ mission, related }: Props) {
                   </h4>
                   {/* Description */}
                   {event.description && (
-                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(240,244,250,0.45)', lineHeight: 1.7, margin: 0 }}>
+                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: '14px', color: 'rgba(240,244,250,0.45)', lineHeight: 1.7, margin: 0 }}>
                       {event.description}
                     </p>
                   )}
@@ -135,7 +135,7 @@ export function MissionSlugPage({ mission, related }: Props) {
               </p>
             )}
             {mission.agency.description && (
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(240,244,250,0.55)', lineHeight: 1.7, margin: '0 0 16px' }}>
+              <p style={{ fontFamily: 'var(--font-serif)', fontSize: '14px', color: 'rgba(240,244,250,0.55)', lineHeight: 1.7, margin: '0 0 16px' }}>
                 {mission.agency.description}
               </p>
             )}

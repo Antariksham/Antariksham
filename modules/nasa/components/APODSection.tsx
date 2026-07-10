@@ -81,7 +81,7 @@ export function APODSection({ apod }: Props) {
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#3b9eff', display: 'block', marginBottom: '16px' }}>
             Explanation
           </span>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(15px,1.8vw,17px)', color: 'rgba(240,244,250,0.7)', lineHeight: 1.85, margin: 0 }}>
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(15px,1.8vw,17px)', color: 'rgba(240,244,250,0.7)', lineHeight: 1.85, margin: 0 }}>
             {apod.explanation}
           </p>
         </div>

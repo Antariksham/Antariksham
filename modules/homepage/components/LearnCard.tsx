@@ -41,7 +41,7 @@ export function LearnCard({ topic }: { topic: Topic }) {
         <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 400, lineHeight: 1.3, color: '#ffffff', marginBottom: '10px' }}>
           {topic.title}
         </h3>
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', lineHeight: 1.7, color: 'rgba(240,244,250,0.75)', margin: 0 }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '14px', lineHeight: 1.7, color: 'rgba(240,244,250,0.75)', margin: 0 }}>
           {topic.excerpt}
         </p>
       </div>
