@@ -1,0 +1,51 @@
+/* ─────────────────────────────────────────────────────────────
+   ARCHIVE — ANTARIKSHAM ORIGINAL "BLACK" DESIGN
+   ─────────────────────────────────────────────────────────────
+   This is the original Antariksham visual identity, preserved
+   verbatim before the CosmosDaily reskin (Phase 1 of the engine
+   migration). It is NOT imported anywhere — it exists so the
+   original look can be revived without git archaeology.
+
+   The pre-reskin commit is also frozen under the git tag
+   `design/antariksham-black-v1`.
+
+   To revive this design:
+     1. Copy the :root block below over the :root block in
+        styles/globals.css.
+     2. In app/layout.tsx, restore the original font imports:
+          import { Crimson_Pro, DM_Mono, Outfit } from 'next/font/google'
+        wired as:
+          --font-serif: Crimson Pro   (headings)
+          --font-mono:  DM Mono       (labels / eyebrows / meta)
+          --font-sans:  Outfit        (UI / body)
+        and set h1..h6 / .section-title / .card-title back to
+        font-family: var(--font-serif).
+     3. Restore <meta> themeColor to #07090c.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --font-sans:  'Outfit', system-ui, sans-serif;
+  --font-serif: 'Crimson Pro', Georgia, serif;
+  --font-mono:  'DM Mono', monospace;
+
+  --black:      #07090c;
+  --deep:       #0b0e13;
+  --surface:    #10151c;
+  --panel:      #151c26;
+  --raised:     #1a2230;
+  --white:      #f0f4fa;
+  --dim:        rgba(240,244,250,0.75);
+  --faint:      rgba(240,244,250,0.45);
+  --accent:     #3b9eff;
+  --accent-dim: rgba(59,158,255,0.10);
+  --gold:       #c9a96e;
+  --gold-dim:   rgba(201,169,110,0.10);
+  --green:      #34d897;
+  --green-dim:  rgba(52,216,151,0.10);
+  --red:        #f05a5a;
+  --purple:     #9f7aea;
+  --border:     rgba(255,255,255,0.08);
+  --border-hi:  rgba(255,255,255,0.16);
+  --nav-height: 64px;
+  --max-width:  1380px;
+}
