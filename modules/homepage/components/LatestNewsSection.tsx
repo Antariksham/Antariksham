@@ -86,7 +86,7 @@ export function LatestNewsSection({ articles }: Props) {
                 </div>
                 <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(20px,3vw,28px)', fontWeight: 400, lineHeight: 1.2, color: '#ffffff', marginBottom: '14px' }}>{lead.title}</h2>
                 {lead.excerpt && (
-                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(240,244,250,0.8)', marginBottom: '20px' }}>{lead.excerpt}</p>
+                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(240,244,250,0.9)', marginBottom: '20px' }}>{lead.excerpt}</p>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.5)' }}>
                   <span>{lead.author?.name ? `By ${lead.author.name}` : 'Antariksham Editorial'}{lead.readingTime ? ` · ${lead.readingTime} min read` : ''}</span>
@@ -111,7 +111,7 @@ export function LatestNewsSection({ articles }: Props) {
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: getCategoryColor(a.categories), marginBottom: '12px' }}>{a.categories?.[0] || 'Space'}</div>
                     <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 400, lineHeight: 1.25, color: '#ffffff', marginBottom: '10px' }}>{a.title}</h3>
                     {a.excerpt && (
-                      <p style={{ fontFamily: 'var(--font-serif)', fontSize: '14px', lineHeight: 1.7, color: 'rgba(240,244,250,0.75)', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.excerpt}</p>
+                      <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(240,244,250,0.9)', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.excerpt}</p>
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.08)', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.45)' }}>

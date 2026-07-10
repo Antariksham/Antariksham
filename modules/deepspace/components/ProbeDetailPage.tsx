@@ -484,7 +484,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                 <p style={{
                   fontFamily:  'var(--font-serif)',
                   fontSize:    '16px',
-                  color:       'rgba(240,244,250,0.8)',
+                  color:       'rgba(240,244,250,0.9)',
                   lineHeight:  1.8,
                   margin:      '0 0 24px',
                 }}>

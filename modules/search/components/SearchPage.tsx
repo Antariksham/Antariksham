@@ -114,9 +114,9 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
             {result.excerpt && (
               <p style={{
                 fontFamily:  'var(--font-serif)',
-                fontSize:    '13px',
-                lineHeight:  1.65,
-                color:       'rgba(240,244,250,0.55)',
+                fontSize:    '15px',
+                lineHeight:  1.75,
+                color:       'rgba(240,244,250,0.9)',
                 overflow:    'hidden',
                 display:     '-webkit-box',
                 WebkitLineClamp: 2,
@@ -214,9 +214,9 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
             {result.description && (
               <p style={{
                 fontFamily:      'var(--font-serif)',
-                fontSize:        '13px',
-                lineHeight:      1.65,
-                color:           'rgba(240,244,250,0.55)',
+                fontSize:        '15px',
+                lineHeight:      1.75,
+                color:           'rgba(240,244,250,0.9)',
                 overflow:        'hidden',
                 display:         '-webkit-box',
                 WebkitLineClamp: 2,
@@ -281,9 +281,9 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
           {result.excerpt && (
             <p style={{
               fontFamily:      'var(--font-serif)',
-              fontSize:        '13px',
-              lineHeight:      1.65,
-              color:           'rgba(240,244,250,0.55)',
+              fontSize:        '15px',
+              lineHeight:      1.75,
+              color:           'rgba(240,244,250,0.9)',
               overflow:        'hidden',
               display:         '-webkit-box',
               WebkitLineClamp: 2,

@@ -90,7 +90,7 @@ export default async function ArticlePage(
           <p style={{
             fontFamily:  'var(--font-serif)',
             fontSize:    'clamp(16px, 2vw, 19px)',
-            color:       'rgba(240,244,250,0.65)',
+            color:       'rgba(240,244,250,0.9)',
             lineHeight:  1.6,
             margin:      '0 0 28px',
             fontWeight:  400,
@@ -157,7 +157,7 @@ export default async function ArticlePage(
           fontFamily:  'var(--font-serif)',
           fontSize:    'clamp(16px, 1.8vw, 18px)',
           lineHeight:  1.9,
-          color:       'rgba(240,244,250,0.72)',
+          color:       'rgba(240,244,250,0.9)',
           letterSpacing: '0.01em',
         }}
           dangerouslySetInnerHTML={{ __html: article.content }}

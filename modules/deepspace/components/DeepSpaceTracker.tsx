@@ -306,7 +306,7 @@ export function DeepSpaceTracker({ initialProbes, updatedAt }: Props) {
           Deep Space Tracker
         </h1>
 
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', color: 'rgba(240,244,250,0.75)', margin: '0 0 24px', maxWidth: '580px', lineHeight: '1.7' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', color: 'rgba(240,244,250,0.9)', margin: '0 0 24px', maxWidth: '580px', lineHeight: '1.7' }}>
           Live telemetry for humanity's most distant emissaries — position, velocity, and signal delay sourced from NASA Horizons System.
         </p>
 

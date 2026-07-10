@@ -160,7 +160,7 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
 
         {/* Description */}
         {launch.description && featured && (
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: '13px', lineHeight: 1.7, color: 'rgba(240,244,250,0.6)', margin: '0 0 14px' }}>
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(240,244,250,0.9)', margin: '0 0 14px' }}>
             {launch.description.length > 200 ? launch.description.slice(0, 200) + '…' : launch.description}
           </p>
         )}
@@ -265,7 +265,7 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 8px' }}>
               Launch Tracker
             </h1>
-            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '14px', color: 'rgba(240,244,250,0.55)', margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'rgba(240,244,250,0.9)', margin: 0, lineHeight: 1.6 }}>
               Upcoming and recent rocket launches — powered by Launch Library 2
             </p>
           </div>

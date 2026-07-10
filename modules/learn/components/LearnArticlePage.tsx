@@ -128,7 +128,7 @@ export function LearnArticlePage({ article }: Props) {
           {article.title}
         </h1>
 
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', lineHeight: 1.75, color: 'rgba(240,244,250,0.65)', margin: '0 0 24px' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', lineHeight: 1.75, color: 'rgba(240,244,250,0.9)', margin: '0 0 24px' }}>
           {article.excerpt}
         </p>
 
