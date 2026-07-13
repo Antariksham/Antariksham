@@ -221,7 +221,9 @@ a { color: inherit; text-decoration: none; }
 }
 
 .container { max-width: var(--max-width); margin: 0 auto; padding: 0 1.5rem; }
-.section   { padding: 4rem 0; }
+/* vertical-only so `.container.section` keeps the container's horizontal padding
+   (the `padding` shorthand would otherwise clobber it) */
+.section   { padding-top: 4rem; padding-bottom: 4rem; }
 
 .section-title {
   font-family: var(--font-sans);
@@ -349,5 +351,5 @@ a { color: inherit; text-decoration: none; }
 .prose strong { color: var(--text-primary); }
 
 @media (max-width: 640px) {
-  .section { padding: 2.5rem 0; }
+  .section { padding-top: 2.5rem; padding-bottom: 2.5rem; }
 }
