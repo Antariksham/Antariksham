@@ -28,7 +28,7 @@ export function ArticleRowActions({ id, slug }: { id: string; slug: string }) {
         style={{
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
           width: '28px', height: '28px', borderRadius: '5px',
-          border: '1px solid var(--border)', color: 'rgba(var(--ink),0.5)',
+          border: '1px solid var(--border)', color: 'rgba(var(--ink),0.65)',
           textDecoration: 'none', transition: 'all 0.15s',
         }}
         title="Edit"
@@ -52,7 +52,7 @@ export function ArticleRowActions({ id, slug }: { id: string; slug: string }) {
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
           width: '28px', height: '28px', borderRadius: '5px',
           border: '1px solid var(--border)', background: 'transparent',
-          color: 'rgba(var(--ink),0.35)', cursor: busy ? 'not-allowed' : 'pointer',
+          color: 'rgba(var(--ink),0.55)', cursor: busy ? 'not-allowed' : 'pointer',
           transition: 'all 0.15s',
         }}
         onMouseEnter={e => {

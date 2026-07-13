@@ -54,7 +54,7 @@ function CountdownDisplay({ target }: { target: string | null }) {
   const cd = useCountdown(target)
 
   if (!cd) return (
-    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.35)', letterSpacing: '0.08em' }}>
+    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.08em' }}>
       Time not confirmed
     </span>
   )
@@ -73,7 +73,7 @@ function CountdownDisplay({ target }: { target: string | null }) {
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, color: 'var(--white)', lineHeight: 1, minWidth: '32px', textAlign: 'center' }}>
             {String(val).padStart(2, '0')}
           </span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.15em', color: 'rgba(var(--ink),0.3)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', color: 'rgba(var(--ink),0.55)' }}>
             {label}
           </span>
         </div>
@@ -113,7 +113,7 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
           <div style={{ flex: 1, minWidth: 0 }}>
             {/* Agency */}
             {launch.agency && (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '4px' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '4px' }}>
                 {launch.agency}
               </span>
             )}
@@ -130,7 +130,7 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
 
           {/* Status badge */}
           <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: '9px',
+            fontFamily: 'var(--font-mono)', fontSize: '11px',
             letterSpacing: '0.15em', textTransform: 'uppercase',
             padding: '4px 8px', borderRadius: '4px', flexShrink: 0,
             background: status.bg, border: `1px solid ${status.border}`,
@@ -142,8 +142,8 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
 
         {/* Rocket */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-          <Rocket size={11} style={{ color: 'rgba(var(--ink),0.4)', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.6)', letterSpacing: '0.04em' }}>
+          <Rocket size={11} style={{ color: 'rgba(var(--ink),0.6)', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', letterSpacing: '0.04em' }}>
             {launch.rocket}
           </span>
         </div>
@@ -151,8 +151,8 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
         {/* Launch pad */}
         {launch.launchSite && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-            <MapPin size={11} style={{ color: 'rgba(var(--ink),0.4)', flexShrink: 0 }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)', letterSpacing: '0.04em' }}>
+            <MapPin size={11} style={{ color: 'rgba(var(--ink),0.6)', flexShrink: 0 }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.65)', letterSpacing: '0.04em' }}>
               {launch.launchPad ? `${launch.launchPad}, ` : ''}{launch.launchSite}
             </span>
           </div>
@@ -170,22 +170,22 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
           {isUpcoming && launch.launchDate ? (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                <Timer size={10} style={{ color: 'rgba(var(--ink),0.35)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.35)' }}>
+                <Timer size={10} style={{ color: 'rgba(var(--ink),0.55)' }} />
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)' }}>
                   T− Countdown
                 </span>
               </div>
               <CountdownDisplay target={launch.launchDate} />
               {dateStr && (
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(var(--ink),0.3)', margin: '6px 0 0', letterSpacing: '0.04em' }}>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', margin: '6px 0 0', letterSpacing: '0.04em' }}>
                   {dateStr}
                 </p>
               )}
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Clock size={11} style={{ color: 'rgba(var(--ink),0.35)' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.4)', letterSpacing: '0.04em' }}>
+              <Clock size={11} style={{ color: 'rgba(var(--ink),0.55)' }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', letterSpacing: '0.04em' }}>
                 {dateStr || 'Date TBD'}
               </span>
             </div>
@@ -202,7 +202,7 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
               display: 'inline-flex', alignItems: 'center', gap: '6px',
               marginTop: '12px', padding: '7px 14px', borderRadius: '5px',
               background: 'rgba(231,76,60,0.1)', border: '1px solid rgba(231,76,60,0.25)',
-              color: '#e74c3c', fontFamily: 'var(--font-mono)', fontSize: '10px',
+              color: '#e74c3c', fontFamily: 'var(--font-mono)', fontSize: '11px',
               letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none',
               transition: 'all 0.15s',
             }}
@@ -257,7 +257,7 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)' }}>
                 Live
               </span>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--green)', boxShadow: '0 0 8px var(--green)', display: 'inline-block' }} />
@@ -280,14 +280,14 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
                 padding: '8px 16px', borderRadius: '6px', cursor: loading ? 'not-allowed' : 'pointer',
                 background: 'var(--surface)', border: '1px solid var(--border)',
                 color: 'rgba(var(--ink),0.6)', fontFamily: 'var(--font-mono)',
-                fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase',
+                fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase',
                 opacity: loading ? 0.6 : 1, transition: 'all 0.15s',
               }}
             >
               <RefreshCw size={11} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
               {loading ? 'Refreshing…' : 'Refresh'}
             </button>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(var(--ink),0.25)', letterSpacing: '0.08em' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)', letterSpacing: '0.08em' }}>
               Updated {lastUpdated.toLocaleTimeString()}
             </span>
           </div>
@@ -299,7 +299,7 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
         <div style={{ marginBottom: '40px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
             <Play size={12} style={{ color: 'var(--accent)' }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)' }}>
               Next Launch
             </span>
           </div>
@@ -318,7 +318,7 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '6px',
                 padding: '7px 16px', borderRadius: '5px', cursor: 'pointer',
-                fontFamily: 'var(--font-mono)', fontSize: '10px',
+                fontFamily: 'var(--font-mono)', fontSize: '11px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', border: 'none',
                 background: active ? 'var(--accent)' : 'transparent',
                 color:      active ? 'var(--black)'       : 'rgba(var(--ink),0.5)',
@@ -328,7 +328,7 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
             >
               {label}
               <span style={{
-                padding: '1px 6px', borderRadius: '10px', fontSize: '9px',
+                padding: '1px 6px', borderRadius: '10px', fontSize: '11px',
                 background: active ? 'rgba(10,10,15,0.2)' : 'rgba(var(--ink),0.08)',
                 color: active ? 'var(--black)' : 'rgba(var(--ink),0.4)',
               }}>
@@ -345,7 +345,7 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
           {restLaunches.length === 0 && !nextLaunch ? (
             <EmptyState message="No upcoming launches found" />
           ) : restLaunches.length === 0 ? (
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.3)', letterSpacing: '0.08em', textAlign: 'center', padding: '40px 0' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.08em', textAlign: 'center', padding: '40px 0' }}>
               No additional upcoming launches scheduled
             </p>
           ) : (
@@ -383,8 +383,8 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
 function EmptyState({ message }: { message: string }) {
   return (
     <div style={{ padding: '60px', textAlign: 'center', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-      <Rocket size={32} style={{ color: 'rgba(var(--ink),0.15)', marginBottom: '12px' }} />
-      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
+      <Rocket size={32} style={{ color: 'rgba(var(--ink),0.5)', marginBottom: '12px' }} />
+      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
         {message}
       </p>
     </div>

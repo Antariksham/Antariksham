@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
-  fontSize:   '17px',
+  fontSize: '17px',
   color:      'rgba(var(--ink),0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
@@ -17,7 +17,7 @@ const prose: React.CSSProperties = {
 
 const h2: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
-  fontSize:   '26px',
+  fontSize: '26px',
   color:      'var(--white)',
   margin:     '48px 0 14px',
   lineHeight: 1.3,
@@ -36,7 +36,7 @@ export default function TermsPage() {
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Terms & Conditions
         </div>
 
@@ -45,7 +45,7 @@ export default function TermsPage() {
           Terms & Conditions
         </h1>
 
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.35)', letterSpacing: '0.08em', marginBottom: '36px' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.08em', marginBottom: '36px' }}>
           Last updated: June 2026
         </p>
 
@@ -125,7 +125,7 @@ export default function TermsPage() {
             'Impersonate Antariksham or misrepresent an affiliation with this platform',
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(var(--ink),0.05)' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent)', flexShrink: 0, marginTop: '3px' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--accent)', flexShrink: 0, marginTop: '3px' }}>
                 {String(i + 1).padStart(2, '0')}
               </span>
               <p style={{ ...prose, margin: 0, fontSize: '15px' }}>{item}</p>
@@ -164,7 +164,7 @@ export default function TermsPage() {
               style={{
                 display: 'inline-flex', padding: '9px 16px', borderRadius: '6px',
                 background: 'rgba(79,142,247,0.07)', border: '1px solid rgba(79,142,247,0.18)',
-                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '11px',
+                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '12px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none',
               }}
             >

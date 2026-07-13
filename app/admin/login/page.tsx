@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
         {/* Logo mark */}
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #232338, #0a0a0f)', border: '1px solid rgba(79,142,247,0.3)', margin: '0 auto 16px' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.3)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)' }}>
             Restricted Access
           </span>
         </div>
@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
                 borderRadius: '8px',
                 color:        'var(--white)',
                 fontFamily:   'var(--font-mono)',
-                fontSize:     '14px',
+                fontSize: '14px',
                 letterSpacing:'0.05em',
                 outline:      'none',
                 boxSizing:    'border-box',
@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
           </div>
 
           {error && (
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#e74c3c', marginBottom: '16px', letterSpacing: '0.05em' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#e74c3c', marginBottom: '16px', letterSpacing: '0.05em' }}>
               {error}
             </p>
           )}
@@ -95,7 +95,7 @@ export default function AdminLoginPage() {
               border:       'none',
               borderRadius: '8px',
               fontFamily:   'var(--font-mono)',
-              fontSize:     '12px',
+              fontSize: '12px',
               fontWeight:   700,
               letterSpacing:'0.15em',
               textTransform:'uppercase',

@@ -70,14 +70,14 @@ export default function LivePage() {
               <div className="card-body">
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px' }}>
                   <span style={{ color: page.color }}>{page.icon}</span>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: '20px', color: page.color, background: `color-mix(in srgb, ${page.color} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${page.color} 35%, transparent)` }}>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: '20px', color: page.color, background: `color-mix(in srgb, ${page.color} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${page.color} 35%, transparent)` }}>
                     {page.badge}
                   </span>
                 </div>
                 <h2 className="card-title" style={{ fontSize: '1.2rem' }}>{page.label}</h2>
                 <p className="card-excerpt" style={{ WebkitLineClamp: 3 }}>{page.desc}</p>
                 <div className="card-meta">
-                  <span style={{ color: page.color, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, fontSize: '0.72rem' }}>Open →</span>
+                  <span style={{ color: page.color, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, fontSize: '0.78rem' }}>Open →</span>
                 </div>
               </div>
             </Link>

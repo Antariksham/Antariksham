@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
-  fontSize:   '17px',
+  fontSize: '17px',
   color:      'rgba(var(--ink),0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
@@ -17,7 +17,7 @@ const prose: React.CSSProperties = {
 
 const h2: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
-  fontSize:   '26px',
+  fontSize: '26px',
   color:      'var(--white)',
   margin:     '48px 0 14px',
   lineHeight: 1.3,
@@ -43,7 +43,7 @@ export default function MissionPage() {
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Our Mission
         </div>
 
@@ -93,7 +93,7 @@ export default function MissionPage() {
             },
           ].map(p => (
             <div key={p.title} style={pillar}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '8px' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '8px' }}>
                 {p.title}
               </div>
               <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
@@ -135,7 +135,7 @@ export default function MissionPage() {
                 border:        '1px solid rgba(79,142,247,0.18)',
                 color:         '#4f8ef7',
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '11px',
+                fontSize: '12px',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
                 textDecoration:'none',

@@ -62,14 +62,14 @@ export function ISSTracker({ initialPosition, crew }: Props) {
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: isLive ? '#2ecc71' : '#e74c3c', display: 'inline-block', boxShadow: isLive ? '0 0 10px #2ecc71' : 'none' }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: isLive ? '#2ecc71' : '#e74c3c' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: isLive ? '#2ecc71' : '#e74c3c' }}>
               {isLive ? 'Live Feed Active' : 'Signal Lost'}
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(24px,3.5vw,42px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 6px', letterSpacing: '-0.01em' }}>
             ISS Live Tracker
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.35)', margin: '0 0 28px', letterSpacing: '0.05em' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', margin: '0 0 28px', letterSpacing: '0.05em' }}>
             Live Telemetry Data · Updates every 5 seconds
           </p>
 
@@ -168,10 +168,10 @@ export function ISSTracker({ initialPosition, crew }: Props) {
             )}
           </svg>
 
-          <div style={{ position: 'absolute', bottom: '12px', right: '16px', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(var(--ink),0.3)' }}>
+          <div style={{ position: 'absolute', bottom: '12px', right: '16px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)' }}>
             {lastUpdate.toLocaleTimeString()}
           </div>
-          <div style={{ position: 'absolute', top: '12px', left: '16px', fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(79,142,247,0.5)' }}>
+          <div style={{ position: 'absolute', top: '12px', left: '16px', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(79,142,247,0.5)' }}>
             Equirectangular Projection
           </div>
         </div>
@@ -181,7 +181,7 @@ export function ISSTracker({ initialPosition, crew }: Props) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
               <Users size={13} color="#4f8ef7" />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7' }}>
                 Current Crew — {crewList.length} Aboard
               </span>
             </div>
@@ -193,7 +193,7 @@ export function ISSTracker({ initialPosition, crew }: Props) {
                   </div>
                   <div>
                     <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--white)', margin: '0 0 3px' }}>{member.name}</p>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2ecc71' }}>{member.craft}</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#2ecc71' }}>{member.craft}</span>
                   </div>
                 </div>
               ))}
@@ -202,7 +202,7 @@ export function ISSTracker({ initialPosition, crew }: Props) {
         )}
 
         <div style={{ marginTop: '40px', paddingTop: '24px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>
-          <a href="/live" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
+          <a href="/live" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
             ← Back to Live
           </a>
         </div>
@@ -215,8 +215,8 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
   return (
     <div style={{ background: 'var(--black)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '10px', padding: '14px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-        <span style={{ color: 'rgba(var(--ink),0.35)' }}>{icon}</span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.35)' }}>{label}</span>
+        <span style={{ color: 'rgba(var(--ink),0.55)' }}>{icon}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)' }}>{label}</span>
       </div>
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#2ecc71', letterSpacing: '0.05em' }}>{value}</span>
     </div>

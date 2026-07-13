@@ -45,7 +45,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
       <span style={{
         fontFamily:    'var(--font-mono)',
-        fontSize:      '10px',
+        fontSize: '11px',
         letterSpacing: '0.28em',
         textTransform: 'uppercase',
         color:         'var(--accent)',
@@ -54,8 +54,8 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
       </span>
       <span style={{
         fontFamily:  'var(--font-mono)',
-        fontSize:    '10px',
-        color:       'rgba(var(--ink),0.3)',
+        fontSize: '11px',
+        color:       'rgba(var(--ink),0.55)',
         background:  'rgba(var(--ink),0.06)',
         borderRadius:'4px',
         padding:     '1px 7px',
@@ -88,7 +88,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
             {result.category && (
               <div style={{
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '9px',
+                fontSize: '11px',
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
                 color:         'var(--accent)',
@@ -99,7 +99,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
             )}
             <div style={{
               fontFamily:  'var(--font-sans)',
-              fontSize:    '17px',
+              fontSize: '17px',
               fontWeight:  400,
               lineHeight:  1.3,
               color:       'var(--white)',
@@ -114,7 +114,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
             {result.excerpt && (
               <p style={{
                 fontFamily:  'var(--font-sans)',
-                fontSize:    '15px',
+                fontSize: '15px',
                 lineHeight:  1.75,
                 color:       'rgba(var(--ink),0.9)',
                 overflow:    'hidden',
@@ -129,10 +129,10 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
           <span style={{
             flexShrink:    0,
             fontFamily:    'var(--font-mono)',
-            fontSize:      '9px',
+            fontSize: '11px',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
-            color:         'rgba(var(--ink),0.4)',
+            color:         'rgba(var(--ink),0.6)',
             background:    'rgba(var(--ink),0.06)',
             borderRadius:  '4px',
             padding:       '3px 8px',
@@ -149,8 +149,8 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
           paddingTop:    '12px',
           borderTop:     '1px solid rgba(var(--ink),0.06)',
           fontFamily:    'var(--font-mono)',
-          fontSize:      '10px',
-          color:         'rgba(var(--ink),0.35)',
+          fontSize: '11px',
+          color:         'rgba(var(--ink),0.55)',
         }}>
           {result.publishedAt && <span>{timeAgo(result.publishedAt)}</span>}
           <span>{result.readingTime} min read</span>
@@ -183,7 +183,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
               {result.agency && (
                 <span style={{
                   fontFamily:    'var(--font-mono)',
-                  fontSize:      '9px',
+                  fontSize: '11px',
                   letterSpacing: '0.2em',
                   textTransform: 'uppercase',
                   color:         'var(--gold)',
@@ -194,8 +194,8 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
               {result.destination && (
                 <span style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize:   '9px',
-                  color:      'rgba(var(--ink),0.3)',
+                  fontSize: '11px',
+                  color:      'rgba(var(--ink),0.55)',
                 }}>
                   → {result.destination}
                 </span>
@@ -203,7 +203,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
             </div>
             <div style={{
               fontFamily:  'var(--font-sans)',
-              fontSize:    '17px',
+              fontSize: '17px',
               fontWeight:  400,
               lineHeight:  1.3,
               color:       'var(--white)',
@@ -214,7 +214,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
             {result.description && (
               <p style={{
                 fontFamily:      'var(--font-sans)',
-                fontSize:        '15px',
+                fontSize: '15px',
                 lineHeight:      1.75,
                 color:           'rgba(var(--ink),0.9)',
                 overflow:        'hidden',
@@ -229,7 +229,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
           <span style={{
             flexShrink:    0,
             fontFamily:    'var(--font-mono)',
-            fontSize:      '9px',
+            fontSize: '11px',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
             color:         statusColor,
@@ -270,7 +270,7 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontFamily:  'var(--font-sans)',
-            fontSize:    '17px',
+            fontSize: '17px',
             fontWeight:  400,
             lineHeight:  1.3,
             color:       'var(--white)',
@@ -281,7 +281,7 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
           {result.excerpt && (
             <p style={{
               fontFamily:      'var(--font-sans)',
-              fontSize:        '15px',
+              fontSize: '15px',
               lineHeight:      1.75,
               color:           'rgba(var(--ink),0.9)',
               overflow:        'hidden',
@@ -296,7 +296,7 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
         <span style={{
           flexShrink:    0,
           fontFamily:    'var(--font-mono)',
-          fontSize:      '9px',
+          fontSize: '11px',
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
           color:         diff.color,
@@ -320,18 +320,18 @@ function EmptyState({ query }: { query: string }) {
       <div style={{ fontSize: '40px', marginBottom: '16px', opacity: 0.4 }}>🔭</div>
       <div style={{
         fontFamily:    'var(--font-mono)',
-        fontSize:      '11px',
+        fontSize: '12px',
         letterSpacing: '0.2em',
         textTransform: 'uppercase',
-        color:         'rgba(var(--ink),0.3)',
+        color:         'rgba(var(--ink),0.55)',
         marginBottom:  '8px',
       }}>
         No results found
       </div>
       <p style={{
         fontFamily: 'var(--font-sans)',
-        fontSize:   '14px',
-        color:      'rgba(var(--ink),0.4)',
+        fontSize: '14px',
+        color:      'rgba(var(--ink),0.6)',
       }}>
         Nothing matched &ldquo;{query}&rdquo; — try different keywords
       </p>
@@ -345,10 +345,10 @@ function IdleState() {
     <div style={{ padding: '48px 0' }}>
       <div style={{
         fontFamily:    'var(--font-mono)',
-        fontSize:      '10px',
+        fontSize: '11px',
         letterSpacing: '0.25em',
         textTransform: 'uppercase',
-        color:         'rgba(var(--ink),0.25)',
+        color:         'rgba(var(--ink),0.5)',
         marginBottom:  '20px',
       }}>
         Try searching for
@@ -359,7 +359,7 @@ function IdleState() {
             key={s}
             style={{
               fontFamily:    'var(--font-mono)',
-              fontSize:      '11px',
+              fontSize: '12px',
               letterSpacing: '0.08em',
               color:         'rgba(var(--ink),0.55)',
               background:    'rgba(var(--ink),0.05)',
@@ -469,7 +469,7 @@ export function SearchPage() {
 
           <div style={{
             fontFamily:    'var(--font-mono)',
-            fontSize:      '10px',
+            fontSize: '11px',
             letterSpacing: '0.28em',
             textTransform: 'uppercase',
             color:         'var(--accent)',
@@ -515,7 +515,7 @@ export function SearchPage() {
                 borderRadius: '10px',
                 color:        'var(--white)',
                 fontFamily:   'var(--font-sans)',
-                fontSize:     '17px',
+                fontSize: '17px',
                 outline:      'none',
                 boxSizing:    'border-box',
                 transition:   'border-color 0.2s',
@@ -535,7 +535,7 @@ export function SearchPage() {
                   transform:  'translateY(-50%)',
                   background: 'none',
                   border:     'none',
-                  color:      'rgba(var(--ink),0.4)',
+                  color:      'rgba(var(--ink),0.6)',
                   cursor:     'pointer',
                   padding:    '4px',
                   display:    'flex',
@@ -553,8 +553,8 @@ export function SearchPage() {
           <div style={{
             marginTop:  '12px',
             fontFamily: 'var(--font-mono)',
-            fontSize:   '11px',
-            color:      'rgba(var(--ink),0.3)',
+            fontSize: '12px',
+            color:      'rgba(var(--ink),0.55)',
             minHeight:  '18px',
           }}>
             {loading && 'Searching…'}

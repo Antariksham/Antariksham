@@ -113,13 +113,13 @@ export function StatusStrip() {
               {item.icon}
             </div>
             <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', marginBottom: '2px' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)', marginBottom: '2px' }}>
                 {item.label}
               </div>
               <div style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 500, color: 'var(--white)', marginBottom: '2px' }}>
                 {item.value}
               </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: item.subColor }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: item.subColor }}>
                 {item.sub}
               </div>
             </div>

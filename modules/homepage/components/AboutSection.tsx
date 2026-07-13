@@ -39,7 +39,7 @@ export function AboutSection() {
               <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1, marginBottom: '0.5rem', fontVariantNumeric: 'tabular-nums' }}>
                 {stat.num}
               </div>
-              <div style={{ fontSize: '0.7rem', letterSpacing: '0.5px', textTransform: 'uppercase', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+              <div style={{ fontSize: '0.75rem', letterSpacing: '0.5px', textTransform: 'uppercase', color: 'var(--text-muted)', lineHeight: 1.4 }}>
                 {stat.label}
               </div>
             </div>

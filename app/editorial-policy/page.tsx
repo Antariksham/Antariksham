@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
-  fontSize:   '17px',
+  fontSize: '17px',
   color:      'rgba(var(--ink),0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
@@ -17,7 +17,7 @@ const prose: React.CSSProperties = {
 
 const h2: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
-  fontSize:   '26px',
+  fontSize: '26px',
   color:      'var(--white)',
   margin:     '48px 0 14px',
   lineHeight: 1.3,
@@ -26,7 +26,7 @@ const h2: React.CSSProperties = {
 
 const h3: React.CSSProperties = {
   fontFamily: 'var(--font-mono)',
-  fontSize:   '11px',
+  fontSize: '12px',
   letterSpacing: '0.18em',
   textTransform: 'uppercase' as const,
   color:      'rgba(var(--ink),0.55)',
@@ -44,7 +44,7 @@ export default function EditorialPolicyPage() {
     <main style={{ background: 'var(--black)', minHeight: '100vh', padding: '72px 24px 96px' }}>
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Editorial Policy
         </div>
 
@@ -81,7 +81,7 @@ export default function EditorialPolicyPage() {
           { type: 'Guide',                desc: 'Evergreen how-to or reference content. Reviewed for accuracy before publication.' },
         ].map(item => (
           <div key={item.type} style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '16px', padding: '14px 0', borderBottom: '1px solid rgba(var(--ink),0.05)' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', paddingTop: '2px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)', paddingTop: '2px' }}>
               {item.type}
             </span>
             <p style={{ ...prose, margin: 0, fontSize: '15px' }}>{item.desc}</p>
@@ -149,7 +149,7 @@ export default function EditorialPolicyPage() {
               style={{
                 display: 'inline-flex', padding: '9px 16px', borderRadius: '6px',
                 background: 'rgba(79,142,247,0.07)', border: '1px solid rgba(79,142,247,0.18)',
-                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '11px',
+                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '12px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none',
               }}
             >

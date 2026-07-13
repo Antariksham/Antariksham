@@ -71,7 +71,7 @@ export function AdminSidebar() {
           <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #232338, #0a0a0f)', border: '1px solid rgba(79,142,247,0.3)', flexShrink: 0 }} />
           <div>
             <div style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'var(--white)', lineHeight: 1 }}>Antariksham</div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.3)', marginTop: '3px' }}>Mission Control</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', marginTop: '3px' }}>Mission Control</div>
           </div>
         </div>
       </div>
@@ -96,7 +96,7 @@ export function AdminSidebar() {
                 textDecoration: 'none',
                 transition:     'all 0.15s',
                 fontFamily:     'var(--font-mono)',
-                fontSize:       '11px',
+                fontSize: '12px',
                 letterSpacing:  '0.08em',
                 borderLeft:     active ? '2px solid var(--accent)' : '2px solid transparent',
               }}
@@ -116,7 +116,7 @@ export function AdminSidebar() {
               <span style={{ opacity: active ? 1 : 0.6, flexShrink: 0 }}>{item.icon}</span>
               <span style={{ flex: 1 }}>{item.label}</span>
               {item.badge && (
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 6px', borderRadius: '3px', background: 'rgba(var(--ink),0.06)', color: 'rgba(var(--ink),0.3)', border: '1px solid var(--border)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 6px', borderRadius: '3px', background: 'rgba(var(--ink),0.06)', color: 'rgba(var(--ink),0.55)', border: '1px solid var(--border)' }}>
                   {item.badge}
                 </span>
               )}
@@ -139,9 +139,9 @@ export function AdminSidebar() {
             borderRadius:'6px',
             background:  'transparent',
             border:      'none',
-            color:       'rgba(var(--ink),0.35)',
+            color:       'rgba(var(--ink),0.55)',
             fontFamily:  'var(--font-mono)',
-            fontSize:    '11px',
+            fontSize: '12px',
             letterSpacing:'0.08em',
             cursor:      'pointer',
             transition:  'all 0.15s',

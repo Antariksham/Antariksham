@@ -42,7 +42,7 @@ export function LearnPage({ articles }: Props) {
 
       {/* ── Header ─────────────────────────────────────────── */}
       <div style={{ marginBottom: '48px' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '12px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '12px' }}>
           Knowledge Layer
         </div>
         <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 800, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.1 }}>
@@ -64,7 +64,7 @@ export function LearnPage({ articles }: Props) {
               onClick={() => setActiveFilter(level)}
               style={{
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '10px',
+                fontSize: '11px',
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
                 padding:       '7px 16px',
@@ -80,14 +80,14 @@ export function LearnPage({ articles }: Props) {
             </button>
           )
         })}
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(var(--ink),0.3)', alignSelf: 'center', marginLeft: '8px' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', color: 'rgba(var(--ink),0.55)', alignSelf: 'center', marginLeft: '8px' }}>
           {filtered.length} {filtered.length === 1 ? 'article' : 'articles'}
         </span>
       </div>
 
       {/* ── Article Grid ────────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(var(--ink),0.3)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em' }}>
+        <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(var(--ink),0.55)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em' }}>
           NO ARTICLES YET
         </div>
       ) : (
@@ -125,7 +125,7 @@ function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
         {article.relatedTopics.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '1rem' }}>
             {article.relatedTopics.slice(0, 3).map(topic => (
-              <span key={topic} style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', background: 'rgba(var(--ink),0.05)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '20px' }}>
+              <span key={topic} style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', background: 'rgba(var(--ink),0.05)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '20px' }}>
                 {topic}
               </span>
             ))}
@@ -133,7 +133,7 @@ function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
         )}
 
         <div className="card-meta">
-          <span style={{ color: diffColor, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, fontSize: '0.72rem' }}>Read article →</span>
+          <span style={{ color: diffColor, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, fontSize: '0.78rem' }}>Read article →</span>
         </div>
       </div>
     </Link>

@@ -39,7 +39,7 @@ export function Navbar() {
           <Link href="/search" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: '1px solid rgba(var(--ink),0.2)', borderRadius: '6px', background: 'rgba(var(--ink),0.05)', color: 'rgba(var(--ink),0.75)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', textDecoration: 'none' }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             Search
-            <span style={{ background: 'rgba(var(--ink),0.08)', borderRadius: '3px', padding: '1px 6px', fontSize: '10px', color: 'rgba(var(--ink),0.5)' }}>⌘K</span>
+            <span style={{ background: 'rgba(var(--ink),0.08)', borderRadius: '3px', padding: '1px 6px', fontSize: '11px', color: 'rgba(var(--ink),0.65)' }}>⌘K</span>
           </Link>
           <ThemeToggle />
         </div>

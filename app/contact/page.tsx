@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
-  fontSize:   '17px',
+  fontSize: '17px',
   color:      'rgba(var(--ink),0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
@@ -17,7 +17,7 @@ const prose: React.CSSProperties = {
 
 const h2: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
-  fontSize:   '26px',
+  fontSize: '26px',
   color:      'var(--white)',
   margin:     '48px 0 14px',
   lineHeight: 1.3,
@@ -46,7 +46,7 @@ export default function ContactPage() {
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Contact
         </div>
 
@@ -65,7 +65,7 @@ export default function ContactPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '48px' }}>
 
           <div style={contactCard}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7' }}>
               General Enquiries
             </div>
             <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
@@ -77,7 +77,7 @@ export default function ContactPage() {
           </div>
 
           <div style={contactCard}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(231,76,60,0.8)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(231,76,60,0.8)' }}>
               Corrections & Factual Errors
             </div>
             <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
@@ -89,7 +89,7 @@ export default function ContactPage() {
           </div>
 
           <div style={contactCard}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(46,204,113,0.8)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(46,204,113,0.8)' }}>
               Story Tips & Press Releases
             </div>
             <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
@@ -101,7 +101,7 @@ export default function ContactPage() {
           </div>
 
           <div style={contactCard}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(243,156,18,0.8)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(243,156,18,0.8)' }}>
               Collaboration & Partnerships
             </div>
             <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
@@ -139,7 +139,7 @@ export default function ContactPage() {
               style={{
                 display: 'inline-flex', padding: '9px 16px', borderRadius: '6px',
                 background: 'rgba(79,142,247,0.07)', border: '1px solid rgba(79,142,247,0.18)',
-                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '11px',
+                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '12px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none',
               }}
             >

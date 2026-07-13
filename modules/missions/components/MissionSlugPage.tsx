@@ -41,7 +41,7 @@ export function MissionSlugPage({ mission, related }: Props) {
       <article style={{ maxWidth: '800px', margin: '0 auto', padding: 'clamp(32px,6vw,64px) clamp(20px,5vw,40px)' }}>
 
         {/* Breadcrumb */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(var(--ink),0.35)', letterSpacing: '0.1em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.1em' }}>
           <a href="/missions" style={{ color: '#4f8ef7', textDecoration: 'none' }}>Missions</a>
           <span>/</span>
           <span>{mission.name}</span>
@@ -50,12 +50,12 @@ export function MissionSlugPage({ mission, related }: Props) {
         {/* Agency + type */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '16px' }}>
           {mission.agency && (
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7' }}>
               {mission.agency.name}
             </span>
           )}
           {mission.missionType && (
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.35)', border: '1px solid rgba(var(--ink),0.1)', borderRadius: '3px', padding: '2px 8px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', border: '1px solid rgba(var(--ink),0.1)', borderRadius: '3px', padding: '2px 8px' }}>
               {TYPE_LABEL[mission.missionType] || mission.missionType}
             </span>
           )}
@@ -69,13 +69,13 @@ export function MissionSlugPage({ mission, related }: Props) {
 
         {/* Destination */}
         {mission.destination && (
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em', color: 'rgba(var(--ink),0.45)', margin: '0 0 24px' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em', color: 'rgba(var(--ink),0.6)', margin: '0 0 24px' }}>
             → {mission.destination}
           </p>
         )}
 
         {/* Meta row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.4)', paddingBottom: '28px', borderBottom: '1px solid rgba(var(--ink),0.08)', marginBottom: '36px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', paddingBottom: '28px', borderBottom: '1px solid rgba(var(--ink),0.08)', marginBottom: '36px' }}>
           {mission.launchDate && (
             <span>Launch: {formatDate(mission.launchDate)}</span>
           )}
@@ -92,7 +92,7 @@ export function MissionSlugPage({ mission, related }: Props) {
         {/* ── Timeline ─────────────────────────────── */}
         {mission.timeline && mission.timeline.length > 0 && (
           <div style={{ marginBottom: '56px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
               Mission Timeline
             </span>
             <div style={{ position: 'relative', paddingLeft: '24px', borderLeft: '1px solid rgba(var(--ink),0.1)' }}>
@@ -101,7 +101,7 @@ export function MissionSlugPage({ mission, related }: Props) {
                   {/* Dot */}
                   <div style={{ position: 'absolute', left: '-29px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: event.completed ? '#2ecc71' : 'rgba(var(--ink),0.15)', border: `2px solid ${event.completed ? '#2ecc71' : 'rgba(var(--ink),0.2)'}`, boxShadow: event.completed ? '0 0 8px rgba(46,204,113,0.4)' : 'none' }} />
                   {/* Date */}
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em', color: event.completed ? '#2ecc71' : 'rgba(var(--ink),0.35)', display: 'block', marginBottom: '6px' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.12em', color: event.completed ? '#2ecc71' : 'rgba(var(--ink),0.35)', display: 'block', marginBottom: '6px' }}>
                     {event.date}
                   </span>
                   {/* Title */}
@@ -123,14 +123,14 @@ export function MissionSlugPage({ mission, related }: Props) {
         {/* ── Agency card ──────────────────────────── */}
         {mission.agency && (
           <div style={{ background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '12px', padding: '24px', marginBottom: '48px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.35)', display: 'block', marginBottom: '12px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', display: 'block', marginBottom: '12px' }}>
               Mission Agency
             </span>
             <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '22px', fontWeight: 400, color: 'var(--white)', margin: '0 0 8px' }}>
               {mission.agency.name}
             </h3>
             {mission.agency.country && (
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.4)', margin: '0 0 12px', letterSpacing: '0.08em' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', margin: '0 0 12px', letterSpacing: '0.08em' }}>
                 {mission.agency.country}
               </p>
             )}
@@ -140,7 +140,7 @@ export function MissionSlugPage({ mission, related }: Props) {
               </p>
             )}
             {mission.agency.websiteUrl && (
-              <a href={mission.agency.websiteUrl} target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
+              <a href={mission.agency.websiteUrl} target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
                 Official Website →
               </a>
             )}
@@ -149,7 +149,7 @@ export function MissionSlugPage({ mission, related }: Props) {
 
         {/* Back link */}
         <div style={{ paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>
-          <a href="/missions" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
+          <a href="/missions" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
             ← All Missions
           </a>
         </div>
@@ -159,7 +159,7 @@ export function MissionSlugPage({ mission, related }: Props) {
       {related.length > 0 && (
         <div style={{ borderTop: '1px solid rgba(var(--ink),0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
               Related Missions
             </span>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: '16px' }}>
@@ -171,7 +171,7 @@ export function MissionSlugPage({ mission, related }: Props) {
                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(var(--ink),0.08)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
                   >
                     {r.agency && (
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '10px' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '10px' }}>
                         {r.agency.shortName}
                       </span>
                     )}

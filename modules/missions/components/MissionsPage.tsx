@@ -91,7 +91,7 @@ export function StatusBadge({ status }: { status: string }) {
   const color = STATUS_COLOR[status] || 'rgba(var(--ink),0.35)'
   const isPulse = status === 'active'
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-sans)', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, display: 'inline-block', boxShadow: isPulse ? `0 0 8px ${color}` : 'none' }} />
       {status.replace('-', ' ')}
     </span>

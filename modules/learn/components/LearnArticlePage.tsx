@@ -100,7 +100,7 @@ export function LearnArticlePage({ article }: Props) {
       {/* ── Back link ──────────────────────────────────────── */}
       <Link
         href="/learn"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '40px' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '40px' }}
       >
         ← Back to Learn
       </Link>
@@ -111,7 +111,7 @@ export function LearnArticlePage({ article }: Props) {
           <span style={{ fontSize: '40px', lineHeight: 1 }}>{article.icon}</span>
           <span style={{
             fontFamily:    'var(--font-mono)',
-            fontSize:      '10px',
+            fontSize: '11px',
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
             color:         diffColor,
@@ -138,7 +138,7 @@ export function LearnArticlePage({ article }: Props) {
             {article.relatedTopics.map(topic => (
               <span key={topic} style={{
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '11px',
+                fontSize: '12px',
                 letterSpacing: '0.08em',
                 color:         'rgba(var(--ink),0.7)',
                 background:    'rgba(var(--ink),0.07)',
@@ -172,7 +172,7 @@ export function LearnArticlePage({ article }: Props) {
             alignItems:     'center',
             gap:            '8px',
             fontFamily:     'var(--font-mono)',
-            fontSize:       '10px',
+            fontSize: '11px',
             letterSpacing:  '0.18em',
             textTransform:  'uppercase',
             color:          'var(--accent)',

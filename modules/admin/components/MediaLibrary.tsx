@@ -141,7 +141,7 @@ export function MediaLibrary({ pickerMode = false, onPick, defaultBucket = 'arti
 
   const bucketBtnStyle = (active: boolean): React.CSSProperties => ({
     fontFamily:    'var(--font-mono)',
-    fontSize:      '10px',
+    fontSize: '11px',
     letterSpacing: '0.15em',
     textTransform: 'uppercase',
     padding:       '6px 16px',
@@ -160,13 +160,13 @@ export function MediaLibrary({ pickerMode = false, onPick, defaultBucket = 'arti
       {/* ── Header ────────────────────────────────────────── */}
       {!pickerMode && (
         <div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '6px' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '6px' }}>
             Admin
           </div>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 400, color: 'var(--white)', margin: '0 0 4px' }}>
             Media Library
           </h1>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'rgba(var(--ink),0.45)', margin: 0 }}>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'rgba(var(--ink),0.6)', margin: 0 }}>
             Upload and manage images for articles and missions
           </p>
         </div>
@@ -180,7 +180,7 @@ export function MediaLibrary({ pickerMode = false, onPick, defaultBucket = 'arti
         <button style={bucketBtnStyle(bucket === 'mission-images')} onClick={() => { setBucket('mission-images'); setSearch('') }}>
           Mission Images
         </button>
-        <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(var(--ink),0.3)', alignSelf: 'center' }}>
+        <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', alignSelf: 'center' }}>
           {files.length} file{files.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -214,16 +214,16 @@ export function MediaLibrary({ pickerMode = false, onPick, defaultBucket = 'arti
           onChange={e => handleUpload(e.target.files)}
         />
         {uploading ? (
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent)' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent)' }}>
             Uploading…
           </div>
         ) : (
           <>
             <div style={{ fontSize: '28px', marginBottom: '10px', opacity: 0.5 }}>📁</div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', marginBottom: '4px' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)', marginBottom: '4px' }}>
               Drop images here or click to upload
             </div>
-            <div style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(var(--ink),0.25)' }}>
+            <div style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(var(--ink),0.5)' }}>
               JPG, PNG, WebP, GIF, SVG · Max 5MB each
             </div>
           </>
@@ -252,7 +252,7 @@ export function MediaLibrary({ pickerMode = false, onPick, defaultBucket = 'arti
             borderRadius: '8px',
             color:        'var(--white)',
             fontFamily:   'var(--font-sans)',
-            fontSize:     '13px',
+            fontSize: '13px',
             outline:      'none',
             boxSizing:    'border-box',
           }}
@@ -268,7 +268,7 @@ export function MediaLibrary({ pickerMode = false, onPick, defaultBucket = 'arti
 
       {/* ── Loading ───────────────────────────────────────── */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: '40px 0', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.3)' }}>
+        <div style={{ textAlign: 'center', padding: '40px 0', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)' }}>
           Loading…
         </div>
       )}
@@ -277,7 +277,7 @@ export function MediaLibrary({ pickerMode = false, onPick, defaultBucket = 'arti
       {!loading && files.length === 0 && (
         <div style={{ textAlign: 'center', padding: '48px 0' }}>
           <div style={{ fontSize: '36px', marginBottom: '12px', opacity: 0.3 }}>🖼️</div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.25)' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)' }}>
             No images yet — upload your first one above
           </div>
         </div>
@@ -303,7 +303,7 @@ export function MediaLibrary({ pickerMode = false, onPick, defaultBucket = 'arti
 
       {/* No search results */}
       {!loading && search && filteredFiles.length === 0 && files.length > 0 && (
-        <div style={{ textAlign: 'center', padding: '32px 0', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.25)' }}>
+        <div style={{ textAlign: 'center', padding: '32px 0', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)' }}>
           No images match &ldquo;{search}&rdquo;
         </div>
       )}
@@ -355,7 +355,7 @@ function MediaCard({ file, pickerMode, copied, deleting, onCopy, onDelete, onPic
       <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <div style={{
           fontFamily:  'var(--font-sans)',
-          fontSize:    '12px',
+          fontSize: '12px',
           color:       'rgba(var(--ink),0.8)',
           overflow:    'hidden',
           whiteSpace:  'nowrap',
@@ -363,7 +363,7 @@ function MediaCard({ file, pickerMode, copied, deleting, onCopy, onDelete, onPic
         }}>
           {formatName(file.name)}
         </div>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(var(--ink),0.3)' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)' }}>
           {formatBytes(file.size)}
         </div>
 
@@ -375,7 +375,7 @@ function MediaCard({ file, pickerMode, copied, deleting, onCopy, onDelete, onPic
               style={{
                 flex:          1,
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '9px',
+                fontSize: '11px',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
                 padding:       '5px 0',
@@ -394,7 +394,7 @@ function MediaCard({ file, pickerMode, copied, deleting, onCopy, onDelete, onPic
               style={{
                 flex:          1,
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '9px',
+                fontSize: '11px',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
                 padding:       '5px 0',
@@ -415,7 +415,7 @@ function MediaCard({ file, pickerMode, copied, deleting, onCopy, onDelete, onPic
             disabled={deleting}
             style={{
               fontFamily:    'var(--font-mono)',
-              fontSize:      '9px',
+              fontSize: '11px',
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               padding:       '5px 8px',

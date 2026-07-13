@@ -89,7 +89,7 @@ function GridCard({ article }: { article: ArticleCard }) {
         : <div className="card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', opacity: 0.25 }}>🪐</div>}
       <div className="card-body">
         {article.articleType === 'breaking-news' && (
-          <span style={{ alignSelf: 'flex-start', fontFamily: 'var(--font-sans)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--white)', background: 'var(--red)', padding: '2px 8px', borderRadius: '3px', marginBottom: '0.5rem' }}>
+          <span style={{ alignSelf: 'flex-start', fontFamily: 'var(--font-sans)', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--white)', background: 'var(--red)', padding: '2px 8px', borderRadius: '3px', marginBottom: '0.5rem' }}>
             Breaking
           </span>
         )}

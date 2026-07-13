@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
-  fontSize:   '17px',
+  fontSize: '17px',
   color:      'rgba(var(--ink),0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
@@ -17,7 +17,7 @@ const prose: React.CSSProperties = {
 
 const h2: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
-  fontSize:   '26px',
+  fontSize: '26px',
   color:      'var(--white)',
   margin:     '48px 0 14px',
   lineHeight: 1.3,
@@ -102,7 +102,7 @@ function SourceCard({ source }: { source: SourceEntry }) {
           </span>
           <span style={{
             fontFamily:    'var(--font-mono)',
-            fontSize:      '9px',
+            fontSize: '11px',
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
             color:         TYPE_COLOR[source.type],
@@ -124,7 +124,7 @@ function SourceCard({ source }: { source: SourceEntry }) {
         rel="noopener noreferrer"
         style={{
           fontFamily:    'var(--font-mono)',
-          fontSize:      '10px',
+          fontSize: '11px',
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
           color:         '#4f8ef7',
@@ -149,7 +149,7 @@ export default function SourcesPage() {
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Sources & Data
         </div>
 
@@ -209,7 +209,7 @@ export default function SourcesPage() {
               style={{
                 display: 'inline-flex', padding: '9px 16px', borderRadius: '6px',
                 background: 'rgba(79,142,247,0.07)', border: '1px solid rgba(79,142,247,0.18)',
-                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '11px',
+                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '12px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none',
               }}
             >
