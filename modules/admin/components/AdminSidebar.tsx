@@ -13,6 +13,7 @@ import {
   LogOut,
   ChevronRight,
   Users,
+  GraduationCap,
 } from 'lucide-react'
 
 interface NavItem {
@@ -26,6 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard',        href: '/admin',           icon: <LayoutDashboard size={15} /> },
   { label: 'Articles',         href: '/admin/articles',  icon: <FileText        size={15} /> },
   { label: 'Missions',         href: '/admin/missions',  icon: <Rocket          size={15} /> },
+  { label: 'Learn',            href: '/admin/learn',     icon: <GraduationCap   size={15} /> },
   { label: 'Authors',          href: '/admin/authors',   icon: <Users           size={15} /> },
   { label: 'Homepage',         href: '/admin/homepage',  icon: <Globe           size={15} /> },
   { label: 'Launches',         href: '/admin/launches',  icon: <Rocket          size={15} /> },

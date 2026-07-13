@@ -83,3 +83,10 @@ fetched:
 
 That article's card now shows the photo; everything else keeps its generated
 cover.
+
+**Managing topics without SQL:** the admin CMS has a **Learn** section
+(`/admin/learn`) to create/edit/delete topics, including a thumbnail field with
+Media Library upload. The editor is resilient — it works *before* this
+migration (managing every field except the thumbnail) and starts persisting
+thumbnails automatically once the column exists, so no code change is needed to
+save images through the CMS.
