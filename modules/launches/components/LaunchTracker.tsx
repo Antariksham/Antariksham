@@ -329,7 +329,7 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
               {label}
               <span style={{
                 padding: '1px 6px', borderRadius: '10px', fontSize: '9px',
-                background: active ? 'rgba(7,9,12,0.2)' : 'rgba(255,255,255,0.08)',
+                background: active ? 'rgba(10,10,15,0.2)' : 'rgba(255,255,255,0.08)',
                 color: active ? '#0a0a0f' : 'rgba(255,255,255,0.4)',
               }}>
                 {count}

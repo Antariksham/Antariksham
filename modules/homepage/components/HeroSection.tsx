@@ -41,11 +41,11 @@ export async function HeroSection() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
               <div style={{ width: '24px', height: '1px', background: '#4f8ef7' }} />
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7' }}>
                 Independent Space Intelligence Platform
               </span>
             </div>
-            <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 5vw, 68px)', fontWeight: 400, lineHeight: 1.1, marginBottom: '24px', color: '#ffffff' }}>
+            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 68px)', fontWeight: 400, lineHeight: 1.1, marginBottom: '24px', color: '#ffffff' }}>
               Exploring the Universe Through{' '}
               <em style={{ fontStyle: 'italic', color: '#4f8ef7', fontWeight: 300 }}>Knowledge,</em>{' '}
               Research &amp; Discovery
@@ -54,10 +54,10 @@ export async function HeroSection() {
               Scientific journalism, live mission tracking, deep-space telemetry, and an educational knowledge engine — all in one independent platform.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-              <Link href="/news" style={{ display: 'inline-flex', alignItems: 'center', padding: '13px 28px', background: '#4f8ef7', color: '#0a0a0f', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: '5px', fontFamily: 'DM Mono, monospace' }}>
+              <Link href="/news" style={{ display: 'inline-flex', alignItems: 'center', padding: '13px 28px', background: '#4f8ef7', color: '#0a0a0f', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: '5px', fontFamily: 'var(--font-mono)' }}>
                 Read Latest
               </Link>
-              <Link href="/live" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '13px 24px', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.85)', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: '5px', fontFamily: 'DM Mono, monospace' }}>
+              <Link href="/live" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '13px 24px', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.85)', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: '5px', fontFamily: 'var(--font-mono)' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2ecc71', boxShadow: '0 0 8px #2ecc71', display: 'inline-block' }} />
                 View Live Systems
               </Link>
@@ -87,27 +87,27 @@ export async function HeroSection() {
                     </div>
                   </div>
                 )}
-                <div style={{ position: 'absolute', top: '14px', left: '14px', fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: '3px', background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(79,142,247,0.3)', color: '#4f8ef7', backdropFilter: 'blur(4px)' }}>
+                <div style={{ position: 'absolute', top: '14px', left: '14px', fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: '3px', background: 'rgba(0,0,0,0.55)', border: '1px solid rgba(79,142,247,0.3)', color: '#4f8ef7', backdropFilter: 'blur(4px)' }}>
                   Featured Story
                 </div>
               </div>
 
               {/* Card content */}
               <div style={{ padding: '24px' }}>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#f39c12', marginBottom: '10px' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#f39c12', marginBottom: '10px' }}>
                   {badge}
                 </div>
-                <h3 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '20px', fontWeight: 400, lineHeight: 1.3, color: '#ffffff', marginBottom: '10px' }}>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 400, lineHeight: 1.3, color: '#ffffff', marginBottom: '10px' }}>
                   {title}
                 </h3>
                 <p style={{ fontSize: '14px', lineHeight: 1.7, color: 'rgba(255,255,255,0.75)', marginBottom: '16px' }}>
                   {excerpt}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>
                     {[readTime, category].filter(Boolean).join(' · ')}
                   </span>
-                  <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '13px', color: '#4f8ef7', fontWeight: 500 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: '#4f8ef7', fontWeight: 500 }}>
                     Read full story →
                   </span>
                 </div>

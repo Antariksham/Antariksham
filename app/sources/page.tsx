@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 }
 
 const prose: React.CSSProperties = {
-  fontFamily: 'Outfit, sans-serif',
+  fontFamily: 'var(--font-sans)',
   fontSize:   '17px',
   color:      'rgba(255,255,255,0.78)',
   lineHeight: 1.85,
@@ -16,7 +16,7 @@ const prose: React.CSSProperties = {
 }
 
 const h2: React.CSSProperties = {
-  fontFamily: 'Crimson Pro, Georgia, serif',
+  fontFamily: 'var(--font-serif)',
   fontSize:   '26px',
   color:      '#ffffff',
   margin:     '48px 0 14px',
@@ -96,11 +96,11 @@ function SourceCard({ source }: { source: SourceEntry }) {
     }}>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '18px', color: '#ffffff', lineHeight: 1.2 }}>
+          <span style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', color: '#ffffff', lineHeight: 1.2 }}>
             {source.name}
           </span>
           <span style={{
-            fontFamily:    'DM Mono, monospace',
+            fontFamily:    'var(--font-mono)',
             fontSize:      '9px',
             letterSpacing: '0.14em',
             textTransform: 'uppercase',
@@ -122,7 +122,7 @@ function SourceCard({ source }: { source: SourceEntry }) {
         target="_blank"
         rel="noopener noreferrer"
         style={{
-          fontFamily:    'DM Mono, monospace',
+          fontFamily:    'var(--font-mono)',
           fontSize:      '10px',
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
@@ -148,12 +148,12 @@ export default function SourcesPage() {
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Sources & Data
         </div>
 
         {/* Title */}
-        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 28px', lineHeight: 1.15, fontWeight: 400 }}>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 28px', lineHeight: 1.15, fontWeight: 400 }}>
           Our Sources
         </h1>
 
@@ -208,7 +208,7 @@ export default function SourcesPage() {
               style={{
                 display: 'inline-flex', padding: '9px 16px', borderRadius: '6px',
                 background: 'rgba(79,142,247,0.07)', border: '1px solid rgba(79,142,247,0.18)',
-                color: '#4f8ef7', fontFamily: 'DM Mono, monospace', fontSize: '11px',
+                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '11px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none',
               }}
             >

@@ -177,7 +177,7 @@ function AuthorModal({
   return (
     <div style={{
       position:       'fixed', inset: 0, zIndex: 200,
-      background:     'rgba(7,9,12,0.85)',
+      background:     'rgba(10,10,15,0.85)',
       display:        'flex', alignItems: 'center', justifyContent: 'center',
       padding:        '20px',
     }}
@@ -561,7 +561,7 @@ export function AuthorsAdmin() {
       {/* Delete confirm modal */}
       {deleteTarget && (
         <div
-          style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(7,9,12,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(10,10,15,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
           onClick={e => { if (e.target === e.currentTarget) setDeleteTarget(null) }}
         >
           <div style={{ background: '#0a0a0f', border: '1px solid rgba(231,76,60,0.3)', borderRadius: '12px', padding: '28px', maxWidth: '400px', width: '100%' }}>

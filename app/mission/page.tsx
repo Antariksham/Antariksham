@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 }
 
 const prose: React.CSSProperties = {
-  fontFamily: 'Outfit, sans-serif',
+  fontFamily: 'var(--font-sans)',
   fontSize:   '17px',
   color:      'rgba(255,255,255,0.78)',
   lineHeight: 1.85,
@@ -16,7 +16,7 @@ const prose: React.CSSProperties = {
 }
 
 const h2: React.CSSProperties = {
-  fontFamily: 'Crimson Pro, Georgia, serif',
+  fontFamily: 'var(--font-serif)',
   fontSize:   '26px',
   color:      '#ffffff',
   margin:     '48px 0 14px',
@@ -42,12 +42,12 @@ export default function MissionPage() {
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Our Mission
         </div>
 
         {/* Title */}
-        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 16px', lineHeight: 1.15, fontWeight: 400 }}>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 16px', lineHeight: 1.15, fontWeight: 400 }}>
           Exploring Space Through Knowledge, Research & Discovery
         </h1>
 
@@ -92,7 +92,7 @@ export default function MissionPage() {
             },
           ].map(p => (
             <div key={p.title} style={pillar}>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '8px' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '8px' }}>
                 {p.title}
               </div>
               <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
@@ -133,7 +133,7 @@ export default function MissionPage() {
                 background:    'rgba(79,142,247,0.07)',
                 border:        '1px solid rgba(79,142,247,0.18)',
                 color:         '#4f8ef7',
-                fontFamily:    'DM Mono, monospace',
+                fontFamily:    'var(--font-mono)',
                 fontSize:      '11px',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',

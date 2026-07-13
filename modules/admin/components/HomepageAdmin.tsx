@@ -244,7 +244,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
       {/* ── Hero editor modal ──────────────────────── */}
       {heroOpen && (
         <div
-          style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(7,9,12,0.85)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(10,10,15,0.85)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
           onClick={e => { if (e.target === e.currentTarget) setHeroOpen(false) }}
         >
           <div style={{ background: '#0d1117', border: '1px solid var(--border)', borderRadius: '12px', width: '100%', maxWidth: '560px', maxHeight: '90vh', overflowY: 'auto' }}>

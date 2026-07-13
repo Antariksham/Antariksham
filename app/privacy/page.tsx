@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 }
 
 const prose: React.CSSProperties = {
-  fontFamily: 'Outfit, sans-serif',
+  fontFamily: 'var(--font-sans)',
   fontSize:   '17px',
   color:      'rgba(255,255,255,0.78)',
   lineHeight: 1.85,
@@ -16,7 +16,7 @@ const prose: React.CSSProperties = {
 }
 
 const h2: React.CSSProperties = {
-  fontFamily: 'Crimson Pro, Georgia, serif',
+  fontFamily: 'var(--font-serif)',
   fontSize:   '26px',
   color:      '#ffffff',
   margin:     '48px 0 14px',
@@ -34,15 +34,15 @@ export default function PrivacyPage() {
     <main style={{ background: '#0a0a0f', minHeight: '100vh', padding: '72px 24px 96px' }}>
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Privacy Policy
         </div>
 
-        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 16px', lineHeight: 1.15, fontWeight: 400 }}>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 16px', lineHeight: 1.15, fontWeight: 400 }}>
           Privacy Policy
         </h1>
 
-        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', marginBottom: '36px' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', marginBottom: '36px' }}>
           Last updated: June 2026
         </p>
 
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
               style={{
                 display: 'inline-flex', padding: '9px 16px', borderRadius: '6px',
                 background: 'rgba(79,142,247,0.07)', border: '1px solid rgba(79,142,247,0.18)',
-                color: '#4f8ef7', fontFamily: 'DM Mono, monospace', fontSize: '11px',
+                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '11px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none',
               }}
             >

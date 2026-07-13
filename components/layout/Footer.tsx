@@ -11,10 +11,10 @@ export function Footer() {
 
         {/* BRAND */}
         <div style={{ marginBottom: '40px', paddingBottom: '40px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '26px', fontWeight: 400, color: '#ffffff', marginBottom: '6px' }}>
-            {siteConfig.name}<span style={{ fontFamily: 'DM Mono, monospace', fontSize: '14px', color: '#4f8ef7', marginLeft: '2px' }}>{siteConfig.tld}</span>
+          <div style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', fontWeight: 400, color: '#ffffff', marginBottom: '6px' }}>
+            {siteConfig.name}<span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#4f8ef7', marginLeft: '2px' }}>{siteConfig.tld}</span>
           </div>
-          <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', opacity: 0.8, marginBottom: '16px' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', opacity: 0.8, marginBottom: '16px' }}>
             {siteConfig.positioning}
           </div>
           <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, maxWidth: '440px', marginBottom: '0' }}>
@@ -31,7 +31,7 @@ export function Footer() {
             { title: 'Organization', links: footerNav.organization },
           ].map((col) => (
             <div key={col.title}>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                 {col.title}
               </div>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -50,7 +50,7 @@ export function Footer() {
 
         {/* BOTTOM */}
         <div style={{ paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', fontFamily: 'DM Mono, monospace', letterSpacing: '0.05em', marginBottom: '12px' }}>
+          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', marginBottom: '12px' }}>
             © {year} {siteConfig.domain} — Independent Space Intelligence Organization
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
@@ -61,7 +61,7 @@ export function Footer() {
               { label: 'Sources',          href: '/sources'          },
               { label: 'Contact',          href: '/contact'          },
             ].map((item) => (
-              <Link key={item.href} href={item.href} style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontFamily: 'DM Mono, monospace' }}>
+              <Link key={item.href} href={item.href} style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontFamily: 'var(--font-mono)' }}>
                 {item.label}
               </Link>
             ))}

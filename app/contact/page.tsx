@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 }
 
 const prose: React.CSSProperties = {
-  fontFamily: 'Outfit, sans-serif',
+  fontFamily: 'var(--font-sans)',
   fontSize:   '17px',
   color:      'rgba(255,255,255,0.78)',
   lineHeight: 1.85,
@@ -16,7 +16,7 @@ const prose: React.CSSProperties = {
 }
 
 const h2: React.CSSProperties = {
-  fontFamily: 'Crimson Pro, Georgia, serif',
+  fontFamily: 'var(--font-serif)',
   fontSize:   '26px',
   color:      '#ffffff',
   margin:     '48px 0 14px',
@@ -45,12 +45,12 @@ export default function ContactPage() {
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Contact
         </div>
 
         {/* Title */}
-        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 28px', lineHeight: 1.15, fontWeight: 400 }}>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 28px', lineHeight: 1.15, fontWeight: 400 }}>
           Get In Touch
         </h1>
 
@@ -64,49 +64,49 @@ export default function ContactPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '48px' }}>
 
           <div style={contactCard}>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7' }}>
               General Enquiries
             </div>
             <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
               Questions about the platform, feedback, or anything else.
             </p>
-            <a href={`mailto:${siteConfig.email}`} style={{ fontFamily: 'DM Mono, monospace', fontSize: '14px', color: '#4f8ef7', textDecoration: 'none', marginTop: '4px' }}>
+            <a href={`mailto:${siteConfig.email}`} style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#4f8ef7', textDecoration: 'none', marginTop: '4px' }}>
               {siteConfig.email}
             </a>
           </div>
 
           <div style={contactCard}>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(231,76,60,0.8)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(231,76,60,0.8)' }}>
               Corrections & Factual Errors
             </div>
             <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
               If you believe something we have published is factually incorrect, please tell us. Include the article URL and the specific claim in question. We take corrections seriously and act on them promptly.
             </p>
-            <a href={`mailto:${siteConfig.email}?subject=Correction`} style={{ fontFamily: 'DM Mono, monospace', fontSize: '14px', color: '#4f8ef7', textDecoration: 'none', marginTop: '4px' }}>
+            <a href={`mailto:${siteConfig.email}?subject=Correction`} style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#4f8ef7', textDecoration: 'none', marginTop: '4px' }}>
               {siteConfig.email}
             </a>
           </div>
 
           <div style={contactCard}>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(46,204,113,0.8)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(46,204,113,0.8)' }}>
               Story Tips & Press Releases
             </div>
             <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
               Have a space mission update, discovery, or announcement you think we should cover? Send it our way. We review all tips but cannot guarantee coverage.
             </p>
-            <a href={`mailto:${siteConfig.email}?subject=Story+Tip`} style={{ fontFamily: 'DM Mono, monospace', fontSize: '14px', color: '#4f8ef7', textDecoration: 'none', marginTop: '4px' }}>
+            <a href={`mailto:${siteConfig.email}?subject=Story+Tip`} style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#4f8ef7', textDecoration: 'none', marginTop: '4px' }}>
               {siteConfig.email}
             </a>
           </div>
 
           <div style={contactCard}>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(243,156,18,0.8)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(243,156,18,0.8)' }}>
               Collaboration & Partnerships
             </div>
             <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
               We are open to editorial collaborations with researchers, scientists, and educators who want to contribute original content. We are not open to sponsored content or paid placements.
             </p>
-            <a href={`mailto:${siteConfig.email}?subject=Collaboration`} style={{ fontFamily: 'DM Mono, monospace', fontSize: '14px', color: '#4f8ef7', textDecoration: 'none', marginTop: '4px' }}>
+            <a href={`mailto:${siteConfig.email}?subject=Collaboration`} style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#4f8ef7', textDecoration: 'none', marginTop: '4px' }}>
               {siteConfig.email}
             </a>
           </div>
@@ -138,7 +138,7 @@ export default function ContactPage() {
               style={{
                 display: 'inline-flex', padding: '9px 16px', borderRadius: '6px',
                 background: 'rgba(79,142,247,0.07)', border: '1px solid rgba(79,142,247,0.18)',
-                color: '#4f8ef7', fontFamily: 'DM Mono, monospace', fontSize: '11px',
+                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '11px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none',
               }}
             >
