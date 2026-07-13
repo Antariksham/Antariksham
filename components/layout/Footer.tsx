@@ -11,7 +11,7 @@ export function Footer() {
 
         {/* BRAND */}
         <div style={{ marginBottom: '40px', paddingBottom: '40px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', fontWeight: 400, color: '#ffffff', marginBottom: '6px' }}>
+          <div style={{ fontFamily: 'var(--font-sans)', fontSize: '26px', fontWeight: 700, color: '#ffffff', marginBottom: '6px' }}>
             {siteConfig.name}<span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#4f8ef7', marginLeft: '2px' }}>{siteConfig.tld}</span>
           </div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', opacity: 0.8, marginBottom: '16px' }}>

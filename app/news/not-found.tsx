@@ -6,7 +6,7 @@ export default function NotFound() {
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '16px' }}>
           404 — Not Found
         </span>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 400, color: '#fff', margin: '0 0 16px' }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 800, color: '#fff', margin: '0 0 16px' }}>
           Article Not Found
         </h1>
         <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', color: 'var(--dim)', margin: '0 0 36px', maxWidth: '400px' }}>

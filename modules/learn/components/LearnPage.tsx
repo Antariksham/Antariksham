@@ -45,10 +45,10 @@ export function LearnPage({ articles }: Props) {
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '12px' }}>
           Knowledge Layer
         </div>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.1 }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 800, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.1 }}>
           Learn Space Science
         </h1>
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '16px', color: 'rgba(255,255,255,0.9)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
+        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', color: 'rgba(255,255,255,0.9)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
           Deep-dive articles on orbital mechanics, astrophysics, and the mathematics powering space exploration. From beginner introductions to advanced physics.
         </p>
       </div>

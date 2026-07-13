@@ -14,7 +14,7 @@ export function Navbar() {
 
         {/* LOGO — no .org */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
-          <span style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', fontWeight: 400, color: '#ffffff', letterSpacing: '0.02em' }}>
+          <span style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 700, color: '#ffffff', letterSpacing: '0.02em' }}>
             {siteConfig.name}
           </span>
         </Link>
@@ -60,7 +60,7 @@ export function Navbar() {
       {menuOpen && (
         <div style={{ position: 'fixed', top: '64px', left: 0, right: 0, bottom: 0, zIndex: 49, background: 'rgba(10,10,15,0.98)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', padding: '24px 32px', overflowY: 'auto' }}>
           {mainNav.map((item) => (
-            <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 300, color: item.isLive ? '#2ecc71' : '#ffffff', textDecoration: 'none', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{ fontFamily: 'var(--font-sans)', fontSize: '32px', fontWeight: 700, color: item.isLive ? '#2ecc71' : '#ffffff', textDecoration: 'none', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '14px' }}>
               {item.isLive && <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2ecc71', boxShadow: '0 0 8px #2ecc71', display: 'inline-block', flexShrink: 0 }} />}
               {item.label}
             </Link>
