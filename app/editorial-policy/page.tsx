@@ -16,11 +16,12 @@ const prose: React.CSSProperties = {
 }
 
 const h2: React.CSSProperties = {
-  fontFamily: 'var(--font-serif)',
+  fontFamily: 'var(--font-sans)',
   fontSize:   '26px',
   color:      '#ffffff',
   margin:     '48px 0 14px',
-  lineHeight: 1.25,
+  lineHeight: 1.3,
+  fontWeight: 700,
 }
 
 const h3: React.CSSProperties = {
@@ -47,7 +48,7 @@ export default function EditorialPolicyPage() {
           Editorial Policy
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 28px', lineHeight: 1.15, fontWeight: 400 }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 28px', lineHeight: 1.12, fontWeight: 800 }}>
           Our Editorial Standards
         </h1>
 
