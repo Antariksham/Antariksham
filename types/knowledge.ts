@@ -24,4 +24,5 @@ export interface KnowledgeArticleCard {
   relatedTopics:   string[]
   icon:            string
   featured:        boolean
+  thumbnail?:      string | null
 }

@@ -108,7 +108,7 @@ function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
 
   return (
     <Link href={`/learn/${article.slug}`} className="card">
-      <LearnThumb icon={article.icon} seed={article.slug} />
+      <LearnThumb icon={article.icon} seed={article.slug} image={article.thumbnail} />
       <div className="card-body">
         {/* Difficulty + featured badges */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '0.6rem' }}>
