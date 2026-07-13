@@ -102,7 +102,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
               fontSize:    '17px',
               fontWeight:  400,
               lineHeight:  1.3,
-              color:       '#ffffff',
+              color:       'var(--white)',
               marginBottom:'6px',
               overflow:    'hidden',
               display:     '-webkit-box',
@@ -206,7 +206,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
               fontSize:    '17px',
               fontWeight:  400,
               lineHeight:  1.3,
-              color:       '#ffffff',
+              color:       'var(--white)',
               marginBottom:'6px',
             }}>
               {result.name}
@@ -273,7 +273,7 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
             fontSize:    '17px',
             fontWeight:  400,
             lineHeight:  1.3,
-            color:       '#ffffff',
+            color:       'var(--white)',
             marginBottom:'6px',
           }}>
             {result.title}
@@ -482,7 +482,7 @@ export function SearchPage() {
             fontFamily:   'var(--font-sans)',
             fontSize:     'clamp(28px, 5vw, 48px)',
             fontWeight:   300,
-            color:        '#ffffff',
+            color:        'var(--white)',
             marginBottom: '32px',
             lineHeight:   1.1,
           }}>
@@ -513,7 +513,7 @@ export function SearchPage() {
                 background:   'rgba(var(--ink),0.05)',
                 border:       '1px solid rgba(var(--ink),0.14)',
                 borderRadius: '10px',
-                color:        '#ffffff',
+                color:        'var(--white)',
                 fontFamily:   'var(--font-sans)',
                 fontSize:     '17px',
                 outline:      'none',

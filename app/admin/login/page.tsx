@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
                 background:   'var(--black)',
                 border:       `1px solid ${error ? 'rgba(231,76,60,0.4)' : 'rgba(var(--ink),0.1)'}`,
                 borderRadius: '8px',
-                color:        '#ffffff',
+                color:        'var(--white)',
                 fontFamily:   'var(--font-mono)',
                 fontSize:     '14px',
                 letterSpacing:'0.05em',

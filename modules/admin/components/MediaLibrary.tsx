@@ -250,7 +250,7 @@ export function MediaLibrary({ pickerMode = false, onPick, defaultBucket = 'arti
             background:   'rgba(var(--ink),0.04)',
             border:       '1px solid rgba(var(--ink),0.1)',
             borderRadius: '8px',
-            color:        '#ffffff',
+            color:        'var(--white)',
             fontFamily:   'var(--font-sans)',
             fontSize:     '13px',
             outline:      'none',

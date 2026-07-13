@@ -105,7 +105,7 @@ export function MissionSlugPage({ mission, related }: Props) {
                     {event.date}
                   </span>
                   {/* Title */}
-                  <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 400, color: event.completed ? '#ffffff' : 'rgba(var(--ink),0.55)', margin: '0 0 6px', lineHeight: 1.3 }}>
+                  <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 400, color: event.completed ? 'var(--white)' : 'rgba(var(--ink),0.55)', margin: '0 0 6px', lineHeight: 1.3 }}>
                     {event.title}
                   </h4>
                   {/* Description */}

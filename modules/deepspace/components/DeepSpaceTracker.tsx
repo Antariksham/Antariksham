@@ -81,7 +81,7 @@ function ScaleDiagram({ probes }: { probes: DeepSpaceProbe[] }) {
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: '#4f8ef7', marginBottom: '6px' }}>
         Scale Overview
       </div>
-      <div style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', color: '#fff', margin: '0 0 24px' }}>
+      <div style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', color: 'var(--white)', margin: '0 0 24px' }}>
         Probe Distances from the Sun
       </div>
 
@@ -104,7 +104,7 @@ function ScaleDiagram({ probes }: { probes: DeepSpaceProbe[] }) {
                 <div style={{ position: 'absolute' as const, left: pct + '%', width: '12px', height: '12px', borderRadius: '50%', background: color, boxShadow: '0 0 8px ' + color, transform: 'translateX(-50%)', zIndex: 2 }} />
               </div>
               <div style={{ width: '90px', flexShrink: 0, textAlign: 'right' as const }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#fff', fontWeight: 700 }}>{fmtAU(probe.distanceFromSun)}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--white)', fontWeight: 700 }}>{fmtAU(probe.distanceFromSun)}</span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)', marginLeft: '4px' }}>AU</span>
               </div>
             </div>
@@ -160,7 +160,7 @@ function ProbeCard({ probe }: { probe: DeepSpaceProbe }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '28px', lineHeight: '1' }}>{getIcon(probe.id)}</span>
               <div>
-                <div style={{ fontFamily: 'var(--font-sans)', fontSize: '22px', fontWeight: 400, color: '#fff', marginBottom: '4px', lineHeight: '1.1' }}>{probe.name}</div>
+                <div style={{ fontFamily: 'var(--font-sans)', fontSize: '22px', fontWeight: 400, color: 'var(--white)', marginBottom: '4px', lineHeight: '1.1' }}>{probe.name}</div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase' as const, color, fontWeight: 600 }}>{probe.agency}</div>
               </div>
             </div>
@@ -187,7 +187,7 @@ function ProbeCard({ probe }: { probe: DeepSpaceProbe }) {
             ].map(item => (
               <div key={item.label}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: 'rgba(var(--ink),0.55)', marginBottom: '5px' }}>{item.label}</div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 600, color: '#fff', lineHeight: '1', marginBottom: '4px' }}>{item.value}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 600, color: 'var(--white)', lineHeight: '1', marginBottom: '4px' }}>{item.value}</div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.6)' }}>{item.sub}</div>
               </div>
             ))}
@@ -302,7 +302,7 @@ export function DeepSpaceTracker({ initialProbes, updatedAt }: Props) {
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: '#4f8ef7', fontWeight: 600 }}>Live Telemetry</span>
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 300, color: '#fff', margin: '0 0 16px', letterSpacing: '-0.01em', lineHeight: '1.1' }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 16px', letterSpacing: '-0.01em', lineHeight: '1.1' }}>
           Deep Space Tracker
         </h1>
 

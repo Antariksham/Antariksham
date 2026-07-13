@@ -576,7 +576,7 @@ export function AuthorsAdmin() {
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                style={{ ...footerBtn(true, deleting), background: deleting ? 'rgba(231,76,60,0.5)' : 'var(--red)', color: '#fff' }}
+                style={{ ...footerBtn(true, deleting), background: deleting ? 'rgba(231,76,60,0.5)' : 'var(--red)', color: 'var(--white)' }}
               >
                 <Trash2 size={12} />
                 {deleting ? 'Deleting…' : 'Delete Author'}

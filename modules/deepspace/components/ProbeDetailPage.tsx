@@ -291,7 +291,7 @@ function SignalVisualizer({ delayHours, color }: { delayHours: number; color: st
       <div style={{
         fontFamily: 'var(--font-mono)',
         fontSize:   '14px',
-        color:      '#ffffff',
+        color:      'var(--white)',
         fontWeight: 600,
       }}>
         {formatSignalDelay(delayHours)}
@@ -416,7 +416,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                       fontFamily: 'var(--font-sans)',
                       fontSize:   'clamp(28px, 4vw, 42px)',
                       fontWeight: 300,
-                      color:      '#ffffff',
+                      color:      'var(--white)',
                       margin:     '0 0 6px',
                       lineHeight: 1.1,
                     }}>
@@ -756,7 +756,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                     <div style={{
                       fontFamily: 'var(--font-sans)',
                       fontSize:   '14px',
-                      color:      '#ffffff',
+                      color:      'var(--white)',
                       lineHeight: 1.4,
                     }}>
                       {fact.value}
@@ -811,7 +811,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                       <div style={{
                         fontFamily:  'var(--font-sans)',
                         fontSize:    '14px',
-                        color:       '#ffffff',
+                        color:       'var(--white)',
                         fontWeight:  500,
                         marginBottom:'2px',
                       }}>

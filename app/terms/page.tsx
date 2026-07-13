@@ -18,7 +18,7 @@ const prose: React.CSSProperties = {
 const h2: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
   fontSize:   '26px',
-  color:      '#ffffff',
+  color:      'var(--white)',
   margin:     '48px 0 14px',
   lineHeight: 1.3,
   fontWeight: 700,

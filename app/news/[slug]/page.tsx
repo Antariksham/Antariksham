@@ -33,7 +33,7 @@ const CAT_COLORS: Record<string, string> = {
   NASA: '#4f8ef7', SpaceX: '#4f8ef7', ISRO: '#f39c12',
   ESA: '#2ecc71', JAXA: '#f39c12', Astronomy: '#4f8ef7',
   Discoveries: '#2ecc71', Technology: '#4f8ef7',
-  Missions: '#f39c12', Science: '#ffffff',
+  Missions: '#f39c12', Science: 'var(--white)',
 }
 
 export default async function ArticlePage(
@@ -77,7 +77,7 @@ export default async function ArticlePage(
           fontFamily:  'var(--font-sans)',
           fontSize:    'clamp(28px, 4.5vw, 48px)',
           fontWeight:  800,
-          color:       '#ffffff',
+          color:       'var(--white)',
           lineHeight:  1.12,
           margin:      '0 0 20px',
           letterSpacing: '-0.01em',

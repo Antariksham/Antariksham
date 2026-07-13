@@ -515,7 +515,7 @@ function inputStyle({ large }: { large?: boolean }) {
     background:   'var(--black)',
     border:       '1px solid var(--border)',
     borderRadius: '7px',
-    color:        '#ffffff',
+    color:        'var(--white)',
     fontFamily:   large ? 'var(--font-serif)' : 'var(--font-sans)',
     fontSize:     large ? '20px' : '13px',
     outline:      'none',
