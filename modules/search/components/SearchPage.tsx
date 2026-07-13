@@ -98,7 +98,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
               </div>
             )}
             <div style={{
-              fontFamily:  'var(--font-serif)',
+              fontFamily:  'var(--font-sans)',
               fontSize:    '17px',
               fontWeight:  400,
               lineHeight:  1.3,
@@ -113,7 +113,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
             </div>
             {result.excerpt && (
               <p style={{
-                fontFamily:  'var(--font-serif)',
+                fontFamily:  'var(--font-sans)',
                 fontSize:    '15px',
                 lineHeight:  1.75,
                 color:       'rgba(255,255,255,0.9)',
@@ -202,7 +202,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
               )}
             </div>
             <div style={{
-              fontFamily:  'var(--font-serif)',
+              fontFamily:  'var(--font-sans)',
               fontSize:    '17px',
               fontWeight:  400,
               lineHeight:  1.3,
@@ -213,7 +213,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
             </div>
             {result.description && (
               <p style={{
-                fontFamily:      'var(--font-serif)',
+                fontFamily:      'var(--font-sans)',
                 fontSize:        '15px',
                 lineHeight:      1.75,
                 color:           'rgba(255,255,255,0.9)',
@@ -269,7 +269,7 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
         <span style={{ fontSize: '22px', flexShrink: 0, lineHeight: 1 }}>{result.icon}</span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontFamily:  'var(--font-serif)',
+            fontFamily:  'var(--font-sans)',
             fontSize:    '17px',
             fontWeight:  400,
             lineHeight:  1.3,
@@ -280,7 +280,7 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
           </div>
           {result.excerpt && (
             <p style={{
-              fontFamily:      'var(--font-serif)',
+              fontFamily:      'var(--font-sans)',
               fontSize:        '15px',
               lineHeight:      1.75,
               color:           'rgba(255,255,255,0.9)',
@@ -479,7 +479,7 @@ export function SearchPage() {
           </div>
 
           <h1 style={{
-            fontFamily:   'var(--font-serif)',
+            fontFamily:   'var(--font-sans)',
             fontSize:     'clamp(28px, 5vw, 48px)',
             fontWeight:   300,
             color:        '#ffffff',

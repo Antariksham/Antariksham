@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const LIVE_PAGES = [
   {
     href:  '/live/iss-tracker',
-    icon:  <Satellite size={28} />,
+    icon:  <Satellite size={26} />,
     label: 'ISS Tracker',
     desc:  'Real-time position, altitude, velocity and crew of the International Space Station.',
     color: 'var(--green)',
@@ -21,7 +21,7 @@ const LIVE_PAGES = [
   },
   {
     href:  '/live/launches',
-    icon:  <Rocket size={28} />,
+    icon:  <Rocket size={26} />,
     label: 'Launch Tracker',
     desc:  'Upcoming and recent rocket launches with live countdown timers and livestream links.',
     color: 'var(--accent)',
@@ -29,7 +29,7 @@ const LIVE_PAGES = [
   },
   {
     href:  '/live/apod',
-    icon:  <Camera size={28} />,
+    icon:  <Camera size={26} />,
     label: 'NASA APOD',
     desc:  "NASA's Astronomy Picture of the Day — a new image or photograph of our universe every day.",
     color: 'var(--gold)',
@@ -37,95 +37,53 @@ const LIVE_PAGES = [
   },
   {
     href:  '/live/deep-space',
-    icon:  <Globe size={28} />,
+    icon:  <Globe size={26} />,
     label: 'Deep Space',
     desc:  'Live telemetry for Voyager 1, Voyager 2, Europa Clipper, Parker Solar Probe and more.',
-    color: 'rgba(180,140,255,0.9)',
+    color: 'var(--accent)',
     badge: 'LIVE',
   },
 ]
 
 export default function LivePage() {
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '60px 24px 80px' }}>
+    <div style={{ paddingTop: 'var(--nav-height)' }}>
 
-      {/* Header */}
-      <div style={{ marginBottom: '48px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--green)', boxShadow: '0 0 10px var(--green)', display: 'inline-block' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--green)' }}>
+      <header className="page-header">
+        <div className="container">
+          <span className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--green)', boxShadow: '0 0 8px var(--green)', display: 'inline-block' }} />
             Live Systems
           </span>
+          <h1 className="page-title">Space Intelligence</h1>
+          <p className="page-lede">
+            Real-time data systems tracking the ISS, rocket launches, NASA imagery and deep-space probes.
+          </p>
         </div>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 14px' }}>
-          Space Intelligence
-        </h1>
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'rgba(255,255,255,0.9)', margin: 0, maxWidth: '520px', lineHeight: 1.7 }}>
-          Real-time data systems tracking the ISS, rocket launches, NASA imagery and deep-space probes.
-        </p>
-      </div>
+      </header>
 
-      {/* Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-        {LIVE_PAGES.map(page => {
-          const isSoon = page.badge === 'SOON'
-          return (
-            <Link
-              key={page.href}
-              href={isSoon ? '#' : page.href}
-              style={{
-                display: 'block', textDecoration: 'none',
-                background: 'var(--surface)',
-                border: `1px solid var(--border)`,
-                borderRadius: '12px', overflow: 'hidden',
-                opacity: isSoon ? 0.5 : 1,
-                cursor: isSoon ? 'not-allowed' : 'pointer',
-                transition: 'border-color 0.2s',
-              }}
-            >
-              {/* Top accent line */}
-              <div style={{ height: '2px', background: `linear-gradient(90deg, ${page.color}, transparent)` }} />
-
-              <div style={{ padding: '24px' }}>
-                {/* Icon + badge */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-                  <div style={{ color: page.color }}>
-                    {page.icon}
-                  </div>
-                  <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '9px',
-                    letterSpacing: '0.2em', textTransform: 'uppercase',
-                    padding: '3px 8px', borderRadius: '3px',
-                    color: page.color,
-                    background: `${page.color}18`,
-                    border: `1px solid ${page.color}35`,
-                  }}>
+      <main className="container section">
+        <div className="grid-3">
+          {LIVE_PAGES.map(page => (
+            <Link key={page.href} href={page.href} className="card">
+              <div style={{ height: '3px', background: `linear-gradient(90deg, ${page.color}, transparent)` }} />
+              <div className="card-body">
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px' }}>
+                  <span style={{ color: page.color }}>{page.icon}</span>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: '20px', color: page.color, background: `color-mix(in srgb, ${page.color} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${page.color} 35%, transparent)` }}>
                     {page.badge}
                   </span>
                 </div>
-
-                {/* Label */}
-                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 400, color: 'var(--white)', margin: '0 0 8px' }}>
-                  {page.label}
-                </h2>
-
-                {/* Description */}
-                <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', margin: '0 0 20px' }}>
-                  {page.desc}
-                </p>
-
-                {/* CTA */}
-                {!isSoon && (
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: page.color }}>
-                    Open →
-                  </span>
-                )}
+                <h2 className="card-title" style={{ fontSize: '1.2rem' }}>{page.label}</h2>
+                <p className="card-excerpt" style={{ WebkitLineClamp: 3 }}>{page.desc}</p>
+                <div className="card-meta">
+                  <span style={{ color: page.color, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, fontSize: '0.72rem' }}>Open →</span>
+                </div>
               </div>
             </Link>
-          )
-        })}
-      </div>
-
+          ))}
+        </div>
+      </main>
     </div>
   )
 }
