@@ -41,7 +41,7 @@ export function MissionSlugPage({ mission, related }: Props) {
       <article style={{ maxWidth: '800px', margin: '0 auto', padding: 'clamp(32px,6vw,64px) clamp(20px,5vw,40px)' }}>
 
         {/* Breadcrumb */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(var(--ink),0.35)', letterSpacing: '0.1em' }}>
           <a href="/missions" style={{ color: '#4f8ef7', textDecoration: 'none' }}>Missions</a>
           <span>/</span>
           <span>{mission.name}</span>
@@ -55,7 +55,7 @@ export function MissionSlugPage({ mission, related }: Props) {
             </span>
           )}
           {mission.missionType && (
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '3px', padding: '2px 8px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.35)', border: '1px solid rgba(var(--ink),0.1)', borderRadius: '3px', padding: '2px 8px' }}>
               {TYPE_LABEL[mission.missionType] || mission.missionType}
             </span>
           )}
@@ -63,19 +63,19 @@ export function MissionSlugPage({ mission, related }: Props) {
         </div>
 
         {/* Mission name */}
-        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(32px,5vw,56px)', fontWeight: 400, color: '#ffffff', lineHeight: 1.1, margin: '0 0 16px', letterSpacing: '-0.01em' }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(32px,5vw,56px)', fontWeight: 400, color: 'var(--white)', lineHeight: 1.1, margin: '0 0 16px', letterSpacing: '-0.01em' }}>
           {mission.name}
         </h1>
 
         {/* Destination */}
         {mission.destination && (
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.45)', margin: '0 0 24px' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em', color: 'rgba(var(--ink),0.45)', margin: '0 0 24px' }}>
             → {mission.destination}
           </p>
         )}
 
         {/* Meta row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.4)', paddingBottom: '28px', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: '36px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.4)', paddingBottom: '28px', borderBottom: '1px solid rgba(var(--ink),0.08)', marginBottom: '36px' }}>
           {mission.launchDate && (
             <span>Launch: {formatDate(mission.launchDate)}</span>
           )}
@@ -85,7 +85,7 @@ export function MissionSlugPage({ mission, related }: Props) {
         </div>
 
         {/* Description */}
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(16px,1.8vw,18px)', lineHeight: 1.9, color: 'rgba(255,255,255,0.9)', margin: '0 0 48px', letterSpacing: '0.01em' }}>
+        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(16px,1.8vw,18px)', lineHeight: 1.9, color: 'rgba(var(--ink),0.9)', margin: '0 0 48px', letterSpacing: '0.01em' }}>
           {mission.description}
         </p>
 
@@ -95,22 +95,22 @@ export function MissionSlugPage({ mission, related }: Props) {
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
               Mission Timeline
             </span>
-            <div style={{ position: 'relative', paddingLeft: '24px', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ position: 'relative', paddingLeft: '24px', borderLeft: '1px solid rgba(var(--ink),0.1)' }}>
               {mission.timeline.map((event, i) => (
                 <div key={i} style={{ position: 'relative', marginBottom: '32px' }}>
                   {/* Dot */}
-                  <div style={{ position: 'absolute', left: '-29px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: event.completed ? '#2ecc71' : 'rgba(255,255,255,0.15)', border: `2px solid ${event.completed ? '#2ecc71' : 'rgba(255,255,255,0.2)'}`, boxShadow: event.completed ? '0 0 8px rgba(46,204,113,0.4)' : 'none' }} />
+                  <div style={{ position: 'absolute', left: '-29px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: event.completed ? '#2ecc71' : 'rgba(var(--ink),0.15)', border: `2px solid ${event.completed ? '#2ecc71' : 'rgba(var(--ink),0.2)'}`, boxShadow: event.completed ? '0 0 8px rgba(46,204,113,0.4)' : 'none' }} />
                   {/* Date */}
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em', color: event.completed ? '#2ecc71' : 'rgba(255,255,255,0.35)', display: 'block', marginBottom: '6px' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em', color: event.completed ? '#2ecc71' : 'rgba(var(--ink),0.35)', display: 'block', marginBottom: '6px' }}>
                     {event.date}
                   </span>
                   {/* Title */}
-                  <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 400, color: event.completed ? '#ffffff' : 'rgba(255,255,255,0.55)', margin: '0 0 6px', lineHeight: 1.3 }}>
+                  <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 400, color: event.completed ? '#ffffff' : 'rgba(var(--ink),0.55)', margin: '0 0 6px', lineHeight: 1.3 }}>
                     {event.title}
                   </h4>
                   {/* Description */}
                   {event.description && (
-                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(255,255,255,0.9)', lineHeight: 1.75, margin: 0 }}>
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(var(--ink),0.9)', lineHeight: 1.75, margin: 0 }}>
                       {event.description}
                     </p>
                   )}
@@ -122,20 +122,20 @@ export function MissionSlugPage({ mission, related }: Props) {
 
         {/* ── Agency card ──────────────────────────── */}
         {mission.agency && (
-          <div style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', marginBottom: '48px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: '12px' }}>
+          <div style={{ background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '12px', padding: '24px', marginBottom: '48px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.35)', display: 'block', marginBottom: '12px' }}>
               Mission Agency
             </span>
-            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '22px', fontWeight: 400, color: '#ffffff', margin: '0 0 8px' }}>
+            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '22px', fontWeight: 400, color: 'var(--white)', margin: '0 0 8px' }}>
               {mission.agency.name}
             </h3>
             {mission.agency.country && (
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.4)', margin: '0 0 12px', letterSpacing: '0.08em' }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.4)', margin: '0 0 12px', letterSpacing: '0.08em' }}>
                 {mission.agency.country}
               </p>
             )}
             {mission.agency.description && (
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(255,255,255,0.9)', lineHeight: 1.75, margin: '0 0 16px' }}>
+              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(var(--ink),0.9)', lineHeight: 1.75, margin: '0 0 16px' }}>
                 {mission.agency.description}
               </p>
             )}
@@ -148,7 +148,7 @@ export function MissionSlugPage({ mission, related }: Props) {
         )}
 
         {/* Back link */}
-        <div style={{ paddingTop: '28px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>
           <a href="/missions" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
             ← All Missions
           </a>
@@ -157,7 +157,7 @@ export function MissionSlugPage({ mission, related }: Props) {
 
       {/* ── Related missions ─────────────────────────── */}
       {related.length > 0 && (
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
+        <div style={{ borderTop: '1px solid rgba(var(--ink),0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
               Related Missions
@@ -166,16 +166,16 @@ export function MissionSlugPage({ mission, related }: Props) {
               {related.map(r => (
                 <a key={r.id} href={`/missions/${r.slug}`} style={{ textDecoration: 'none' }}>
                   <div
-                    style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--card-shadow)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+                    style={{ background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(var(--ink),0.16)'; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--card-shadow)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(var(--ink),0.08)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
                   >
                     {r.agency && (
                       <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '10px' }}>
                         {r.agency.shortName}
                       </span>
                     )}
-                    <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 400, color: '#ffffff', lineHeight: 1.3, margin: '0 0 12px' }}>
+                    <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 400, color: 'var(--white)', lineHeight: 1.3, margin: '0 0 12px' }}>
                       {r.name}
                     </h3>
                     <StatusBadge status={r.status} />

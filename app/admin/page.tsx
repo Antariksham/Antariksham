@@ -22,7 +22,7 @@ export default async function AdminDashboard() {
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '36px', fontWeight: 300, color: 'var(--white)', margin: '0 0 6px', letterSpacing: '-0.01em' }}>
           Mission Control
         </h1>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em', margin: 0 }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.6)', letterSpacing: '0.06em', margin: 0 }}>
           Content & Platform Dashboard
         </p>
       </div>
@@ -59,7 +59,7 @@ export default async function AdminDashboard() {
 
         {stats.recentArticles.length === 0 ? (
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '40px', textAlign: 'center' }}>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 12px' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 12px' }}>
               No articles yet
             </p>
             <Link href="/admin/articles/new" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent)', textDecoration: 'none' }}>
@@ -94,7 +94,7 @@ export default async function AdminDashboard() {
                   <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 400, color: 'var(--white)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {article.title}
                   </p>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.55)', margin: '3px 0 0', letterSpacing: '0.05em' }}>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(var(--ink),0.55)', margin: '3px 0 0', letterSpacing: '0.05em' }}>
                     {article.status === 'published' && article.publishedAt
                       ? `Published ${formatDate(article.publishedAt)}`
                       : 'Draft — unpublished'}
@@ -102,7 +102,7 @@ export default async function AdminDashboard() {
                 </div>
 
                 {/* Views */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.55)', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(var(--ink),0.55)', flexShrink: 0 }}>
                   <Eye size={11} />
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
                     {article.views.toLocaleString()}
@@ -134,8 +134,8 @@ function StatCard({ icon, label, value, color }: {
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '14px' }}>
-        <span style={{ color: 'rgba(255,255,255,0.6)' }}>{icon}</span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>
+        <span style={{ color: 'rgba(var(--ink),0.6)' }}>{icon}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.6)' }}>
           {label}
         </span>
       </div>
@@ -148,7 +148,7 @@ function StatCard({ icon, label, value, color }: {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', margin: '0 0 12px' }}>
+    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.6)', margin: '0 0 12px' }}>
       {children}
     </p>
   )
@@ -172,7 +172,7 @@ function ActionBtn({ href, icon, children, primary }: {
         textTransform:  'uppercase',
         textDecoration: 'none',
         background:     primary ? 'var(--accent)' : 'var(--surface)',
-        color:          primary ? '#0a0a0f'        : 'rgba(255,255,255,0.8)',
+        color:          primary ? 'var(--black)'        : 'rgba(var(--ink),0.8)',
         border:         primary ? 'none'           : '1px solid var(--border-hi)',
         fontWeight:     primary ? 700              : 400,
       }}

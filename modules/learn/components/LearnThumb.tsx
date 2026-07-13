@@ -54,11 +54,11 @@ export function LearnThumb({ icon, seed, image, height = '170px' }: Props) {
       {/* corner nebula glow */}
       <div style={{ position: 'absolute', width: '250px', height: '250px', borderRadius: '50%', top: '-95px', right: '-70px', background: `radial-gradient(circle, ${glowCore} 0%, transparent 62%)` }} />
       {/* orbital rings */}
-      <div style={{ position: 'absolute', width: '310px', height: '86px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.07)', transform: 'rotate(-16deg)' }} />
+      <div style={{ position: 'absolute', width: '310px', height: '86px', borderRadius: '50%', border: '1px solid rgba(var(--ink),0.07)', transform: 'rotate(-16deg)' }} />
       <div style={{ position: 'absolute', width: '206px', height: '58px', borderRadius: '50%', border: `1px solid ${ringGlow}`, transform: 'rotate(-16deg)' }} />
       {/* stars */}
       {STARS.map(([x, y], i) => (
-        <span key={i} aria-hidden style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: i % 3 === 0 ? '3px' : '2px', height: i % 3 === 0 ? '3px' : '2px', borderRadius: '50%', background: 'rgba(255,255,255,0.65)' }} />
+        <span key={i} aria-hidden style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: i % 3 === 0 ? '3px' : '2px', height: i % 3 === 0 ? '3px' : '2px', borderRadius: '50%', background: 'rgba(var(--ink),0.65)' }} />
       ))}
       {/* focal emoji */}
       <span style={{ fontSize: '54px', lineHeight: 1, position: 'relative', zIndex: 2, filter: 'drop-shadow(0 8px 22px rgba(0,0,0,0.55))' }}>

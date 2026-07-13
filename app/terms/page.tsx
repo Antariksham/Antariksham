@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
   fontSize:   '17px',
-  color:      'rgba(255,255,255,0.78)',
+  color:      'rgba(var(--ink),0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
 }
@@ -26,13 +26,13 @@ const h2: React.CSSProperties = {
 
 const divider: React.CSSProperties = {
   border:    'none',
-  borderTop: '1px solid rgba(255,255,255,0.07)',
+  borderTop: '1px solid rgba(var(--ink),0.07)',
   margin:    '48px 0',
 }
 
 export default function TermsPage() {
   return (
-    <main style={{ background: '#0a0a0f', minHeight: '100vh', padding: '72px 24px 96px' }}>
+    <main style={{ background: 'var(--black)', minHeight: '100vh', padding: '72px 24px 96px' }}>
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
@@ -41,15 +41,15 @@ export default function TermsPage() {
         </div>
 
         {/* Title */}
-        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 16px', lineHeight: 1.12, fontWeight: 800 }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 6vw, 54px)', color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.12, fontWeight: 800 }}>
           Terms & Conditions
         </h1>
 
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', marginBottom: '36px' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.35)', letterSpacing: '0.08em', marginBottom: '36px' }}>
           Last updated: June 2026
         </p>
 
-        <p style={{ ...prose, fontSize: '19px', color: 'rgba(255,255,255,0.85)', marginBottom: '36px' }}>
+        <p style={{ ...prose, fontSize: '19px', color: 'rgba(var(--ink),0.85)', marginBottom: '36px' }}>
           By accessing or using Antariksham.org, you agree to be bound by these terms. Please read them carefully. If you do not agree, please do not use the platform.
         </p>
 
@@ -124,7 +124,7 @@ export default function TermsPage() {
             'Use the platform in any way that violates applicable laws or regulations',
             'Impersonate Antariksham or misrepresent an affiliation with this platform',
           ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(var(--ink),0.05)' }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent)', flexShrink: 0, marginTop: '3px' }}>
                 {String(i + 1).padStart(2, '0')}
               </span>

@@ -14,7 +14,7 @@ export default async function EditLearnPage({ params }: { params: { id: string }
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border)', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <Link href="/admin/learn" title="Back to Learn" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '6px', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', flexShrink: 0 }}>
+          <Link href="/admin/learn" title="Back to Learn" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '6px', border: '1px solid var(--border)', color: 'rgba(var(--ink),0.5)', textDecoration: 'none', flexShrink: 0 }}>
             <ChevronLeft size={16} />
           </Link>
           <div>

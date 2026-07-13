@@ -34,8 +34,10 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor:  '#0a0a0f',
-  colorScheme: 'dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)',  color: '#0a0a0f' },
+    { media: '(prefers-color-scheme: light)', color: '#f0f4ff' },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -53,6 +55,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       } as React.CSSProperties}
     >
       <head>
+  {/* Theme — apply saved choice before paint to avoid a flash */}
+  <script
+    dangerouslySetInnerHTML={{
+      __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
+    }}
+  />
   {/* KaTeX — CSS must load before JS for fonts/symbols to render */}
   <link
     rel="stylesheet"

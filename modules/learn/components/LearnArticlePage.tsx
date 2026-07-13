@@ -100,7 +100,7 @@ export function LearnArticlePage({ article }: Props) {
       {/* ── Back link ──────────────────────────────────────── */}
       <Link
         href="/learn"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '40px' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '40px' }}
       >
         ← Back to Learn
       </Link>
@@ -128,7 +128,7 @@ export function LearnArticlePage({ article }: Props) {
           {article.title}
         </h1>
 
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', margin: '0 0 24px' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', lineHeight: 1.75, color: 'rgba(var(--ink),0.9)', margin: '0 0 24px' }}>
           {article.excerpt}
         </p>
 
@@ -140,9 +140,9 @@ export function LearnArticlePage({ article }: Props) {
                 fontFamily:    'var(--font-mono)',
                 fontSize:      '11px',
                 letterSpacing: '0.08em',
-                color:         'rgba(255,255,255,0.7)',
-                background:    'rgba(255,255,255,0.07)',
-                border:        '1px solid rgba(255,255,255,0.15)',
+                color:         'rgba(var(--ink),0.7)',
+                background:    'rgba(var(--ink),0.07)',
+                border:        '1px solid rgba(var(--ink),0.15)',
                 padding:       '4px 10px',
                 borderRadius:  '4px',
               }}>
@@ -194,8 +194,8 @@ export function LearnArticlePage({ article }: Props) {
           margin:        28px 0;
           overflow-x:    auto;
           padding:       20px 16px;
-          background:    rgba(255,255,255,0.03);
-          border:        1px solid rgba(255,255,255,0.08);
+          background:    rgba(var(--ink),0.03);
+          border:        1px solid rgba(var(--ink),0.08);
           border-radius: 8px;
         }
         .katex { color: var(--white); font-size: 1.1em; }
@@ -217,23 +217,23 @@ export function LearnArticlePage({ article }: Props) {
         .article-body p {
           font-size:   16px;
           line-height: 1.85;
-          color:       rgba(255,255,255,0.78);
+          color:       rgba(var(--ink),0.78);
           margin:      0 0 20px;
         }
         .article-body strong { color: var(--white); font-weight: 600; }
-        .article-body em    { color: rgba(255,255,255,0.85); font-style: italic; }
+        .article-body em    { color: rgba(var(--ink),0.85); font-style: italic; }
         .article-body ul, .article-body ol { padding-left: 24px; margin: 0 0 20px; }
         .article-body li {
           font-size:     16px;
           line-height:   1.8;
-          color:         rgba(255,255,255,0.75);
+          color:         rgba(var(--ink),0.75);
           margin-bottom: 6px;
         }
         .article-body code {
           font-family:   var(--font-mono);
           font-size:     13px;
-          background:    rgba(255,255,255,0.06);
-          border:        1px solid rgba(255,255,255,0.1);
+          background:    rgba(var(--ink),0.06);
+          border:        1px solid rgba(var(--ink),0.1);
           border-radius: 3px;
           padding:       2px 6px;
           color:         var(--accent);

@@ -12,7 +12,7 @@ export default function NotFound() {
         <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', color: 'var(--dim)', margin: '0 0 36px', maxWidth: '400px' }}>
           This article may have been removed or the link is incorrect.
         </p>
-        <a href="/news" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#0a0a0f', background: 'var(--accent)', padding: '12px 24px', borderRadius: '5px', textDecoration: 'none', fontWeight: 700 }}>
+        <a href="/news" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--black)', background: 'var(--accent)', padding: '12px 24px', borderRadius: '5px', textDecoration: 'none', fontWeight: 700 }}>
           ← Back to News
         </a>
       </div>

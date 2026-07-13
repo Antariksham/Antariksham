@@ -22,7 +22,7 @@ const DIFFICULTY_COLORS: Record<string, { color: string; bg: string }> = {
 const STATUS_COLORS: Record<string, string> = {
   active:         '#2ecc71',
   upcoming:       '#4f8ef7',
-  completed:      'rgba(255,255,255,0.45)',
+  completed:      'rgba(var(--ink),0.45)',
   failed:         '#e74c3c',
   'in-development': '#f39c12',
   cancelled:      '#e74c3c',
@@ -55,14 +55,14 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
       <span style={{
         fontFamily:  'var(--font-mono)',
         fontSize:    '10px',
-        color:       'rgba(255,255,255,0.3)',
-        background:  'rgba(255,255,255,0.06)',
+        color:       'rgba(var(--ink),0.3)',
+        background:  'rgba(var(--ink),0.06)',
         borderRadius:'4px',
         padding:     '1px 7px',
       }}>
         {count}
       </span>
-      <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
+      <div style={{ flex: 1, height: '1px', background: 'rgba(var(--ink),0.07)' }} />
     </div>
   )
 }
@@ -75,8 +75,8 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          background:   hovered ? 'rgba(255,255,255,0.03)' : 'transparent',
-          border:       `1px solid ${hovered ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.07)'}`,
+          background:   hovered ? 'rgba(var(--ink),0.03)' : 'transparent',
+          border:       `1px solid ${hovered ? 'rgba(var(--ink),0.14)' : 'rgba(var(--ink),0.07)'}`,
           borderRadius: '10px',
           padding:      '18px 20px',
           transition:   'all 0.18s',
@@ -116,7 +116,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
                 fontFamily:  'var(--font-sans)',
                 fontSize:    '15px',
                 lineHeight:  1.75,
-                color:       'rgba(255,255,255,0.9)',
+                color:       'rgba(var(--ink),0.9)',
                 overflow:    'hidden',
                 display:     '-webkit-box',
                 WebkitLineClamp: 2,
@@ -132,8 +132,8 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
             fontSize:      '9px',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
-            color:         'rgba(255,255,255,0.4)',
-            background:    'rgba(255,255,255,0.06)',
+            color:         'rgba(var(--ink),0.4)',
+            background:    'rgba(var(--ink),0.06)',
             borderRadius:  '4px',
             padding:       '3px 8px',
             whiteSpace:    'nowrap',
@@ -147,10 +147,10 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
           gap:           '12px',
           marginTop:     '12px',
           paddingTop:    '12px',
-          borderTop:     '1px solid rgba(255,255,255,0.06)',
+          borderTop:     '1px solid rgba(var(--ink),0.06)',
           fontFamily:    'var(--font-mono)',
           fontSize:      '10px',
-          color:         'rgba(255,255,255,0.35)',
+          color:         'rgba(var(--ink),0.35)',
         }}>
           {result.publishedAt && <span>{timeAgo(result.publishedAt)}</span>}
           <span>{result.readingTime} min read</span>
@@ -162,15 +162,15 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
 
 function MissionCard({ result }: { result: SearchMissionResult }) {
   const [hovered, setHovered] = useState(false)
-  const statusColor = STATUS_COLORS[result.status] || 'rgba(255,255,255,0.45)'
+  const statusColor = STATUS_COLORS[result.status] || 'rgba(var(--ink),0.45)'
   return (
     <Link href={`/missions/${result.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          background:   hovered ? 'rgba(255,255,255,0.03)' : 'transparent',
-          border:       `1px solid ${hovered ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.07)'}`,
+          background:   hovered ? 'rgba(var(--ink),0.03)' : 'transparent',
+          border:       `1px solid ${hovered ? 'rgba(var(--ink),0.14)' : 'rgba(var(--ink),0.07)'}`,
           borderRadius: '10px',
           padding:      '18px 20px',
           transition:   'all 0.18s',
@@ -195,7 +195,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
                 <span style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize:   '9px',
-                  color:      'rgba(255,255,255,0.3)',
+                  color:      'rgba(var(--ink),0.3)',
                 }}>
                   → {result.destination}
                 </span>
@@ -216,7 +216,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
                 fontFamily:      'var(--font-sans)',
                 fontSize:        '15px',
                 lineHeight:      1.75,
-                color:           'rgba(255,255,255,0.9)',
+                color:           'rgba(var(--ink),0.9)',
                 overflow:        'hidden',
                 display:         '-webkit-box',
                 WebkitLineClamp: 2,
@@ -255,8 +255,8 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          background:   hovered ? 'rgba(255,255,255,0.03)' : 'transparent',
-          border:       `1px solid ${hovered ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.07)'}`,
+          background:   hovered ? 'rgba(var(--ink),0.03)' : 'transparent',
+          border:       `1px solid ${hovered ? 'rgba(var(--ink),0.14)' : 'rgba(var(--ink),0.07)'}`,
           borderRadius: '10px',
           padding:      '18px 20px',
           transition:   'all 0.18s',
@@ -283,7 +283,7 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
               fontFamily:      'var(--font-sans)',
               fontSize:        '15px',
               lineHeight:      1.75,
-              color:           'rgba(255,255,255,0.9)',
+              color:           'rgba(var(--ink),0.9)',
               overflow:        'hidden',
               display:         '-webkit-box',
               WebkitLineClamp: 2,
@@ -323,7 +323,7 @@ function EmptyState({ query }: { query: string }) {
         fontSize:      '11px',
         letterSpacing: '0.2em',
         textTransform: 'uppercase',
-        color:         'rgba(255,255,255,0.3)',
+        color:         'rgba(var(--ink),0.3)',
         marginBottom:  '8px',
       }}>
         No results found
@@ -331,7 +331,7 @@ function EmptyState({ query }: { query: string }) {
       <p style={{
         fontFamily: 'var(--font-sans)',
         fontSize:   '14px',
-        color:      'rgba(255,255,255,0.4)',
+        color:      'rgba(var(--ink),0.4)',
       }}>
         Nothing matched &ldquo;{query}&rdquo; — try different keywords
       </p>
@@ -348,7 +348,7 @@ function IdleState() {
         fontSize:      '10px',
         letterSpacing: '0.25em',
         textTransform: 'uppercase',
-        color:         'rgba(255,255,255,0.25)',
+        color:         'rgba(var(--ink),0.25)',
         marginBottom:  '20px',
       }}>
         Try searching for
@@ -361,9 +361,9 @@ function IdleState() {
               fontFamily:    'var(--font-mono)',
               fontSize:      '11px',
               letterSpacing: '0.08em',
-              color:         'rgba(255,255,255,0.55)',
-              background:    'rgba(255,255,255,0.05)',
-              border:        '1px solid rgba(255,255,255,0.09)',
+              color:         'rgba(var(--ink),0.55)',
+              background:    'rgba(var(--ink),0.05)',
+              border:        '1px solid rgba(var(--ink),0.09)',
               borderRadius:  '6px',
               padding:       '6px 14px',
               cursor:        'pointer',
@@ -461,7 +461,7 @@ export function SearchPage() {
 
       {/* ── Search header ─────────────────────────────────── */}
       <div style={{
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        borderBottom: '1px solid rgba(var(--ink),0.08)',
         padding:      '48px 24px 32px',
         background:   'linear-gradient(180deg, rgba(79,142,247,0.04) 0%, transparent 100%)',
       }}>
@@ -494,7 +494,7 @@ export function SearchPage() {
             <svg
               width="18" height="18"
               viewBox="0 0 24 24" fill="none"
-              stroke="rgba(255,255,255,0.35)" strokeWidth="2"
+              stroke="rgba(var(--ink),0.35)" strokeWidth="2"
               style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
             >
               <circle cx="11" cy="11" r="8"/>
@@ -510,8 +510,8 @@ export function SearchPage() {
               style={{
                 width:        '100%',
                 padding:      '16px 48px 16px 46px',
-                background:   'rgba(255,255,255,0.05)',
-                border:       '1px solid rgba(255,255,255,0.14)',
+                background:   'rgba(var(--ink),0.05)',
+                border:       '1px solid rgba(var(--ink),0.14)',
                 borderRadius: '10px',
                 color:        '#ffffff',
                 fontFamily:   'var(--font-sans)',
@@ -521,7 +521,7 @@ export function SearchPage() {
                 transition:   'border-color 0.2s',
               }}
               onFocus={e  => (e.target.style.borderColor = 'rgba(79,142,247,0.5)')}
-              onBlur={e   => (e.target.style.borderColor = 'rgba(255,255,255,0.14)')}
+              onBlur={e   => (e.target.style.borderColor = 'rgba(var(--ink),0.14)')}
             />
 
             {/* Clear button */}
@@ -535,7 +535,7 @@ export function SearchPage() {
                   transform:  'translateY(-50%)',
                   background: 'none',
                   border:     'none',
-                  color:      'rgba(255,255,255,0.4)',
+                  color:      'rgba(var(--ink),0.4)',
                   cursor:     'pointer',
                   padding:    '4px',
                   display:    'flex',
@@ -554,7 +554,7 @@ export function SearchPage() {
             marginTop:  '12px',
             fontFamily: 'var(--font-mono)',
             fontSize:   '11px',
-            color:      'rgba(255,255,255,0.3)',
+            color:      'rgba(var(--ink),0.3)',
             minHeight:  '18px',
           }}>
             {loading && 'Searching…'}

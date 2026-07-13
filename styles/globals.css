@@ -60,6 +60,47 @@
 
   /* CosmosDaily card hover shadow */
   --card-shadow: 0 4px 20px rgba(0,0,0,0.4);
+
+  /* Theme-aware "ink" — the RGB triplet behind every rgba(var(--ink), a) text,
+     border and overlay. White in dark mode (so dark mode is unchanged),
+     near-black in light mode. */
+  --ink: 255, 255, 255;
+
+  /* Hero image scrim — dark gradient in dark mode */
+  --hero-scrim: linear-gradient(180deg, rgba(18,18,26,0.55) 0%, rgba(10,10,15,0.9) 100%);
+
+  /* Sticky nav / mobile-menu background (translucent) */
+  --nav-bg: rgba(10,10,15,0.95);
+
+  color-scheme: dark;
+}
+
+/* ── LIGHT THEME ──────────────────────────────────────────────
+   Manual toggle sets data-theme="light" on <html>. Only the base tokens
+   flip; every component reads through them (surfaces, text, accent, border)
+   or through rgba(var(--ink), a). CosmosDaily's live light palette. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --ink:        15, 15, 26;
+
+  --black:      #f0f4ff;   /* page ground   */
+  --deep:       #ffffff;
+  --surface:    #ffffff;   /* secondary     */
+  --panel:      #ffffff;   /* cards         */
+  --raised:     #eef2fc;
+  --white:      #0f0f1a;   /* primary text  */
+  --dim:        #4a4a6a;   /* secondary text*/
+  --faint:      #9090a0;   /* muted text    */
+  --accent:      #2563eb;
+  --accent-hover:#1d4ed8;
+  --accent-dim:  rgba(37,99,235,0.10);
+  --purple:     #2563eb;
+  --border:     #e0e4f0;
+  --border-hi:  #c8cfe4;
+
+  --card-shadow: 0 4px 20px rgba(15,15,26,0.10);
+  --hero-scrim:  linear-gradient(180deg, rgba(240,244,255,0.35) 0%, rgba(240,244,255,0.9) 100%);
+  --nav-bg:      rgba(240,244,255,0.85);
 }
 
 *, *::before, *::after { box-sizing: border-box; }

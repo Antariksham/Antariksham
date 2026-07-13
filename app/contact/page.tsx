@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
   fontSize:   '17px',
-  color:      'rgba(255,255,255,0.78)',
+  color:      'rgba(var(--ink),0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
 }
@@ -26,7 +26,7 @@ const h2: React.CSSProperties = {
 
 const divider: React.CSSProperties = {
   border:    'none',
-  borderTop: '1px solid rgba(255,255,255,0.07)',
+  borderTop: '1px solid rgba(var(--ink),0.07)',
   margin:    '48px 0',
 }
 
@@ -35,14 +35,14 @@ const contactCard: React.CSSProperties = {
   flexDirection:'column',
   gap:          '6px',
   padding:      '22px 26px',
-  background:   'rgba(255,255,255,0.02)',
-  border:       '1px solid rgba(255,255,255,0.07)',
+  background:   'rgba(var(--ink),0.02)',
+  border:       '1px solid rgba(var(--ink),0.07)',
   borderRadius: '10px',
 }
 
 export default function ContactPage() {
   return (
-    <main style={{ background: '#0a0a0f', minHeight: '100vh', padding: '72px 24px 96px' }}>
+    <main style={{ background: 'var(--black)', minHeight: '100vh', padding: '72px 24px 96px' }}>
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
@@ -51,11 +51,11 @@ export default function ContactPage() {
         </div>
 
         {/* Title */}
-        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 28px', lineHeight: 1.12, fontWeight: 800 }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 6vw, 54px)', color: 'var(--white)', margin: '0 0 28px', lineHeight: 1.12, fontWeight: 800 }}>
           Get In Touch
         </h1>
 
-        <p style={{ ...prose, fontSize: '19px', color: 'rgba(255,255,255,0.85)', marginBottom: '36px' }}>
+        <p style={{ ...prose, fontSize: '19px', color: 'rgba(var(--ink),0.85)', marginBottom: '36px' }}>
           We read every message. Whether you have spotted an error, have a story tip, or want to collaborate — reach out using the relevant contact below.
         </p>
 
@@ -122,7 +122,7 @@ export default function ContactPage() {
         </p>
 
         <p style={prose}>
-          For urgent factual corrections on actively circulating articles, please mark your subject line <strong style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>URGENT CORRECTION</strong> and we will respond as soon as possible.
+          For urgent factual corrections on actively circulating articles, please mark your subject line <strong style={{ color: 'rgba(var(--ink),0.9)', fontWeight: 600 }}>URGENT CORRECTION</strong> and we will respond as soon as possible.
         </p>
 
         <hr style={divider} />

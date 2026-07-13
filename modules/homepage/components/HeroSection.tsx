@@ -59,7 +59,7 @@ export async function HeroSection() {
         aria-hidden
         style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(180deg, rgba(18,18,26,0.55) 0%, rgba(10,10,15,0.9) 100%)',
+          background: 'var(--hero-scrim)',
         }}
       />
 

@@ -16,7 +16,7 @@ const STATUS_COLOR: Record<string, string> = {
   active:          '#2ecc71',
   upcoming:        '#4f8ef7',
   'in-development':'#f39c12',
-  completed:       'rgba(255,255,255,0.35)',
+  completed:       'rgba(var(--ink),0.35)',
   failed:          '#e74c3c',
   cancelled:       '#e74c3c',
 }
@@ -88,7 +88,7 @@ export function MissionsPage({ missions, total }: Props) {
 
 // ── Status badge (shared) ─────────────────────────────────────
 export function StatusBadge({ status }: { status: string }) {
-  const color = STATUS_COLOR[status] || 'rgba(255,255,255,0.35)'
+  const color = STATUS_COLOR[status] || 'rgba(var(--ink),0.35)'
   const isPulse = status === 'active'
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-sans)', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color }}>

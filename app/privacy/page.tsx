@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
   fontSize:   '17px',
-  color:      'rgba(255,255,255,0.78)',
+  color:      'rgba(var(--ink),0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
 }
@@ -26,28 +26,28 @@ const h2: React.CSSProperties = {
 
 const divider: React.CSSProperties = {
   border:    'none',
-  borderTop: '1px solid rgba(255,255,255,0.07)',
+  borderTop: '1px solid rgba(var(--ink),0.07)',
   margin:    '48px 0',
 }
 
 export default function PrivacyPage() {
   return (
-    <main style={{ background: '#0a0a0f', minHeight: '100vh', padding: '72px 24px 96px' }}>
+    <main style={{ background: 'var(--black)', minHeight: '100vh', padding: '72px 24px 96px' }}>
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Privacy Policy
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 16px', lineHeight: 1.12, fontWeight: 800 }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 6vw, 54px)', color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.12, fontWeight: 800 }}>
           Privacy Policy
         </h1>
 
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', marginBottom: '36px' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.35)', letterSpacing: '0.08em', marginBottom: '36px' }}>
           Last updated: June 2026
         </p>
 
-        <p style={{ ...prose, fontSize: '19px', color: 'rgba(255,255,255,0.85)', marginBottom: '36px' }}>
+        <p style={{ ...prose, fontSize: '19px', color: 'rgba(var(--ink),0.85)', marginBottom: '36px' }}>
           Antariksham is built to inform, not to surveil. We collect the minimum data necessary to operate the platform and we do not sell, share, or monetise your personal information.
         </p>
 
@@ -55,13 +55,13 @@ export default function PrivacyPage() {
 
         <h2 style={{ ...h2, marginTop: 0 }}>What We Collect</h2>
         <p style={prose}>
-          <strong style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>Usage data.</strong> When you visit Antariksham, standard server logs are automatically generated including your IP address, browser type, pages visited, and time of visit. This data is used solely for performance monitoring and security. It is not linked to any personal profile.
+          <strong style={{ color: 'rgba(var(--ink),0.9)', fontWeight: 600 }}>Usage data.</strong> When you visit Antariksham, standard server logs are automatically generated including your IP address, browser type, pages visited, and time of visit. This data is used solely for performance monitoring and security. It is not linked to any personal profile.
         </p>
         <p style={prose}>
-          <strong style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>Article view counts.</strong> We count page views per article to understand which content is most useful. This count is anonymous — we do not track which individual visited which article.
+          <strong style={{ color: 'rgba(var(--ink),0.9)', fontWeight: 600 }}>Article view counts.</strong> We count page views per article to understand which content is most useful. This count is anonymous — we do not track which individual visited which article.
         </p>
         <p style={prose}>
-          <strong style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>Contact enquiries.</strong> If you contact us via email, we retain your message and email address solely to respond to your enquiry. We do not add you to any mailing list without your explicit consent.
+          <strong style={{ color: 'rgba(var(--ink),0.9)', fontWeight: 600 }}>Contact enquiries.</strong> If you contact us via email, we retain your message and email address solely to respond to your enquiry. We do not add you to any mailing list without your explicit consent.
         </p>
 
         <h2 style={h2}>What We Do Not Collect</h2>

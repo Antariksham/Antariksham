@@ -48,7 +48,7 @@ export function LearnPage({ articles }: Props) {
         <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 800, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.1 }}>
           Learn Space Science
         </h1>
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', color: 'rgba(255,255,255,0.9)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
+        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', color: 'rgba(var(--ink),0.9)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
           Deep-dive articles on orbital mechanics, astrophysics, and the mathematics powering space exploration. From beginner introductions to advanced physics.
         </p>
       </div>
@@ -69,9 +69,9 @@ export function LearnPage({ articles }: Props) {
                 textTransform: 'uppercase',
                 padding:       '7px 16px',
                 borderRadius:  '4px',
-                border:        `1px solid ${active ? color : 'rgba(255,255,255,0.1)'}`,
+                border:        `1px solid ${active ? color : 'rgba(var(--ink),0.1)'}`,
                 background:    active ? `${color}18` : 'transparent',
-                color:         active ? color : 'rgba(255,255,255,0.45)',
+                color:         active ? color : 'rgba(var(--ink),0.45)',
                 cursor:        'pointer',
                 transition:    'all 0.15s',
               }}
@@ -80,14 +80,14 @@ export function LearnPage({ articles }: Props) {
             </button>
           )
         })}
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', alignSelf: 'center', marginLeft: '8px' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(var(--ink),0.3)', alignSelf: 'center', marginLeft: '8px' }}>
           {filtered.length} {filtered.length === 1 ? 'article' : 'articles'}
         </span>
       </div>
 
       {/* ── Article Grid ────────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em' }}>
+        <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(var(--ink),0.3)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em' }}>
           NO ARTICLES YET
         </div>
       ) : (
@@ -125,7 +125,7 @@ function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
         {article.relatedTopics.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '1rem' }}>
             {article.relatedTopics.slice(0, 3).map(topic => (
-              <span key={topic} style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '20px' }}>
+              <span key={topic} style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', background: 'rgba(var(--ink),0.05)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '20px' }}>
                 {topic}
               </span>
             ))}

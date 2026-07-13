@@ -56,7 +56,7 @@ export default async function ArticlePage(
 
         {/* Breaking badge */}
         {article.articleType === 'breaking-news' && (
-          <span style={{ display: 'inline-block', fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#0a0a0f', background: '#e74c3c', padding: '3px 8px', borderRadius: '3px', marginBottom: '20px' }}>
+          <span style={{ display: 'inline-block', fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--black)', background: '#e74c3c', padding: '3px 8px', borderRadius: '3px', marginBottom: '20px' }}>
             Breaking
           </span>
         )}
@@ -90,7 +90,7 @@ export default async function ArticlePage(
           <p style={{
             fontFamily:  'var(--font-serif)',
             fontSize:    'clamp(16px, 2vw, 19px)',
-            color:       'rgba(255,255,255,0.9)',
+            color:       'rgba(var(--ink),0.9)',
             lineHeight:  1.6,
             margin:      '0 0 28px',
             fontWeight:  400,
@@ -107,9 +107,9 @@ export default async function ArticlePage(
           flexWrap:      'wrap',
           fontFamily:    'var(--font-mono)',
           fontSize:      '11px',
-          color:         'rgba(255,255,255,0.4)',
+          color:         'rgba(var(--ink),0.4)',
           paddingBottom: '28px',
-          borderBottom:  '1px solid rgba(255,255,255,0.08)',
+          borderBottom:  '1px solid rgba(var(--ink),0.08)',
           marginBottom:  '36px',
         }}>
           {article.author && (
@@ -123,7 +123,7 @@ export default async function ArticlePage(
                   style={{ borderRadius: '50%', objectFit: 'cover' }}
                 />
               )}
-              <span style={{ color: 'rgba(255,255,255,0.7)' }}>{article.author.name}</span>
+              <span style={{ color: 'rgba(var(--ink),0.7)' }}>{article.author.name}</span>
             </div>
           )}
           {article.publishedAt && <span>{formatDate(article.publishedAt)}</span>}
@@ -157,7 +157,7 @@ export default async function ArticlePage(
           fontFamily:  'var(--font-serif)',
           fontSize:    'clamp(16px, 1.8vw, 18px)',
           lineHeight:  1.9,
-          color:       'rgba(255,255,255,0.9)',
+          color:       'rgba(var(--ink),0.9)',
           letterSpacing: '0.01em',
         }}
           dangerouslySetInnerHTML={{ __html: article.content }}
@@ -165,12 +165,12 @@ export default async function ArticlePage(
 
         {/* Tags */}
         {article.tags && article.tags.length > 0 && (
-          <div style={{ marginTop: '56px', paddingTop: '28px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginRight: '4px' }}>
+          <div style={{ marginTop: '56px', paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.3)', marginRight: '4px' }}>
               Tags
             </span>
             {article.tags.map(tag => (
-              <span key={tag} style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', padding: '3px 10px' }}>
+              <span key={tag} style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', border: '1px solid rgba(var(--ink),0.1)', borderRadius: '4px', padding: '3px 10px' }}>
                 {tag}
               </span>
             ))}
@@ -178,7 +178,7 @@ export default async function ArticlePage(
         )}
 
         {/* Back link */}
-        <div style={{ marginTop: '48px', paddingTop: '28px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ marginTop: '48px', paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>
           <a href="/news" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
             ← Back to News
           </a>
@@ -187,7 +187,7 @@ export default async function ArticlePage(
 
       {/* Related articles — full width section below article */}
       {related.length > 0 && (
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
+        <div style={{ borderTop: '1px solid rgba(var(--ink),0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
               Related Stories
@@ -196,7 +196,7 @@ export default async function ArticlePage(
               {related.map(r => (
                 <a key={r.id} href={`/news/${r.slug}`} style={{ textDecoration: 'none' }}>
                   <div
-                    style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s' }}
+                    style={{ background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s' }}
                     
                   >
                     {r.categories[0] && (
@@ -204,10 +204,10 @@ export default async function ArticlePage(
                         {r.categories[0]}
                       </span>
                     )}
-                    <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: '#ffffff', lineHeight: 1.3, margin: '0 0 14px' }}>
+                    <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: 'var(--white)', lineHeight: 1.3, margin: '0 0 14px' }}>
                       {r.title}
                     </h3>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(var(--ink),0.35)', letterSpacing: '0.1em' }}>
                       {r.readingTime} min read
                     </span>
                   </div>

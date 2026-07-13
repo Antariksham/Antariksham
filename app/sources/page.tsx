@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
   fontSize:   '17px',
-  color:      'rgba(255,255,255,0.78)',
+  color:      'rgba(var(--ink),0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
 }
@@ -26,7 +26,7 @@ const h2: React.CSSProperties = {
 
 const divider: React.CSSProperties = {
   border:    'none',
-  borderTop: '1px solid rgba(255,255,255,0.07)',
+  borderTop: '1px solid rgba(var(--ink),0.07)',
   margin:    '48px 0',
 }
 
@@ -41,7 +41,7 @@ const TYPE_COLOR: Record<SourceEntry['type'], string> = {
   agency:    'rgba(79,142,247,0.8)',
   api:       'rgba(46,204,113,0.8)',
   data:      'rgba(243,156,18,0.8)',
-  reference: 'rgba(255,255,255,0.4)',
+  reference: 'rgba(var(--ink),0.4)',
 }
 
 const TYPE_LABEL: Record<SourceEntry['type'], string> = {
@@ -93,11 +93,11 @@ function SourceCard({ source }: { source: SourceEntry }) {
       gap:           '12px',
       alignItems:    'start',
       padding:       '18px 0',
-      borderBottom:  '1px solid rgba(255,255,255,0.05)',
+      borderBottom:  '1px solid rgba(var(--ink),0.05)',
     }}>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', color: '#ffffff', lineHeight: 1.2 }}>
+          <span style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', color: 'var(--white)', lineHeight: 1.2 }}>
             {source.name}
           </span>
           <span style={{
@@ -114,7 +114,7 @@ function SourceCard({ source }: { source: SourceEntry }) {
             {TYPE_LABEL[source.type]}
           </span>
         </div>
-        <p style={{ ...prose, margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.55)' }}>
+        <p style={{ ...prose, margin: 0, fontSize: '14px', color: 'rgba(var(--ink),0.55)' }}>
           {source.description}
         </p>
       </div>
@@ -145,7 +145,7 @@ function SourceCard({ source }: { source: SourceEntry }) {
 
 export default function SourcesPage() {
   return (
-    <main style={{ background: '#0a0a0f', minHeight: '100vh', padding: '72px 24px 96px' }}>
+    <main style={{ background: 'var(--black)', minHeight: '100vh', padding: '72px 24px 96px' }}>
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
@@ -154,11 +154,11 @@ export default function SourcesPage() {
         </div>
 
         {/* Title */}
-        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 28px', lineHeight: 1.12, fontWeight: 800 }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 6vw, 54px)', color: 'var(--white)', margin: '0 0 28px', lineHeight: 1.12, fontWeight: 800 }}>
           Our Sources
         </h1>
 
-        <p style={{ ...prose, fontSize: '19px', color: 'rgba(255,255,255,0.85)', marginBottom: '36px' }}>
+        <p style={{ ...prose, fontSize: '19px', color: 'rgba(var(--ink),0.85)', marginBottom: '36px' }}>
           Every fact on Antariksham traces back to a primary source. This page lists the agencies, APIs, and scientific institutions we rely on for our journalism, live data systems, and educational content.
         </p>
 

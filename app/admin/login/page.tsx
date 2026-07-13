@@ -38,13 +38,13 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       <div style={{ width: '100%', maxWidth: '360px' }}>
 
         {/* Logo mark */}
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #232338, #0a0a0f)', border: '1px solid rgba(79,142,247,0.3)', margin: '0 auto 16px' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.3)' }}>
             Restricted Access
           </span>
         </div>
@@ -62,8 +62,8 @@ export default function AdminLoginPage() {
               style={{
                 width:        '100%',
                 padding:      '14px 16px',
-                background:   '#0a0a0f',
-                border:       `1px solid ${error ? 'rgba(231,76,60,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                background:   'var(--black)',
+                border:       `1px solid ${error ? 'rgba(231,76,60,0.4)' : 'rgba(var(--ink),0.1)'}`,
                 borderRadius: '8px',
                 color:        '#ffffff',
                 fontFamily:   'var(--font-mono)',
@@ -74,7 +74,7 @@ export default function AdminLoginPage() {
                 transition:   'border-color 0.2s',
               }}
               onFocus={e  => (e.target.style.borderColor = 'rgba(79,142,247,0.5)')}
-              onBlur={e   => (e.target.style.borderColor = error ? 'rgba(231,76,60,0.4)' : 'rgba(255,255,255,0.1)')}
+              onBlur={e   => (e.target.style.borderColor = error ? 'rgba(231,76,60,0.4)' : 'rgba(var(--ink),0.1)')}
             />
           </div>
 
@@ -91,7 +91,7 @@ export default function AdminLoginPage() {
               width:        '100%',
               padding:      '14px',
               background:   loading ? 'rgba(79,142,247,0.4)' : '#4f8ef7',
-              color:        '#0a0a0f',
+              color:        'var(--black)',
               border:       'none',
               borderRadius: '8px',
               fontFamily:   'var(--font-mono)',
