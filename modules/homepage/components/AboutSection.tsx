@@ -1,38 +1,49 @@
 import Link from 'next/link'
 
+const STATS = [
+  { num: '47',   label: 'Missions tracked' },
+  { num: '6',    label: 'Live systems' },
+  { num: 'Trust', label: 'First, always' },
+]
+
 export function AboutSection() {
   return (
-    <section style={{ padding: '64px 0' }}>
-      <div style={{ padding: '0 24px', maxWidth: '1380px', margin: '0 auto' }}>
+    <section className="section" style={{ paddingTop: 0 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '2.5rem',
+          alignItems: 'center',
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius)',
+          padding: 'clamp(1.5rem, 4vw, 3rem)',
+        }}
+      >
+        <div>
+          <p className="card-category" style={{ marginBottom: '1rem' }}>Our Mission</p>
+          <p style={{ fontSize: 'clamp(1.2rem, 2.2vw, 1.6rem)', fontWeight: 600, lineHeight: 1.4, color: 'var(--text-primary)', marginBottom: '1rem', textWrap: 'balance' }}>
+            Space belongs to everyone — and understanding it should be accessible, scientific, and deeply honest.
+          </p>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--text-secondary)', marginBottom: '1.5rem', maxWidth: '520px' }}>
+            An independent platform committed to scientific accuracy, editorial integrity, and building the most
+            credible space knowledge ecosystem on the web. Not a news portal. Not a blog. A space intelligence organization.
+          </p>
+          <Link href="/about" className="btn btn-outline">About us</Link>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '48px', alignItems: 'center' }}>
-
-          <div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>Our Mission</div>
-            <blockquote style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 300, fontStyle: 'italic', lineHeight: 1.45, color: '#ffffff', marginBottom: '24px', padding: 0, border: 'none' }}>
-              "Antariksham is built on a simple belief — that space belongs to everyone, and understanding it should be <strong style={{ fontStyle: 'normal', fontWeight: 400 }}>accessible, scientific, and deeply honest.</strong>"
-            </blockquote>
-            <p style={{ fontSize: '15px', lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: '32px' }}>
-              An independent platform committed to scientific accuracy, editorial integrity, and building the most credible space knowledge ecosystem on the web. Not a news portal. Not a blog. A space intelligence organization.
-            </p>
-            <Link href="/about" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '13px 24px', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.85)', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: '6px', fontFamily: 'var(--font-mono)' }}>
-              Our Mission →
-            </Link>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-            {[
-              { num: '47',   label: 'Missions\nTracked' },
-              { num: '6',    label: 'Live\nSystems' },
-              { num: '.org', label: 'Trust\nFirst' },
-            ].map((stat) => (
-              <div key={stat.label} style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '24px 16px', textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 300, color: '#ffffff', lineHeight: 1, marginBottom: '10px' }}>{stat.num}</div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', whiteSpace: 'pre-line', lineHeight: 1.5 }}>{stat.label}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+          {STATS.map(stat => (
+            <div key={stat.label} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '1.25rem 0.75rem', textAlign: 'center' }}>
+              <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1, marginBottom: '0.5rem', fontVariantNumeric: 'tabular-nums' }}>
+                {stat.num}
               </div>
-            ))}
-          </div>
-
+              <div style={{ fontSize: '0.7rem', letterSpacing: '0.5px', textTransform: 'uppercase', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                {stat.label}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
