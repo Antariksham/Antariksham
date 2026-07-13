@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const prose: React.CSSProperties = {
   fontFamily: 'Outfit, sans-serif',
   fontSize:   '17px',
-  color:      'rgba(240,244,250,0.78)',
+  color:      'rgba(255,255,255,0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
 }
@@ -18,7 +18,7 @@ const prose: React.CSSProperties = {
 const h2: React.CSSProperties = {
   fontFamily: 'Crimson Pro, Georgia, serif',
   fontSize:   '26px',
-  color:      '#f0f4fa',
+  color:      '#ffffff',
   margin:     '48px 0 14px',
   lineHeight: 1.25,
 }
@@ -31,22 +31,22 @@ const divider: React.CSSProperties = {
 
 export default function PrivacyPage() {
   return (
-    <main style={{ background: '#07090c', minHeight: '100vh', padding: '72px 24px 96px' }}>
+    <main style={{ background: '#0a0a0f', minHeight: '100vh', padding: '72px 24px 96px' }}>
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#3b9eff', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Privacy Policy
         </div>
 
-        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#f0f4fa', margin: '0 0 16px', lineHeight: 1.15, fontWeight: 400 }}>
+        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 16px', lineHeight: 1.15, fontWeight: 400 }}>
           Privacy Policy
         </h1>
 
-        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: 'rgba(240,244,250,0.35)', letterSpacing: '0.08em', marginBottom: '36px' }}>
+        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', marginBottom: '36px' }}>
           Last updated: June 2026
         </p>
 
-        <p style={{ ...prose, fontSize: '19px', color: 'rgba(240,244,250,0.85)', marginBottom: '36px' }}>
+        <p style={{ ...prose, fontSize: '19px', color: 'rgba(255,255,255,0.85)', marginBottom: '36px' }}>
           Antariksham is built to inform, not to surveil. We collect the minimum data necessary to operate the platform and we do not sell, share, or monetise your personal information.
         </p>
 
@@ -54,13 +54,13 @@ export default function PrivacyPage() {
 
         <h2 style={{ ...h2, marginTop: 0 }}>What We Collect</h2>
         <p style={prose}>
-          <strong style={{ color: 'rgba(240,244,250,0.9)', fontWeight: 600 }}>Usage data.</strong> When you visit Antariksham, standard server logs are automatically generated including your IP address, browser type, pages visited, and time of visit. This data is used solely for performance monitoring and security. It is not linked to any personal profile.
+          <strong style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>Usage data.</strong> When you visit Antariksham, standard server logs are automatically generated including your IP address, browser type, pages visited, and time of visit. This data is used solely for performance monitoring and security. It is not linked to any personal profile.
         </p>
         <p style={prose}>
-          <strong style={{ color: 'rgba(240,244,250,0.9)', fontWeight: 600 }}>Article view counts.</strong> We count page views per article to understand which content is most useful. This count is anonymous — we do not track which individual visited which article.
+          <strong style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>Article view counts.</strong> We count page views per article to understand which content is most useful. This count is anonymous — we do not track which individual visited which article.
         </p>
         <p style={prose}>
-          <strong style={{ color: 'rgba(240,244,250,0.9)', fontWeight: 600 }}>Contact enquiries.</strong> If you contact us via email, we retain your message and email address solely to respond to your enquiry. We do not add you to any mailing list without your explicit consent.
+          <strong style={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>Contact enquiries.</strong> If you contact us via email, we retain your message and email address solely to respond to your enquiry. We do not add you to any mailing list without your explicit consent.
         </p>
 
         <h2 style={h2}>What We Do Not Collect</h2>
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
         </p>
         <p style={prose}>
           To make a data request, contact us at{' '}
-          <a href={`mailto:${siteConfig.email}`} style={{ color: '#3b9eff', textDecoration: 'none' }}>
+          <a href={`mailto:${siteConfig.email}`} style={{ color: '#4f8ef7', textDecoration: 'none' }}>
             {siteConfig.email}
           </a>
           . We will respond within 30 days.
@@ -104,10 +104,10 @@ export default function PrivacyPage() {
 
         <hr style={divider} />
 
-        <div style={{ padding: '20px 24px', background: 'rgba(59,158,255,0.05)', border: '1px solid rgba(59,158,255,0.12)', borderRadius: '10px', marginBottom: '32px' }}>
+        <div style={{ padding: '20px 24px', background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.12)', borderRadius: '10px', marginBottom: '32px' }}>
           <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
             Questions about this policy:{' '}
-            <a href={`mailto:${siteConfig.email}`} style={{ color: '#3b9eff', textDecoration: 'none' }}>
+            <a href={`mailto:${siteConfig.email}`} style={{ color: '#4f8ef7', textDecoration: 'none' }}>
               {siteConfig.email}
             </a>
           </p>
@@ -124,8 +124,8 @@ export default function PrivacyPage() {
               href={link.href}
               style={{
                 display: 'inline-flex', padding: '9px 16px', borderRadius: '6px',
-                background: 'rgba(59,158,255,0.07)', border: '1px solid rgba(59,158,255,0.18)',
-                color: '#3b9eff', fontFamily: 'DM Mono, monospace', fontSize: '11px',
+                background: 'rgba(79,142,247,0.07)', border: '1px solid rgba(79,142,247,0.18)',
+                color: '#4f8ef7', fontFamily: 'DM Mono, monospace', fontSize: '11px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none',
               }}
             >

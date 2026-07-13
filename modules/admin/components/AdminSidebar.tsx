@@ -55,7 +55,7 @@ export function AdminSidebar() {
       left:       0,
       bottom:     0,
       width:      '240px',
-      background: '#0b0e13',
+      background: '#0a0a0f',
       borderRight:'1px solid var(--border)',
       display:    'flex',
       flexDirection: 'column',
@@ -66,10 +66,10 @@ export function AdminSidebar() {
       {/* Brand */}
       <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #1e4080, #060f22)', border: '1px solid rgba(59,158,255,0.3)', flexShrink: 0 }} />
+          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #232338, #0a0a0f)', border: '1px solid rgba(79,142,247,0.3)', flexShrink: 0 }} />
           <div>
             <div style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'var(--white)', lineHeight: 1 }}>Antariksham</div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.3)', marginTop: '3px' }}>Mission Control</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginTop: '3px' }}>Mission Control</div>
           </div>
         </div>
       </div>
@@ -89,8 +89,8 @@ export function AdminSidebar() {
                 padding:        '10px 20px',
                 margin:         '1px 8px',
                 borderRadius:   '6px',
-                background:     active ? 'rgba(59,158,255,0.1)' : 'transparent',
-                color:          active ? 'var(--accent)' : 'rgba(240,244,250,0.5)',
+                background:     active ? 'rgba(79,142,247,0.1)' : 'transparent',
+                color:          active ? 'var(--accent)' : 'rgba(255,255,255,0.5)',
                 textDecoration: 'none',
                 transition:     'all 0.15s',
                 fontFamily:     'var(--font-mono)',
@@ -101,20 +101,20 @@ export function AdminSidebar() {
               onMouseEnter={e => {
                 if (!active) {
                   e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
-                  e.currentTarget.style.color = 'rgba(240,244,250,0.8)'
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.8)'
                 }
               }}
               onMouseLeave={e => {
                 if (!active) {
                   e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'rgba(240,244,250,0.5)'
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.5)'
                 }
               }}
             >
               <span style={{ opacity: active ? 1 : 0.6, flexShrink: 0 }}>{item.icon}</span>
               <span style={{ flex: 1 }}>{item.label}</span>
               {item.badge && (
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 6px', borderRadius: '3px', background: 'rgba(255,255,255,0.06)', color: 'rgba(240,244,250,0.3)', border: '1px solid var(--border)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 6px', borderRadius: '3px', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.3)', border: '1px solid var(--border)' }}>
                   {item.badge}
                 </span>
               )}
@@ -137,7 +137,7 @@ export function AdminSidebar() {
             borderRadius:'6px',
             background:  'transparent',
             border:      'none',
-            color:       'rgba(240,244,250,0.35)',
+            color:       'rgba(255,255,255,0.35)',
             fontFamily:  'var(--font-mono)',
             fontSize:    '11px',
             letterSpacing:'0.08em',
@@ -146,12 +146,12 @@ export function AdminSidebar() {
             textAlign:   'left',
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.background = 'rgba(240,90,90,0.08)'
-            e.currentTarget.style.color = '#f05a5a'
+            e.currentTarget.style.background = 'rgba(231,76,60,0.08)'
+            e.currentTarget.style.color = '#e74c3c'
           }}
           onMouseLeave={e => {
             e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = 'rgba(240,244,250,0.35)'
+            e.currentTarget.style.color = 'rgba(255,255,255,0.35)'
           }}
         >
           <LogOut size={14} />

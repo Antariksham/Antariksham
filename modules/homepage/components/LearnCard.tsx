@@ -30,7 +30,7 @@ export function LearnCard({ topic }: { topic: Topic }) {
   return (
     <Link href={`/learn/${topic.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div
-        style={{ background: '#10151c', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', cursor: 'pointer', transition: 'border-color 0.2s', height: '100%' }}
+        style={{ background: '#12121a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', cursor: 'pointer', transition: 'border-color 0.2s', height: '100%' }}
         onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.18)'}
         onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.08)'}
       >
@@ -41,7 +41,7 @@ export function LearnCard({ topic }: { topic: Topic }) {
         <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 400, lineHeight: 1.3, color: '#ffffff', marginBottom: '10px' }}>
           {topic.title}
         </h3>
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(240,244,250,0.9)', margin: 0 }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', margin: 0 }}>
           {topic.excerpt}
         </p>
       </div>

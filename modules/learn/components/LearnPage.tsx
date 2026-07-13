@@ -47,7 +47,7 @@ export function LearnPage({ articles }: Props) {
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.1 }}>
           Learn Space Science
         </h1>
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '16px', color: 'rgba(240,244,250,0.9)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '16px', color: 'rgba(255,255,255,0.9)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
           Deep-dive articles on orbital mechanics, astrophysics, and the mathematics powering space exploration. From beginner introductions to advanced physics.
         </p>
       </div>
@@ -70,7 +70,7 @@ export function LearnPage({ articles }: Props) {
                 borderRadius:  '4px',
                 border:        `1px solid ${active ? color : 'rgba(255,255,255,0.1)'}`,
                 background:    active ? `${color}18` : 'transparent',
-                color:         active ? color : 'rgba(240,244,250,0.45)',
+                color:         active ? color : 'rgba(255,255,255,0.45)',
                 cursor:        'pointer',
                 transition:    'all 0.15s',
               }}
@@ -79,14 +79,14 @@ export function LearnPage({ articles }: Props) {
             </button>
           )
         })}
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(240,244,250,0.3)', alignSelf: 'center', marginLeft: '8px' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', alignSelf: 'center', marginLeft: '8px' }}>
           {filtered.length} {filtered.length === 1 ? 'article' : 'articles'}
         </span>
       </div>
 
       {/* ── Article Grid ────────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(240,244,250,0.3)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em' }}>
+        <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em' }}>
           NO ARTICLES YET
         </div>
       ) : (
@@ -157,7 +157,7 @@ function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
               textTransform: 'uppercase',
               color:         'var(--gold)',
               background:    'var(--gold-dim)',
-              border:        '1px solid rgba(201,169,110,0.4)',
+              border:        '1px solid rgba(243,156,18,0.4)',
               padding:       '3px 10px',
               borderRadius:  '3px',
             }}>
@@ -172,7 +172,7 @@ function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
         </h2>
 
         {/* Excerpt */}
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(240,244,250,0.9)', margin: '0 0 20px' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', margin: '0 0 20px' }}>
           {article.excerpt}
         </p>
 
@@ -184,7 +184,7 @@ function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
                 fontFamily:    'var(--font-mono)',
                 fontSize:      '10px',
                 letterSpacing: '0.08em',
-                color:         'rgba(240,244,250,0.65)',
+                color:         'rgba(255,255,255,0.65)',
                 background:    'rgba(255,255,255,0.06)',
                 border:        '1px solid rgba(255,255,255,0.12)',
                 padding:       '3px 9px',

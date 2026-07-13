@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const prose: React.CSSProperties = {
   fontFamily: 'Outfit, sans-serif',
   fontSize:   '17px',
-  color:      'rgba(240,244,250,0.78)',
+  color:      'rgba(255,255,255,0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
 }
@@ -18,7 +18,7 @@ const prose: React.CSSProperties = {
 const h2: React.CSSProperties = {
   fontFamily: 'Crimson Pro, Georgia, serif',
   fontSize:   '26px',
-  color:      '#f0f4fa',
+  color:      '#ffffff',
   margin:     '48px 0 14px',
   lineHeight: 1.25,
 }
@@ -31,21 +31,21 @@ const divider: React.CSSProperties = {
 
 export default function AboutPage() {
   return (
-    <main style={{ background: '#07090c', minHeight: '100vh', padding: '72px 24px 96px' }}>
+    <main style={{ background: '#0a0a0f', minHeight: '100vh', padding: '72px 24px 96px' }}>
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Page label */}
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#3b9eff', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           About Antariksham
         </div>
 
         {/* Title */}
-        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#f0f4fa', margin: '0 0 28px', lineHeight: 1.15, fontWeight: 400 }}>
+        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 28px', lineHeight: 1.15, fontWeight: 400 }}>
           An Independent Space Intelligence Platform
         </h1>
 
         {/* Lead */}
-        <p style={{ ...prose, fontSize: '20px', color: 'rgba(240,244,250,0.88)', lineHeight: 1.7, marginBottom: '36px' }}>
+        <p style={{ ...prose, fontSize: '20px', color: 'rgba(255,255,255,0.88)', lineHeight: 1.7, marginBottom: '36px' }}>
           Antariksham is built on a simple belief: space exploration is one of the most important endeavours in human history, and it deserves serious, credible, and accessible coverage — not clickbait headlines or sensational news cycles.
         </p>
 
@@ -104,9 +104,9 @@ export default function AboutPage() {
                 display:       'inline-flex',
                 padding:       '9px 16px',
                 borderRadius:  '6px',
-                background:    'rgba(59,158,255,0.07)',
-                border:        '1px solid rgba(59,158,255,0.18)',
-                color:         '#3b9eff',
+                background:    'rgba(79,142,247,0.07)',
+                border:        '1px solid rgba(79,142,247,0.18)',
+                color:         '#4f8ef7',
                 fontFamily:    'DM Mono, monospace',
                 fontSize:      '11px',
                 letterSpacing: '0.12em',

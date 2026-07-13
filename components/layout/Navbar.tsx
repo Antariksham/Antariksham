@@ -23,9 +23,9 @@ export function Navbar() {
         <ul style={{ display: 'flex', alignItems: 'center', gap: '36px', listStyle: 'none', margin: 0, padding: 0 }} className="desktop-nav">
           {mainNav.map((item) => (
             <li key={item.href}>
-              <Link href={item.href} style={{ fontFamily: 'DM Mono, monospace', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', color: item.isLive ? '#34d897' : '#ffffff', display: 'flex', alignItems: 'center', gap: '7px', opacity: item.isLive ? 1 : 0.9 }}>
+              <Link href={item.href} style={{ fontFamily: 'DM Mono, monospace', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', color: item.isLive ? '#2ecc71' : '#ffffff', display: 'flex', alignItems: 'center', gap: '7px', opacity: item.isLive ? 1 : 0.9 }}>
                 {item.isLive && (
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34d897', boxShadow: '0 0 8px #34d897', display: 'inline-block', flexShrink: 0, animation: 'blink 2s infinite' }} />
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2ecc71', boxShadow: '0 0 8px #2ecc71', display: 'inline-block', flexShrink: 0, animation: 'blink 2s infinite' }} />
                 )}
                 {item.label}
               </Link>
@@ -35,10 +35,10 @@ export function Navbar() {
 
         {/* DESKTOP RIGHT — search bar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="desktop-nav">
-          <Link href="/search" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', color: 'rgba(240,244,250,0.75)', fontFamily: 'DM Mono, monospace', fontSize: '12px', letterSpacing: '0.08em', textDecoration: 'none' }}>
+          <Link href="/search" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.75)', fontFamily: 'DM Mono, monospace', fontSize: '12px', letterSpacing: '0.08em', textDecoration: 'none' }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             Search
-            <span style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '3px', padding: '1px 6px', fontSize: '10px', color: 'rgba(240,244,250,0.5)' }}>⌘K</span>
+            <span style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '3px', padding: '1px 6px', fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>⌘K</span>
           </Link>
         </div>
 
@@ -60,8 +60,8 @@ export function Navbar() {
       {menuOpen && (
         <div style={{ position: 'fixed', top: '64px', left: 0, right: 0, bottom: 0, zIndex: 49, background: 'rgba(7,9,12,0.98)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', padding: '24px 32px', overflowY: 'auto' }}>
           {mainNav.map((item) => (
-            <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '32px', fontWeight: 300, color: item.isLive ? '#34d897' : '#ffffff', textDecoration: 'none', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '14px' }}>
-              {item.isLive && <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#34d897', boxShadow: '0 0 8px #34d897', display: 'inline-block', flexShrink: 0 }} />}
+            <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '32px', fontWeight: 300, color: item.isLive ? '#2ecc71' : '#ffffff', textDecoration: 'none', padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '14px' }}>
+              {item.isLive && <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2ecc71', boxShadow: '0 0 8px #2ecc71', display: 'inline-block', flexShrink: 0 }} />}
               {item.label}
             </Link>
           ))}

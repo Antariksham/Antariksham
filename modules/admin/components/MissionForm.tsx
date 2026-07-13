@@ -12,7 +12,7 @@ const STATUSES: { value: MissionStatus; label: string; color: string }[] = [
   { value: 'active',         label: 'Active',         color: 'var(--green)'  },
   { value: 'upcoming',       label: 'Upcoming',       color: 'var(--accent)' },
   { value: 'in-development', label: 'In Development', color: 'var(--gold)'   },
-  { value: 'completed',      label: 'Completed',      color: 'rgba(240,244,250,0.4)' },
+  { value: 'completed',      label: 'Completed',      color: 'rgba(255,255,255,0.4)' },
   { value: 'failed',         label: 'Failed',         color: 'var(--red)'    },
   { value: 'cancelled',      label: 'Cancelled',      color: 'var(--red)'    },
 ]
@@ -230,7 +230,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                 border:        '1px solid',
                 borderColor:   form._showMediaPicker ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
                 borderRadius:  '6px',
-                color:         form._showMediaPicker ? '#07090c' : 'rgba(240,244,250,0.7)',
+                color:         form._showMediaPicker ? '#0a0a0f' : 'rgba(255,255,255,0.7)',
                 fontFamily:    'var(--font-mono)',
                 fontSize:      '10px',
                 letterSpacing: '0.12em',
@@ -281,7 +281,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                 display: 'inline-flex', alignItems: 'center', gap: '5px',
                 padding: '5px 12px', borderRadius: '5px', cursor: 'pointer',
                 background: 'var(--surface)', border: '1px solid var(--border)',
-                color: 'rgba(240,244,250,0.6)', fontFamily: 'var(--font-mono)',
+                color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-mono)',
                 fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase',
               }}
             >
@@ -291,7 +291,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
 
           {form.timeline.length === 0 ? (
             <div style={{ padding: '24px', background: 'var(--surface)', border: '1px dashed var(--border)', borderRadius: '8px', textAlign: 'center' }}>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
                 No timeline events — click Add Event to start
               </p>
             </div>
@@ -311,12 +311,12 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                         width: '14px', height: '14px', borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
                         background: event.completed ? 'var(--green)' : 'transparent',
                         border: `2px solid ${event.completed ? 'var(--green)' : 'rgba(255,255,255,0.2)'}`,
-                        boxShadow: event.completed ? '0 0 6px rgba(52,216,151,0.4)' : 'none',
+                        boxShadow: event.completed ? '0 0 6px rgba(46,204,113,0.4)' : 'none',
                         transition: 'all 0.15s',
                       }}
                       title={event.completed ? 'Mark incomplete' : 'Mark completed'}
                     />
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: event.completed ? 'var(--green)' : 'rgba(240,244,250,0.3)', flex: 1 }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: event.completed ? 'var(--green)' : 'rgba(255,255,255,0.3)', flex: 1 }}>
                       Event {i + 1} {event.completed ? '· Completed' : '· Upcoming'}
                     </span>
                     {/* Move up/down */}
@@ -326,7 +326,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                     <button onClick={() => moveTimeline(i, 1)} disabled={i === form.timeline.length - 1} style={iconBtnStyle}>
                       <ChevronDown size={11} />
                     </button>
-                    <button onClick={() => removeTimelineEvent(i)} style={{ ...iconBtnStyle, color: 'rgba(240,90,90,0.6)' }}>
+                    <button onClick={() => removeTimelineEvent(i)} style={{ ...iconBtnStyle, color: 'rgba(231,76,60,0.6)' }}>
                       <Trash2 size={11} />
                     </button>
                   </div>
@@ -365,13 +365,13 @@ export function MissionForm({ mode, mission, agencies }: Props) {
 
         {/* Error / success */}
         {error && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(240,90,90,0.08)', border: '1px solid rgba(240,90,90,0.25)', borderRadius: '7px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '7px' }}>
             <AlertCircle size={13} style={{ color: 'var(--red)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--red)' }}>{error}</span>
           </div>
         )}
         {success && (
-          <div style={{ padding: '10px 14px', background: 'rgba(52,216,151,0.08)', border: '1px solid rgba(52,216,151,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--green)' }}>
+          <div style={{ padding: '10px 14px', background: 'rgba(46,204,113,0.08)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--green)' }}>
             ✓ {success}
           </div>
         )}
@@ -413,7 +413,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                 }}
               >
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: s.color, flexShrink: 0, boxShadow: form.status === s.value && s.value === 'active' ? `0 0 6px ${s.color}` : 'none' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: form.status === s.value ? 'var(--white)' : 'rgba(240,244,250,0.45)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: form.status === s.value ? 'var(--white)' : 'rgba(255,255,255,0.45)' }}>
                   {s.label}
                 </span>
                 {form.status === s.value && (
@@ -436,7 +436,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </select>
-            <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(240,244,250,0.4)', pointerEvents: 'none' }} />
+            <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none' }} />
           </div>
         </SidePanel>
 
@@ -453,7 +453,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                 <option key={a.id} value={a.id}>{a.name} ({a.shortName})</option>
               ))}
             </select>
-            <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(240,244,250,0.4)', pointerEvents: 'none' }} />
+            <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none' }} />
           </div>
         </SidePanel>
 
@@ -483,11 +483,11 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                 position: 'absolute', top: '2px',
                 left: form.featured ? '14px' : '2px',
                 width: '12px', height: '12px', borderRadius: '50%',
-                background: form.featured ? '#07090c' : 'rgba(240,244,250,0.4)',
+                background: form.featured ? '#0a0a0f' : 'rgba(255,255,255,0.4)',
                 transition: 'left 0.2s',
               }} />
             </div>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.6)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>
               Featured mission
             </span>
           </label>
@@ -503,10 +503,10 @@ export function MissionForm({ mode, mission, agencies }: Props) {
 function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '6px' }}>
-      <label style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.5)' }}>
+      <label style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>
         {children}
       </label>
-      {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(240,244,250,0.3)', letterSpacing: '0.04em' }}>{hint}</span>}
+      {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>{hint}</span>}
     </div>
   )
 }
@@ -515,7 +515,7 @@ function SidePanel({ label, children }: { label: string; children: React.ReactNo
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
       <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.4)' }}>{label}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>{label}</span>
       </div>
       <div style={{ padding: '12px 14px' }}>{children}</div>
     </div>
@@ -526,14 +526,14 @@ const iconBtnStyle: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
   width: '22px', height: '22px', borderRadius: '4px',
   border: 'none', background: 'transparent',
-  color: 'rgba(240,244,250,0.4)', cursor: 'pointer',
+  color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
 }
 
 function inputStyle({ large }: { large?: boolean }): React.CSSProperties {
   return {
     width: '100%', padding: large ? '12px 14px' : '9px 12px',
-    background: '#0b0e13', border: '1px solid var(--border)',
-    borderRadius: '7px', color: '#f0f4fa',
+    background: '#0a0a0f', border: '1px solid var(--border)',
+    borderRadius: '7px', color: '#ffffff',
     fontFamily: large ? 'var(--font-serif)' : 'var(--font-sans)',
     fontSize: large ? '20px' : '13px', outline: 'none',
     boxSizing: 'border-box', display: 'block', transition: 'border-color 0.2s',
@@ -550,7 +550,7 @@ function btnStyle({ primary, disabled }: { primary?: boolean; disabled?: boolean
     cursor: disabled ? 'not-allowed' : 'pointer',
     opacity: disabled ? 0.6 : 1,
     background: primary ? 'var(--accent)' : 'var(--surface)',
-    color: primary ? '#07090c' : 'rgba(240,244,250,0.7)',
+    color: primary ? '#0a0a0f' : 'rgba(255,255,255,0.7)',
     border: primary ? 'none' : '1px solid var(--border-hi)',
     transition: 'all 0.15s',
   }

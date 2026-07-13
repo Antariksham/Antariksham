@@ -13,7 +13,7 @@ export default async function NewMissionPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' }}>
         <Link
           href="/admin/missions"
-          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '6px', border: '1px solid var(--border)', color: 'rgba(240,244,250,0.5)', textDecoration: 'none', flexShrink: 0 }}
+          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '6px', border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', flexShrink: 0 }}
           title="Back to Missions"
         >
           <ChevronLeft size={16} />

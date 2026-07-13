@@ -30,7 +30,7 @@ export default async function EditArticlePage({
             style={{
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               width: '32px', height: '32px', borderRadius: '6px',
-              border: '1px solid var(--border)', color: 'rgba(240,244,250,0.5)',
+              border: '1px solid var(--border)', color: 'rgba(255,255,255,0.5)',
               textDecoration: 'none', flexShrink: 0,
             }}
             title="Back to Articles"
@@ -53,15 +53,15 @@ export default async function EditArticlePage({
           <span style={{
             fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.15em',
             textTransform: 'uppercase', padding: '4px 10px', borderRadius: '4px',
-            background: article.status === 'published' ? 'rgba(52,216,151,0.1)' : 'rgba(201,169,110,0.1)',
+            background: article.status === 'published' ? 'rgba(46,204,113,0.1)' : 'rgba(243,156,18,0.1)',
             color:      article.status === 'published' ? 'var(--green)'         : 'var(--gold)',
-            border:     `1px solid ${article.status === 'published' ? 'rgba(52,216,151,0.25)' : 'rgba(201,169,110,0.25)'}`,
+            border:     `1px solid ${article.status === 'published' ? 'rgba(46,204,113,0.25)' : 'rgba(243,156,18,0.25)'}`,
           }}>
             {article.status}
           </span>
 
           {/* Views */}
-          <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.4)' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
             <Eye size={11} />
             {article.views.toLocaleString()} views
           </span>
@@ -75,7 +75,7 @@ export default async function EditArticlePage({
               style={{
                 fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em',
                 textTransform: 'uppercase', color: 'var(--accent)', textDecoration: 'none',
-                padding: '5px 12px', border: '1px solid rgba(59,158,255,0.3)', borderRadius: '5px',
+                padding: '5px 12px', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '5px',
               }}
             >
               View Live →
@@ -87,7 +87,7 @@ export default async function EditArticlePage({
       {/* ── Meta row ─────────────────────────────── */}
       {article.publishedAt && (
         <div style={{ marginBottom: '24px' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.3)', letterSpacing: '0.06em' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em' }}>
             Published {formatDate(article.publishedAt)} · {article.readingTime} min read
           </span>
         </div>

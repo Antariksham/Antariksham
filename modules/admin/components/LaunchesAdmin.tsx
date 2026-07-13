@@ -15,13 +15,13 @@ interface LaunchData {
 // ── Status config ─────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<LaunchStatus, { label: string; color: string; bg: string; border: string; icon: React.ReactNode }> = {
-  'go':              { label: 'GO',           color: 'var(--green)',  bg: 'rgba(52,216,151,0.08)',  border: 'rgba(52,216,151,0.25)',  icon: <CheckCircle size={10} /> },
-  'tbd':             { label: 'TBD',          color: 'var(--gold)',   bg: 'rgba(201,169,110,0.08)', border: 'rgba(201,169,110,0.25)', icon: <Clock       size={10} /> },
-  'success':         { label: 'SUCCESS',      color: 'var(--green)',  bg: 'rgba(52,216,151,0.08)',  border: 'rgba(52,216,151,0.25)',  icon: <CheckCircle size={10} /> },
-  'failure':         { label: 'FAILURE',      color: 'var(--red)',    bg: 'rgba(240,90,90,0.08)',   border: 'rgba(240,90,90,0.25)',   icon: <AlertCircle size={10} /> },
-  'hold':            { label: 'HOLD',         color: 'var(--gold)',   bg: 'rgba(201,169,110,0.08)', border: 'rgba(201,169,110,0.25)', icon: <Timer       size={10} /> },
-  'in-flight':       { label: 'IN FLIGHT',    color: 'var(--accent)', bg: 'rgba(59,158,255,0.08)',  border: 'rgba(59,158,255,0.25)',  icon: <Play        size={10} /> },
-  'partial-failure': { label: 'PART. FAILURE',color: 'var(--red)',    bg: 'rgba(240,90,90,0.08)',   border: 'rgba(240,90,90,0.25)',   icon: <AlertCircle size={10} /> },
+  'go':              { label: 'GO',           color: 'var(--green)',  bg: 'rgba(46,204,113,0.08)',  border: 'rgba(46,204,113,0.25)',  icon: <CheckCircle size={10} /> },
+  'tbd':             { label: 'TBD',          color: 'var(--gold)',   bg: 'rgba(243,156,18,0.08)', border: 'rgba(243,156,18,0.25)', icon: <Clock       size={10} /> },
+  'success':         { label: 'SUCCESS',      color: 'var(--green)',  bg: 'rgba(46,204,113,0.08)',  border: 'rgba(46,204,113,0.25)',  icon: <CheckCircle size={10} /> },
+  'failure':         { label: 'FAILURE',      color: 'var(--red)',    bg: 'rgba(231,76,60,0.08)',   border: 'rgba(231,76,60,0.25)',   icon: <AlertCircle size={10} /> },
+  'hold':            { label: 'HOLD',         color: 'var(--gold)',   bg: 'rgba(243,156,18,0.08)', border: 'rgba(243,156,18,0.25)', icon: <Timer       size={10} /> },
+  'in-flight':       { label: 'IN FLIGHT',    color: 'var(--accent)', bg: 'rgba(79,142,247,0.08)',  border: 'rgba(79,142,247,0.25)',  icon: <Play        size={10} /> },
+  'partial-failure': { label: 'PART. FAILURE',color: 'var(--red)',    bg: 'rgba(231,76,60,0.08)',   border: 'rgba(231,76,60,0.25)',   icon: <AlertCircle size={10} /> },
 }
 
 const TABS = [
@@ -84,7 +84,7 @@ function StatusBadge({ status }: { status: LaunchStatus }) {
 function CountdownBadge({ target }: { target: string | null }) {
   const cd = useCountdown(target)
   if (!cd) return (
-    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.3)', letterSpacing: '0.06em' }}>
+    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em' }}>
       T– TBD
     </span>
   )
@@ -130,7 +130,7 @@ function LaunchCard({ launch }: { launch: Launch }) {
           }}>
             {launch.name}
           </p>
-          <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.4)', letterSpacing: '0.08em' }}>
+          <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em' }}>
             {launch.rocket}
             {launch.agency ? ` · ${launch.agency}` : ''}
           </p>
@@ -141,8 +141,8 @@ function LaunchCard({ launch }: { launch: Launch }) {
       {/* Middle row — date + countdown */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Clock size={11} style={{ color: 'rgba(240,244,250,0.3)', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.55)', letterSpacing: '0.04em' }}>
+          <Clock size={11} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.55)', letterSpacing: '0.04em' }}>
             {formatLaunchDate(launch.launchDate)}
           </span>
         </div>
@@ -155,8 +155,8 @@ function LaunchCard({ launch }: { launch: Launch }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
         {launch.launchSite && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <MapPin size={10} style={{ color: 'rgba(240,244,250,0.3)', flexShrink: 0 }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.4)', letterSpacing: '0.04em' }}>
+            <MapPin size={10} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em' }}>
               {launch.launchSite}
             </span>
           </div>
@@ -178,8 +178,8 @@ function LaunchCard({ launch }: { launch: Launch }) {
               textDecoration: 'none',
               padding:        '3px 8px',
               borderRadius:   '4px',
-              background:     'rgba(59,158,255,0.08)',
-              border:         '1px solid rgba(59,158,255,0.2)',
+              background:     'rgba(79,142,247,0.08)',
+              border:         '1px solid rgba(79,142,247,0.2)',
             }}
           >
             <Tv size={9} />
@@ -187,7 +187,7 @@ function LaunchCard({ launch }: { launch: Launch }) {
           </a>
         )}
         {launch.probability != null && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.35)', letterSpacing: '0.06em' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>
             {launch.probability}% weather GO
           </span>
         )}
@@ -199,7 +199,7 @@ function LaunchCard({ launch }: { launch: Launch }) {
           margin:      0,
           fontFamily:  'var(--font-sans)',
           fontSize:    '12px',
-          color:       'rgba(240,244,250,0.45)',
+          color:       'rgba(255,255,255,0.45)',
           lineHeight:  1.6,
           borderTop:   '1px solid var(--border)',
           paddingTop:  '12px',
@@ -227,11 +227,11 @@ function EmptyState({ tab }: { tab: Tab }) {
       borderRadius: '10px',
       textAlign:    'center',
     }}>
-      <Rocket size={28} style={{ color: 'rgba(240,244,250,0.12)', marginBottom: '12px' }} />
-      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+      <Rocket size={28} style={{ color: 'rgba(255,255,255,0.12)', marginBottom: '12px' }} />
+      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
         No {tab} launches found
       </p>
-      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(240,244,250,0.2)', marginTop: '6px', marginBottom: 0 }}>
+      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(255,255,255,0.2)', marginTop: '6px', marginBottom: 0 }}>
         Data is fetched live from Launch Library 2
       </p>
     </div>
@@ -276,10 +276,10 @@ export function LaunchesAdmin() {
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', color: 'var(--white)', margin: 0, lineHeight: 1.2 }}>
             Launch Tracker
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '6px 0 0' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '6px 0 0' }}>
             Live data · Launch Library 2
             {lastFetched && (
-              <span style={{ color: 'rgba(240,244,250,0.2)' }}>
+              <span style={{ color: 'rgba(255,255,255,0.2)' }}>
                 {' '}· Updated {lastFetched.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
@@ -297,7 +297,7 @@ export function LaunchesAdmin() {
             borderRadius:   '7px',
             background:     'var(--surface)',
             border:         '1px solid var(--border-hi)',
-            color:          loading ? 'rgba(240,244,250,0.3)' : 'rgba(240,244,250,0.7)',
+            color:          loading ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.7)',
             fontFamily:     'var(--font-mono)',
             fontSize:       '11px',
             letterSpacing:  '0.1em',
@@ -317,14 +317,14 @@ export function LaunchesAdmin() {
           {[
             { label: 'Upcoming',      value: data.upcoming.length,                                                      color: 'var(--accent)' },
             { label: 'GO for launch', value: data.upcoming.filter(l => l.status === 'go').length,                       color: 'var(--green)'  },
-            { label: 'Recent',        value: data.recent.length,                                                        color: 'rgba(240,244,250,0.5)' },
+            { label: 'Recent',        value: data.recent.length,                                                        color: 'rgba(255,255,255,0.5)' },
             { label: 'Successful',    value: data.recent.filter(l => l.status === 'success').length,                    color: 'var(--green)'  },
           ].map(stat => (
             <div key={stat.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px 16px' }}>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '22px', fontWeight: 700, color: stat.color, lineHeight: 1 }}>
                 {stat.value}
               </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.35)', marginTop: '5px' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginTop: '5px' }}>
                 {stat.label}
               </div>
             </div>
@@ -334,7 +334,7 @@ export function LaunchesAdmin() {
 
       {/* Error */}
       {error && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'rgba(240,90,90,0.08)', border: '1px solid rgba(240,90,90,0.25)', borderRadius: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '8px' }}>
           <AlertCircle size={14} style={{ color: 'var(--red)', flexShrink: 0 }} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--red)' }}>{error}</span>
         </div>
@@ -354,7 +354,7 @@ export function LaunchesAdmin() {
                 background:     'transparent',
                 border:         'none',
                 borderBottom:   active ? '2px solid var(--accent)' : '2px solid transparent',
-                color:          active ? 'var(--accent)' : 'rgba(240,244,250,0.45)',
+                color:          active ? 'var(--accent)' : 'rgba(255,255,255,0.45)',
                 fontFamily:     'var(--font-mono)',
                 fontSize:       '11px',
                 letterSpacing:  '0.1em',
@@ -374,8 +374,8 @@ export function LaunchesAdmin() {
                   fontSize:     '9px',
                   padding:      '1px 6px',
                   borderRadius: '10px',
-                  background:   active ? 'rgba(59,158,255,0.15)' : 'rgba(255,255,255,0.05)',
-                  color:        active ? 'var(--accent)' : 'rgba(240,244,250,0.3)',
+                  background:   active ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.05)',
+                  color:        active ? 'var(--accent)' : 'rgba(255,255,255,0.3)',
                 }}>
                   {count}
                 </span>
@@ -405,22 +405,22 @@ export function LaunchesAdmin() {
       {/* Info note */}
       <div style={{
         padding:      '12px 16px',
-        background:   'rgba(59,158,255,0.04)',
-        border:       '1px solid rgba(59,158,255,0.12)',
+        background:   'rgba(79,142,247,0.04)',
+        border:       '1px solid rgba(79,142,247,0.12)',
         borderRadius: '8px',
         display:      'flex',
         alignItems:   'flex-start',
         gap:          '10px',
       }}>
-        <Rocket size={13} style={{ color: 'rgba(59,158,255,0.5)', flexShrink: 0, marginTop: '1px' }} />
-        <p style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.35)', lineHeight: 1.6, letterSpacing: '0.04em' }}>
+        <Rocket size={13} style={{ color: 'rgba(79,142,247,0.5)', flexShrink: 0, marginTop: '1px' }} />
+        <p style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.6, letterSpacing: '0.04em' }}>
           Launch data is fetched live from{' '}
-          <a href="https://thespacedevs.com/llapi" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(59,158,255,0.6)', textDecoration: 'none' }}>
+          <a href="https://thespacedevs.com/llapi" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(79,142,247,0.6)', textDecoration: 'none' }}>
             Launch Library 2
           </a>
           . Data refreshes every 5 minutes via server cache. Use the Refresh button to force a new fetch.
           To add a public Launches page for visitors, build{' '}
-          <code style={{ fontSize: '9px', color: 'rgba(240,244,250,0.4)', background: 'rgba(255,255,255,0.05)', padding: '1px 5px', borderRadius: '3px' }}>/live/launches</code>.
+          <code style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', padding: '1px 5px', borderRadius: '3px' }}>/live/launches</code>.
         </p>
       </div>
 

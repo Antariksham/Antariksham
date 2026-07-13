@@ -5,12 +5,12 @@ import { formatDate } from '@/lib/utils'
 import type { MissionCard } from '@/types/mission'
 
 const STATUS_COLOR: Record<string, string> = {
-  active:           '#34d897',
-  upcoming:         '#3b9eff',
-  'in-development': '#c9a96e',
-  completed:        'rgba(240,244,250,0.35)',
-  failed:           '#f05a5a',
-  cancelled:        '#f05a5a',
+  active:           '#2ecc71',
+  upcoming:         '#4f8ef7',
+  'in-development': '#f39c12',
+  completed:        'rgba(255,255,255,0.35)',
+  failed:           '#e74c3c',
+  cancelled:        '#e74c3c',
 }
 
 const TYPE_LABEL: Record<string, string> = {
@@ -33,31 +33,31 @@ export function MissionsSection({ missions }: Props) {
 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '40px', gap: '16px', flexWrap: 'wrap' }}>
           <div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#3b9eff', marginBottom: '8px' }}>Mission Tracking</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '8px' }}>Mission Tracking</div>
             <div style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(24px, 4vw, 40px)', fontWeight: 400, color: '#ffffff', lineHeight: 1.1 }}>Active & Upcoming Missions</div>
           </div>
-          <Link href="/missions" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.6)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          <Link href="/missions" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
             All missions →
           </Link>
         </div>
 
         {missions.length === 0 && (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.25)' }}>No missions tracked yet</p>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>No missions tracked yet</p>
           </div>
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
           {missions.map(mission => {
-            const statusColor = STATUS_COLOR[mission.status] || 'rgba(240,244,250,0.35)'
-            const agencyColor = mission.agency?.shortName === 'ISRO'   ? '#c9a96e'
-                              : mission.agency?.shortName === 'ESA'    ? '#e879f9'
-                              : mission.agency?.shortName === 'SpaceX' ? '#9f7aea'
-                              : '#3b9eff'
+            const statusColor = STATUS_COLOR[mission.status] || 'rgba(255,255,255,0.35)'
+            const agencyColor = mission.agency?.shortName === 'ISRO'   ? '#f39c12'
+                              : mission.agency?.shortName === 'ESA'    ? '#4f8ef7'
+                              : mission.agency?.shortName === 'SpaceX' ? '#4f8ef7'
+                              : '#4f8ef7'
             return (
               <Link key={mission.id} href={`/missions/${mission.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
                 <div
-                  style={{ background: '#10151c', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column', transition: 'border-color 0.2s' }}
+                  style={{ background: '#12121a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column', transition: 'border-color 0.2s' }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
                 >
@@ -66,7 +66,7 @@ export function MissionsSection({ missions }: Props) {
                       <img src={mission.featuredImage} alt={mission.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     </div>
                   ) : (
-                    <div style={{ width: '100%', height: '80px', background: 'linear-gradient(135deg, #080f20 0%, #0c1830 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ width: '100%', height: '80px', background: 'linear-gradient(135deg, #12121a 0%, #1a1a2e 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <span style={{ fontSize: '24px', opacity: 0.2 }}>🛸</span>
                     </div>
                   )}
@@ -76,12 +76,12 @@ export function MissionsSection({ missions }: Props) {
                         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: agencyColor }}>{mission.agency.shortName}</span>
                       )}
                       {mission.destination && (
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.3)' }}>· {mission.destination}</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>· {mission.destination}</span>
                       )}
                     </div>
                     <div style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', fontWeight: 400, color: '#ffffff', lineHeight: 1.15 }}>{mission.name}</div>
                     {mission.missionType && (
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.4)' }}>{TYPE_LABEL[mission.missionType] || mission.missionType}</div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>{TYPE_LABEL[mission.missionType] || mission.missionType}</div>
                     )}
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusColor }}>
                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: statusColor, display: 'inline-block', boxShadow: mission.status === 'active' ? `0 0 8px ${statusColor}` : 'none' }} />
@@ -89,7 +89,7 @@ export function MissionsSection({ missions }: Props) {
                       {mission.launchDate && ` · ${formatDate(mission.launchDate)}`}
                     </div>
                     {mission.description && (
-                      <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(240,244,250,0.9)', margin: '4px 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{mission.description}</p>
+                      <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', margin: '4px 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{mission.description}</p>
                     )}
                   </div>
                 </div>

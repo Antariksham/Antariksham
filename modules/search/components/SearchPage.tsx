@@ -14,18 +14,18 @@ import type {
 // ── Constants ─────────────────────────────────────────────────
 
 const DIFFICULTY_COLORS: Record<string, { color: string; bg: string }> = {
-  beginner:     { color: '#34d897', bg: 'rgba(52,216,151,0.10)' },
-  intermediate: { color: '#c9a96e', bg: 'rgba(201,169,110,0.10)' },
-  advanced:     { color: '#f05a5a', bg: 'rgba(240,90,90,0.10)' },
+  beginner:     { color: '#2ecc71', bg: 'rgba(46,204,113,0.10)' },
+  intermediate: { color: '#f39c12', bg: 'rgba(243,156,18,0.10)' },
+  advanced:     { color: '#e74c3c', bg: 'rgba(231,76,60,0.10)' },
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  active:         '#34d897',
-  upcoming:       '#3b9eff',
-  completed:      'rgba(240,244,250,0.45)',
-  failed:         '#f05a5a',
-  'in-development': '#c9a96e',
-  cancelled:      '#f05a5a',
+  active:         '#2ecc71',
+  upcoming:       '#4f8ef7',
+  completed:      'rgba(255,255,255,0.45)',
+  failed:         '#e74c3c',
+  'in-development': '#f39c12',
+  cancelled:      '#e74c3c',
 }
 
 const ARTICLE_TYPE_LABELS: Record<string, string> = {
@@ -55,7 +55,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
       <span style={{
         fontFamily:  'var(--font-mono)',
         fontSize:    '10px',
-        color:       'rgba(240,244,250,0.3)',
+        color:       'rgba(255,255,255,0.3)',
         background:  'rgba(255,255,255,0.06)',
         borderRadius:'4px',
         padding:     '1px 7px',
@@ -116,7 +116,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
                 fontFamily:  'var(--font-serif)',
                 fontSize:    '15px',
                 lineHeight:  1.75,
-                color:       'rgba(240,244,250,0.9)',
+                color:       'rgba(255,255,255,0.9)',
                 overflow:    'hidden',
                 display:     '-webkit-box',
                 WebkitLineClamp: 2,
@@ -132,7 +132,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
             fontSize:      '9px',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
-            color:         'rgba(240,244,250,0.4)',
+            color:         'rgba(255,255,255,0.4)',
             background:    'rgba(255,255,255,0.06)',
             borderRadius:  '4px',
             padding:       '3px 8px',
@@ -150,7 +150,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
           borderTop:     '1px solid rgba(255,255,255,0.06)',
           fontFamily:    'var(--font-mono)',
           fontSize:      '10px',
-          color:         'rgba(240,244,250,0.35)',
+          color:         'rgba(255,255,255,0.35)',
         }}>
           {result.publishedAt && <span>{timeAgo(result.publishedAt)}</span>}
           <span>{result.readingTime} min read</span>
@@ -162,7 +162,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
 
 function MissionCard({ result }: { result: SearchMissionResult }) {
   const [hovered, setHovered] = useState(false)
-  const statusColor = STATUS_COLORS[result.status] || 'rgba(240,244,250,0.45)'
+  const statusColor = STATUS_COLORS[result.status] || 'rgba(255,255,255,0.45)'
   return (
     <Link href={`/missions/${result.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div
@@ -195,7 +195,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
                 <span style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize:   '9px',
-                  color:      'rgba(240,244,250,0.3)',
+                  color:      'rgba(255,255,255,0.3)',
                 }}>
                   → {result.destination}
                 </span>
@@ -216,7 +216,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
                 fontFamily:      'var(--font-serif)',
                 fontSize:        '15px',
                 lineHeight:      1.75,
-                color:           'rgba(240,244,250,0.9)',
+                color:           'rgba(255,255,255,0.9)',
                 overflow:        'hidden',
                 display:         '-webkit-box',
                 WebkitLineClamp: 2,
@@ -283,7 +283,7 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
               fontFamily:      'var(--font-serif)',
               fontSize:        '15px',
               lineHeight:      1.75,
-              color:           'rgba(240,244,250,0.9)',
+              color:           'rgba(255,255,255,0.9)',
               overflow:        'hidden',
               display:         '-webkit-box',
               WebkitLineClamp: 2,
@@ -323,7 +323,7 @@ function EmptyState({ query }: { query: string }) {
         fontSize:      '11px',
         letterSpacing: '0.2em',
         textTransform: 'uppercase',
-        color:         'rgba(240,244,250,0.3)',
+        color:         'rgba(255,255,255,0.3)',
         marginBottom:  '8px',
       }}>
         No results found
@@ -331,7 +331,7 @@ function EmptyState({ query }: { query: string }) {
       <p style={{
         fontFamily: 'var(--font-sans)',
         fontSize:   '14px',
-        color:      'rgba(240,244,250,0.4)',
+        color:      'rgba(255,255,255,0.4)',
       }}>
         Nothing matched &ldquo;{query}&rdquo; — try different keywords
       </p>
@@ -348,7 +348,7 @@ function IdleState() {
         fontSize:      '10px',
         letterSpacing: '0.25em',
         textTransform: 'uppercase',
-        color:         'rgba(240,244,250,0.25)',
+        color:         'rgba(255,255,255,0.25)',
         marginBottom:  '20px',
       }}>
         Try searching for
@@ -361,7 +361,7 @@ function IdleState() {
               fontFamily:    'var(--font-mono)',
               fontSize:      '11px',
               letterSpacing: '0.08em',
-              color:         'rgba(240,244,250,0.55)',
+              color:         'rgba(255,255,255,0.55)',
               background:    'rgba(255,255,255,0.05)',
               border:        '1px solid rgba(255,255,255,0.09)',
               borderRadius:  '6px',
@@ -463,7 +463,7 @@ export function SearchPage() {
       <div style={{
         borderBottom: '1px solid rgba(255,255,255,0.08)',
         padding:      '48px 24px 32px',
-        background:   'linear-gradient(180deg, rgba(59,158,255,0.04) 0%, transparent 100%)',
+        background:   'linear-gradient(180deg, rgba(79,142,247,0.04) 0%, transparent 100%)',
       }}>
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
 
@@ -494,7 +494,7 @@ export function SearchPage() {
             <svg
               width="18" height="18"
               viewBox="0 0 24 24" fill="none"
-              stroke="rgba(240,244,250,0.35)" strokeWidth="2"
+              stroke="rgba(255,255,255,0.35)" strokeWidth="2"
               style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
             >
               <circle cx="11" cy="11" r="8"/>
@@ -520,7 +520,7 @@ export function SearchPage() {
                 boxSizing:    'border-box',
                 transition:   'border-color 0.2s',
               }}
-              onFocus={e  => (e.target.style.borderColor = 'rgba(59,158,255,0.5)')}
+              onFocus={e  => (e.target.style.borderColor = 'rgba(79,142,247,0.5)')}
               onBlur={e   => (e.target.style.borderColor = 'rgba(255,255,255,0.14)')}
             />
 
@@ -535,7 +535,7 @@ export function SearchPage() {
                   transform:  'translateY(-50%)',
                   background: 'none',
                   border:     'none',
-                  color:      'rgba(240,244,250,0.4)',
+                  color:      'rgba(255,255,255,0.4)',
                   cursor:     'pointer',
                   padding:    '4px',
                   display:    'flex',
@@ -554,7 +554,7 @@ export function SearchPage() {
             marginTop:  '12px',
             fontFamily: 'var(--font-mono)',
             fontSize:   '11px',
-            color:      'rgba(240,244,250,0.3)',
+            color:      'rgba(255,255,255,0.3)',
             minHeight:  '18px',
           }}>
             {loading && 'Searching…'}

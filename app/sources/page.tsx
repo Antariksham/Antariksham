@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const prose: React.CSSProperties = {
   fontFamily: 'Outfit, sans-serif',
   fontSize:   '17px',
-  color:      'rgba(240,244,250,0.78)',
+  color:      'rgba(255,255,255,0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
 }
@@ -18,7 +18,7 @@ const prose: React.CSSProperties = {
 const h2: React.CSSProperties = {
   fontFamily: 'Crimson Pro, Georgia, serif',
   fontSize:   '26px',
-  color:      '#f0f4fa',
+  color:      '#ffffff',
   margin:     '48px 0 14px',
   lineHeight: 1.25,
 }
@@ -37,10 +37,10 @@ interface SourceEntry {
 }
 
 const TYPE_COLOR: Record<SourceEntry['type'], string> = {
-  agency:    'rgba(59,158,255,0.8)',
-  api:       'rgba(52,216,151,0.8)',
-  data:      'rgba(201,169,110,0.8)',
-  reference: 'rgba(240,244,250,0.4)',
+  agency:    'rgba(79,142,247,0.8)',
+  api:       'rgba(46,204,113,0.8)',
+  data:      'rgba(243,156,18,0.8)',
+  reference: 'rgba(255,255,255,0.4)',
 }
 
 const TYPE_LABEL: Record<SourceEntry['type'], string> = {
@@ -96,7 +96,7 @@ function SourceCard({ source }: { source: SourceEntry }) {
     }}>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '18px', color: '#f0f4fa', lineHeight: 1.2 }}>
+          <span style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: '18px', color: '#ffffff', lineHeight: 1.2 }}>
             {source.name}
           </span>
           <span style={{
@@ -113,7 +113,7 @@ function SourceCard({ source }: { source: SourceEntry }) {
             {TYPE_LABEL[source.type]}
           </span>
         </div>
-        <p style={{ ...prose, margin: 0, fontSize: '14px', color: 'rgba(240,244,250,0.55)' }}>
+        <p style={{ ...prose, margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.55)' }}>
           {source.description}
         </p>
       </div>
@@ -126,12 +126,12 @@ function SourceCard({ source }: { source: SourceEntry }) {
           fontSize:      '10px',
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
-          color:         '#3b9eff',
+          color:         '#4f8ef7',
           textDecoration:'none',
           padding:       '6px 12px',
           borderRadius:  '5px',
-          background:    'rgba(59,158,255,0.07)',
-          border:        '1px solid rgba(59,158,255,0.15)',
+          background:    'rgba(79,142,247,0.07)',
+          border:        '1px solid rgba(79,142,247,0.15)',
           whiteSpace:    'nowrap',
           flexShrink:    0,
         }}
@@ -144,20 +144,20 @@ function SourceCard({ source }: { source: SourceEntry }) {
 
 export default function SourcesPage() {
   return (
-    <main style={{ background: '#07090c', minHeight: '100vh', padding: '72px 24px 96px' }}>
+    <main style={{ background: '#0a0a0f', minHeight: '100vh', padding: '72px 24px 96px' }}>
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#3b9eff', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Sources & Data
         </div>
 
         {/* Title */}
-        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#f0f4fa', margin: '0 0 28px', lineHeight: 1.15, fontWeight: 400 }}>
+        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#ffffff', margin: '0 0 28px', lineHeight: 1.15, fontWeight: 400 }}>
           Our Sources
         </h1>
 
-        <p style={{ ...prose, fontSize: '19px', color: 'rgba(240,244,250,0.85)', marginBottom: '36px' }}>
+        <p style={{ ...prose, fontSize: '19px', color: 'rgba(255,255,255,0.85)', marginBottom: '36px' }}>
           Every fact on Antariksham traces back to a primary source. This page lists the agencies, APIs, and scientific institutions we rely on for our journalism, live data systems, and educational content.
         </p>
 
@@ -188,10 +188,10 @@ export default function SourcesPage() {
         <hr style={divider} />
 
         {/* Note */}
-        <div style={{ padding: '20px 24px', background: 'rgba(59,158,255,0.05)', border: '1px solid rgba(59,158,255,0.12)', borderRadius: '10px', marginBottom: '32px' }}>
+        <div style={{ padding: '20px 24px', background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.12)', borderRadius: '10px', marginBottom: '32px' }}>
           <p style={{ ...prose, margin: 0, fontSize: '15px' }}>
             If you believe we have cited a source incorrectly or misrepresented information from any of these providers, please{' '}
-            <Link href="/contact" style={{ color: '#3b9eff', textDecoration: 'none' }}>contact us</Link>
+            <Link href="/contact" style={{ color: '#4f8ef7', textDecoration: 'none' }}>contact us</Link>
             {' '}with the specific article and claim. We review all corrections.
           </p>
         </div>
@@ -207,8 +207,8 @@ export default function SourcesPage() {
               href={link.href}
               style={{
                 display: 'inline-flex', padding: '9px 16px', borderRadius: '6px',
-                background: 'rgba(59,158,255,0.07)', border: '1px solid rgba(59,158,255,0.18)',
-                color: '#3b9eff', fontFamily: 'DM Mono, monospace', fontSize: '11px',
+                background: 'rgba(79,142,247,0.07)', border: '1px solid rgba(79,142,247,0.18)',
+                color: '#4f8ef7', fontFamily: 'DM Mono, monospace', fontSize: '11px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none',
               }}
             >

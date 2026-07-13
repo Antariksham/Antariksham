@@ -230,7 +230,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
                 border:        '1px solid',
                 borderColor:   form._showMediaPicker ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
                 borderRadius:  '6px',
-                color:         form._showMediaPicker ? '#07090c' : 'rgba(240,244,250,0.7)',
+                color:         form._showMediaPicker ? '#0a0a0f' : 'rgba(255,255,255,0.7)',
                 fontFamily:    'var(--font-mono)',
                 fontSize:      '10px',
                 letterSpacing: '0.12em',
@@ -275,7 +275,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
             <FieldLabel>Content (HTML)</FieldLabel>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em', color: 'rgba(240,244,250,0.3)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)' }}>
               {wordCount} words · {rt} min read
             </span>
           </div>
@@ -286,7 +286,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
             rows={22}
             style={{ ...inputStyle({}), resize: 'vertical', lineHeight: 1.7, fontFamily: 'var(--font-mono)', fontSize: '12px' }}
           />
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(240,244,250,0.3)', margin: '6px 0 0', letterSpacing: '0.06em' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(255,255,255,0.3)', margin: '6px 0 0', letterSpacing: '0.06em' }}>
             Content is rendered as HTML. Use &lt;p&gt;, &lt;h2&gt;–&lt;h4&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;a href=""&gt;, &lt;ul&gt;&lt;li&gt;, &lt;blockquote&gt;.
           </p>
         </div>
@@ -298,13 +298,13 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
 
         {/* Error / success */}
         {error && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(240,90,90,0.08)', border: '1px solid rgba(240,90,90,0.25)', borderRadius: '7px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '7px' }}>
             <AlertCircle size={13} style={{ color: 'var(--red)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--red)' }}>{error}</span>
           </div>
         )}
         {success && (
-          <div style={{ padding: '10px 14px', background: 'rgba(52,216,151,0.08)', border: '1px solid rgba(52,216,151,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--green)' }}>
+          <div style={{ padding: '10px 14px', background: 'rgba(46,204,113,0.08)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--green)' }}>
             ✓ {success}
           </div>
         )}
@@ -343,7 +343,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
 
           {/* Current status indicator */}
           <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--border)' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.3)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)' }}>
               Current status:
             </span>
             <span style={{
@@ -351,7 +351,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
               letterSpacing: '0.1em', textTransform: 'uppercase',
               color: form.status === 'published' ? 'var(--green)'
                    : form.status === 'draft'     ? 'var(--gold)'
-                   : 'rgba(240,244,250,0.4)',
+                   : 'rgba(255,255,255,0.4)',
             }}>
               {form.status}
             </span>
@@ -370,7 +370,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </select>
-            <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(240,244,250,0.4)', pointerEvents: 'none' }} />
+            <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none' }} />
           </div>
         </SidePanel>
 
@@ -387,7 +387,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
                 <option key={a.id} value={a.id}>{a.name}</option>
               ))}
             </select>
-            <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(240,244,250,0.4)', pointerEvents: 'none' }} />
+            <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none' }} />
           </div>
         </SidePanel>
 
@@ -407,11 +407,11 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
                 position: 'absolute', top: '2px',
                 left: form.featured ? '14px' : '2px',
                 width: '12px', height: '12px', borderRadius: '50%',
-                background: form.featured ? '#07090c' : 'rgba(240,244,250,0.4)',
+                background: form.featured ? '#0a0a0f' : 'rgba(255,255,255,0.4)',
                 transition: 'left 0.2s',
               }} />
             </div>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.6)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>
               Featured article
             </span>
           </label>
@@ -430,9 +430,9 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
                     padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
                     fontFamily: 'var(--font-mono)', fontSize: '9px',
                     letterSpacing: '0.1em', textTransform: 'uppercase',
-                    background: active ? 'rgba(59,158,255,0.15)' : 'transparent',
-                    border: `1px solid ${active ? 'rgba(59,158,255,0.5)' : 'var(--border)'}`,
-                    color: active ? 'var(--accent)' : 'rgba(240,244,250,0.5)',
+                    background: active ? 'rgba(79,142,247,0.15)' : 'transparent',
+                    border: `1px solid ${active ? 'rgba(79,142,247,0.5)' : 'var(--border)'}`,
+                    color: active ? 'var(--accent)' : 'rgba(255,255,255,0.5)',
                     transition: 'all 0.15s',
                   }}
                 >
@@ -456,9 +456,9 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
                     padding: '3px 9px', borderRadius: '4px', cursor: 'pointer',
                     fontFamily: 'var(--font-mono)', fontSize: '9px',
                     letterSpacing: '0.08em', textTransform: 'uppercase',
-                    background: active ? 'rgba(201,169,110,0.12)' : 'transparent',
-                    border: `1px solid ${active ? 'rgba(201,169,110,0.4)' : 'var(--border)'}`,
-                    color: active ? 'var(--gold)' : 'rgba(240,244,250,0.4)',
+                    background: active ? 'rgba(243,156,18,0.12)' : 'transparent',
+                    border: `1px solid ${active ? 'rgba(243,156,18,0.4)' : 'var(--border)'}`,
+                    color: active ? 'var(--gold)' : 'rgba(255,255,255,0.4)',
                     transition: 'all 0.15s',
                   }}
                 >
@@ -479,11 +479,11 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
 function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '6px' }}>
-      <label style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.5)' }}>
+      <label style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>
         {children}
       </label>
       {hint && (
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(240,244,250,0.3)', letterSpacing: '0.04em' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
           {hint}
         </span>
       )}
@@ -495,7 +495,7 @@ function SidePanel({ label, children }: { label: string; children: React.ReactNo
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
       <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.4)' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
           {label}
         </span>
       </div>
@@ -512,10 +512,10 @@ function inputStyle({ large }: { large?: boolean }) {
   return {
     width:        '100%',
     padding:      large ? '12px 14px' : '9px 12px',
-    background:   '#0b0e13',
+    background:   '#0a0a0f',
     border:       '1px solid var(--border)',
     borderRadius: '7px',
-    color:        '#f0f4fa',
+    color:        '#ffffff',
     fontFamily:   large ? 'var(--font-serif)' : 'var(--font-sans)',
     fontSize:     large ? '20px' : '13px',
     outline:      'none',
@@ -542,7 +542,7 @@ function btnStyle({ primary, disabled }: { primary?: boolean; disabled?: boolean
     cursor:         disabled ? 'not-allowed' : 'pointer',
     opacity:        disabled ? 0.6 : 1,
     background:     primary ? 'var(--accent)' : 'var(--surface)',
-    color:          primary ? '#07090c' : 'rgba(240,244,250,0.7)',
+    color:          primary ? '#0a0a0f' : 'rgba(255,255,255,0.7)',
     border:         primary ? 'none' : '1px solid var(--border-hi)',
     transition:     'all 0.15s',
   }

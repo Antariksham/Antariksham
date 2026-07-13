@@ -8,14 +8,14 @@ export function AboutSection() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '48px', alignItems: 'center' }}>
 
           <div>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#3b9eff', marginBottom: '20px' }}>Our Mission</div>
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>Our Mission</div>
             <blockquote style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 300, fontStyle: 'italic', lineHeight: 1.45, color: '#ffffff', marginBottom: '24px', padding: 0, border: 'none' }}>
               "Antariksham is built on a simple belief — that space belongs to everyone, and understanding it should be <strong style={{ fontStyle: 'normal', fontWeight: 400 }}>accessible, scientific, and deeply honest.</strong>"
             </blockquote>
-            <p style={{ fontSize: '15px', lineHeight: 1.75, color: 'rgba(240,244,250,0.75)', marginBottom: '32px' }}>
+            <p style={{ fontSize: '15px', lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: '32px' }}>
               An independent platform committed to scientific accuracy, editorial integrity, and building the most credible space knowledge ecosystem on the web. Not a news portal. Not a blog. A space intelligence organization.
             </p>
-            <Link href="/about" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '13px 24px', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(240,244,250,0.85)', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: '6px', fontFamily: 'DM Mono, monospace' }}>
+            <Link href="/about" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '13px 24px', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.85)', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', borderRadius: '6px', fontFamily: 'DM Mono, monospace' }}>
               Our Mission →
             </Link>
           </div>
@@ -26,9 +26,9 @@ export function AboutSection() {
               { num: '6',    label: 'Live\nSystems' },
               { num: '.org', label: 'Trust\nFirst' },
             ].map((stat) => (
-              <div key={stat.label} style={{ background: '#10151c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '24px 16px', textAlign: 'center' }}>
+              <div key={stat.label} style={{ background: '#12121a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '24px 16px', textAlign: 'center' }}>
                 <div style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 300, color: '#ffffff', lineHeight: 1, marginBottom: '10px' }}>{stat.num}</div>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.5)', whiteSpace: 'pre-line', lineHeight: 1.5 }}>{stat.label}</div>
+                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', whiteSpace: 'pre-line', lineHeight: 1.5 }}>{stat.label}</div>
               </div>
             ))}
           </div>

@@ -100,7 +100,7 @@ export function LearnArticlePage({ article }: Props) {
       {/* ── Back link ──────────────────────────────────────── */}
       <Link
         href="/learn"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.5)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '40px' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '40px' }}
       >
         ← Back to Learn
       </Link>
@@ -128,7 +128,7 @@ export function LearnArticlePage({ article }: Props) {
           {article.title}
         </h1>
 
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', lineHeight: 1.75, color: 'rgba(240,244,250,0.9)', margin: '0 0 24px' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', margin: '0 0 24px' }}>
           {article.excerpt}
         </p>
 
@@ -140,7 +140,7 @@ export function LearnArticlePage({ article }: Props) {
                 fontFamily:    'var(--font-mono)',
                 fontSize:      '11px',
                 letterSpacing: '0.08em',
-                color:         'rgba(240,244,250,0.7)',
+                color:         'rgba(255,255,255,0.7)',
                 background:    'rgba(255,255,255,0.07)',
                 border:        '1px solid rgba(255,255,255,0.15)',
                 padding:       '4px 10px',
@@ -154,7 +154,7 @@ export function LearnArticlePage({ article }: Props) {
       </div>
 
       {/* ── Divider ────────────────────────────────────────── */}
-      <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(59,158,255,0.2), transparent)', marginBottom: '48px' }} />
+      <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(79,142,247,0.2), transparent)', marginBottom: '48px' }} />
 
       {/* ── Article content ────────────────────────────────── */}
       <div
@@ -178,9 +178,9 @@ export function LearnArticlePage({ article }: Props) {
             color:          'var(--accent)',
             textDecoration: 'none',
             padding:        '10px 20px',
-            border:         '1px solid rgba(59,158,255,0.25)',
+            border:         '1px solid rgba(79,142,247,0.25)',
             borderRadius:   '4px',
-            background:     'rgba(59,158,255,0.06)',
+            background:     'rgba(79,142,247,0.06)',
           }}
         >
           ← All Articles
@@ -217,16 +217,16 @@ export function LearnArticlePage({ article }: Props) {
         .article-body p {
           font-size:   16px;
           line-height: 1.85;
-          color:       rgba(240,244,250,0.78);
+          color:       rgba(255,255,255,0.78);
           margin:      0 0 20px;
         }
         .article-body strong { color: var(--white); font-weight: 600; }
-        .article-body em    { color: rgba(240,244,250,0.85); font-style: italic; }
+        .article-body em    { color: rgba(255,255,255,0.85); font-style: italic; }
         .article-body ul, .article-body ol { padding-left: 24px; margin: 0 0 20px; }
         .article-body li {
           font-size:     16px;
           line-height:   1.8;
-          color:         rgba(240,244,250,0.75);
+          color:         rgba(255,255,255,0.75);
           margin-bottom: 6px;
         }
         .article-body code {

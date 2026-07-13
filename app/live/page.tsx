@@ -60,7 +60,7 @@ export default function LivePage() {
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 14px' }}>
           Space Intelligence
         </h1>
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'rgba(240,244,250,0.9)', margin: 0, maxWidth: '520px', lineHeight: 1.7 }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'rgba(255,255,255,0.9)', margin: 0, maxWidth: '520px', lineHeight: 1.7 }}>
           Real-time data systems tracking the ISS, rocket launches, NASA imagery and deep-space probes.
         </p>
       </div>
@@ -110,7 +110,7 @@ export default function LivePage() {
                 </h2>
 
                 {/* Description */}
-                <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(240,244,250,0.9)', margin: '0 0 20px' }}>
+                <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', margin: '0 0 20px' }}>
                   {page.desc}
                 </p>
 

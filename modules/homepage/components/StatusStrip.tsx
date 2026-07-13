@@ -63,7 +63,7 @@ export function StatusStrip() {
       label:     'ISS Position',
       value:     data.issSpeed,
       sub:       '● Live tracking',
-      subColor:  '#34d897',
+      subColor:  '#2ecc71',
       href:      '/live/iss-tracker',   // ← fixed: was missing
     },
     {
@@ -71,7 +71,7 @@ export function StatusStrip() {
       label:     'Next Launch',
       value:     'View Schedule',
       sub:       'Launch Library 2',
-      subColor:  'rgba(240,244,250,0.6)',
+      subColor:  'rgba(255,255,255,0.6)',
       href:      '/live/launches',
     },
     {
@@ -79,7 +79,7 @@ export function StatusStrip() {
       label:     'NASA APOD',
       value:     "Today's Image",
       sub:       'Updated daily',
-      subColor:  'rgba(240,244,250,0.6)',
+      subColor:  'rgba(255,255,255,0.6)',
       href:      '/live/apod',
     },
     {
@@ -87,7 +87,7 @@ export function StatusStrip() {
       label:     'Voyager 1',
       value:     data.voyagerDistance,
       sub:       data.voyagerStatus,
-      subColor:  'rgba(240,244,250,0.6)',
+      subColor:  'rgba(255,255,255,0.6)',
       href:      '/live/deep-space/voyager-1',
     },
     {
@@ -95,13 +95,13 @@ export function StatusStrip() {
       label:     'Deep Space',
       value:     '5 Probes',
       sub:       'Live telemetry',
-      subColor:  'rgba(240,244,250,0.6)',
+      subColor:  'rgba(255,255,255,0.6)',
       href:      '/live/deep-space',
     },
   ]
 
   return (
-    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', background: '#0b0e13', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', background: '#0a0a0f', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
       <div style={{ display: 'flex', alignItems: 'stretch', padding: '0 24px', minWidth: 'max-content' }}>
         {items.map((item, i) => (
           <a
@@ -113,7 +113,7 @@ export function StatusStrip() {
               {item.icon}
             </div>
             <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.5)', marginBottom: '2px' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '2px' }}>
                 {item.label}
               </div>
               <div style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 500, color: '#ffffff', marginBottom: '2px' }}>

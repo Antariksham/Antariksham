@@ -134,7 +134,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
 
       {/* Error */}
       {error && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(240,90,90,0.08)', border: '1px solid rgba(240,90,90,0.25)', borderRadius: '7px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '7px', marginBottom: '20px' }}>
           <AlertCircle size={13} style={{ color: 'var(--red)', flexShrink: 0 }} />
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--red)' }}>{error}</span>
         </div>
@@ -171,24 +171,24 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                 </div>
 
                 {/* Number */}
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.2)', width: '16px', textAlign: 'center', flexShrink: 0 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.2)', width: '16px', textAlign: 'center', flexShrink: 0 }}>
                   {i + 1}
                 </span>
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.08em', color: section.enabled ? 'var(--white)' : 'rgba(240,244,250,0.4)' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.08em', color: section.enabled ? 'var(--white)' : 'rgba(255,255,255,0.4)' }}>
                       {label}
                     </span>
                     {isHero && (
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent)', background: 'rgba(59,158,255,0.1)', border: '1px solid rgba(59,158,255,0.2)', padding: '2px 6px', borderRadius: '3px' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent)', background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', padding: '2px 6px', borderRadius: '3px' }}>
                         Editable
                       </span>
                     )}
                   </div>
                   {desc && (
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.55)', margin: '2px 0 0', letterSpacing: '0.04em' }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.55)', margin: '2px 0 0', letterSpacing: '0.04em' }}>
                       {desc}
                     </p>
                   )}
@@ -202,7 +202,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                       display: 'inline-flex', alignItems: 'center', gap: '5px',
                       padding: '5px 10px', borderRadius: '5px', cursor: 'pointer',
                       background: 'transparent', border: '1px solid var(--border)',
-                      color: 'rgba(240,244,250,0.5)', fontFamily: 'var(--font-mono)',
+                      color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-mono)',
                       fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase',
                       flexShrink: 0,
                     }}
@@ -220,8 +220,8 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     width: '30px', height: '30px', borderRadius: '5px', cursor: 'pointer',
                     background: 'transparent', flexShrink: 0,
-                    border: `1px solid ${section.enabled ? 'rgba(52,216,151,0.3)' : 'var(--border)'}`,
-                    color: section.enabled ? 'var(--green)' : 'rgba(240,244,250,0.3)',
+                    border: `1px solid ${section.enabled ? 'rgba(46,204,113,0.3)' : 'var(--border)'}`,
+                    color: section.enabled ? 'var(--green)' : 'rgba(255,255,255,0.3)',
                     opacity: busy === section.id ? 0.5 : 1,
                     transition: 'all 0.15s',
                   }}
@@ -235,9 +235,9 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
       </SidePanel>
 
       {/* Info note */}
-      <div style={{ marginTop: '16px', padding: '12px 16px', background: 'rgba(59,158,255,0.05)', border: '1px solid rgba(59,158,255,0.15)', borderRadius: '7px' }}>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.4)', margin: 0, letterSpacing: '0.06em', lineHeight: 1.6 }}>
-          Section order and visibility update instantly. Edit the hero featured card by clicking <strong style={{ color: 'rgba(240,244,250,0.6)' }}>Edit</strong> on the Hero row.
+      <div style={{ marginTop: '16px', padding: '12px 16px', background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: '7px' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: 0, letterSpacing: '0.06em', lineHeight: 1.6 }}>
+          Section order and visibility update instantly. Edit the hero featured card by clicking <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Edit</strong> on the Hero row.
         </p>
       </div>
 
@@ -257,7 +257,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                   Edit Hero Featured Card
                 </span>
               </div>
-              <button onClick={() => setHeroOpen(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(240,244,250,0.5)', display: 'flex' }}>
+              <button onClick={() => setHeroOpen(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', display: 'flex' }}>
                 <X size={16} />
               </button>
             </div>
@@ -266,7 +266,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
               {heroSuccess && (
-                <div style={{ padding: '10px 14px', background: 'rgba(52,216,151,0.08)', border: '1px solid rgba(52,216,151,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--green)' }}>
+                <div style={{ padding: '10px 14px', background: 'rgba(46,204,113,0.08)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--green)' }}>
                   ✓ Hero updated — homepage will reflect changes within 5 minutes.
                 </div>
               )}
@@ -286,7 +286,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                 disabled={heroSaving}
                 style={{
                   marginTop: '4px', padding: '11px', borderRadius: '6px',
-                  background: 'var(--accent)', color: '#07090c',
+                  background: 'var(--accent)', color: '#0a0a0f',
                   fontFamily: 'var(--font-mono)', fontSize: '11px',
                   letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700,
                   border: 'none', cursor: heroSaving ? 'not-allowed' : 'pointer',
@@ -309,7 +309,7 @@ function SidePanel({ label, children }: { label: string; children: React.ReactNo
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
       <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.4)' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
           {label}
         </span>
       </div>
@@ -326,8 +326,8 @@ function HeroField({
 }) {
   const base: React.CSSProperties = {
     width: '100%', padding: '8px 11px',
-    background: '#0b0e13', border: '1px solid var(--border)',
-    borderRadius: '6px', color: '#f0f4fa', outline: 'none',
+    background: '#0a0a0f', border: '1px solid var(--border)',
+    borderRadius: '6px', color: '#ffffff', outline: 'none',
     fontFamily: large ? 'var(--font-serif)' : 'var(--font-sans)',
     fontSize: large ? '16px' : '12px',
     boxSizing: 'border-box', display: 'block',
@@ -335,8 +335,8 @@ function HeroField({
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <label style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.45)' }}>{label}</label>
-        {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(240,244,250,0.25)' }}>{hint}</span>}
+        <label style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)' }}>{label}</label>
+        {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(255,255,255,0.25)' }}>{hint}</span>}
       </div>
       {textarea
         ? <textarea value={value} onChange={e => onChange(e.target.value)} rows={3} style={{ ...base, resize: 'vertical', lineHeight: 1.6 }} />
@@ -351,7 +351,7 @@ function arrowBtn(disabled: boolean): React.CSSProperties {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     width: '18px', height: '18px', borderRadius: '3px',
     border: 'none', background: 'transparent', cursor: disabled ? 'not-allowed' : 'pointer',
-    color: disabled ? 'rgba(240,244,250,0.1)' : 'rgba(240,244,250,0.4)',
+    color: disabled ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.4)',
     padding: 0,
   }
 }
