@@ -74,9 +74,9 @@ export default async function ArticlePage(
 
         {/* Title */}
         <h1 style={{
-          fontFamily:  'var(--font-serif)',
+          fontFamily:  'var(--font-sans)',
           fontSize:    'clamp(28px, 4.5vw, 48px)',
-          fontWeight:  400,
+          fontWeight:  800,
           color:       '#ffffff',
           lineHeight:  1.12,
           margin:      '0 0 20px',
@@ -204,7 +204,7 @@ export default async function ArticlePage(
                         {r.categories[0]}
                       </span>
                     )}
-                    <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 400, color: '#ffffff', lineHeight: 1.3, margin: '0 0 14px' }}>
+                    <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: '#ffffff', lineHeight: 1.3, margin: '0 0 14px' }}>
                       {r.title}
                     </h3>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em' }}>

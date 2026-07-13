@@ -119,7 +119,7 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
             )}
             {/* Name */}
             <h3 style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-sans)',
               fontSize: featured ? '18px' : '15px',
               fontWeight: 400, lineHeight: 1.3,
               color: 'var(--white)', margin: 0,
@@ -160,7 +160,7 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
 
         {/* Description */}
         {launch.description && featured && (
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', margin: '0 0 14px' }}>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', lineHeight: 1.75, color: 'rgba(255,255,255,0.9)', margin: '0 0 14px' }}>
             {launch.description.length > 200 ? launch.description.slice(0, 200) + '…' : launch.description}
           </p>
         )}
@@ -262,10 +262,10 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
               </span>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--green)', boxShadow: '0 0 8px var(--green)', display: 'inline-block' }} />
             </div>
-            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 8px' }}>
+            <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 8px' }}>
               Launch Tracker
             </h1>
-            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(255,255,255,0.9)', margin: 0, lineHeight: 1.6 }}>
               Upcoming and recent rocket launches — powered by Launch Library 2
             </p>
           </div>

@@ -63,7 +63,7 @@ export function MissionSlugPage({ mission, related }: Props) {
         </div>
 
         {/* Mission name */}
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px,5vw,56px)', fontWeight: 400, color: '#ffffff', lineHeight: 1.1, margin: '0 0 16px', letterSpacing: '-0.01em' }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(32px,5vw,56px)', fontWeight: 400, color: '#ffffff', lineHeight: 1.1, margin: '0 0 16px', letterSpacing: '-0.01em' }}>
           {mission.name}
         </h1>
 
@@ -85,7 +85,7 @@ export function MissionSlugPage({ mission, related }: Props) {
         </div>
 
         {/* Description */}
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(16px,1.8vw,18px)', lineHeight: 1.9, color: 'rgba(255,255,255,0.9)', margin: '0 0 48px', letterSpacing: '0.01em' }}>
+        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(16px,1.8vw,18px)', lineHeight: 1.9, color: 'rgba(255,255,255,0.9)', margin: '0 0 48px', letterSpacing: '0.01em' }}>
           {mission.description}
         </p>
 
@@ -105,12 +105,12 @@ export function MissionSlugPage({ mission, related }: Props) {
                     {event.date}
                   </span>
                   {/* Title */}
-                  <h4 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 400, color: event.completed ? '#ffffff' : 'rgba(255,255,255,0.55)', margin: '0 0 6px', lineHeight: 1.3 }}>
+                  <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 400, color: event.completed ? '#ffffff' : 'rgba(255,255,255,0.55)', margin: '0 0 6px', lineHeight: 1.3 }}>
                     {event.title}
                   </h4>
                   {/* Description */}
                   {event.description && (
-                    <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'rgba(255,255,255,0.9)', lineHeight: 1.75, margin: 0 }}>
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(255,255,255,0.9)', lineHeight: 1.75, margin: 0 }}>
                       {event.description}
                     </p>
                   )}
@@ -126,7 +126,7 @@ export function MissionSlugPage({ mission, related }: Props) {
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', display: 'block', marginBottom: '12px' }}>
               Mission Agency
             </span>
-            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 400, color: '#ffffff', margin: '0 0 8px' }}>
+            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '22px', fontWeight: 400, color: '#ffffff', margin: '0 0 8px' }}>
               {mission.agency.name}
             </h3>
             {mission.agency.country && (
@@ -135,7 +135,7 @@ export function MissionSlugPage({ mission, related }: Props) {
               </p>
             )}
             {mission.agency.description && (
-              <p style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'rgba(255,255,255,0.9)', lineHeight: 1.75, margin: '0 0 16px' }}>
+              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(255,255,255,0.9)', lineHeight: 1.75, margin: '0 0 16px' }}>
                 {mission.agency.description}
               </p>
             )}
@@ -175,7 +175,7 @@ export function MissionSlugPage({ mission, related }: Props) {
                         {r.agency.shortName}
                       </span>
                     )}
-                    <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 400, color: '#ffffff', lineHeight: 1.3, margin: '0 0 12px' }}>
+                    <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 400, color: '#ffffff', lineHeight: 1.3, margin: '0 0 12px' }}>
                       {r.name}
                     </h3>
                     <StatusBadge status={r.status} />

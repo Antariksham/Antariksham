@@ -124,7 +124,7 @@ export function LearnArticlePage({ article }: Props) {
           </span>
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 400, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.15 }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.15 }}>
           {article.title}
         </h1>
 

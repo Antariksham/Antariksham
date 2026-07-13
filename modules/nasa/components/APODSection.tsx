@@ -32,7 +32,7 @@ export function APODSection({ apod }: Props) {
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '10px' }}>
             NASA
           </span>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 300, color: '#ffffff', margin: '0 0 8px', letterSpacing: '-0.01em' }}>
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 300, color: '#ffffff', margin: '0 0 8px', letterSpacing: '-0.01em' }}>
             Astronomy Picture of the Day
           </h1>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', margin: 0 }}>
@@ -65,7 +65,7 @@ export function APODSection({ apod }: Props) {
         )}
 
         {/* Title */}
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(22px,3vw,34px)', fontWeight: 400, color: '#ffffff', lineHeight: 1.2, margin: '0 0 20px', letterSpacing: '-0.01em' }}>
+        <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px,3vw,34px)', fontWeight: 400, color: '#ffffff', lineHeight: 1.2, margin: '0 0 20px', letterSpacing: '-0.01em' }}>
           {apod.title}
         </h2>
 
@@ -81,7 +81,7 @@ export function APODSection({ apod }: Props) {
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '16px' }}>
             Explanation
           </span>
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(15px,1.8vw,17px)', color: 'rgba(255,255,255,0.9)', lineHeight: 1.85, margin: 0 }}>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(15px,1.8vw,17px)', color: 'rgba(255,255,255,0.9)', lineHeight: 1.85, margin: 0 }}>
             {apod.explanation}
           </p>
         </div>

@@ -66,7 +66,7 @@ export function ISSTracker({ initialPosition, crew }: Props) {
               {isLive ? 'Live Feed Active' : 'Signal Lost'}
             </span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(24px,3.5vw,42px)', fontWeight: 300, color: '#ffffff', margin: '0 0 6px', letterSpacing: '-0.01em' }}>
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(24px,3.5vw,42px)', fontWeight: 300, color: '#ffffff', margin: '0 0 6px', letterSpacing: '-0.01em' }}>
             ISS Live Tracker
           </h1>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.35)', margin: '0 0 28px', letterSpacing: '0.05em' }}>

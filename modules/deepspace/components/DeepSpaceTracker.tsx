@@ -81,7 +81,7 @@ function ScaleDiagram({ probes }: { probes: DeepSpaceProbe[] }) {
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: '#4f8ef7', marginBottom: '6px' }}>
         Scale Overview
       </div>
-      <div style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', color: '#fff', margin: '0 0 24px' }}>
+      <div style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', color: '#fff', margin: '0 0 24px' }}>
         Probe Distances from the Sun
       </div>
 
@@ -160,7 +160,7 @@ function ProbeCard({ probe }: { probe: DeepSpaceProbe }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '28px', lineHeight: '1' }}>{getIcon(probe.id)}</span>
               <div>
-                <div style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 400, color: '#fff', marginBottom: '4px', lineHeight: '1.1' }}>{probe.name}</div>
+                <div style={{ fontFamily: 'var(--font-sans)', fontSize: '22px', fontWeight: 400, color: '#fff', marginBottom: '4px', lineHeight: '1.1' }}>{probe.name}</div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase' as const, color, fontWeight: 600 }}>{probe.agency}</div>
               </div>
             </div>
@@ -302,11 +302,11 @@ export function DeepSpaceTracker({ initialProbes, updatedAt }: Props) {
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: '#4f8ef7', fontWeight: 600 }}>Live Telemetry</span>
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 300, color: '#fff', margin: '0 0 16px', letterSpacing: '-0.01em', lineHeight: '1.1' }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 300, color: '#fff', margin: '0 0 16px', letterSpacing: '-0.01em', lineHeight: '1.1' }}>
           Deep Space Tracker
         </h1>
 
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', color: 'rgba(255,255,255,0.9)', margin: '0 0 24px', maxWidth: '580px', lineHeight: '1.7' }}>
+        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '17px', color: 'rgba(255,255,255,0.9)', margin: '0 0 24px', maxWidth: '580px', lineHeight: '1.7' }}>
           Live telemetry for humanity's most distant emissaries — position, velocity, and signal delay sourced from NASA Horizons System.
         </p>
 
