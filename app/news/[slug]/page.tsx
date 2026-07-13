@@ -196,7 +196,7 @@ export default async function ArticlePage(
               {related.map(r => (
                 <a key={r.id} href={`/news/${r.slug}`} style={{ textDecoration: 'none' }}>
                   <div
-                    style={{ background: '#12121a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s' }}
+                    style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s' }}
                     
                   >
                     {r.categories[0] && (

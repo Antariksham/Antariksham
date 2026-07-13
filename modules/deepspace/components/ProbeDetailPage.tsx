@@ -399,7 +399,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
 
           {/* Probe hero */}
           <div style={{
-            background:   '#12121a',
+            background:   '#1a1a2e',
             border:       `1px solid ${color}40`,
             borderRadius: '16px',
             overflow:     'hidden',
@@ -528,7 +528,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
 
           {/* Live telemetry block */}
           <div style={{
-            background:   '#12121a',
+            background:   '#1a1a2e',
             border:       '1px solid rgba(255,255,255,0.1)',
             borderRadius: '16px',
             padding:      '28px',
@@ -642,7 +642,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
           {/* Achievements */}
           {facts && (
             <div style={{
-              background:   '#12121a',
+              background:   '#1a1a2e',
               border:       '1px solid rgba(255,255,255,0.1)',
               borderRadius: '16px',
               padding:      '28px',
@@ -680,7 +680,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
           {/* Instruments */}
           {facts && (
             <div style={{
-              background:   '#12121a',
+              background:   '#1a1a2e',
               border:       '1px solid rgba(255,255,255,0.1)',
               borderRadius: '16px',
               padding:      '28px',
@@ -721,7 +721,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
           {/* Mission facts */}
           {facts && (
             <div style={{
-              background:   '#12121a',
+              background:   '#1a1a2e',
               border:       '1px solid rgba(255,255,255,0.1)',
               borderRadius: '16px',
               padding:      '22px',
@@ -769,7 +769,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
 
           {/* Other probes */}
           <div style={{
-            background:   '#12121a',
+            background:   '#1a1a2e',
             border:       '1px solid rgba(255,255,255,0.1)',
             borderRadius: '16px',
             padding:      '22px',

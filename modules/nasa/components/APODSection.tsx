@@ -46,7 +46,7 @@ export function APODSection({ apod }: Props) {
 
         {/* Image or Video */}
         {apod.mediaType === 'image' ? (
-          <div style={{ width: '100%', borderRadius: '16px', overflow: 'hidden', marginBottom: '36px', background: '#12121a' }}>
+          <div style={{ width: '100%', borderRadius: '16px', overflow: 'hidden', marginBottom: '36px', background: '#1a1a2e' }}>
             <img
               src={apod.hdurl || apod.url}
               alt={apod.title}
@@ -54,7 +54,7 @@ export function APODSection({ apod }: Props) {
             />
           </div>
         ) : (
-          <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '16px', overflow: 'hidden', marginBottom: '36px', background: '#12121a' }}>
+          <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '16px', overflow: 'hidden', marginBottom: '36px', background: '#1a1a2e' }}>
             <iframe
               src={apod.url}
               title={apod.title}

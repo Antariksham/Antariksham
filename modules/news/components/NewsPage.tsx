@@ -83,7 +83,7 @@ export function NewsPage({ articles, featured, total }: Props) {
         {lead && !activeCategory && (
           <a href={`/news/${lead.slug}`} style={{ display: 'block', textDecoration: 'none', marginBottom: 'clamp(24px,4vw,40px)' }}>
             <div
-              style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', background: '#12121a', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s' }}
+              style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--card-shadow)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
             >
@@ -199,7 +199,7 @@ function GridCard({ article }: { article: ArticleCard }) {
     <a href={`/news/${article.slug}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
       <div
         style={{
-          background: '#12121a', border: '1px solid rgba(255,255,255,0.08)',
+          background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: '12px', overflow: 'hidden', height: '100%',
           display: 'flex', flexDirection: 'column',
           cursor: 'pointer', transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s',

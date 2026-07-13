@@ -26,7 +26,7 @@ export function AboutSection() {
               { num: '6',    label: 'Live\nSystems' },
               { num: '.org', label: 'Trust\nFirst' },
             ].map((stat) => (
-              <div key={stat.label} style={{ background: '#12121a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '24px 16px', textAlign: 'center' }}>
+              <div key={stat.label} style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '24px 16px', textAlign: 'center' }}>
                 <div style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 300, color: '#ffffff', lineHeight: 1, marginBottom: '10px' }}>{stat.num}</div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', whiteSpace: 'pre-line', lineHeight: 1.5 }}>{stat.label}</div>
               </div>

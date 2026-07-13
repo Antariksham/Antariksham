@@ -66,7 +66,7 @@ export async function HeroSection() {
 
           {/* RIGHT — Featured card */}
           <Link href={cardHref} style={{ textDecoration: 'none', display: 'block' }}>
-            <div style={{ background: '#12121a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', overflow: 'hidden' }}>
+            <div style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', overflow: 'hidden' }}>
 
               {/* Card image — real photo if available, fallback illustration */}
               <div style={{ height: '220px', position: 'relative', overflow: 'hidden', background: 'linear-gradient(145deg, #12121a 0%, #1a1a2e 50%, #0a0a0f 100%)' }}>

@@ -77,7 +77,7 @@ function ScaleDiagram({ probes }: { probes: DeepSpaceProbe[] }) {
   const sorted = [...probes].sort((a, b) => a.distanceFromSun - b.distanceFromSun)
 
   return (
-    <div style={{ background: '#12121a', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '28px 32px 24px', marginBottom: '36px' }}>
+    <div style={{ background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '28px 32px 24px', marginBottom: '36px' }}>
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: '#4f8ef7', marginBottom: '6px' }}>
         Scale Overview
       </div>
@@ -143,7 +143,7 @@ function ProbeCard({ probe }: { probe: DeepSpaceProbe }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          background: '#12121a',
+          background: '#1a1a2e',
           border: '1px solid ' + (hovered ? color : 'rgba(255,255,255,0.1)'),
           borderRadius: '16px',
           overflow: 'hidden',
