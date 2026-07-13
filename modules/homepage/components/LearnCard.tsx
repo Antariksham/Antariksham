@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { LearnThumb } from '@/modules/learn/components/LearnThumb'
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   beginner:     'var(--green)',
@@ -19,6 +20,7 @@ interface Topic {
   excerpt:          string
   difficulty_level: string
   icon:             string
+  thumbnail?:       string | null
 }
 
 export function LearnCard({ topic }: { topic: Topic }) {
@@ -27,8 +29,8 @@ export function LearnCard({ topic }: { topic: Topic }) {
 
   return (
     <Link href={`/learn/${topic.slug}`} className="card">
+      <LearnThumb icon={topic.icon} seed={topic.slug} image={topic.thumbnail} />
       <div className="card-body">
-        <div style={{ fontSize: '28px', marginBottom: '14px' }}>{topic.icon || '🔭'}</div>
         <p className="card-category" style={{ color: diffColor }}>{diffLabel}</p>
         <h3 className="card-title">{topic.title}</h3>
         {topic.excerpt && <p className="card-excerpt">{topic.excerpt}</p>}
