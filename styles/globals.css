@@ -57,6 +57,9 @@
   --radius-sm:  8px;
   --nav-height: 64px;
   --max-width:  1200px;
+
+  /* CosmosDaily card hover shadow */
+  --card-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 
 *, *::before, *::after { box-sizing: border-box; }

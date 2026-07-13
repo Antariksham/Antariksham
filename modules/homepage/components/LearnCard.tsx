@@ -30,9 +30,9 @@ export function LearnCard({ topic }: { topic: Topic }) {
   return (
     <Link href={`/learn/${topic.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div
-        style={{ background: '#12121a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', cursor: 'pointer', transition: 'border-color 0.2s', height: '100%' }}
-        onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.18)'}
-        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.08)'}
+        style={{ background: '#12121a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', cursor: 'pointer', transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s', height: '100%' }}
+        onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = 'rgba(255,255,255,0.18)'; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--card-shadow)' }}
+        onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = 'rgba(255,255,255,0.08)'; el.style.transform = 'translateY(0)'; el.style.boxShadow = 'none' }}
       >
         <div style={{ fontSize: '28px', marginBottom: '16px' }}>{topic.icon || '🔭'}</div>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: diffColor, marginBottom: '10px' }}>
