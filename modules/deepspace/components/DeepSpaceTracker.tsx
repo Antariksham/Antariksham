@@ -22,6 +22,8 @@ const META: Record<string, ProbeMeta> = {
   'parker-solar-probe': { emoji: '☀️', hue: 28,  blurb: 'The fastest object humans have ever built, diving repeatedly through the Sun’s corona to touch our star.' },
   'europa-clipper':     { emoji: '🪐', hue: 150, blurb: 'En route to Jupiter’s ocean moon Europa to investigate whether it could harbour the conditions for life.' },
   'lucy':               { emoji: '🌌', hue: 265, blurb: 'On a twelve-year tour of the Trojan asteroids — fossils of the early Solar System locked in Jupiter’s orbit.' },
+  'new-horizons':       { emoji: '🛰️', hue: 288, blurb: 'The first spacecraft to explore Pluto up close, now voyaging deeper into the Kuiper Belt at the Solar System’s frozen frontier.' },
+  'juice':              { emoji: '🪐', hue: 188, blurb: 'ESA’s Jupiter Icy Moons Explorer — cruising toward Ganymede to study Jupiter’s potentially habitable ocean worlds.' },
 }
 function meta(id: string): ProbeMeta {
   return META[id] || { emoji: '🛰️', hue: 210, blurb: 'A robotic emissary exploring the deep Solar System.' }
