@@ -8,7 +8,7 @@ export const revalidate = 0
 
 const STATUS_COLOR: Record<string, string> = {
   active: 'var(--green)', upcoming: 'var(--accent)',
-  'in-development': 'var(--gold)', completed: 'rgba(240,244,250,0.35)',
+  'in-development': 'var(--gold)', completed: 'rgba(var(--ink),0.58)',
   failed: 'var(--red)', cancelled: 'var(--red)',
 }
 
@@ -26,13 +26,13 @@ export default async function EditMissionPage({ params }: { params: { id: string
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <Link
             href="/admin/missions"
-            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '6px', border: '1px solid var(--border)', color: 'rgba(240,244,250,0.5)', textDecoration: 'none', flexShrink: 0 }}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '6px', border: '1px solid var(--border)', color: 'rgba(var(--ink),0.85)', textDecoration: 'none', flexShrink: 0 }}
             title="Back to Missions"
           >
             <ChevronLeft size={16} />
           </Link>
           <div>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '4px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '4px' }}>
               Edit Mission
             </span>
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 300, color: 'var(--white)', margin: 0 }}>
@@ -43,11 +43,11 @@ export default async function EditMissionPage({ params }: { params: { id: string
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
           <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase',
+            fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.15em', textTransform: 'uppercase',
             padding: '4px 10px', borderRadius: '4px',
-            color: STATUS_COLOR[mission.status] || 'rgba(240,244,250,0.4)',
-            border: `1px solid ${STATUS_COLOR[mission.status] || 'rgba(255,255,255,0.1)'}`,
-            background: 'rgba(255,255,255,0.03)',
+            color: STATUS_COLOR[mission.status] || 'rgba(var(--ink),0.62)',
+            border: `1px solid ${STATUS_COLOR[mission.status] || 'rgba(var(--ink),0.1)'}`,
+            background: 'rgba(var(--ink),0.03)',
           }}>
             {mission.status.replace('-', ' ')}
           </span>
@@ -55,7 +55,7 @@ export default async function EditMissionPage({ params }: { params: { id: string
             href={`/missions/${mission.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', textDecoration: 'none', padding: '5px 12px', border: '1px solid rgba(59,158,255,0.3)', borderRadius: '5px' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', textDecoration: 'none', padding: '5px 12px', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '5px' }}
           >
             <Globe size={11} /> View Live
           </a>

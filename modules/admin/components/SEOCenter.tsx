@@ -37,9 +37,9 @@ const EMPTY_FORM: FormState = {
 
 function CharCounter({ value, max, warn }: { value: string; max: number; warn: number }) {
   const len   = value.length
-  const color = len > max ? 'var(--red)' : len > warn ? 'var(--gold)' : 'rgba(240,244,250,0.3)'
+  const color = len > max ? 'var(--red)' : len > warn ? 'var(--gold)' : 'rgba(var(--ink),0.55)'
   return (
-    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color }}>
+    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color }}>
       {len}/{max}
     </span>
   )
@@ -220,7 +220,7 @@ export function SEOCenter() {
 
       {/* Page header */}
       <div style={{ marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '8px' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '8px' }}>
           Admin
         </span>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
@@ -228,7 +228,7 @@ export function SEOCenter() {
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 300, color: 'var(--white)', margin: '0 0 4px' }}>
               SEO Center
             </h1>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.45)', letterSpacing: '0.06em', margin: 0 }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.82)', letterSpacing: '0.06em', margin: 0 }}>
               Manage meta titles, descriptions, and OG images
             </p>
           </div>
@@ -239,7 +239,7 @@ export function SEOCenter() {
               padding: '9px 16px', borderRadius: '7px',
               background: 'var(--accent)', border: 'none',
               color: '#fff', fontFamily: 'var(--font-mono)',
-              fontSize: '11px', letterSpacing: '0.08em',
+              fontSize: '14px', letterSpacing: '0.08em',
               cursor: 'pointer', whiteSpace: 'nowrap',
             }}
           >
@@ -250,7 +250,7 @@ export function SEOCenter() {
 
       {/* Search bar */}
       <div style={{ position: 'relative', marginBottom: '20px', maxWidth: '360px' }}>
-        <Search size={13} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(240,244,250,0.3)', pointerEvents: 'none' }} />
+        <Search size={13} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(var(--ink),0.78)', pointerEvents: 'none' }} />
         <input
           value={searchInput}
           onChange={e => handleSearchChange(e.target.value)}
@@ -259,7 +259,7 @@ export function SEOCenter() {
             width: '100%', padding: '9px 12px 9px 34px',
             background: 'var(--surface)', border: '1px solid var(--border)',
             borderRadius: '7px', color: 'var(--white)',
-            fontFamily: 'var(--font-mono)', fontSize: '11px',
+            fontFamily: 'var(--font-mono)', fontSize: '14px',
             outline: 'none',
           }}
         />
@@ -267,8 +267,8 @@ export function SEOCenter() {
 
       {/* Error */}
       {error && (
-        <div style={{ background: 'rgba(240,90,90,0.08)', border: '1px solid rgba(240,90,90,0.2)', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px' }}>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--red)', margin: 0 }}>{error}</p>
+        <div style={{ background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.2)', borderRadius: '8px', padding: '12px 16px', marginBottom: '20px' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--red)', margin: 0 }}>{error}</p>
         </div>
       )}
 
@@ -278,7 +278,7 @@ export function SEOCenter() {
         {/* Table header */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px 100px 72px', gap: '12px', padding: '10px 20px', borderBottom: '1px solid var(--border)', background: 'var(--panel)' }}>
           {['Meta Title', 'Canonical URL', 'Updated', 'Actions'].map(col => (
-            <span key={col} style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.35)' }}>
+            <span key={col} style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)' }}>
               {col}
             </span>
           ))}
@@ -287,7 +287,7 @@ export function SEOCenter() {
         {/* Loading */}
         {loading && (
           <div style={{ padding: '48px', textAlign: 'center' }}>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: 0 }}>
               Loading…
             </p>
           </div>
@@ -296,13 +296,13 @@ export function SEOCenter() {
         {/* Empty */}
         {!loading && rows.length === 0 && (
           <div style={{ padding: '48px', textAlign: 'center' }}>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 12px' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 12px' }}>
               {search ? 'No results found' : 'No SEO entries yet'}
             </p>
             {!search && (
               <button
                 onClick={openCreate}
-                style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 Create your first SEO entry →
               </button>
@@ -327,16 +327,16 @@ export function SEOCenter() {
                     onClick={() => setExpandedRow(isExpanded ? null : row.id)}
                     style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}
                   >
-                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--white)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'var(--white)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                       {row.meta_title}
                     </span>
                     {isExpanded
-                      ? <ChevronUp   size={12} style={{ color: 'rgba(240,244,250,0.3)', flexShrink: 0 }} />
-                      : <ChevronDown size={12} style={{ color: 'rgba(240,244,250,0.3)', flexShrink: 0 }} />
+                      ? <ChevronUp   size={12} style={{ color: 'rgba(var(--ink),0.78)', flexShrink: 0 }} />
+                      : <ChevronDown size={12} style={{ color: 'rgba(var(--ink),0.78)', flexShrink: 0 }} />
                     }
                   </button>
                   {row.meta_description && (
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.35)', margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {row.meta_description}
                     </p>
                   )}
@@ -349,7 +349,7 @@ export function SEOCenter() {
                       href={row.canonical_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--accent)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--accent)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}
                     >
                       <ExternalLink size={10} style={{ flexShrink: 0 }} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -357,12 +357,12 @@ export function SEOCenter() {
                       </span>
                     </a>
                   ) : (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.2)' }}>—</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.72)' }}>—</span>
                   )}
                 </div>
 
                 {/* Updated */}
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.35)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)' }}>
                   {formatDate(row.updated_at)}
                 </span>
 
@@ -375,10 +375,10 @@ export function SEOCenter() {
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                       width: '28px', height: '28px', borderRadius: '5px',
                       border: '1px solid var(--border)', background: 'transparent',
-                      color: 'rgba(240,244,250,0.5)', cursor: 'pointer', transition: 'all 0.15s',
+                      color: 'rgba(var(--ink),0.85)', cursor: 'pointer', transition: 'all 0.15s',
                     }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)';  e.currentTarget.style.color = 'rgba(240,244,250,0.5)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)';  e.currentTarget.style.color = 'rgba(var(--ink),0.72)' }}
                   >
                     <Pencil size={11} />
                   </button>
@@ -390,10 +390,10 @@ export function SEOCenter() {
                       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                       width: '28px', height: '28px', borderRadius: '5px',
                       border: '1px solid var(--border)', background: 'transparent',
-                      color: 'rgba(240,244,250,0.35)', cursor: deleting === row.id ? 'not-allowed' : 'pointer', transition: 'all 0.15s',
+                      color: 'rgba(var(--ink),0.78)', cursor: deleting === row.id ? 'not-allowed' : 'pointer', transition: 'all 0.15s',
                     }}
-                    onMouseEnter={e => { if (deleting !== row.id) { e.currentTarget.style.borderColor = 'rgba(240,90,90,0.5)'; e.currentTarget.style.color = 'var(--red)' }}}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'rgba(240,244,250,0.35)' }}
+                    onMouseEnter={e => { if (deleting !== row.id) { e.currentTarget.style.borderColor = 'rgba(231,76,60,0.5)'; e.currentTarget.style.color = 'var(--red)' }}}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'rgba(var(--ink),0.58)' }}
                   >
                     <Trash2 size={11} />
                   </button>
@@ -402,13 +402,13 @@ export function SEOCenter() {
 
               {/* Expanded detail row */}
               {isExpanded && (
-                <div style={{ padding: '0 20px 16px', borderTop: '1px solid var(--border)', background: 'rgba(255,255,255,0.015)' }}>
+                <div style={{ padding: '0 20px 16px', borderTop: '1px solid var(--border)', background: 'rgba(var(--ink),0.015)' }}>
                   <div style={{ paddingTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
                     {row.meta_description && <DetailField label="Meta Description" value={row.meta_description} />}
                     {row.keywords         && <DetailField label="Keywords"         value={row.keywords} />}
                     {row.og_image         && <DetailField label="OG Image URL"     value={row.og_image} truncate />}
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.35)', margin: '0 0 8px' }}>
+                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)', margin: '0 0 8px' }}>
                         Google Preview
                       </p>
                       <SerpPreview
@@ -427,7 +427,7 @@ export function SEOCenter() {
 
       {/* Count */}
       {!loading && rows.length > 0 && (
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.25)', letterSpacing: '0.1em', margin: '12px 0 0', textAlign: 'right' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.72)', letterSpacing: '0.1em', margin: '12px 0 0', textAlign: 'right' }}>
           {rows.length} {rows.length === 1 ? 'entry' : 'entries'}
         </p>
       )}
@@ -447,7 +447,7 @@ export function SEOCenter() {
               </h2>
               <button
                 onClick={closeModal}
-                style={{ background: 'none', border: 'none', color: 'rgba(240,244,250,0.4)', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex' }}
+                style={{ background: 'none', border: 'none', color: 'rgba(var(--ink),0.82)', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex' }}
               >
                 <X size={18} />
               </button>
@@ -457,8 +457,8 @@ export function SEOCenter() {
             <div style={{ padding: '24px' }}>
 
               {formError && (
-                <div style={{ background: 'rgba(240,90,90,0.08)', border: '1px solid rgba(240,90,90,0.25)', borderRadius: '7px', padding: '10px 14px', marginBottom: '20px' }}>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--red)', margin: 0 }}>{formError}</p>
+                <div style={{ background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '7px', padding: '10px 14px', marginBottom: '20px' }}>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--red)', margin: 0 }}>{formError}</p>
                 </div>
               )}
 
@@ -486,7 +486,7 @@ export function SEOCenter() {
               <div style={{ marginBottom: '24px' }}>
                 <button
                   onClick={() => setShowPreview(p => !p)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '7px 12px', color: 'rgba(240,244,250,0.5)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', cursor: 'pointer' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '7px 12px', color: 'rgba(var(--ink),0.85)', fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', cursor: 'pointer' }}
                 >
                   {showPreview ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                   {showPreview ? 'Hide' : 'Show'} Google Preview
@@ -500,10 +500,10 @@ export function SEOCenter() {
 
               {/* Actions */}
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                <button onClick={closeModal} style={{ padding: '9px 18px', borderRadius: '7px', border: '1px solid var(--border)', background: 'transparent', color: 'rgba(240,244,250,0.5)', fontFamily: 'var(--font-mono)', fontSize: '11px', cursor: 'pointer' }}>
+                <button onClick={closeModal} style={{ padding: '9px 18px', borderRadius: '7px', border: '1px solid var(--border)', background: 'transparent', color: 'rgba(var(--ink),0.85)', fontFamily: 'var(--font-mono)', fontSize: '14px', cursor: 'pointer' }}>
                   Cancel
                 </button>
-                <button onClick={handleSave} disabled={saving} style={{ padding: '9px 20px', borderRadius: '7px', border: 'none', background: saving ? 'rgba(59,158,255,0.5)' : 'var(--accent)', color: '#fff', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.06em', cursor: saving ? 'not-allowed' : 'pointer' }}>
+                <button onClick={handleSave} disabled={saving} style={{ padding: '9px 20px', borderRadius: '7px', border: 'none', background: saving ? 'rgba(79,142,247,0.5)' : 'var(--accent)', color: '#fff', fontFamily: 'var(--font-mono)', fontSize: '14px', letterSpacing: '0.06em', cursor: saving ? 'not-allowed' : 'pointer' }}>
                   {saving ? 'Saving…' : modalMode === 'create' ? 'Create Entry' : 'Save Changes'}
                 </button>
               </div>
@@ -527,14 +527,14 @@ function FieldGroup({ label, hint, required, counter, children }: {
   return (
     <div style={{ marginBottom: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-        <label style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.5)' }}>
+        <label style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.85)' }}>
           {label}{required && <span style={{ color: 'var(--red)', marginLeft: '3px' }}>*</span>}
         </label>
         {counter}
       </div>
       {children}
       {hint && (
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.25)', margin: '5px 0 0', lineHeight: 1.5 }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.72)', margin: '5px 0 0', lineHeight: 1.5 }}>
           {hint}
         </p>
       )}
@@ -545,10 +545,10 @@ function FieldGroup({ label, hint, required, counter, children }: {
 function DetailField({ label, value, truncate }: { label: string; value: string; truncate?: boolean }) {
   return (
     <div>
-      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.3)', margin: '0 0 4px' }}>
+      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)', margin: '0 0 4px' }}>
         {label}
       </p>
-      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(240,244,250,0.7)', margin: 0, ...(truncate ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : { lineHeight: 1.6 }) }}>
+      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(var(--ink),0.9)', margin: 0, ...(truncate ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : { lineHeight: 1.6 }) }}>
         {value}
       </p>
     </div>
@@ -563,7 +563,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: '7px',
   color:        'var(--white)',
   fontFamily:   'var(--font-sans)',
-  fontSize:     '13px',
+  fontSize: '15px',
   outline:      'none',
   boxSizing:    'border-box',
 }

@@ -54,20 +54,20 @@ function missionAge(launchDate: string): string {
 
 function statusColor(status: DeepSpaceProbe['communicationStatus']): string {
   switch (status) {
-    case 'nominal':  return '#34d897'
-    case 'degraded': return '#c9a96e'
-    case 'lost':     return '#f05a5a'
+    case 'nominal':  return '#2ecc71'
+    case 'degraded': return '#f39c12'
+    case 'lost':     return '#e74c3c'
   }
 }
 
 function probeColor(id: string): string {
   switch (id) {
-    case 'voyager-1':          return '#b48cff'
-    case 'voyager-2':          return '#3b9eff'
-    case 'parker-solar-probe': return '#ff6b6b'
-    case 'europa-clipper':     return '#34d897'
-    case 'lucy':               return '#c9a96e'
-    default:                   return '#3b9eff'
+    case 'voyager-1':          return '#4f8ef7'
+    case 'voyager-2':          return '#4f8ef7'
+    case 'parker-solar-probe': return '#e74c3c'
+    case 'europa-clipper':     return '#2ecc71'
+    case 'lucy':               return '#f39c12'
+    default:                   return '#4f8ef7'
   }
 }
 
@@ -228,16 +228,16 @@ function SignalVisualizer({ delayHours, color }: { delayHours: number; color: st
   return (
     <div style={{
       padding:      '20px',
-      background:   'rgba(255,255,255,0.03)',
+      background:   'rgba(var(--ink),0.03)',
       borderRadius: '10px',
-      border:       '1px solid rgba(255,255,255,0.08)',
+      border:       '1px solid rgba(var(--ink),0.08)',
     }}>
       <div style={{
         fontFamily:    'var(--font-mono)',
-        fontSize:      '11px',
+        fontSize: '12px',
         letterSpacing: '0.2em',
         textTransform: 'uppercase',
-        color:         'rgba(240,244,250,0.55)',
+        color:         'rgba(var(--ink),0.55)',
         marginBottom:  '12px',
       }}>
         Signal Journey — Earth ↔ Probe
@@ -251,7 +251,7 @@ function SignalVisualizer({ delayHours, color }: { delayHours: number; color: st
           left:       0,
           right:      0,
           height:     '2px',
-          background: 'rgba(255,255,255,0.08)',
+          background: 'rgba(var(--ink),0.08)',
         }} />
         {/* Earth */}
         <div style={{
@@ -261,15 +261,15 @@ function SignalVisualizer({ delayHours, color }: { delayHours: number; color: st
           width:        '16px',
           height:       '16px',
           borderRadius: '50%',
-          background:   '#3b9eff',
-          boxShadow:    '0 0 10px #3b9eff88',
+          background:   '#4f8ef7',
+          boxShadow:    '0 0 10px #4f8ef788',
         }} />
         {/* Probe */}
         <div style={{
           position:     'absolute',
           right:        0,
           top:          '8px',
-          fontSize:     '16px',
+          fontSize: '16px',
           lineHeight:   1,
         }}>
           {probeIcon('voyager-1')}
@@ -290,12 +290,12 @@ function SignalVisualizer({ delayHours, color }: { delayHours: number; color: st
 
       <div style={{
         fontFamily: 'var(--font-mono)',
-        fontSize:   '14px',
-        color:      '#ffffff',
+        fontSize: '14px',
+        color:      'var(--white)',
         fontWeight: 600,
       }}>
         {formatSignalDelay(delayHours)}
-        <span style={{ fontWeight: 400, fontSize: '12px', color: 'rgba(240,244,250,0.55)', marginLeft: '8px' }}>
+        <span style={{ fontWeight: 400, fontSize: '12px', color: 'rgba(var(--ink),0.55)', marginLeft: '8px' }}>
           one-way at speed of light
         </span>
       </div>
@@ -364,27 +364,27 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px' }}>
         <Link href="/live" style={{
           fontFamily:    'var(--font-mono)',
-          fontSize:      '12px',
-          color:         'rgba(240,244,250,0.5)',
+          fontSize: '12px',
+          color:         'rgba(var(--ink),0.65)',
           textDecoration:'none',
           letterSpacing: '0.06em',
         }}>
           Live
         </Link>
-        <span style={{ color: 'rgba(240,244,250,0.3)', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>→</span>
+        <span style={{ color: 'rgba(var(--ink),0.55)', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>→</span>
         <Link href="/live/deep-space" style={{
           fontFamily:    'var(--font-mono)',
-          fontSize:      '12px',
-          color:         'rgba(240,244,250,0.5)',
+          fontSize: '12px',
+          color:         'rgba(var(--ink),0.65)',
           textDecoration:'none',
           letterSpacing: '0.06em',
         }}>
           Deep Space
         </Link>
-        <span style={{ color: 'rgba(240,244,250,0.3)', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>→</span>
+        <span style={{ color: 'rgba(var(--ink),0.55)', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>→</span>
         <span style={{
           fontFamily:    'var(--font-mono)',
-          fontSize:      '12px',
+          fontSize: '12px',
           color:         color,
           letterSpacing: '0.06em',
         }}>
@@ -399,7 +399,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
 
           {/* Probe hero */}
           <div style={{
-            background:   '#10151c',
+            background:   'var(--panel)',
             border:       `1px solid ${color}40`,
             borderRadius: '16px',
             overflow:     'hidden',
@@ -413,10 +413,10 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                   <span style={{ fontSize: '48px', lineHeight: 1 }}>{probeIcon(probe.id)}</span>
                   <div>
                     <h1 style={{
-                      fontFamily: 'var(--font-serif)',
+                      fontFamily: 'var(--font-sans)',
                       fontSize:   'clamp(28px, 4vw, 42px)',
                       fontWeight: 300,
-                      color:      '#ffffff',
+                      color:      'var(--white)',
                       margin:     '0 0 6px',
                       lineHeight: 1.1,
                     }}>
@@ -425,7 +425,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{
                         fontFamily:    'var(--font-mono)',
-                        fontSize:      '12px',
+                        fontSize: '12px',
                         letterSpacing: '0.22em',
                         textTransform: 'uppercase',
                         color:         color,
@@ -433,11 +433,11 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                       }}>
                         {currentProbe.agency}
                       </span>
-                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+                      <span style={{ color: 'rgba(var(--ink),0.5)' }}>•</span>
                       <span style={{
                         fontFamily:    'var(--font-mono)',
-                        fontSize:      '12px',
-                        color:         'rgba(240,244,250,0.5)',
+                        fontSize: '12px',
+                        color:         'rgba(var(--ink),0.65)',
                         letterSpacing: '0.08em',
                       }}>
                         {mounted ? `Launched ${new Date(currentProbe.launchDate).getFullYear()}` : ''}
@@ -468,7 +468,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                   }} />
                   <span style={{
                     fontFamily:    'var(--font-mono)',
-                    fontSize:      '12px',
+                    fontSize: '12px',
                     letterSpacing: '0.2em',
                     textTransform: 'uppercase',
                     color:         sColor,
@@ -483,8 +483,8 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
               {facts && (
                 <p style={{
                   fontFamily:  'var(--font-sans)',
-                  fontSize:    '16px',
-                  color:       'rgba(240,244,250,0.8)',
+                  fontSize: '16px',
+                  color:       'rgba(var(--ink),0.9)',
                   lineHeight:  1.8,
                   margin:      '0 0 24px',
                 }}>
@@ -496,12 +496,12 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{
                   fontFamily:    'var(--font-mono)',
-                  fontSize:      '12px',
+                  fontSize: '12px',
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
-                  color:         'rgba(240,244,250,0.7)',
-                  background:    'rgba(255,255,255,0.07)',
-                  border:        '1px solid rgba(255,255,255,0.12)',
+                  color:         'rgba(var(--ink),0.7)',
+                  background:    'rgba(var(--ink),0.07)',
+                  border:        '1px solid rgba(var(--ink),0.12)',
                   padding:       '5px 12px',
                   borderRadius:  '5px',
                 }}>
@@ -510,12 +510,12 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                 {currentProbe.targetBody && (
                   <span style={{
                     fontFamily:    'var(--font-mono)',
-                    fontSize:      '12px',
+                    fontSize: '12px',
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase',
-                    color:         'rgba(240,244,250,0.7)',
-                    background:    'rgba(255,255,255,0.07)',
-                    border:        '1px solid rgba(255,255,255,0.12)',
+                    color:         'rgba(var(--ink),0.7)',
+                    background:    'rgba(var(--ink),0.07)',
+                    border:        '1px solid rgba(var(--ink),0.12)',
                     padding:       '5px 12px',
                     borderRadius:  '5px',
                   }}>
@@ -528,8 +528,8 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
 
           {/* Live telemetry block */}
           <div style={{
-            background:   '#10151c',
-            border:       '1px solid rgba(255,255,255,0.1)',
+            background:   'var(--panel)',
+            border:       '1px solid rgba(var(--ink),0.1)',
             borderRadius: '16px',
             padding:      '28px',
             marginBottom: '24px',
@@ -538,7 +538,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
               <div>
                 <span style={{
                   fontFamily:    'var(--font-mono)',
-                  fontSize:      '11px',
+                  fontSize: '12px',
                   letterSpacing: '0.28em',
                   textTransform: 'uppercase',
                   color:         color,
@@ -549,8 +549,8 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                 </span>
                 <span style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize:   '11px',
-                  color:      'rgba(240,244,250,0.45)',
+                  fontSize: '12px',
+                  color:      'rgba(var(--ink),0.6)',
                 }}>
                   {mounted ? `Updated ${new Date(lastUpdated).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : '—'}
                 </span>
@@ -560,10 +560,10 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                 disabled={refreshing}
                 style={{
                   fontFamily:    'var(--font-mono)',
-                  fontSize:      '12px',
+                  fontSize: '12px',
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
-                  color:         refreshing ? 'rgba(240,244,250,0.3)' : color,
+                  color:         refreshing ? 'rgba(var(--ink),0.3)' : color,
                   background:    'transparent',
                   border:        `1px solid ${color}40`,
                   borderRadius:  '6px',
@@ -583,13 +583,13 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
               marginBottom:        '24px',
             }}>
               {/* Distance from Earth */}
-              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.55)', marginBottom: '10px' }}>
+              <div style={{ padding: '20px', background: 'rgba(var(--ink),0.04)', borderRadius: '10px', border: '1px solid rgba(var(--ink),0.08)' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', marginBottom: '10px' }}>
                   Distance from Earth
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '28px', fontWeight: 700, color: '#ffffff', marginBottom: '6px', lineHeight: 1 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '28px', fontWeight: 700, color: 'var(--white)', marginBottom: '6px', lineHeight: 1 }}>
                   {formatAU(currentProbe.distanceFromEarth)}
-                  <span style={{ fontSize: '16px', fontWeight: 400, marginLeft: '6px', color: 'rgba(240,244,250,0.6)' }}>AU</span>
+                  <span style={{ fontSize: '16px', fontWeight: 400, marginLeft: '6px', color: 'rgba(var(--ink),0.6)' }}>AU</span>
                 </div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: color }}>
                   {formatKm(currentProbe.distanceFromEarth)}
@@ -597,39 +597,39 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
               </div>
 
               {/* Distance from Sun */}
-              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.55)', marginBottom: '10px' }}>
+              <div style={{ padding: '20px', background: 'rgba(var(--ink),0.04)', borderRadius: '10px', border: '1px solid rgba(var(--ink),0.08)' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', marginBottom: '10px' }}>
                   Distance from Sun
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '28px', fontWeight: 700, color: '#ffffff', marginBottom: '6px', lineHeight: 1 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '28px', fontWeight: 700, color: 'var(--white)', marginBottom: '6px', lineHeight: 1 }}>
                   {formatAU(currentProbe.distanceFromSun)}
-                  <span style={{ fontSize: '16px', fontWeight: 400, marginLeft: '6px', color: 'rgba(240,244,250,0.6)' }}>AU</span>
+                  <span style={{ fontSize: '16px', fontWeight: 400, marginLeft: '6px', color: 'rgba(var(--ink),0.6)' }}>AU</span>
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#f5c518' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#f39c12' }}>
                   {formatKm(currentProbe.distanceFromSun)}
                 </div>
               </div>
 
               {/* Velocity */}
-              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.55)', marginBottom: '10px' }}>
+              <div style={{ padding: '20px', background: 'rgba(var(--ink),0.04)', borderRadius: '10px', border: '1px solid rgba(var(--ink),0.08)' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', marginBottom: '10px' }}>
                   Velocity
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '28px', fontWeight: 700, color: '#ffffff', marginBottom: '6px', lineHeight: 1 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '28px', fontWeight: 700, color: 'var(--white)', marginBottom: '6px', lineHeight: 1 }}>
                   {currentProbe.velocity.toFixed(1)}
-                  <span style={{ fontSize: '16px', fontWeight: 400, marginLeft: '6px', color: 'rgba(240,244,250,0.6)' }}>km/s</span>
+                  <span style={{ fontSize: '16px', fontWeight: 400, marginLeft: '6px', color: 'rgba(var(--ink),0.6)' }}>km/s</span>
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(240,244,250,0.6)' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.6)' }}>
                   {formatKmPerHour(currentProbe.velocity)}
                 </div>
               </div>
 
               {/* Mission age */}
-              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.55)', marginBottom: '10px' }}>
+              <div style={{ padding: '20px', background: 'rgba(var(--ink),0.04)', borderRadius: '10px', border: '1px solid rgba(var(--ink),0.08)' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', marginBottom: '10px' }}>
                   Mission Duration
                 </div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '16px', fontWeight: 600, color: '#ffffff', lineHeight: 1.4 }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '16px', fontWeight: 600, color: 'var(--white)', lineHeight: 1.4 }}>
                   {mounted ? missionAge(currentProbe.launchDate) : '—'}
                 </div>
               </div>
@@ -642,15 +642,15 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
           {/* Achievements */}
           {facts && (
             <div style={{
-              background:   '#10151c',
-              border:       '1px solid rgba(255,255,255,0.1)',
+              background:   'var(--panel)',
+              border:       '1px solid rgba(var(--ink),0.1)',
               borderRadius: '16px',
               padding:      '28px',
               marginBottom: '24px',
             }}>
               <span style={{
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '11px',
+                fontSize: '12px',
                 letterSpacing: '0.28em',
                 textTransform: 'uppercase',
                 color:         color,
@@ -665,8 +665,8 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                     <span style={{ color: color, fontSize: '16px', flexShrink: 0, marginTop: '1px' }}>✦</span>
                     <span style={{
                       fontFamily: 'var(--font-sans)',
-                      fontSize:   '15px',
-                      color:      'rgba(240,244,250,0.85)',
+                      fontSize: '15px',
+                      color:      'rgba(var(--ink),0.85)',
                       lineHeight: 1.6,
                     }}>
                       {a}
@@ -680,14 +680,14 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
           {/* Instruments */}
           {facts && (
             <div style={{
-              background:   '#10151c',
-              border:       '1px solid rgba(255,255,255,0.1)',
+              background:   'var(--panel)',
+              border:       '1px solid rgba(var(--ink),0.1)',
               borderRadius: '16px',
               padding:      '28px',
             }}>
               <span style={{
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '11px',
+                fontSize: '12px',
                 letterSpacing: '0.28em',
                 textTransform: 'uppercase',
                 color:         color,
@@ -700,12 +700,12 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                 {facts.instruments.map((inst, i) => (
                   <div key={i} style={{
                     padding:      '12px 16px',
-                    background:   'rgba(255,255,255,0.04)',
+                    background:   'rgba(var(--ink),0.04)',
                     borderRadius: '8px',
-                    border:       '1px solid rgba(255,255,255,0.07)',
+                    border:       '1px solid rgba(var(--ink),0.07)',
                     fontFamily:   'var(--font-sans)',
-                    fontSize:     '15px',
-                    color:        'rgba(240,244,250,0.8)',
+                    fontSize: '15px',
+                    color:        'rgba(var(--ink),0.8)',
                   }}>
                     {inst}
                   </div>
@@ -721,14 +721,14 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
           {/* Mission facts */}
           {facts && (
             <div style={{
-              background:   '#10151c',
-              border:       '1px solid rgba(255,255,255,0.1)',
+              background:   'var(--panel)',
+              border:       '1px solid rgba(var(--ink),0.1)',
               borderRadius: '16px',
               padding:      '22px',
             }}>
               <span style={{
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '11px',
+                fontSize: '12px',
                 letterSpacing: '0.28em',
                 textTransform: 'uppercase',
                 color:         color,
@@ -741,22 +741,22 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                 {facts.keyFacts.filter(f => f.value).map((fact, i, arr) => (
                   <div key={i} style={{
                     padding:      '12px 0',
-                    borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                    borderBottom: i < arr.length - 1 ? '1px solid rgba(var(--ink),0.07)' : 'none',
                   }}>
                     <div style={{
                       fontFamily:    'var(--font-mono)',
-                      fontSize:      '10px',
+                      fontSize: '11px',
                       letterSpacing: '0.18em',
                       textTransform: 'uppercase',
-                      color:         'rgba(240,244,250,0.45)',
+                      color:         'rgba(var(--ink),0.6)',
                       marginBottom:  '4px',
                     }}>
                       {fact.label}
                     </div>
                     <div style={{
                       fontFamily: 'var(--font-sans)',
-                      fontSize:   '14px',
-                      color:      '#ffffff',
+                      fontSize: '14px',
+                      color:      'var(--white)',
                       lineHeight: 1.4,
                     }}>
                       {fact.value}
@@ -769,17 +769,17 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
 
           {/* Other probes */}
           <div style={{
-            background:   '#10151c',
-            border:       '1px solid rgba(255,255,255,0.1)',
+            background:   'var(--panel)',
+            border:       '1px solid rgba(var(--ink),0.1)',
             borderRadius: '16px',
             padding:      '22px',
           }}>
             <span style={{
               fontFamily:    'var(--font-mono)',
-              fontSize:      '11px',
+              fontSize: '12px',
               letterSpacing: '0.28em',
               textTransform: 'uppercase',
-              color:         'rgba(240,244,250,0.5)',
+              color:         'rgba(var(--ink),0.65)',
               display:       'block',
               marginBottom:  '16px',
             }}>
@@ -803,15 +803,15 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                       transition:   'background 0.15s',
                       cursor:       'pointer',
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(var(--ink),0.05)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                   >
                     <span style={{ fontSize: '18px', flexShrink: 0 }}>{probeIcon(p.id)}</span>
                     <div>
                       <div style={{
                         fontFamily:  'var(--font-sans)',
-                        fontSize:    '14px',
-                        color:       '#ffffff',
+                        fontSize: '14px',
+                        color:       'var(--white)',
                         fontWeight:  500,
                         marginBottom:'2px',
                       }}>
@@ -819,7 +819,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
                       </div>
                       <div style={{
                         fontFamily: 'var(--font-mono)',
-                        fontSize:   '11px',
+                        fontSize: '12px',
                         color:      probeColor(p.id),
                       }}>
                         {formatAU(p.distanceFromSun)} AU from Sun
@@ -838,19 +838,19 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
               display:       'block',
               textAlign:     'center',
               fontFamily:    'var(--font-mono)',
-              fontSize:      '12px',
+              fontSize: '12px',
               letterSpacing: '0.16em',
               textTransform: 'uppercase',
-              color:         'rgba(240,244,250,0.6)',
+              color:         'rgba(var(--ink),0.6)',
               textDecoration:'none',
               padding:       '12px',
-              background:    'rgba(255,255,255,0.04)',
-              border:        '1px solid rgba(255,255,255,0.1)',
+              background:    'rgba(var(--ink),0.04)',
+              border:        '1px solid rgba(var(--ink),0.1)',
               borderRadius:  '10px',
               transition:    'background 0.15s',
             }}
-            onMouseEnter={e => ((e.target as HTMLElement).style.background = 'rgba(255,255,255,0.08)')}
-            onMouseLeave={e => ((e.target as HTMLElement).style.background = 'rgba(255,255,255,0.04)')}
+            onMouseEnter={e => ((e.target as HTMLElement).style.background = 'rgba(var(--ink),0.08)')}
+            onMouseLeave={e => ((e.target as HTMLElement).style.background = 'rgba(var(--ink),0.04)')}
           >
             ← Back to Deep Space Tracker
           </Link>

@@ -28,12 +28,12 @@ export function MissionRowActions({ id }: { id: string }) {
         style={{
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
           width: '28px', height: '28px', borderRadius: '5px',
-          border: '1px solid var(--border)', color: 'rgba(240,244,250,0.5)',
+          border: '1px solid var(--border)', color: 'rgba(var(--ink),0.85)',
           textDecoration: 'none', transition: 'all 0.15s',
         }}
         title="Edit"
         onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'rgba(240,244,250,0.5)' }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'rgba(var(--ink),0.72)' }}
       >
         <Pencil size={11} />
       </Link>
@@ -46,11 +46,11 @@ export function MissionRowActions({ id }: { id: string }) {
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
           width: '28px', height: '28px', borderRadius: '5px',
           border: '1px solid var(--border)', background: 'transparent',
-          color: 'rgba(240,244,250,0.35)', cursor: busy ? 'not-allowed' : 'pointer',
+          color: 'rgba(var(--ink),0.78)', cursor: busy ? 'not-allowed' : 'pointer',
           transition: 'all 0.15s',
         }}
-        onMouseEnter={e => { if (!busy) { e.currentTarget.style.borderColor = 'rgba(240,90,90,0.5)'; e.currentTarget.style.color = 'var(--red)' } }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'rgba(240,244,250,0.35)' }}
+        onMouseEnter={e => { if (!busy) { e.currentTarget.style.borderColor = 'rgba(231,76,60,0.5)'; e.currentTarget.style.color = 'var(--red)' } }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'rgba(var(--ink),0.58)' }}
       >
         <Trash2 size={11} />
       </button>

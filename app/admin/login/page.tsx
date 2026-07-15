@@ -38,13 +38,13 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07090c', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--black)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       <div style={{ width: '100%', maxWidth: '360px' }}>
 
         {/* Logo mark */}
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #1e4080, #060f22)', border: '1px solid rgba(59,158,255,0.3)', margin: '0 auto 16px' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.3)' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #232338, #0a0a0f)', border: '1px solid rgba(79,142,247,0.3)', margin: '0 auto 16px' }} />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)' }}>
             Restricted Access
           </span>
         </div>
@@ -62,24 +62,24 @@ export default function AdminLoginPage() {
               style={{
                 width:        '100%',
                 padding:      '14px 16px',
-                background:   '#0b0f18',
-                border:       `1px solid ${error ? 'rgba(240,90,90,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                background:   'var(--black)',
+                border:       `1px solid ${error ? 'rgba(231,76,60,0.4)' : 'rgba(var(--ink),0.1)'}`,
                 borderRadius: '8px',
-                color:        '#f0f4fa',
+                color:        'var(--white)',
                 fontFamily:   'var(--font-mono)',
-                fontSize:     '14px',
+                fontSize: '14px',
                 letterSpacing:'0.05em',
                 outline:      'none',
                 boxSizing:    'border-box',
                 transition:   'border-color 0.2s',
               }}
-              onFocus={e  => (e.target.style.borderColor = 'rgba(59,158,255,0.5)')}
-              onBlur={e   => (e.target.style.borderColor = error ? 'rgba(240,90,90,0.4)' : 'rgba(255,255,255,0.1)')}
+              onFocus={e  => (e.target.style.borderColor = 'rgba(79,142,247,0.5)')}
+              onBlur={e   => (e.target.style.borderColor = error ? 'rgba(231,76,60,0.4)' : 'rgba(var(--ink),0.1)')}
             />
           </div>
 
           {error && (
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#f05a5a', marginBottom: '16px', letterSpacing: '0.05em' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#e74c3c', marginBottom: '16px', letterSpacing: '0.05em' }}>
               {error}
             </p>
           )}
@@ -90,12 +90,12 @@ export default function AdminLoginPage() {
             style={{
               width:        '100%',
               padding:      '14px',
-              background:   loading ? 'rgba(59,158,255,0.4)' : '#3b9eff',
-              color:        '#07090c',
+              background:   loading ? 'rgba(79,142,247,0.4)' : '#4f8ef7',
+              color:        'var(--black)',
               border:       'none',
               borderRadius: '8px',
               fontFamily:   'var(--font-mono)',
-              fontSize:     '12px',
+              fontSize: '14px',
               fontWeight:   700,
               letterSpacing:'0.15em',
               textTransform:'uppercase',

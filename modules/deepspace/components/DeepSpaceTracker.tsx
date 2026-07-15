@@ -4,338 +4,272 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import type { DeepSpaceProbe } from '@/types/api'
 
+const AU_KM = 149_597_870.7
+
+// ── Per-probe presentation metadata (add a probe → add an entry) ──
+// Everything else (distance, velocity, signal, days) is data-driven from the
+// live API / SSR fallback, so this map only holds the flavour a data feed
+// can't provide. `image` is optional — a generated space panel shows if absent.
+interface ProbeMeta {
+  emoji:  string
+  hue:    number      // cover gradient hue
+  blurb:  string
+  image?: string
+}
+const META: Record<string, ProbeMeta> = {
+  'voyager-1':          { emoji: '🛰️', hue: 214, blurb: 'The most distant human-made object ever built — now drifting through interstellar space beyond the Sun’s heliosphere.' },
+  'voyager-2':          { emoji: '🛰️', hue: 224, blurb: 'The only spacecraft to visit all four giant planets, and the second to reach interstellar space.' },
+  'parker-solar-probe': { emoji: '☀️', hue: 28,  blurb: 'The fastest object humans have ever built, diving repeatedly through the Sun’s corona to touch our star.' },
+  'europa-clipper':     { emoji: '🪐', hue: 150, blurb: 'En route to Jupiter’s ocean moon Europa to investigate whether it could harbour the conditions for life.' },
+  'lucy':               { emoji: '🌌', hue: 265, blurb: 'On a twelve-year tour of the Trojan asteroids — fossils of the early Solar System locked in Jupiter’s orbit.' },
+  'new-horizons':       { emoji: '🛰️', hue: 288, blurb: 'The first spacecraft to explore Pluto up close, now voyaging deeper into the Kuiper Belt at the Solar System’s frozen frontier.' },
+  'juice':              { emoji: '🪐', hue: 188, blurb: 'ESA’s Jupiter Icy Moons Explorer — cruising toward Ganymede to study Jupiter’s potentially habitable ocean worlds.' },
+}
+function meta(id: string): ProbeMeta {
+  return META[id] || { emoji: '🛰️', hue: 210, blurb: 'A robotic emissary exploring the deep Solar System.' }
+}
+
+// ── Formatting ────────────────────────────────────────────────
+const nf = new Intl.NumberFormat('en-US')
+const kmExact   = (km: number) => nf.format(Math.round(km)) + ' km'
+const kmBillion = (km: number) => (km / 1e9).toFixed(2)
+const daysSince = (d: string) => Math.floor((Date.now() - new Date(d).getTime()) / 86_400_000)
+function fmtDelay(hours: number): string {
+  if (hours < 1 / 60) return Math.round(hours * 3600) + ' sec'
+  if (hours < 1)      return Math.round(hours * 60) + ' min'
+  const h = Math.floor(hours)
+  const m = Math.round((hours - h) * 60)
+  return m ? `${h} hr ${m} min` : `${h} hr`
+}
+function statusColor(s: string) {
+  return s === 'lost' ? '#e74c3c' : s === 'degraded' ? '#f39c12' : '#2ecc71'
+}
+
+// ── Ticking clock — re-renders every 100ms so the counters climb live ──
+function useNow(active: boolean, ms = 100): number {
+  const [now, setNow] = useState(0)
+  useEffect(() => {
+    if (!active) return
+    setNow(Date.now())
+    const id = setInterval(() => setNow(Date.now()), ms)
+    return () => clearInterval(id)
+  }, [active, ms])
+  return now
+}
+
 interface Props {
   initialProbes: DeepSpaceProbe[]
   updatedAt: string
 }
 
-const PROBE_COLORS: Record<string, string> = {
-  'voyager-1': '#b48cff',
-  'voyager-2': '#3b9eff',
-  'parker-solar-probe': '#ff6b6b',
-  'europa-clipper': '#34d897',
-  'lucy': '#c9a96e',
-}
+export function DeepSpaceTracker({ initialProbes }: Props) {
+  const [probes, setProbes] = useState(initialProbes)
+  const [liveFeed, setLiveFeed] = useState(false)   // true once client live data arrives
+  const baseTime = useRef<number>(Date.now())
+  const [mounted, setMounted] = useState(false)
 
-const PROBE_ICONS: Record<string, string> = {
-  'voyager-1': '🛸',
-  'voyager-2': '🛸',
-  'parker-solar-probe': '☀️',
-  'europa-clipper': '🪐',
-  'lucy': '🌌',
-}
+  // Live refresh from the API-proxy (real NASA Horizons vectors, cached fallback)
+  useEffect(() => {
+    setMounted(true)
+    let alive = true
+    async function load() {
+      try {
+        const res = await fetch('/api/deep-space')
+        if (!res.ok) return
+        const data = await res.json()
+        const next: DeepSpaceProbe[] = Array.isArray(data) ? data : data.probes
+        if (alive && Array.isArray(next) && next.length) {
+          baseTime.current = Date.now()
+          setProbes(next)
+          setLiveFeed(true)
+        }
+      } catch { /* keep current */ }
+    }
+    load()
+    const id = setInterval(load, 60_000)
+    return () => { alive = false; clearInterval(id) }
+  }, [])
 
-function getColor(id: string): string {
-  return PROBE_COLORS[id] || '#3b9eff'
-}
-
-function getIcon(id: string): string {
-  return PROBE_ICONS[id] || '🛰️'
-}
-
-function getStatusColor(status: string): string {
-  if (status === 'degraded') return '#c9a96e'
-  if (status === 'lost') return '#f05a5a'
-  return '#34d897'
-}
-
-function fmtAU(au: number): string {
-  if (au < 1) return au.toFixed(3)
-  return au.toFixed(1)
-}
-
-function fmtKm(au: number): string {
-  const km = au * 149597870.7
-  if (km >= 1000000000) return (km / 1000000000).toFixed(2) + 'B km'
-  if (km >= 1000000) return (km / 1000000).toFixed(1) + 'M km'
-  return Math.round(km).toString() + ' km'
-}
-
-function fmtDelay(hours: number): string {
-  if (hours < 0.0167) return Math.round(hours * 3600) + 's'
-  if (hours < 1) return Math.round(hours * 60) + ' min'
-  return hours.toFixed(1) + ' hrs'
-}
-
-function fmtVel(kms: number): string {
-  return kms.toFixed(1) + ' km/s'
-}
-
-const LOG_MIN = Math.log10(0.04)
-const LOG_MAX = Math.log10(170)
-const AU_TICKS = [0.1, 1, 10, 100]
-
-function toPct(au: number): number {
-  const v = Math.max(au, 0.04)
-  const p = ((Math.log10(v) - LOG_MIN) / (LOG_MAX - LOG_MIN)) * 100
-  return Math.max(4, Math.min(p, 96))
-}
-
-// ── Scale diagram ──────────────────────────────────────────────
-
-function ScaleDiagram({ probes }: { probes: DeepSpaceProbe[] }) {
-  const sorted = [...probes].sort((a, b) => a.distanceFromSun - b.distanceFromSun)
+  // Hero summary — computed from the probe set
+  const farthest = probes.reduce((a, b) => (b.distanceFromSun > a.distanceFromSun ? b : a), probes[0])
+  const maxDelay = probes.reduce((m, p) => Math.max(m, p.signalDelay), 0)
 
   return (
-    <div style={{ background: '#10151c', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '16px', padding: '28px 32px 24px', marginBottom: '36px' }}>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: '#b48cff', marginBottom: '6px' }}>
-        Scale Overview
-      </div>
-      <div style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', color: '#fff', margin: '0 0 24px' }}>
-        Probe Distances from the Sun
-      </div>
+    <div style={{ paddingTop: 'var(--nav-height)' }}>
 
-      <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '10px', marginBottom: '20px' }}>
-        {sorted.map(probe => {
-          const pct = toPct(probe.distanceFromSun)
-          const color = getColor(probe.id)
-          return (
-            <div key={probe.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '160px', flexShrink: 0 }}>
-                <span style={{ fontSize: '14px' }}>{getIcon(probe.id)}</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color, fontWeight: 600, whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {probe.name}
-                </span>
-              </div>
-              <div style={{ flex: 1, position: 'relative' as const, height: '20px', display: 'flex', alignItems: 'center' }}>
-                <div style={{ position: 'absolute' as const, left: 0, right: 0, height: '3px', background: 'rgba(255,255,255,0.07)', borderRadius: '2px' }} />
-                <div style={{ position: 'absolute' as const, left: 0, width: '10px', height: '10px', borderRadius: '50%', background: '#f5c518', boxShadow: '0 0 8px #f5c51888', transform: 'translateX(-50%)' }} />
-                <div style={{ position: 'absolute' as const, left: 0, width: pct + '%', height: '3px', background: 'linear-gradient(90deg, #f5c51840, ' + color + '90)', borderRadius: '2px' }} />
-                <div style={{ position: 'absolute' as const, left: pct + '%', width: '12px', height: '12px', borderRadius: '50%', background: color, boxShadow: '0 0 8px ' + color, transform: 'translateX(-50%)', zIndex: 2 }} />
-              </div>
-              <div style={{ width: '90px', flexShrink: 0, textAlign: 'right' as const }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#fff', fontWeight: 700 }}>{fmtAU(probe.distanceFromSun)}</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.5)', marginLeft: '4px' }}>AU</span>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      {/* ── Hero ─────────────────────────────────────────── */}
+      <section style={{ position: 'relative', overflow: 'hidden', minHeight: '38vh', display: 'flex', alignItems: 'flex-end', background: '#05060c' }}>
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 20% 50%, rgba(79,142,247,0.14) 0%, transparent 60%), radial-gradient(ellipse at 80% 30%, rgba(120,60,220,0.12) 0%, transparent 50%), radial-gradient(ellipse at 50% 110%, rgba(20,20,60,0.85) 0%, transparent 70%)' }} />
+        <Starfield />
+        <div className="container" style={{ position: 'relative', zIndex: 1, padding: '2rem 1.5rem 2.5rem' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'var(--font-sans)', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#7fb0ff', border: '1px solid rgba(79,142,247,0.35)', padding: '0.3rem 0.8rem', borderRadius: '20px', background: 'rgba(79,142,247,0.1)', marginBottom: '1rem' }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4f8ef7', boxShadow: '0 0 8px #4f8ef7', animation: 'blink 1.4s infinite' }} />
+            Live Telemetry · NASA Horizons
+          </span>
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, fontSize: 'clamp(2rem, 5vw, 3.4rem)', letterSpacing: '-0.02em', lineHeight: 1.08, color: '#ffffff', margin: 0 }}>
+            Deep Space <span style={{ color: '#4f8ef7' }}>Mission</span> Tracker
+          </h1>
 
-      <div style={{ marginLeft: '172px', marginRight: '94px', position: 'relative' as const, height: '18px', marginBottom: '4px' }}>
-        {AU_TICKS.map(au => {
-          const p = toPct(au)
-          return (
-            <div key={au} style={{ position: 'absolute' as const, left: p + '%', top: 0, transform: 'translateX(-50%)', textAlign: 'center' as const }}>
-              <div style={{ width: '1px', height: '6px', background: 'rgba(255,255,255,0.15)', margin: '0 auto 2px' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(240,244,250,0.35)', whiteSpace: 'nowrap' as const }}>{au} AU</span>
-            </div>
-          )
-        })}
-      </div>
-      <div style={{ marginLeft: '172px', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.28)' }}>
-        Logarithmic scale
-      </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.75rem', marginTop: '1.5rem' }}>
+            <HeroStat value={String(probes.length)} label="Active Missions" />
+            <HeroStat value={farthest ? `${farthest.distanceFromSun.toFixed(1)} AU` : '—'} label={`Farthest — ${farthest?.name ?? ''}`} />
+            <HeroStat value={fmtDelay(maxDelay)} label="Max Signal Delay" />
+            <HeroStat value="299,792" label="Speed of Light (km/s)" />
+          </div>
+        </div>
+      </section>
+
+      {/* ── Missions ─────────────────────────────────────── */}
+      <main className="container" style={{ padding: '3rem 1.5rem 5rem' }}>
+        <div className="section-head" style={{ marginBottom: '1.75rem' }}>
+          <div>
+            <h2 className="section-title">Spacecraft in Deep Space</h2>
+            <span className="section-eyebrow">Distances update live · sourced from NASA Horizons</span>
+          </div>
+          {liveFeed && <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#2ecc71', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2ecc71', boxShadow: '0 0 8px #2ecc71', animation: 'blink 1.5s infinite' }} />Live</span>}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {probes.map(p => (
+            <MissionCard key={p.id} probe={p} baseTime={baseTime.current} mounted={mounted} />
+          ))}
+        </div>
+
+        <p style={{ marginTop: '3rem', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: '720px' }}>
+          All communication with deep-space spacecraft travels at the speed of light — 299,792 km per second.
+          No matter how powerful the antenna, signals cannot travel faster. A command sent to Voyager&nbsp;1 today
+          won’t arrive for nearly a day, and its reply takes just as long to return.
+        </p>
+      </main>
     </div>
   )
 }
 
-// ── Probe card ─────────────────────────────────────────────────
-
-function ProbeCard({ probe }: { probe: DeepSpaceProbe }) {
-  const color = getColor(probe.id)
-  const sColor = getStatusColor(probe.communicationStatus)
-  const [hovered, setHovered] = useState(false)
-
+// ── Hero stat ─────────────────────────────────────────────────
+function HeroStat({ value, label }: { value: string; label: string }) {
   return (
-    <Link href={'/live/deep-space/' + probe.id} style={{ textDecoration: 'none', display: 'block' }}>
-      <div
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          background: '#10151c',
-          border: '1px solid ' + (hovered ? color : 'rgba(255,255,255,0.1)'),
-          borderRadius: '16px',
-          overflow: 'hidden',
-          cursor: 'pointer',
-          transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
-          transition: 'border-color 0.2s, transform 0.15s',
-        }}
-      >
-        <div style={{ height: '3px', background: 'linear-gradient(90deg, ' + color + ', transparent 70%)' }} />
-        <div style={{ padding: '24px 26px 26px' }}>
-
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ fontSize: '28px', lineHeight: '1' }}>{getIcon(probe.id)}</span>
-              <div>
-                <div style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 400, color: '#fff', marginBottom: '4px', lineHeight: '1.1' }}>{probe.name}</div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase' as const, color, fontWeight: 600 }}>{probe.agency}</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '6px', background: sColor + '18', border: '1px solid ' + sColor + '45', flexShrink: 0 }}>
-              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: sColor, boxShadow: '0 0 8px ' + sColor }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: sColor, fontWeight: 600 }}>{probe.communicationStatus}</span>
-            </div>
-          </div>
-
-          {/* Phase tag */}
-          <div style={{ marginBottom: '22px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: 'rgba(240,244,250,0.7)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', padding: '5px 12px', borderRadius: '4px', display: 'inline-block', whiteSpace: 'nowrap' as const }}>
-              {probe.missionPhase}{probe.targetBody ? ' · ' + probe.targetBody : ''}
-            </span>
-          </div>
-
-          {/* Telemetry */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px 16px', padding: '20px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '20px' }}>
-            {[
-              { label: 'From Earth', value: fmtAU(probe.distanceFromEarth) + ' AU', sub: fmtKm(probe.distanceFromEarth) },
-              { label: 'From Sun',   value: fmtAU(probe.distanceFromSun) + ' AU',   sub: fmtKm(probe.distanceFromSun) },
-              { label: 'Velocity',   value: fmtVel(probe.velocity),                  sub: 'heliocentric' },
-              { label: 'Signal',     value: fmtDelay(probe.signalDelay),             sub: 'one-way' },
-            ].map(item => (
-              <div key={item.label}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: 'rgba(240,244,250,0.55)', marginBottom: '5px' }}>{item.label}</div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 600, color: '#fff', lineHeight: '1', marginBottom: '4px' }}>{item.value}</div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(240,244,250,0.6)' }}>{item.sub}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Bar */}
-          <div>
-            <div style={{ height: '5px', background: 'rgba(255,255,255,0.07)', borderRadius: '3px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: Math.min((probe.distanceFromSun / 170) * 100, 100) + '%', background: 'linear-gradient(90deg, ' + color + '66, ' + color + ')', borderRadius: '3px' }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.45)' }}>☀ Sun</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.45)' }}>170 AU</span>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '18px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(240,244,250,0.5)' }}>
-              Launched {new Date(probe.launchDate).getFullYear()}
-            </span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color, letterSpacing: '0.08em' }}>View Details →</span>
-          </div>
-
-        </div>
-      </div>
-    </Link>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+      <span style={{ fontFamily: 'var(--font-sans)', fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', fontVariantNumeric: 'tabular-nums' }}>{value}</span>
+      <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'rgba(255,255,255,0.5)' }}>{label}</span>
+    </div>
   )
 }
 
-// ── Main ───────────────────────────────────────────────────────
+// ── Mission card (data-driven) ────────────────────────────────
+function MissionCard({ probe, baseTime, mounted }: { probe: DeepSpaceProbe; baseTime: number; mounted: boolean }) {
+  const m       = meta(probe.id)
+  const now     = useNow(mounted)
+  const elapsed = mounted && now ? (now - baseTime) / 1000 : 0
 
-// Minimum valid distances per probe (outside component to avoid stale closure)
-const MIN_DISTANCE: Record<string, number> = {
-  'voyager-1': 100, 'voyager-2': 80,
-  'parker-solar-probe': 0.01, 'europa-clipper': 1, 'lucy': 1,
-}
-
-function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-  } catch (_e) {
-    return iso
-  }
-}
-
-export function DeepSpaceTracker({ initialProbes, updatedAt }: Props) {
-  const [probes, setProbes] = useState<DeepSpaceProbe[]>(initialProbes)
-  const [refreshing, setRefreshing] = useState(false)
-  const [displayDate, setDisplayDate] = useState('')
-
-  // useRef holds the fetch logic so the interval always calls the latest version
-  // This avoids stale closure problems with useCallback + setInterval
-  const fetchRef = useRef<() => Promise<void>>(async () => {})
-
-  fetchRef.current = async () => {
-    setRefreshing(true)
-    setDisplayDate(formatDate(new Date().toISOString()))
-    try {
-      const res = await fetch('/api/deep-space?t=' + Date.now(), { cache: 'no-store' })
-      if (!res.ok) return
-      const data = await res.json()
-      if (Array.isArray(data.probes) && data.probes.length > 0) {
-        setProbes(prev => data.probes.map((p: Record<string, unknown>) => {
-          const id  = String(p.id || '')
-          const dst = Number(p.distanceFromSun)
-          const min = MIN_DISTANCE[id] ?? 0.001
-          const existing = prev.find(x => x.id === id)
-          if (dst < min && existing) return existing
-          return {
-            id,
-            name:                String(p.name || ''),
-            agency:              String(p.agency || 'NASA'),
-            launchDate:          String(p.launchDate || '1977-01-01'),
-            distanceFromEarth:   dst > 0 ? Number(p.distanceFromEarth) : (existing?.distanceFromEarth ?? 0),
-            distanceFromSun:     dst > 0 ? dst                         : (existing?.distanceFromSun    ?? 0),
-            velocity:            Number(p.velocity)    > 0 ? Number(p.velocity)    : (existing?.velocity    ?? 0),
-            signalDelay:         Number(p.signalDelay) > 0 ? Number(p.signalDelay) : (existing?.signalDelay ?? 0),
-            missionPhase:        String(p.missionPhase || existing?.missionPhase || ''),
-            targetBody:          String(p.targetBody   || existing?.targetBody   || ''),
-            communicationStatus: (['nominal','degraded','lost'].includes(String(p.communicationStatus))
-              ? String(p.communicationStatus)
-              : 'nominal') as 'nominal' | 'degraded' | 'lost',
-            lastUpdated:         String(p.lastUpdated || new Date().toISOString()),
-          }
-        }))
-      }
-      setDisplayDate(formatDate(new Date().toISOString()))
-    } catch (_e) {
-      // fail silently — keep showing last data
-    } finally {
-      setRefreshing(false)
-    }
-  }
-
-  // Stable refresh function for button — always calls latest fetchRef
-  const refresh = () => { fetchRef.current() }
-
-  // Auto-refresh: fire once on mount after 800ms, then every 5 minutes
-  useEffect(() => {
-    const timer = setTimeout(() => fetchRef.current(), 800)
-    const id    = setInterval(() => fetchRef.current(), 5 * 60 * 1000)
-    return () => { clearTimeout(timer); clearInterval(id) }
-  }, [])  // empty deps — interval never re-registers, always calls latest via ref
+  const baseKm  = probe.distanceFromSun * AU_KM
+  const liveKm  = baseKm + probe.velocity * elapsed           // ← climbs live
+  const kmh     = Math.round(probe.velocity * 3600)
+  const days    = daysSince(probe.launchDate)
+  const journey = Math.min(100, (Math.log10(Math.max(probe.distanceFromSun, 0.04)) - Math.log10(0.04)) / (Math.log10(180) - Math.log10(0.04)) * 100)
+  const sColor  = statusColor(probe.communicationStatus)
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px 80px' }}>
+    <article style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
+      <div className="ds-card-inner" style={{ display: 'grid', gridTemplateColumns: '300px 1fr' }}>
 
-      <div style={{ marginBottom: '48px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#b48cff', boxShadow: '0 0 12px #b48cff88', display: 'inline-block' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: '#b48cff', fontWeight: 600 }}>Live Telemetry</span>
-        </div>
-
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 300, color: '#fff', margin: '0 0 16px', letterSpacing: '-0.01em', lineHeight: '1.1' }}>
-          Deep Space Tracker
-        </h1>
-
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '17px', color: 'rgba(240,244,250,0.75)', margin: '0 0 24px', maxWidth: '580px', lineHeight: '1.7' }}>
-          Live telemetry for humanity's most distant emissaries — position, velocity, and signal delay sourced from NASA Horizons System.
-        </p>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' as const }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(240,244,250,0.5)', letterSpacing: '0.06em' }}>
-            {displayDate ? 'Data from ' + displayDate : 'Static data · click Refresh for live'}
+        {/* Visual panel (always dark — it's imagery) */}
+        <div style={{ position: 'relative', minHeight: '260px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(150deg, hsl(${m.hue},48%,18%) 0%, hsl(${m.hue},44%,10%) 45%, #05060c 100%)` }}>
+          {m.image
+            ? /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={m.image} alt={probe.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            : <>
+                <div aria-hidden style={{ position: 'absolute', width: 260, height: 260, borderRadius: '50%', top: -90, right: -70, background: `radial-gradient(circle, hsla(${m.hue},72%,60%,0.3) 0%, transparent 62%)` }} />
+                <div aria-hidden style={{ position: 'absolute', width: 320, height: 90, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', transform: 'rotate(-16deg)' }} />
+                <span style={{ fontSize: '64px', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.6))' }}>{m.emoji}</span>
+              </>}
+          <span style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', padding: '0.3rem 0.7rem', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '0.72rem', fontWeight: 700, color: '#fff', letterSpacing: '0.5px' }}>{probe.agency}</span>
+          <span style={{ position: 'absolute', bottom: '1rem', left: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.3rem 0.75rem', borderRadius: '20px', fontFamily: 'var(--font-sans)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: sColor, background: 'rgba(0,0,0,0.55)', border: `1px solid ${sColor}` }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: sColor, animation: 'blink 1.5s infinite' }} />
+            {probe.communicationStatus}
           </span>
-          <button
-            onClick={refresh}
-            disabled={refreshing}
-            style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.14em', textTransform: 'uppercase' as const, color: refreshing ? 'rgba(240,244,250,0.3)' : '#b48cff', background: 'transparent', border: '1px solid rgba(180,140,255,0.35)', borderRadius: '6px', padding: '6px 16px', cursor: refreshing ? 'not-allowed' : 'pointer', fontWeight: 600 }}
-          >
-            {refreshing ? 'Refreshing…' : '↻ Refresh'}
-          </button>
+        </div>
+
+        {/* Data panel */}
+        <div style={{ padding: '1.5rem 1.75rem', display: 'flex', flexDirection: 'column', gap: '1.1rem', minWidth: 0 }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-sans)', fontSize: '1.5rem', fontWeight: 900, letterSpacing: '-0.5px', lineHeight: 1.2, color: 'var(--text-primary)' }}>{probe.name}</div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5, marginTop: '0.3rem' }}>
+              {probe.missionPhase} · {probe.targetBody} · Launched {new Date(probe.launchDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+            </div>
+          </div>
+
+          {/* LIVE distance */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(79,142,247,0.08) 0%, rgba(120,60,220,0.05) 100%)', border: '1px solid rgba(79,142,247,0.22)', borderRadius: '12px', padding: '1rem 1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'var(--font-sans)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '0.35rem' }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', animation: 'blink 1s infinite' }} />
+              Live · Distance from the Sun
+            </div>
+            <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(1.25rem, 2.6vw, 1.7rem)', fontWeight: 900, letterSpacing: '-0.5px', lineHeight: 1.1, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' }}>
+              {kmExact(liveKm)}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+              kilometres · travelling at ~{nf.format(kmh)} km/h
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+            <MStat value={kmBillion(liveKm)} label="Distance (Billion km)" color="var(--accent)" />
+            <MStat value={nf.format(days)} label="Days Since Launch" />
+            <MStat value={probe.velocity.toFixed(1)} label="Speed (km/s)" color="#2ecc71" />
+          </div>
+
+          {/* Signal */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '10px', padding: '0.85rem 1rem' }}>
+            <span style={{ fontSize: '1.4rem' }}>📡</span>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: '0.66rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)' }}>One-Way Signal Travel Time</div>
+              <div style={{ fontFamily: 'var(--font-sans)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' }}>{fmtDelay(probe.signalDelay)}</div>
+            </div>
+          </div>
+
+          {/* Journey */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.66rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
+              <span>☉ Sun</span><span>Interstellar space →</span>
+            </div>
+            <div style={{ height: 8, borderRadius: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${journey}%`, borderRadius: 4, background: 'linear-gradient(90deg, var(--accent), #7b4fe0)', transition: 'width 1s ease' }} />
+            </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: '0.75rem 0 0' }}>{m.blurb}</p>
+          </div>
+
+          <Link href={`/live/deep-space/${probe.id}`} style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.04em', color: 'var(--accent)', textDecoration: 'none' }}>
+            Full telemetry →
+          </Link>
         </div>
       </div>
 
-      <ScaleDiagram probes={probes} />
+      <style>{`@media (max-width: 720px){ .ds-card-inner{ grid-template-columns: 1fr !important; } }`}</style>
+    </article>
+  )
+}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
-        {probes.map(probe => <ProbeCard key={probe.id} probe={probe} />)}
-      </div>
+function MStat({ value, label, color }: { value: string; label: string; color?: string }) {
+  return (
+    <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '10px', padding: '0.75rem 0.9rem', minWidth: 0 }}>
+      <div style={{ fontFamily: 'var(--font-sans)', fontSize: '0.98rem', fontWeight: 800, lineHeight: 1.2, marginBottom: '0.2rem', fontVariantNumeric: 'tabular-nums', color: color || 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
+      <div style={{ fontSize: '0.63rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', lineHeight: 1.3 }}>{label}</div>
+    </div>
+  )
+}
 
-      <div style={{ marginTop: '48px', padding: '18px 22px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(240,244,250,0.5)', margin: 0, lineHeight: '1.8', letterSpacing: '0.04em' }}>
-          Telemetry sourced from NASA JPL Horizons System. Distances in AU (1 AU = 149,597,870 km). Signal delay at speed of light. Data refreshes every hour.
-        </p>
-      </div>
-
+// ── Decorative starfield for the hero ─────────────────────────
+function Starfield() {
+  const stars = [
+    [8, 30], [18, 62], [27, 20], [36, 78], [44, 40], [52, 15],
+    [61, 68], [70, 34], [78, 82], [86, 24], [92, 55], [14, 84],
+  ]
+  return (
+    <div aria-hidden style={{ position: 'absolute', inset: 0 }}>
+      {stars.map(([x, y], i) => (
+        <span key={i} style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: i % 4 === 0 ? 3 : 2, height: i % 4 === 0 ? 3 : 2, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', animation: `blink ${2 + (i % 3)}s infinite` }} />
+      ))}
     </div>
   )
 }

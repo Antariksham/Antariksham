@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Crimson_Pro, DM_Mono, Outfit } from 'next/font/google'
+import { Merriweather, DM_Sans } from 'next/font/google'
 import { headers } from 'next/headers'
 import { siteConfig } from '@/config/site'
 import { Navbar } from '@/components/layout/Navbar'
@@ -7,22 +7,20 @@ import { Footer } from '@/components/layout/Footer'
 import '@/styles/globals.css'
 import '@/styles/responsive.css'
 
-const crimsonPro = Crimson_Pro({
+// CosmosDaily fonts. Merriweather = article reading prose (serif);
+// DM Sans = labels / eyebrows / meta. The UI + headings use a Segoe UI
+// system stack defined in styles/globals.css (--font-sans), so no webfont
+// is downloaded for the body/UI type.
+const merriweather = Merriweather({
   subsets: ['latin'],
-  weight:  ['300', '400', '600'],
+  weight:  ['300', '400', '700'],
   style:   ['normal', 'italic'],
   display: 'swap',
 })
 
-const dmMono = DM_Mono({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  weight:  ['300', '400'],
-  display: 'swap',
-})
-
-const outfit = Outfit({
-  subsets: ['latin'],
-  weight:  ['300', '400', '500', '600'],
+  weight:  ['300', '400', '500', '600', '700'],
   display: 'swap',
 })
 
@@ -36,8 +34,10 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor:  '#07090c',
-  colorScheme: 'dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)',  color: '#0a0a0f' },
+    { media: '(prefers-color-scheme: light)', color: '#f0f4ff' },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -50,12 +50,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       suppressHydrationWarning
       style={{
-        '--font-serif': crimsonPro.style.fontFamily,
-        '--font-mono':  dmMono.style.fontFamily,
-        '--font-sans':  outfit.style.fontFamily,
+        '--font-serif': merriweather.style.fontFamily,
+        '--font-mono':  dmSans.style.fontFamily,
       } as React.CSSProperties}
     >
       <head>
+  {/* Theme — apply saved choice before paint to avoid a flash */}
+  <script
+    dangerouslySetInnerHTML={{
+      __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
+    }}
+  />
   {/* KaTeX — CSS must load before JS for fonts/symbols to render */}
   <link
     rel="stylesheet"

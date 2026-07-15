@@ -8,47 +8,48 @@ export const metadata: Metadata = {
 }
 
 const prose: React.CSSProperties = {
-  fontFamily: 'Outfit, sans-serif',
-  fontSize:   '17px',
-  color:      'rgba(240,244,250,0.78)',
+  fontFamily: 'var(--font-sans)',
+  fontSize: '17px',
+  color:      'rgba(var(--ink),0.78)',
   lineHeight: 1.85,
   margin:     '0 0 20px',
 }
 
 const h2: React.CSSProperties = {
-  fontFamily: 'Crimson Pro, Georgia, serif',
-  fontSize:   '26px',
-  color:      '#f0f4fa',
+  fontFamily: 'var(--font-sans)',
+  fontSize: '26px',
+  color:      'var(--white)',
   margin:     '48px 0 14px',
-  lineHeight: 1.25,
+  lineHeight: 1.3,
+  fontWeight: 700,
 }
 
 const divider: React.CSSProperties = {
   border:    'none',
-  borderTop: '1px solid rgba(255,255,255,0.07)',
+  borderTop: '1px solid rgba(var(--ink),0.07)',
   margin:    '48px 0',
 }
 
 export default function TermsPage() {
   return (
-    <main style={{ background: '#07090c', minHeight: '100vh', padding: '72px 24px 96px' }}>
+    <main style={{ background: 'var(--black)', minHeight: '100vh', padding: '72px 24px 96px' }}>
       <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
         {/* Label */}
-        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#3b9eff', marginBottom: '20px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', marginBottom: '20px' }}>
           Terms & Conditions
         </div>
 
         {/* Title */}
-        <h1 style={{ fontFamily: 'Crimson Pro, Georgia, serif', fontSize: 'clamp(36px, 6vw, 54px)', color: '#f0f4fa', margin: '0 0 16px', lineHeight: 1.15, fontWeight: 400 }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 6vw, 54px)', color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.12, fontWeight: 800 }}>
           Terms & Conditions
         </h1>
 
-        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: 'rgba(240,244,250,0.35)', letterSpacing: '0.08em', marginBottom: '36px' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.08em', marginBottom: '36px' }}>
           Last updated: June 2026
         </p>
 
-        <p style={{ ...prose, fontSize: '19px', color: 'rgba(240,244,250,0.85)', marginBottom: '36px' }}>
+        <p style={{ ...prose, fontSize: '19px', color: 'rgba(var(--ink),0.85)', marginBottom: '36px' }}>
           By accessing or using Antariksham.org, you agree to be bound by these terms. Please read them carefully. If you do not agree, please do not use the platform.
         </p>
 
@@ -123,8 +124,8 @@ export default function TermsPage() {
             'Use the platform in any way that violates applicable laws or regulations',
             'Impersonate Antariksham or misrepresent an affiliation with this platform',
           ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: 'var(--accent)', flexShrink: 0, marginTop: '3px' }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(var(--ink),0.05)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--accent)', flexShrink: 0, marginTop: '3px' }}>
                 {String(i + 1).padStart(2, '0')}
               </span>
               <p style={{ ...prose, margin: 0, fontSize: '15px' }}>{item}</p>
@@ -144,7 +145,7 @@ export default function TermsPage() {
         <h2 style={h2}>Contact</h2>
         <p style={prose}>
           If you have questions about these terms or wish to request permission to republish our content, contact us at{' '}
-          <a href={`mailto:${siteConfig.email}`} style={{ color: '#3b9eff', textDecoration: 'none' }}>
+          <a href={`mailto:${siteConfig.email}`} style={{ color: '#4f8ef7', textDecoration: 'none' }}>
             {siteConfig.email}
           </a>.
         </p>
@@ -162,8 +163,8 @@ export default function TermsPage() {
               href={link.href}
               style={{
                 display: 'inline-flex', padding: '9px 16px', borderRadius: '6px',
-                background: 'rgba(59,158,255,0.07)', border: '1px solid rgba(59,158,255,0.18)',
-                color: '#3b9eff', fontFamily: 'DM Mono, monospace', fontSize: '11px',
+                background: 'rgba(79,142,247,0.07)', border: '1px solid rgba(79,142,247,0.18)',
+                color: '#4f8ef7', fontFamily: 'var(--font-mono)', fontSize: '12px',
                 letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none',
               }}
             >

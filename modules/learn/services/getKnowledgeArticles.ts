@@ -61,6 +61,7 @@ function normalizeCard(row: any): KnowledgeArticleCard {
     relatedTopics:   row.related_topics || [],
     icon:            row.icon || '🔭',
     featured:        row.featured || false,
+    thumbnail:       row.thumbnail ?? null,
   }
 }
 

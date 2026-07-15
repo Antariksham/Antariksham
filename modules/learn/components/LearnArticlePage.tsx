@@ -100,7 +100,7 @@ export function LearnArticlePage({ article }: Props) {
       {/* ── Back link ──────────────────────────────────────── */}
       <Link
         href="/learn"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.5)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '40px' }}
+        style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '40px' }}
       >
         ← Back to Learn
       </Link>
@@ -111,7 +111,7 @@ export function LearnArticlePage({ article }: Props) {
           <span style={{ fontSize: '40px', lineHeight: 1 }}>{article.icon}</span>
           <span style={{
             fontFamily:    'var(--font-mono)',
-            fontSize:      '10px',
+            fontSize: '11px',
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
             color:         diffColor,
@@ -124,11 +124,11 @@ export function LearnArticlePage({ article }: Props) {
           </span>
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 400, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.15 }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.15 }}>
           {article.title}
         </h1>
 
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '17px', lineHeight: 1.75, color: 'rgba(240,244,250,0.65)', margin: '0 0 24px' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', lineHeight: 1.75, color: 'rgba(var(--ink),0.9)', margin: '0 0 24px' }}>
           {article.excerpt}
         </p>
 
@@ -138,11 +138,11 @@ export function LearnArticlePage({ article }: Props) {
             {article.relatedTopics.map(topic => (
               <span key={topic} style={{
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '11px',
+                fontSize: '12px',
                 letterSpacing: '0.08em',
-                color:         'rgba(240,244,250,0.7)',
-                background:    'rgba(255,255,255,0.07)',
-                border:        '1px solid rgba(255,255,255,0.15)',
+                color:         'rgba(var(--ink),0.7)',
+                background:    'rgba(var(--ink),0.07)',
+                border:        '1px solid rgba(var(--ink),0.15)',
                 padding:       '4px 10px',
                 borderRadius:  '4px',
               }}>
@@ -154,7 +154,7 @@ export function LearnArticlePage({ article }: Props) {
       </div>
 
       {/* ── Divider ────────────────────────────────────────── */}
-      <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(59,158,255,0.2), transparent)', marginBottom: '48px' }} />
+      <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(79,142,247,0.2), transparent)', marginBottom: '48px' }} />
 
       {/* ── Article content ────────────────────────────────── */}
       <div
@@ -172,15 +172,15 @@ export function LearnArticlePage({ article }: Props) {
             alignItems:     'center',
             gap:            '8px',
             fontFamily:     'var(--font-mono)',
-            fontSize:       '10px',
+            fontSize: '11px',
             letterSpacing:  '0.18em',
             textTransform:  'uppercase',
             color:          'var(--accent)',
             textDecoration: 'none',
             padding:        '10px 20px',
-            border:         '1px solid rgba(59,158,255,0.25)',
+            border:         '1px solid rgba(79,142,247,0.25)',
             borderRadius:   '4px',
-            background:     'rgba(59,158,255,0.06)',
+            background:     'rgba(79,142,247,0.06)',
           }}
         >
           ← All Articles
@@ -194,8 +194,8 @@ export function LearnArticlePage({ article }: Props) {
           margin:        28px 0;
           overflow-x:    auto;
           padding:       20px 16px;
-          background:    rgba(255,255,255,0.03);
-          border:        1px solid rgba(255,255,255,0.08);
+          background:    rgba(var(--ink),0.03);
+          border:        1px solid rgba(var(--ink),0.08);
           border-radius: 8px;
         }
         .katex { color: var(--white); font-size: 1.1em; }
@@ -217,23 +217,23 @@ export function LearnArticlePage({ article }: Props) {
         .article-body p {
           font-size:   16px;
           line-height: 1.85;
-          color:       rgba(240,244,250,0.78);
+          color:       rgba(var(--ink),0.78);
           margin:      0 0 20px;
         }
         .article-body strong { color: var(--white); font-weight: 600; }
-        .article-body em    { color: rgba(240,244,250,0.85); font-style: italic; }
+        .article-body em    { color: rgba(var(--ink),0.85); font-style: italic; }
         .article-body ul, .article-body ol { padding-left: 24px; margin: 0 0 20px; }
         .article-body li {
           font-size:     16px;
           line-height:   1.8;
-          color:         rgba(240,244,250,0.75);
+          color:         rgba(var(--ink),0.75);
           margin-bottom: 6px;
         }
         .article-body code {
           font-family:   var(--font-mono);
           font-size:     13px;
-          background:    rgba(255,255,255,0.06);
-          border:        1px solid rgba(255,255,255,0.1);
+          background:    rgba(var(--ink),0.06);
+          border:        1px solid rgba(var(--ink),0.1);
           border-radius: 3px;
           padding:       2px 6px;
           color:         var(--accent);

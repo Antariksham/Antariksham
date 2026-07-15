@@ -86,6 +86,38 @@ const PROBES = [
       signalDelay:       0.50,
     },
   },
+  {
+    id:           'new-horizons',
+    name:         'New Horizons',
+    spkid:        '-98',          // ✅ Verified Horizons ID
+    agency:       'NASA',
+    launchDate:   '2006-01-19',
+    targetBody:   'Kuiper Belt',
+    missionPhase: 'Extended Mission — Kuiper Belt',
+    communicationStatus: 'nominal' as const,
+    fallback: {
+      distanceFromSun:   61.5,    // AU — May 2026 estimate (~51,500 km/h)
+      distanceFromEarth: 60.8,
+      velocity:          13.9,
+      signalDelay:       8.43,    // hours one-way
+    },
+  },
+  {
+    id:           'juice',
+    name:         'JUICE',
+    spkid:        '-28',          // ✅ ESA Jupiter Icy Moons Explorer
+    agency:       'ESA',
+    launchDate:   '2023-04-14',
+    targetBody:   'Jupiter (Ganymede)',
+    missionPhase: 'Cruise Phase',
+    communicationStatus: 'nominal' as const,
+    fallback: {
+      distanceFromSun:   1.6,     // AU — interplanetary cruise (May 2026 estimate)
+      distanceFromEarth: 1.1,
+      velocity:          20.0,
+      signalDelay:       0.15,
+    },
+  },
 ]
 
 // ── Horizons vector fetch ──────────────────────────────────────

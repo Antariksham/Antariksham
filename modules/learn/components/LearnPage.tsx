@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { LearnThumb } from './LearnThumb'
 import type { KnowledgeArticleCard, DifficultyLevel } from '@/types/knowledge'
 
 type FilterOption = DifficultyLevel | 'all'
@@ -41,13 +42,13 @@ export function LearnPage({ articles }: Props) {
 
       {/* ── Header ─────────────────────────────────────────── */}
       <div style={{ marginBottom: '48px' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '12px' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '12px' }}>
           Knowledge Layer
         </div>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 300, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.1 }}>
+        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 800, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.1 }}>
           Learn Space Science
         </h1>
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', color: 'rgba(240,244,250,0.6)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
+        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', color: 'rgba(var(--ink),0.9)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
           Deep-dive articles on orbital mechanics, astrophysics, and the mathematics powering space exploration. From beginner introductions to advanced physics.
         </p>
       </div>
@@ -63,14 +64,14 @@ export function LearnPage({ articles }: Props) {
               onClick={() => setActiveFilter(level)}
               style={{
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '10px',
+                fontSize: '11px',
                 letterSpacing: '0.18em',
                 textTransform: 'uppercase',
                 padding:       '7px 16px',
                 borderRadius:  '4px',
-                border:        `1px solid ${active ? color : 'rgba(255,255,255,0.1)'}`,
+                border:        `1px solid ${active ? color : 'rgba(var(--ink),0.1)'}`,
                 background:    active ? `${color}18` : 'transparent',
-                color:         active ? color : 'rgba(240,244,250,0.45)',
+                color:         active ? color : 'rgba(var(--ink),0.45)',
                 cursor:        'pointer',
                 transition:    'all 0.15s',
               }}
@@ -79,18 +80,18 @@ export function LearnPage({ articles }: Props) {
             </button>
           )
         })}
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(240,244,250,0.3)', alignSelf: 'center', marginLeft: '8px' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', color: 'rgba(var(--ink),0.55)', alignSelf: 'center', marginLeft: '8px' }}>
           {filtered.length} {filtered.length === 1 ? 'article' : 'articles'}
         </span>
       </div>
 
       {/* ── Article Grid ────────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(240,244,250,0.3)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em' }}>
+        <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(var(--ink),0.55)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em' }}>
           NO ARTICLES YET
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        <div className="grid-3">
           {filtered.map(article => (
             <ArticleCard key={article.id} article={article} />
           ))}
@@ -106,99 +107,33 @@ function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
   const diffLabel = DIFFICULTY_LABELS[article.difficultyLevel] ?? article.difficultyLevel
 
   return (
-    <Link href={`/learn/${article.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
-      <div
-        style={{
-          background:   'var(--surface)',
-          border:       '1px solid var(--border)',
-          borderRadius: '12px',
-          padding:      '28px',
-          height:       '100%',
-          transition:   'border-color 0.2s, transform 0.2s',
-          cursor:       'pointer',
-          position:     'relative',
-          overflow:     'hidden',
-        }}
-        onMouseEnter={e => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.2)'
-          ;(e.currentTarget as HTMLDivElement).style.transform  = 'translateY(-2px)'
-        }}
-        onMouseLeave={e => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)'
-          ;(e.currentTarget as HTMLDivElement).style.transform  = 'translateY(0)'
-        }}
-      >
-        {/* Top accent line */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, ${diffColor}, transparent)` }} />
-
-        {/* Icon */}
-        <div style={{ fontSize: '32px', marginBottom: '20px', lineHeight: 1 }}>{article.icon}</div>
-
+    <Link href={`/learn/${article.slug}`} className="card">
+      <LearnThumb icon={article.icon} seed={article.slug} image={article.thumbnail} />
+      <div className="card-body">
         {/* Difficulty + featured badges */}
-        <div style={{ marginBottom: '14px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-          <span style={{
-            fontFamily:    'var(--font-mono)',
-            fontSize:      '10px',
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color:         diffColor,
-            background:    `${diffColor}18`,
-            border:        `1px solid ${diffColor}40`,
-            padding:       '3px 10px',
-            borderRadius:  '3px',
-          }}>
-            {diffLabel}
-          </span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '0.6rem' }}>
+          <span className="card-category" style={{ color: diffColor, margin: 0 }}>{diffLabel}</span>
           {article.featured && (
-            <span style={{
-              fontFamily:    'var(--font-mono)',
-              fontSize:      '10px',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color:         'var(--gold)',
-              background:    'var(--gold-dim)',
-              border:        '1px solid rgba(201,169,110,0.4)',
-              padding:       '3px 10px',
-              borderRadius:  '3px',
-            }}>
-              Featured
-            </span>
+            <span className="card-category" style={{ color: 'var(--gold)', margin: 0 }}>· Featured</span>
           )}
         </div>
 
-        {/* Title */}
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 400, lineHeight: 1.3, color: 'var(--white)', margin: '0 0 12px' }}>
-          {article.title}
-        </h2>
+        <h3 className="card-title">{article.title}</h3>
+        {article.excerpt && <p className="card-excerpt">{article.excerpt}</p>}
 
-        {/* Excerpt */}
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', lineHeight: 1.7, color: 'rgba(240,244,250,0.65)', margin: '0 0 20px' }}>
-          {article.excerpt}
-        </p>
-
-        {/* Related topics — improved visibility */}
+        {/* Related topics */}
         {article.relatedTopics.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '1rem' }}>
             {article.relatedTopics.slice(0, 3).map(topic => (
-              <span key={topic} style={{
-                fontFamily:    'var(--font-mono)',
-                fontSize:      '10px',
-                letterSpacing: '0.08em',
-                color:         'rgba(240,244,250,0.65)',
-                background:    'rgba(255,255,255,0.06)',
-                border:        '1px solid rgba(255,255,255,0.12)',
-                padding:       '3px 9px',
-                borderRadius:  '4px',
-              }}>
+              <span key={topic} style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', background: 'rgba(var(--ink),0.05)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: '20px' }}>
                 {topic}
               </span>
             ))}
           </div>
         )}
 
-        {/* Read CTA */}
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', color: diffColor }}>
-          Read Article →
+        <div className="card-meta">
+          <span style={{ color: diffColor, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, fontSize: '0.78rem' }}>Read article →</span>
         </div>
       </div>
     </Link>

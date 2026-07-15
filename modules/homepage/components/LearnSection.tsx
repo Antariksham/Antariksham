@@ -13,37 +13,28 @@ async function getLearnPreview() {
   return data || []
 }
 
-// Server component — no event handlers here
 export async function LearnSection() {
   const topics = await getLearnPreview()
 
   return (
-    <section style={{ padding: '64px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-      <div style={{ padding: '0 24px', maxWidth: '1380px', margin: '0 auto' }}>
-
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '40px', gap: '16px', flexWrap: 'wrap' }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '8px' }}>Knowledge Layer</div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(24px, 4vw, 40px)', fontWeight: 400, color: '#ffffff', lineHeight: 1.1 }}>Learn Space Science</div>
-          </div>
-          <Link href="/learn" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.6)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-            Explore all topics →
-          </Link>
+    <section className="section" style={{ paddingTop: 0 }}>
+      <div className="section-head">
+        <div>
+          <h2 className="section-title">Learn Space Science</h2>
+          <span className="section-eyebrow">Knowledge layer</span>
         </div>
+        <Link href="/learn" className="btn btn-outline">Explore all topics</Link>
+      </div>
 
-        {topics.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.25)' }}>No articles published yet</p>
-          </div>
-        )}
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+      {topics.length === 0 ? (
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No topics published yet.</p>
+      ) : (
+        <div className="grid-3">
           {topics.map(topic => (
             <LearnCard key={topic.id} topic={topic} />
           ))}
         </div>
-
-      </div>
+      )}
     </section>
   )
 }

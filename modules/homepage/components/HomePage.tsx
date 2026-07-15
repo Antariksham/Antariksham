@@ -1,4 +1,3 @@
-
 import { HeroSection }       from './HeroSection'
 import { StatusStrip }       from './StatusStrip'
 import { LatestNewsSection } from './LatestNewsSection'
@@ -18,13 +17,12 @@ export function HomePage({ articles, missions }: Props) {
     <>
       <HeroSection />
       <StatusStrip />
-      <div className="glow-divider" />
-      <div className="page-container">
+      <main className="container">
         <LatestNewsSection articles={articles} />
         <MissionsSection   missions={missions} />
         <LearnSection />
         <AboutSection />
-      </div>
+      </main>
     </>
   )
 }

@@ -18,7 +18,7 @@ const STATUS_STYLES: Record<string, { color: string; icon: React.ReactNode }> = 
   active:           { color: 'var(--green)',  icon: <CheckCircle size={10} /> },
   upcoming:         { color: 'var(--accent)', icon: <Clock       size={10} /> },
   'in-development': { color: 'var(--gold)',   icon: <AlertCircle size={10} /> },
-  completed:        { color: 'rgba(240,244,250,0.35)', icon: <CheckCircle size={10} /> },
+  completed:        { color: 'rgba(var(--ink),0.78)', icon: <CheckCircle size={10} /> },
   failed:           { color: 'var(--red)',    icon: <XCircle     size={10} /> },
   cancelled:        { color: 'var(--red)',    icon: <XCircle     size={10} /> },
 }
@@ -42,13 +42,13 @@ export default async function AdminMissionsPage({
       {/* ── Page header ─────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' }}>
         <div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '8px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '8px' }}>
             Content
           </span>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '30px', fontWeight: 300, color: 'var(--white)', margin: 0 }}>
             Missions
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.4)', margin: '4px 0 0', letterSpacing: '0.06em' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.82)', margin: '4px 0 0', letterSpacing: '0.06em' }}>
             {total} mission{total !== 1 ? 's' : ''} total
           </p>
         </div>
@@ -58,8 +58,8 @@ export default async function AdminMissionsPage({
           style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             padding: '10px 18px', borderRadius: '6px',
-            background: 'var(--accent)', color: '#07090c',
-            fontFamily: 'var(--font-mono)', fontSize: '11px',
+            background: 'var(--accent)', color: 'var(--black)',
+            fontFamily: 'var(--font-mono)', fontSize: '14px',
             letterSpacing: '0.1em', textTransform: 'uppercase',
             fontWeight: 700, textDecoration: 'none', flexShrink: 0,
           }}
@@ -80,10 +80,10 @@ export default async function AdminMissionsPage({
                 href={`/admin/missions?status=${tab.value}${search ? `&q=${encodeURIComponent(search)}` : ''}`}
                 style={{
                   padding: '6px 12px', borderRadius: '5px',
-                  fontFamily: 'var(--font-mono)', fontSize: '10px',
+                  fontFamily: 'var(--font-mono)', fontSize: '13px',
                   letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none',
                   background: active ? 'var(--accent)' : 'transparent',
-                  color:      active ? '#07090c'       : 'rgba(240,244,250,0.5)',
+                  color:      active ? 'var(--black)'       : 'rgba(var(--ink),0.72)',
                   fontWeight: active ? 700              : 400,
                   transition: 'all 0.15s',
                 }}
@@ -104,10 +104,10 @@ export default async function AdminMissionsPage({
               padding: '7px 12px', background: 'var(--surface)',
               border: '1px solid var(--border)', borderRadius: '6px',
               color: 'var(--white)', fontFamily: 'var(--font-mono)',
-              fontSize: '11px', letterSpacing: '0.04em', outline: 'none', width: '200px',
+              fontSize: '14px', letterSpacing: '0.04em', outline: 'none', width: '200px',
             }}
           />
-          <button type="submit" style={{ padding: '7px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '6px', color: 'rgba(240,244,250,0.7)', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>
+          <button type="submit" style={{ padding: '7px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '6px', color: 'rgba(var(--ink),0.9)', fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>
             Search
           </button>
         </form>
@@ -116,20 +116,20 @@ export default async function AdminMissionsPage({
       {/* ── Table ───────────────────────────────── */}
       {rows.length === 0 ? (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '60px', textAlign: 'center' }}>
-          <Rocket size={32} style={{ color: 'rgba(240,244,250,0.15)', marginBottom: '12px' }} />
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(240,244,250,0.3)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 16px' }}>
+          <Rocket size={32} style={{ color: 'rgba(var(--ink),0.72)', marginBottom: '12px' }} />
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 16px' }}>
             {search ? 'No missions match your search' : 'No missions yet'}
           </p>
-          <Link href="/admin/missions/new" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent)', textDecoration: 'none', letterSpacing: '0.08em' }}>
+          <Link href="/admin/missions/new" style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--accent)', textDecoration: 'none', letterSpacing: '0.08em' }}>
             Add your first mission →
           </Link>
         </div>
       ) : (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
           {/* Head */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 110px 100px 80px', padding: '10px 20px', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 110px 100px 80px', padding: '10px 20px', borderBottom: '1px solid var(--border)', background: 'rgba(var(--ink),0.02)' }}>
             {['Mission', 'Type', 'Status', 'Launch', 'Actions'].map(h => (
-              <span key={h} style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.3)' }}>{h}</span>
+              <span key={h} style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)' }}>{h}</span>
             ))}
           </div>
 
@@ -149,31 +149,31 @@ export default async function AdminMissionsPage({
                 <div style={{ minWidth: 0, paddingRight: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '3px' }}>
                     {m.featured && <Star size={10} style={{ color: 'var(--gold)', flexShrink: 0 }} />}
-                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--white)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'var(--white)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {m.name}
                     </p>
                   </div>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.35)', margin: 0, letterSpacing: '0.04em' }}>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', margin: 0, letterSpacing: '0.04em' }}>
                     {m.agencyName && <span style={{ marginRight: '8px', color: 'var(--accent)' }}>{m.agencyName}</span>}
                     {m.destination && <span>→ {m.destination}</span>}
                   </p>
                 </div>
 
                 {/* Type */}
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,244,250,0.4)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>
                   {m.missionType.replace('-', ' ')}
                 </span>
 
                 {/* Status */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <span style={{ color: ss.color }}>{ss.icon}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: ss.color }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: ss.color }}>
                     {m.status.replace('-', ' ')}
                   </span>
                 </div>
 
                 {/* Launch date */}
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.4)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.82)' }}>
                   {m.launchDate ? formatDate(m.launchDate) : '—'}
                 </span>
 
@@ -190,16 +190,16 @@ export default async function AdminMissionsPage({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '24px' }}>
           {page > 1 && (
             <Link href={`/admin/missions?status=${status}&page=${page - 1}${search ? `&q=${encodeURIComponent(search)}` : ''}`}
-              style={{ padding: '6px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.6)', textDecoration: 'none' }}>
+              style={{ padding: '6px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.82)', textDecoration: 'none' }}>
               ← Prev
             </Link>
           )}
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.3)', padding: '0 8px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', padding: '0 8px' }}>
             {page} / {totalPages}
           </span>
           {page < totalPages && (
             <Link href={`/admin/missions?status=${status}&page=${page + 1}${search ? `&q=${encodeURIComponent(search)}` : ''}`}
-              style={{ padding: '6px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'rgba(240,244,250,0.6)', textDecoration: 'none' }}>
+              style={{ padding: '6px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.82)', textDecoration: 'none' }}>
               Next →
             </Link>
           )}
