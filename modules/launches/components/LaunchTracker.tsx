@@ -94,7 +94,7 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
 
   return (
     <div style={{
-      background: featured ? 'linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 100%)' : 'var(--surface)',
+      background: featured ? 'var(--featured-bg)' : 'var(--surface)',
       border: `1px solid ${featured ? 'rgba(79,142,247,0.2)' : 'var(--border)'}`,
       borderRadius: featured ? '12px' : '8px',
       overflow: 'hidden',

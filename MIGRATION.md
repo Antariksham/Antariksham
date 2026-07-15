@@ -59,6 +59,11 @@ collection when Supabase env vars are absent — unrelated to app code).
 - ✅ **Deep Space page** rebuilt as a data-driven replica of `deep-space.html`
   with **live-incrementing counters** and 7 probes.
 - ✅ **Original "black" design preserved** (see §8).
+- ✅ **Launch Tracker "Next Launch" card theming fix**: the featured card's
+  background was a hardcoded dark gradient (`#1a1a2e → #0a0a0f`), so it stayed
+  black in light mode. Routed it through a new theme-aware `--featured-bg` token
+  (dark gradient in dark mode, subtle white gradient in light) — matching the
+  `--hero-scrim` / `--nav-bg` pattern.
 
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 
