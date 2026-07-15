@@ -80,6 +80,13 @@ collection when Supabase env vars are absent — unrelated to app code).
   set by the no-flash script, flipping light mode back to dark). Gated the stamp
   behind a `mounted` flag (renders `—` until after mount), per the §6 rule that
   live values must tick only after mount.
+- ✅ **Article hero image broken on the reading page**: the article detail page
+  (`app/news/[slug]`) was the only place still using `next/image`. With an empty
+  `next.config.js` (no `images.remotePatterns`), the Next optimizer returns 400
+  for any external host, so the featured image and author avatar broke — while the
+  cards (plain `<img>`) worked. Converted both to plain `<img>` (the site's house
+  pattern everywhere else — cards, missions detail, learn thumbnails), so any
+  external / admin-entered URL loads directly with no host allow-list to maintain.
 
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 
