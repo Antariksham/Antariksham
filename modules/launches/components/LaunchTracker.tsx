@@ -94,7 +94,7 @@ function LaunchCard({ launch, featured }: { launch: Launch; featured?: boolean }
 
   return (
     <div style={{
-      background: featured ? 'linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 100%)' : 'var(--surface)',
+      background: featured ? 'var(--featured-bg)' : 'var(--surface)',
       border: `1px solid ${featured ? 'rgba(79,142,247,0.2)' : 'var(--border)'}`,
       borderRadius: featured ? '12px' : '8px',
       overflow: 'hidden',
@@ -224,6 +224,10 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
   const [loading,     setLoading]     = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [tab,         setTab]         = useState<'upcoming' | 'recent'>('upcoming')
+  // Gate the live timestamp until after mount — `toLocaleTimeString()` differs
+  // between server and client, so rendering it during SSR breaks hydration.
+  const [mounted,     setMounted]     = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -250,10 +254,10 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
   const restLaunches = upcoming.slice(1)
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px 60px' }}>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: 'var(--nav-height) 24px 60px' }}>
 
       {/* ── Page header ──────────────────────────── */}
-      <div style={{ paddingTop: '40px', paddingBottom: '32px', borderBottom: '1px solid var(--border)', marginBottom: '32px' }}>
+      <div style={{ paddingTop: '24px', paddingBottom: '32px', borderBottom: '1px solid var(--border)', marginBottom: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
@@ -288,7 +292,7 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
               {loading ? 'Refreshing…' : 'Refresh'}
             </button>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)', letterSpacing: '0.08em' }}>
-              Updated {lastUpdated.toLocaleTimeString()}
+              Updated {mounted ? lastUpdated.toLocaleTimeString() : '—'}
             </span>
           </div>
         </div>

@@ -2,7 +2,6 @@ import { getArticleBySlug, getAllArticleSlugs, getRelatedArticles } from '@/modu
 import { notFound } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 
 export const revalidate = 300
 
@@ -115,12 +114,12 @@ export default async function ArticlePage(
           {article.author && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {article.author.avatar && (
-                <Image
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
                   src={article.author.avatar}
                   alt={article.author.name}
-                  width={28}
-                  height={28}
-                  style={{ borderRadius: '50%', objectFit: 'cover' }}
+                  loading="lazy"
+                  style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
                 />
               )}
               <span style={{ color: 'rgba(var(--ink),0.7)' }}>{article.author.name}</span>
@@ -142,12 +141,12 @@ export default async function ArticlePage(
             background:   'var(--surface)',
             position:     'relative',
           }}>
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={article.featuredImage}
               alt={article.title}
-              fill
-              style={{ objectFit: 'cover' }}
-              sizes="(max-width: 800px) 100vw, 800px"
+              loading="lazy"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </div>
         )}

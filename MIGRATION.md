@@ -59,6 +59,34 @@ collection when Supabase env vars are absent — unrelated to app code).
 - ✅ **Deep Space page** rebuilt as a data-driven replica of `deep-space.html`
   with **live-incrementing counters** and 7 probes.
 - ✅ **Original "black" design preserved** (see §8).
+- ✅ **Launch Tracker "Next Launch" card theming fix**: the featured card's
+  background was a hardcoded dark gradient (`#1a1a2e → #0a0a0f`), so it stayed
+  black in light mode. Routed it through a new theme-aware `--featured-bg` token
+  (dark gradient in dark mode, subtle white gradient in light) — matching the
+  `--hero-scrim` / `--nav-bg` pattern.
+- ✅ **Fixed-nav clearance + responsive layout fixes**:
+  - Launch Tracker header started at only `40px` from the top, so its eyebrow and
+    the **Refresh button slid under the 64px fixed nav** (clipped on desktop). Gave
+    the page container `padding-top: var(--nav-height)` (the same pattern
+    `DeepSpaceTracker` already uses) and trimmed the header's inner top padding.
+  - Deep-space probe detail (`/live/deep-space/[id]`) used a fixed
+    `minmax(0,1fr) 300px` grid with **no breakpoint**, so on mobile the 300px
+    sidebar crushed the content column to near-zero and every word wrapped onto its
+    own line. Moved the grid to a `.probe-detail-grid` class that stacks to a
+    single full-width column ≤860px, and added nav clearance to that page too.
+- ✅ **Launch Tracker hydration fix**: the "Updated {time}" stamp rendered
+  `toLocaleTimeString()` during SSR, so server and client HTML differed and the
+  whole root fell back to client rendering (which also stripped the `data-theme`
+  set by the no-flash script, flipping light mode back to dark). Gated the stamp
+  behind a `mounted` flag (renders `—` until after mount), per the §6 rule that
+  live values must tick only after mount.
+- ✅ **Article hero image broken on the reading page**: the article detail page
+  (`app/news/[slug]`) was the only place still using `next/image`. With an empty
+  `next.config.js` (no `images.remotePatterns`), the Next optimizer returns 400
+  for any external host, so the featured image and author avatar broke — while the
+  cards (plain `<img>`) worked. Converted both to plain `<img>` (the site's house
+  pattern everywhere else — cards, missions detail, learn thumbnails), so any
+  external / admin-entered URL loads directly with no host allow-list to maintain.
 
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 

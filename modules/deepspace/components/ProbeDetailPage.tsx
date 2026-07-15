@@ -358,7 +358,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
   }, []) // empty deps — interval never needs to re-register
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 24px 80px' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'calc(var(--nav-height) + 24px) 24px 80px' }}>
 
       {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px' }}>
@@ -392,7 +392,7 @@ export function ProbeDetailPage({ probe, allProbes, updatedAt }: Props) {
         </span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 300px', gap: '32px', alignItems: 'start' }}>
+      <div className="probe-detail-grid">
 
         {/* ── Left column ── */}
         <div>
