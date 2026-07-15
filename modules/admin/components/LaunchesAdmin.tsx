@@ -70,7 +70,7 @@ function StatusBadge({ status }: { status: LaunchStatus }) {
       border:         `1px solid ${cfg.border}`,
       color:          cfg.color,
       fontFamily:     'var(--font-mono)',
-      fontSize: '11px',
+      fontSize: '13px',
       letterSpacing:  '0.12em',
       textTransform:  'uppercase',
       whiteSpace:     'nowrap',
@@ -84,12 +84,12 @@ function StatusBadge({ status }: { status: LaunchStatus }) {
 function CountdownBadge({ target }: { target: string | null }) {
   const cd = useCountdown(target)
   if (!cd) return (
-    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.06em' }}>
+    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.06em' }}>
       T– TBD
     </span>
   )
   return (
-    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent)', letterSpacing: '0.06em' }}>
+    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--accent)', letterSpacing: '0.06em' }}>
       T– {cd.d}d {String(cd.h).padStart(2,'0')}h {String(cd.m).padStart(2,'0')}m {String(cd.s).padStart(2,'0')}s
     </span>
   )
@@ -130,7 +130,7 @@ function LaunchCard({ launch }: { launch: Launch }) {
           }}>
             {launch.name}
           </p>
-          <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.82)', letterSpacing: '0.08em' }}>
+          <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.82)', letterSpacing: '0.08em' }}>
             {launch.rocket}
             {launch.agency ? ` · ${launch.agency}` : ''}
           </p>
@@ -142,7 +142,7 @@ function LaunchCard({ launch }: { launch: Launch }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Clock size={11} style={{ color: 'rgba(var(--ink),0.78)', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.04em' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.04em' }}>
             {formatLaunchDate(launch.launchDate)}
           </span>
         </div>
@@ -156,7 +156,7 @@ function LaunchCard({ launch }: { launch: Launch }) {
         {launch.launchSite && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <MapPin size={10} style={{ color: 'rgba(var(--ink),0.78)', flexShrink: 0 }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.82)', letterSpacing: '0.04em' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.82)', letterSpacing: '0.04em' }}>
               {launch.launchSite}
             </span>
           </div>
@@ -171,7 +171,7 @@ function LaunchCard({ launch }: { launch: Launch }) {
               alignItems:     'center',
               gap:            '4px',
               fontFamily:     'var(--font-mono)',
-              fontSize: '11px',
+              fontSize: '13px',
               letterSpacing:  '0.1em',
               textTransform:  'uppercase',
               color:          'var(--accent)',
@@ -187,7 +187,7 @@ function LaunchCard({ launch }: { launch: Launch }) {
           </a>
         )}
         {launch.probability != null && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.06em' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.06em' }}>
             {launch.probability}% weather GO
           </span>
         )}
@@ -198,7 +198,7 @@ function LaunchCard({ launch }: { launch: Launch }) {
         <p style={{
           margin:      0,
           fontFamily:  'var(--font-sans)',
-          fontSize: '12px',
+          fontSize: '14px',
           color:       'rgba(var(--ink),0.82)',
           lineHeight:  1.6,
           borderTop:   '1px solid var(--border)',
@@ -228,10 +228,10 @@ function EmptyState({ tab }: { tab: Tab }) {
       textAlign:    'center',
     }}>
       <Rocket size={28} style={{ color: 'rgba(var(--ink),0.72)', marginBottom: '12px' }} />
-      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
         No {tab} launches found
       </p>
-      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(var(--ink),0.72)', marginTop: '6px', marginBottom: 0 }}>
+      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(var(--ink),0.72)', marginTop: '6px', marginBottom: 0 }}>
         Data is fetched live from Launch Library 2
       </p>
     </div>
@@ -276,7 +276,7 @@ export function LaunchesAdmin() {
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', color: 'var(--white)', margin: 0, lineHeight: 1.2 }}>
             Launch Tracker
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '6px 0 0' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '6px 0 0' }}>
             Live data · Launch Library 2
             {lastFetched && (
               <span style={{ color: 'rgba(var(--ink),0.72)' }}>
@@ -299,7 +299,7 @@ export function LaunchesAdmin() {
             border:         '1px solid var(--border-hi)',
             color:          loading ? 'rgba(var(--ink),0.55)' : 'rgba(var(--ink),0.9)',
             fontFamily:     'var(--font-mono)',
-            fontSize: '12px',
+            fontSize: '14px',
             letterSpacing:  '0.1em',
             textTransform:  'uppercase',
             cursor:         loading ? 'not-allowed' : 'pointer',
@@ -324,7 +324,7 @@ export function LaunchesAdmin() {
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '22px', fontWeight: 700, color: stat.color, lineHeight: 1 }}>
                 {stat.value}
               </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)', marginTop: '5px' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)', marginTop: '5px' }}>
                 {stat.label}
               </div>
             </div>
@@ -336,7 +336,7 @@ export function LaunchesAdmin() {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '8px' }}>
           <AlertCircle size={14} style={{ color: 'var(--red)', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--red)' }}>{error}</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--red)' }}>{error}</span>
         </div>
       )}
 
@@ -356,7 +356,7 @@ export function LaunchesAdmin() {
                 borderBottom:   active ? '2px solid var(--accent)' : '2px solid transparent',
                 color:          active ? 'var(--accent)' : 'rgba(var(--ink),0.65)',
                 fontFamily:     'var(--font-mono)',
-                fontSize: '12px',
+                fontSize: '14px',
                 letterSpacing:  '0.1em',
                 textTransform:  'uppercase',
                 cursor:         'pointer',
@@ -371,7 +371,7 @@ export function LaunchesAdmin() {
               {data && (
                 <span style={{
                   fontFamily:   'var(--font-mono)',
-                  fontSize: '11px',
+                  fontSize: '13px',
                   padding:      '1px 6px',
                   borderRadius: '10px',
                   background:   active ? 'rgba(79,142,247,0.15)' : 'rgba(var(--ink),0.05)',
@@ -413,14 +413,14 @@ export function LaunchesAdmin() {
         gap:          '10px',
       }}>
         <Rocket size={13} style={{ color: 'rgba(79,142,247,0.5)', flexShrink: 0, marginTop: '1px' }} />
-        <p style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.78)', lineHeight: 1.6, letterSpacing: '0.04em' }}>
+        <p style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', lineHeight: 1.6, letterSpacing: '0.04em' }}>
           Launch data is fetched live from{' '}
           <a href="https://thespacedevs.com/llapi" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(79,142,247,0.6)', textDecoration: 'none' }}>
             Launch Library 2
           </a>
           . Data refreshes every 5 minutes via server cache. Use the Refresh button to force a new fetch.
           To add a public Launches page for visitors, build{' '}
-          <code style={{ fontSize: '11px', color: 'rgba(var(--ink),0.82)', background: 'rgba(var(--ink),0.05)', padding: '1px 5px', borderRadius: '3px' }}>/live/launches</code>.
+          <code style={{ fontSize: '13px', color: 'rgba(var(--ink),0.82)', background: 'rgba(var(--ink),0.05)', padding: '1px 5px', borderRadius: '3px' }}>/live/launches</code>.
         </p>
       </div>
 

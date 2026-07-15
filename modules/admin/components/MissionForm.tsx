@@ -232,7 +232,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                 borderRadius:  '6px',
                 color:         form._showMediaPicker ? 'var(--black)' : 'rgba(var(--ink),0.9)',
                 fontFamily:    'var(--font-mono)',
-                fontSize: '11px',
+                fontSize: '13px',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
                 cursor:        'pointer',
@@ -282,7 +282,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                 padding: '5px 12px', borderRadius: '5px', cursor: 'pointer',
                 background: 'var(--surface)', border: '1px solid var(--border)',
                 color: 'rgba(var(--ink),0.82)', fontFamily: 'var(--font-mono)',
-                fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase',
+                fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase',
               }}
             >
               <Plus size={10} /> Add Event
@@ -291,7 +291,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
 
           {form.timeline.length === 0 ? (
             <div style={{ padding: '24px', background: 'var(--surface)', border: '1px dashed var(--border)', borderRadius: '8px', textAlign: 'center' }}>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
                 No timeline events — click Add Event to start
               </p>
             </div>
@@ -316,7 +316,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                       }}
                       title={event.completed ? 'Mark incomplete' : 'Mark completed'}
                     />
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: event.completed ? 'var(--green)' : 'rgba(var(--ink),0.55)', flex: 1 }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.15em', textTransform: 'uppercase', color: event.completed ? 'var(--green)' : 'rgba(var(--ink),0.55)', flex: 1 }}>
                       Event {i + 1} {event.completed ? '· Completed' : '· Upcoming'}
                     </span>
                     {/* Move up/down */}
@@ -337,20 +337,20 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                       value={event.date}
                       onChange={e => updateTimelineEvent(i, 'date', e.target.value)}
                       placeholder="e.g. Nov 2024"
-                      style={{ ...inputStyle({}), fontSize: '12px' }}
+                      style={{ ...inputStyle({}), fontSize: '14px' }}
                     />
                     <input
                       value={event.title}
                       onChange={e => updateTimelineEvent(i, 'title', e.target.value)}
                       placeholder="Event title"
-                      style={{ ...inputStyle({}), fontSize: '12px' }}
+                      style={{ ...inputStyle({}), fontSize: '14px' }}
                     />
                   </div>
                   <input
                     value={event.description}
                     onChange={e => updateTimelineEvent(i, 'description', e.target.value)}
                     placeholder="Brief description (optional)"
-                    style={{ ...inputStyle({}), fontSize: '12px' }}
+                    style={{ ...inputStyle({}), fontSize: '14px' }}
                   />
                 </div>
               ))}
@@ -367,11 +367,11 @@ export function MissionForm({ mode, mission, agencies }: Props) {
         {error && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '7px' }}>
             <AlertCircle size={13} style={{ color: 'var(--red)', flexShrink: 0 }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--red)' }}>{error}</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--red)' }}>{error}</span>
           </div>
         )}
         {success && (
-          <div style={{ padding: '10px 14px', background: 'rgba(46,204,113,0.08)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--green)' }}>
+          <div style={{ padding: '10px 14px', background: 'rgba(46,204,113,0.08)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--green)' }}>
             ✓ {success}
           </div>
         )}
@@ -413,11 +413,11 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                 }}
               >
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: s.color, flexShrink: 0, boxShadow: form.status === s.value && s.value === 'active' ? `0 0 6px ${s.color}` : 'none' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: form.status === s.value ? 'var(--white)' : 'rgba(var(--ink),0.65)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: form.status === s.value ? 'var(--white)' : 'rgba(var(--ink),0.65)' }}>
                   {s.label}
                 </span>
                 {form.status === s.value && (
-                  <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: '11px', color: s.color }}>✓</span>
+                  <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: '13px', color: s.color }}>✓</span>
                 )}
               </button>
             ))}
@@ -487,7 +487,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
                 transition: 'left 0.2s',
               }} />
             </div>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>
               Featured mission
             </span>
           </label>
@@ -503,10 +503,10 @@ export function MissionForm({ mode, mission, agencies }: Props) {
 function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '6px' }}>
-      <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.85)' }}>
+      <label style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.85)' }}>
         {children}
       </label>
-      {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.04em' }}>{hint}</span>}
+      {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.04em' }}>{hint}</span>}
     </div>
   )
 }
@@ -515,7 +515,7 @@ function SidePanel({ label, children }: { label: string; children: React.ReactNo
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
       <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', background: 'rgba(var(--ink),0.02)' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>{label}</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>{label}</span>
       </div>
       <div style={{ padding: '12px 14px' }}>{children}</div>
     </div>
@@ -544,7 +544,7 @@ function btnStyle({ primary, disabled }: { primary?: boolean; disabled?: boolean
   return {
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
     width: '100%', padding: '9px 14px', borderRadius: '6px',
-    fontFamily: 'var(--font-mono)', fontSize: '12px',
+    fontFamily: 'var(--font-mono)', fontSize: '14px',
     letterSpacing: '0.1em', textTransform: 'uppercase',
     fontWeight: primary ? 700 : 400,
     cursor: disabled ? 'not-allowed' : 'pointer',

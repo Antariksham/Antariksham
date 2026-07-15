@@ -136,7 +136,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '7px', marginBottom: '20px' }}>
           <AlertCircle size={13} style={{ color: 'var(--red)', flexShrink: 0 }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--red)' }}>{error}</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--red)' }}>{error}</span>
         </div>
       )}
 
@@ -171,24 +171,24 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                 </div>
 
                 {/* Number */}
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.72)', width: '16px', textAlign: 'center', flexShrink: 0 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.72)', width: '16px', textAlign: 'center', flexShrink: 0 }}>
                   {i + 1}
                 </span>
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', color: section.enabled ? 'var(--white)' : 'rgba(var(--ink),0.62)' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', letterSpacing: '0.08em', color: section.enabled ? 'var(--white)' : 'rgba(var(--ink),0.62)' }}>
                       {label}
                     </span>
                     {isHero && (
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent)', background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', padding: '2px 6px', borderRadius: '3px' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent)', background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', padding: '2px 6px', borderRadius: '3px' }}>
                         Editable
                       </span>
                     )}
                   </div>
                   {desc && (
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.78)', margin: '2px 0 0', letterSpacing: '0.04em' }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.78)', margin: '2px 0 0', letterSpacing: '0.04em' }}>
                       {desc}
                     </p>
                   )}
@@ -203,7 +203,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                       padding: '5px 10px', borderRadius: '5px', cursor: 'pointer',
                       background: 'transparent', border: '1px solid var(--border)',
                       color: 'rgba(var(--ink),0.85)', fontFamily: 'var(--font-mono)',
-                      fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase',
+                      fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase',
                       flexShrink: 0,
                     }}
                   >
@@ -236,7 +236,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
 
       {/* Info note */}
       <div style={{ marginTop: '16px', padding: '12px 16px', background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: '7px' }}>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.82)', margin: 0, letterSpacing: '0.06em', lineHeight: 1.6 }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.82)', margin: 0, letterSpacing: '0.06em', lineHeight: 1.6 }}>
           Section order and visibility update instantly. Edit the hero featured card by clicking <strong style={{ color: 'rgba(var(--ink),0.82)' }}>Edit</strong> on the Hero row.
         </p>
       </div>
@@ -253,7 +253,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <LayoutDashboard size={14} style={{ color: 'var(--accent)' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--white)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--white)' }}>
                   Edit Hero Featured Card
                 </span>
               </div>
@@ -266,7 +266,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
               {heroSuccess && (
-                <div style={{ padding: '10px 14px', background: 'rgba(46,204,113,0.08)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--green)' }}>
+                <div style={{ padding: '10px 14px', background: 'rgba(46,204,113,0.08)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--green)' }}>
                   ✓ Hero updated — homepage will reflect changes within 5 minutes.
                 </div>
               )}
@@ -287,7 +287,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                 style={{
                   marginTop: '4px', padding: '11px', borderRadius: '6px',
                   background: 'var(--accent)', color: 'var(--black)',
-                  fontFamily: 'var(--font-mono)', fontSize: '12px',
+                  fontFamily: 'var(--font-mono)', fontSize: '14px',
                   letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700,
                   border: 'none', cursor: heroSaving ? 'not-allowed' : 'pointer',
                   opacity: heroSaving ? 0.7 : 1,
@@ -309,7 +309,7 @@ function SidePanel({ label, children }: { label: string; children: React.ReactNo
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
       <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', background: 'rgba(var(--ink),0.02)' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>
           {label}
         </span>
       </div>
@@ -335,8 +335,8 @@ function HeroField({
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>{label}</label>
-        {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.72)' }}>{hint}</span>}
+        <label style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>{label}</label>
+        {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.72)' }}>{hint}</span>}
       </div>
       {textarea
         ? <textarea value={value} onChange={e => onChange(e.target.value)} rows={3} style={{ ...base, resize: 'vertical', lineHeight: 1.6 }} />

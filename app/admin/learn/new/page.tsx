@@ -12,7 +12,7 @@ export default function NewLearnPage() {
           <ChevronLeft size={16} />
         </Link>
         <div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '4px' }}>New Topic</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '4px' }}>New Topic</span>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', fontWeight: 300, color: 'var(--white)', margin: 0 }}>Create Learn Topic</h1>
         </div>
       </div>
