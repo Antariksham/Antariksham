@@ -250,10 +250,10 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
   const restLaunches = upcoming.slice(1)
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px 60px' }}>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: 'var(--nav-height) 24px 60px' }}>
 
       {/* ── Page header ──────────────────────────── */}
-      <div style={{ paddingTop: '40px', paddingBottom: '32px', borderBottom: '1px solid var(--border)', marginBottom: '32px' }}>
+      <div style={{ paddingTop: '24px', paddingBottom: '32px', borderBottom: '1px solid var(--border)', marginBottom: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>

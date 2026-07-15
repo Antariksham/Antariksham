@@ -64,6 +64,16 @@ collection when Supabase env vars are absent — unrelated to app code).
   black in light mode. Routed it through a new theme-aware `--featured-bg` token
   (dark gradient in dark mode, subtle white gradient in light) — matching the
   `--hero-scrim` / `--nav-bg` pattern.
+- ✅ **Fixed-nav clearance + responsive layout fixes**:
+  - Launch Tracker header started at only `40px` from the top, so its eyebrow and
+    the **Refresh button slid under the 64px fixed nav** (clipped on desktop). Gave
+    the page container `padding-top: var(--nav-height)` (the same pattern
+    `DeepSpaceTracker` already uses) and trimmed the header's inner top padding.
+  - Deep-space probe detail (`/live/deep-space/[id]`) used a fixed
+    `minmax(0,1fr) 300px` grid with **no breakpoint**, so on mobile the 300px
+    sidebar crushed the content column to near-zero and every word wrapped onto its
+    own line. Moved the grid to a `.probe-detail-grid` class that stacks to a
+    single full-width column ≤860px, and added nav clearance to that page too.
 
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 
