@@ -74,6 +74,12 @@ collection when Supabase env vars are absent — unrelated to app code).
     sidebar crushed the content column to near-zero and every word wrapped onto its
     own line. Moved the grid to a `.probe-detail-grid` class that stacks to a
     single full-width column ≤860px, and added nav clearance to that page too.
+- ✅ **Launch Tracker hydration fix**: the "Updated {time}" stamp rendered
+  `toLocaleTimeString()` during SSR, so server and client HTML differed and the
+  whole root fell back to client rendering (which also stripped the `data-theme`
+  set by the no-flash script, flipping light mode back to dark). Gated the stamp
+  behind a `mounted` flag (renders `—` until after mount), per the §6 rule that
+  live values must tick only after mount.
 
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 

@@ -224,6 +224,10 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
   const [loading,     setLoading]     = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [tab,         setTab]         = useState<'upcoming' | 'recent'>('upcoming')
+  // Gate the live timestamp until after mount — `toLocaleTimeString()` differs
+  // between server and client, so rendering it during SSR breaks hydration.
+  const [mounted,     setMounted]     = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -288,7 +292,7 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
               {loading ? 'Refreshing…' : 'Refresh'}
             </button>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)', letterSpacing: '0.08em' }}>
-              Updated {lastUpdated.toLocaleTimeString()}
+              Updated {mounted ? lastUpdated.toLocaleTimeString() : '—'}
             </span>
           </div>
         </div>
