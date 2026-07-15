@@ -281,6 +281,12 @@ bad migration is a one-line revert.
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into
   Antariksham's relational `categories`/`tags` join tables (one-time script).
+  *Script written* — `scripts/migrate-cosmosdaily-articles.mjs` (dry-run by
+  default; reads the old project, reshapes into the new relational schema). Old
+  and new are **separate** Supabase projects, so it does export→import→reshape.
+  Not yet run — needs the two projects' service keys + a go-ahead. See
+  `scripts/README.md` for the field mapping, gap decisions, and the required
+  `/article/:slug → /news/:slug` 301s.
 - **Phase 3 — URL & metadata parity, then staged cutover** via `vercel.json`
   (see §9), honoring §6.5.
 - **Phase 4 — Advanced features** (only after cutover): 3D planet rendering
