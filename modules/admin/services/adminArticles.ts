@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase'
+import { enforceSingleFeatured } from './featuredExclusive'
 import type { Article, ArticleStatus, ArticleType, ArticleCategory } from '@/types/article'
 
 // ── List / search ─────────────────────────────────────────────
@@ -174,6 +175,7 @@ export async function createAdminArticle(payload: ArticlePayload): Promise<{ id:
     return null
   }
 
+  await enforceSingleFeatured(db, 'articles', data.id, payload.featured)
   await syncRelations(db, data.id, payload.categoryIds, payload.tagIds)
   return { id: data.id }
 }
@@ -213,6 +215,7 @@ export async function updateAdminArticle(
     return false
   }
 
+  await enforceSingleFeatured(db, 'articles', id, payload.featured)
   await syncRelations(db, id, payload.categoryIds, payload.tagIds)
   return true
 }

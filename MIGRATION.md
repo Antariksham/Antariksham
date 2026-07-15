@@ -80,6 +80,15 @@ collection when Supabase env vars are absent — unrelated to app code).
   set by the no-flash script, flipping light mode back to dark). Gated the stamp
   behind a `mounted` flag (renders `—` until after mount), per the §6 rule that
   live values must tick only after mount.
+- ✅ **Single "featured" enforcement (admin)**: articles and missions had no
+  exclusivity on the `featured` flag, so marking a new one featured never cleared
+  the old — the homepage hero (most-recent featured article) could keep showing a
+  stale pick. Added `modules/admin/services/featuredExclusive.ts`
+  (`enforceSingleFeatured`) and wired it into the article + mission create/update
+  services: saving a featured item now clears `featured` on all other rows of that
+  table. (Learn `featured` is a per-card badge and author `featured` a plain flag,
+  both multi by design — left alone.) Note: the homepage hero *pin* in Admin →
+  Homepage still overrides the featured article by design.
 - ✅ **Homepage featured-story background more visible**: the hero photo sat at
   `opacity: 0.28` under a heavy `--hero-scrim` (0.55→0.9 dark), so it read almost
   black. Raised the image to `opacity: 0.5` and lightened `--hero-scrim`
