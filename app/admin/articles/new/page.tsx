@@ -18,7 +18,7 @@ export default async function NewArticlePage() {
           style={{
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             width: '32px', height: '32px', borderRadius: '6px',
-            border: '1px solid var(--border)', color: 'rgba(var(--ink),0.65)',
+            border: '1px solid var(--border)', color: 'rgba(var(--ink),0.85)',
             textDecoration: 'none', flexShrink: 0, transition: 'all 0.15s',
           }}
           title="Back to Articles"

@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
         {/* Logo mark */}
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #232338, #0a0a0f)', border: '1px solid rgba(79,142,247,0.3)', margin: '0 auto 16px' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)' }}>
             Restricted Access
           </span>
         </div>

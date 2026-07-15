@@ -144,7 +144,7 @@ export function LearnForm({ mode, article }: Props) {
       <Field label="Thumbnail" hint="Upload/pick an image, or leave empty for a generated cover">
         <div style={{ display: 'flex', gap: '8px' }}>
           <input value={form.thumbnail} onChange={e => set('thumbnail', e.target.value)} placeholder="https://… or pick from Media Library →" style={{ ...inputStyle, flex: 1 }} />
-          <button type="button" onClick={() => set('_showMediaPicker', !form._showMediaPicker)} style={{ flexShrink: 0, padding: '0 14px', background: form._showMediaPicker ? 'var(--accent)' : 'rgba(var(--ink),0.05)', border: '1px solid', borderColor: form._showMediaPicker ? 'var(--accent)' : 'rgba(var(--ink),0.12)', borderRadius: '6px', color: form._showMediaPicker ? 'var(--black)' : 'rgba(var(--ink),0.7)', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          <button type="button" onClick={() => set('_showMediaPicker', !form._showMediaPicker)} style={{ flexShrink: 0, padding: '0 14px', background: form._showMediaPicker ? 'var(--accent)' : 'rgba(var(--ink),0.05)', border: '1px solid', borderColor: form._showMediaPicker ? 'var(--accent)' : 'rgba(var(--ink),0.12)', borderRadius: '6px', color: form._showMediaPicker ? 'var(--black)' : 'rgba(var(--ink),0.9)', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap' }}>
             {form._showMediaPicker ? '✕ Close' : '📁 Browse'}
           </button>
         </div>
@@ -180,7 +180,7 @@ export function LearnForm({ mode, article }: Props) {
       {/* Featured */}
       <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
         <input type="checkbox" checked={form.featured} onChange={e => set('featured', e.target.checked)} style={{ width: '16px', height: '16px', accentColor: 'var(--accent)' }} />
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.7)', letterSpacing: '0.04em' }}>Feature this topic</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.9)', letterSpacing: '0.04em' }}>Feature this topic</span>
       </label>
 
       {/* Actions */}
@@ -189,7 +189,7 @@ export function LearnForm({ mode, article }: Props) {
           <Save size={13} />
           {saving ? 'Saving…' : mode === 'new' ? 'Create topic' : 'Save changes'}
         </button>
-        <button onClick={() => router.push('/admin/learn')} disabled={saving} style={{ padding: '11px 22px', background: 'transparent', color: 'rgba(var(--ink),0.6)', border: '1px solid var(--border)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>
+        <button onClick={() => router.push('/admin/learn')} disabled={saving} style={{ padding: '11px 22px', background: 'transparent', color: 'rgba(var(--ink),0.82)', border: '1px solid var(--border)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>
           Cancel
         </button>
       </div>
@@ -215,8 +215,8 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '7px', gap: '10px' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)' }}>{label}</span>
-        {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)' }}>{hint}</span>}
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)' }}>{label}</span>
+        {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.78)' }}>{hint}</span>}
       </div>
       {children}
     </div>

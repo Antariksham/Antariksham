@@ -171,14 +171,14 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                 </div>
 
                 {/* Number */}
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)', width: '16px', textAlign: 'center', flexShrink: 0 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.72)', width: '16px', textAlign: 'center', flexShrink: 0 }}>
                   {i + 1}
                 </span>
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', color: section.enabled ? 'var(--white)' : 'rgba(var(--ink),0.4)' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', color: section.enabled ? 'var(--white)' : 'rgba(var(--ink),0.62)' }}>
                       {label}
                     </span>
                     {isHero && (
@@ -188,7 +188,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                     )}
                   </div>
                   {desc && (
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', margin: '2px 0 0', letterSpacing: '0.04em' }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.78)', margin: '2px 0 0', letterSpacing: '0.04em' }}>
                       {desc}
                     </p>
                   )}
@@ -202,7 +202,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                       display: 'inline-flex', alignItems: 'center', gap: '5px',
                       padding: '5px 10px', borderRadius: '5px', cursor: 'pointer',
                       background: 'transparent', border: '1px solid var(--border)',
-                      color: 'rgba(var(--ink),0.65)', fontFamily: 'var(--font-mono)',
+                      color: 'rgba(var(--ink),0.85)', fontFamily: 'var(--font-mono)',
                       fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase',
                       flexShrink: 0,
                     }}
@@ -221,7 +221,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                     width: '30px', height: '30px', borderRadius: '5px', cursor: 'pointer',
                     background: 'transparent', flexShrink: 0,
                     border: `1px solid ${section.enabled ? 'rgba(46,204,113,0.3)' : 'var(--border)'}`,
-                    color: section.enabled ? 'var(--green)' : 'rgba(var(--ink),0.3)',
+                    color: section.enabled ? 'var(--green)' : 'rgba(var(--ink),0.55)',
                     opacity: busy === section.id ? 0.5 : 1,
                     transition: 'all 0.15s',
                   }}
@@ -236,8 +236,8 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
 
       {/* Info note */}
       <div style={{ marginTop: '16px', padding: '12px 16px', background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: '7px' }}>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.6)', margin: 0, letterSpacing: '0.06em', lineHeight: 1.6 }}>
-          Section order and visibility update instantly. Edit the hero featured card by clicking <strong style={{ color: 'rgba(var(--ink),0.6)' }}>Edit</strong> on the Hero row.
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.82)', margin: 0, letterSpacing: '0.06em', lineHeight: 1.6 }}>
+          Section order and visibility update instantly. Edit the hero featured card by clicking <strong style={{ color: 'rgba(var(--ink),0.82)' }}>Edit</strong> on the Hero row.
         </p>
       </div>
 
@@ -257,7 +257,7 @@ export function HomepageAdmin({ sections, heroConfig }: Props) {
                   Edit Hero Featured Card
                 </span>
               </div>
-              <button onClick={() => setHeroOpen(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(var(--ink),0.65)', display: 'flex' }}>
+              <button onClick={() => setHeroOpen(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(var(--ink),0.85)', display: 'flex' }}>
                 <X size={16} />
               </button>
             </div>
@@ -309,7 +309,7 @@ function SidePanel({ label, children }: { label: string; children: React.ReactNo
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
       <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border)', background: 'rgba(var(--ink),0.02)' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.6)' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>
           {label}
         </span>
       </div>
@@ -335,8 +335,8 @@ function HeroField({
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.6)' }}>{label}</label>
-        {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)' }}>{hint}</span>}
+        <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>{label}</label>
+        {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.72)' }}>{hint}</span>}
       </div>
       {textarea
         ? <textarea value={value} onChange={e => onChange(e.target.value)} rows={3} style={{ ...base, resize: 'vertical', lineHeight: 1.6 }} />
@@ -351,7 +351,7 @@ function arrowBtn(disabled: boolean): React.CSSProperties {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     width: '18px', height: '18px', borderRadius: '3px',
     border: 'none', background: 'transparent', cursor: disabled ? 'not-allowed' : 'pointer',
-    color: disabled ? 'rgba(var(--ink),0.1)' : 'rgba(var(--ink),0.4)',
+    color: disabled ? 'rgba(var(--ink),0.1)' : 'rgba(var(--ink),0.62)',
     padding: 0,
   }
 }

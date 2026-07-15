@@ -20,7 +20,7 @@ export default async function AdminHomepagePage() {
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '30px', fontWeight: 300, color: 'var(--white)', margin: '0 0 6px' }}>
           Homepage
         </h1>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', margin: 0, letterSpacing: '0.06em' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.82)', margin: 0, letterSpacing: '0.06em' }}>
           Control which sections appear and what the hero card shows
         </p>
       </div>
