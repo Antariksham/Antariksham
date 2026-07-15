@@ -80,6 +80,11 @@ collection when Supabase env vars are absent — unrelated to app code).
   set by the no-flash script, flipping light mode back to dark). Gated the stamp
   behind a `mounted` flag (renders `—` until after mount), per the §6 rule that
   live values must tick only after mount.
+- ✅ **Homepage featured-story background more visible**: the hero photo sat at
+  `opacity: 0.28` under a heavy `--hero-scrim` (0.55→0.9 dark), so it read almost
+  black. Raised the image to `opacity: 0.5` and lightened `--hero-scrim`
+  (0.40→0.78 dark, 0.32→0.85 light) — the token is only used by the homepage hero,
+  so nothing else is affected. Headline/excerpt stay legible in both themes.
 - ✅ **Article hero image broken on the reading page**: the article detail page
   (`app/news/[slug]`) was the only place still using `next/image`. With an empty
   `next.config.js` (no `images.remotePatterns`), the Next optimizer returns 400

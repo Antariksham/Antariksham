@@ -51,7 +51,7 @@ export async function HeroSection() {
             position: 'absolute', inset: 0,
             backgroundImage: `url(${imageUrl})`,
             backgroundSize: 'cover', backgroundPosition: 'center',
-            opacity: 0.28,
+            opacity: 0.5,
           }}
         />
       )}

@@ -66,8 +66,10 @@
      near-black in light mode. */
   --ink: 255, 255, 255;
 
-  /* Hero image scrim — dark gradient in dark mode */
-  --hero-scrim: linear-gradient(180deg, rgba(18,18,26,0.55) 0%, rgba(10,10,15,0.9) 100%);
+  /* Hero image scrim — dark gradient in dark mode. Kept light enough that the
+     featured-story background photo stays visible while headline/excerpt text
+     remains legible over it. */
+  --hero-scrim: linear-gradient(180deg, rgba(18,18,26,0.40) 0%, rgba(10,10,15,0.78) 100%);
 
   /* Sticky nav / mobile-menu background (translucent) */
   --nav-bg: rgba(10,10,15,0.95);
@@ -102,7 +104,7 @@
   --border-hi:  #c8cfe4;
 
   --card-shadow: 0 4px 20px rgba(15,15,26,0.10);
-  --hero-scrim:  linear-gradient(180deg, rgba(240,244,255,0.35) 0%, rgba(240,244,255,0.9) 100%);
+  --hero-scrim:  linear-gradient(180deg, rgba(240,244,255,0.32) 0%, rgba(240,244,255,0.85) 100%);
   --nav-bg:      rgba(240,244,255,0.85);
   --featured-bg: linear-gradient(135deg, #ffffff 0%, #eef2fc 100%);
 }
