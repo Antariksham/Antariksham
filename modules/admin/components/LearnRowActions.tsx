@@ -23,10 +23,10 @@ export function LearnRowActions({ id }: { id: string }) {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-      <Link href={`/admin/learn/${id}`} title="Edit" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '5px', border: '1px solid var(--border)', color: 'rgba(var(--ink),0.65)', textDecoration: 'none' }}>
+      <Link href={`/admin/learn/${id}`} title="Edit" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '5px', border: '1px solid var(--border)', color: 'rgba(var(--ink),0.85)', textDecoration: 'none' }}>
         <Pencil size={11} />
       </Link>
-      <button onClick={handleDelete} disabled={busy} title="Delete" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '5px', border: '1px solid var(--border)', background: 'transparent', color: 'rgba(var(--ink),0.55)', cursor: busy ? 'not-allowed' : 'pointer' }}>
+      <button onClick={handleDelete} disabled={busy} title="Delete" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '5px', border: '1px solid var(--border)', background: 'transparent', color: 'rgba(var(--ink),0.78)', cursor: busy ? 'not-allowed' : 'pointer' }}>
         <Trash2 size={11} />
       </button>
     </div>

@@ -111,7 +111,7 @@ function AuthorRow({
               display: 'inline-flex', alignItems: 'center', gap: '3px',
               padding: '2px 6px', borderRadius: '4px',
               background: 'rgba(243,156,18,0.1)', border: '1px solid rgba(243,156,18,0.25)',
-              fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em',
+              fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em',
               textTransform: 'uppercase', color: 'var(--gold)',
             }}>
               <Star size={8} /> Featured
@@ -121,15 +121,15 @@ function AuthorRow({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '4px', flexWrap: 'wrap' }}>
           {author.bio && (
-            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '320px' }}>
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(var(--ink),0.82)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '320px' }}>
               {author.bio}
             </span>
           )}
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.06em', flexShrink: 0 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.06em', flexShrink: 0 }}>
             <FileText size={9} />
             {author.articleCount} {author.articleCount === 1 ? 'article' : 'articles'}
           </span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)', letterSpacing: '0.04em', flexShrink: 0 }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.72)', letterSpacing: '0.04em', flexShrink: 0 }}>
             Added {formatDate(author.createdAt)}
           </span>
         </div>
@@ -197,10 +197,10 @@ function AuthorModal({
 
         {/* Modal header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: '1px solid var(--border)' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.6)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>
             {mode === 'new' ? 'New Author' : 'Edit Author'}
           </span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(var(--ink),0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(var(--ink),0.82)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <X size={16} />
           </button>
         </div>
@@ -211,7 +211,7 @@ function AuthorModal({
           {error && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '7px' }}>
               <AlertCircle size={13} style={{ color: 'var(--red)', flexShrink: 0 }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--red)' }}>{error}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--red)' }}>{error}</span>
             </div>
           )}
 
@@ -249,8 +249,8 @@ function AuthorModal({
                   border:      '1px solid',
                   borderColor: form._showAvatarPicker ? 'var(--accent)' : 'rgba(var(--ink),0.12)',
                   borderRadius:'6px',
-                  color:       form._showAvatarPicker ? 'var(--black)' : 'rgba(var(--ink),0.7)',
-                  fontFamily:  'var(--font-mono)', fontSize: '11px',
+                  color:       form._showAvatarPicker ? 'var(--black)' : 'rgba(var(--ink),0.9)',
+                  fontFamily:  'var(--font-mono)', fontSize: '13px',
                   letterSpacing:'0.12em', textTransform: 'uppercase',
                   cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
                 }}
@@ -291,7 +291,7 @@ function AuthorModal({
                 { key: 'website',  placeholder: 'https://yoursite.com',             label: 'Website'   },
               ] as const).map(({ key, placeholder, label }) => (
                 <div key={key} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: '8px', alignItems: 'center' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)' }}>
                     {label}
                   </span>
                   <input
@@ -320,15 +320,15 @@ function AuthorModal({
                 position: 'absolute', top: '2px',
                 left: form.featured ? '14px' : '2px',
                 width: '12px', height: '12px', borderRadius: '50%',
-                background: form.featured ? 'var(--black)' : 'rgba(var(--ink),0.4)',
+                background: form.featured ? 'var(--black)' : 'rgba(var(--ink),0.62)',
                 transition: 'left 0.2s',
               }} />
             </div>
             <div>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.6)' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>
                 Featured author
               </span>
-              <p style={{ margin: '2px 0 0', fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(var(--ink),0.55)' }}>
+              <p style={{ margin: '2px 0 0', fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(var(--ink),0.78)' }}>
                 Mark as a highlighted contributor
               </p>
             </div>
@@ -485,7 +485,7 @@ export function AuthorsAdmin() {
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', color: 'var(--white)', margin: 0, lineHeight: 1.2 }}>
               Authors
             </h1>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '6px 0 0' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '6px 0 0' }}>
               {authors.length} {authors.length === 1 ? 'author' : 'authors'} · Manage contributor profiles
             </p>
           </div>
@@ -499,7 +499,7 @@ export function AuthorsAdmin() {
         {error && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '8px' }}>
             <AlertCircle size={14} style={{ color: 'var(--red)', flexShrink: 0 }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--red)' }}>{error}</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--red)' }}>{error}</span>
           </div>
         )}
 
@@ -512,11 +512,11 @@ export function AuthorsAdmin() {
           </div>
         ) : authors.length === 0 ? (
           <div style={{ padding: '48px 24px', background: 'var(--surface)', border: '1px dashed var(--border)', borderRadius: '10px', textAlign: 'center' }}>
-            <User size={28} style={{ color: 'rgba(var(--ink),0.5)', marginBottom: '12px' }} />
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
+            <User size={28} style={{ color: 'rgba(var(--ink),0.72)', marginBottom: '12px' }} />
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
               No authors yet
             </p>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(var(--ink),0.5)', marginTop: '6px', marginBottom: '16px' }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(var(--ink),0.72)', marginTop: '6px', marginBottom: '16px' }}>
               Create your first author profile — start with yourself
             </p>
             <button onClick={openNew} style={{ ...primaryBtn, margin: '0 auto' }}>
@@ -538,7 +538,7 @@ export function AuthorsAdmin() {
 
         {/* Info note */}
         <div style={{ padding: '12px 16px', background: 'rgba(79,142,247,0.04)', border: '1px solid rgba(79,142,247,0.12)', borderRadius: '8px' }}>
-          <p style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', lineHeight: 1.6, letterSpacing: '0.04em' }}>
+          <p style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', lineHeight: 1.6, letterSpacing: '0.04em' }}>
             Author profiles appear on article pages when assigned in the Article editor. Avatar and name display in the article byline. Create your own profile first, then assign it to your articles via the Article editor.
           </p>
         </div>
@@ -568,7 +568,7 @@ export function AuthorsAdmin() {
             <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', color: 'var(--white)', margin: '0 0 10px' }}>
               Delete author?
             </h3>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'rgba(var(--ink),0.55)', lineHeight: 1.6, margin: '0 0 20px' }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(var(--ink),0.78)', lineHeight: 1.6, margin: '0 0 20px' }}>
               <strong style={{ color: 'var(--white)' }}>{deleteTarget.name}</strong> will be permanently deleted. Articles assigned to this author will become unattributed — they won't be deleted.
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
@@ -606,10 +606,10 @@ function inputStyle({ large }: { large?: boolean }): React.CSSProperties {
 function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '6px' }}>
-      <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)' }}>
+      <label style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.85)' }}>
         {children}
       </label>
-      {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)' }}>{hint}</span>}
+      {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)' }}>{hint}</span>}
     </div>
   )
 }
@@ -619,7 +619,7 @@ const primaryBtn: React.CSSProperties = {
   padding: '9px 16px', borderRadius: '7px',
   background: 'var(--accent)', border: 'none',
   color: 'var(--black)', fontFamily: 'var(--font-mono)',
-  fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase',
+  fontSize: '14px', letterSpacing: '0.1em', textTransform: 'uppercase',
   fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
 }
 
@@ -629,7 +629,7 @@ function actionBtn(danger: boolean): React.CSSProperties {
     width: '30px', height: '30px', borderRadius: '6px',
     background: 'transparent',
     border: `1px solid ${danger ? 'rgba(231,76,60,0.15)' : 'var(--border)'}`,
-    color: danger ? 'rgba(231,76,60,0.6)' : 'rgba(var(--ink),0.4)',
+    color: danger ? 'rgba(231,76,60,0.6)' : 'rgba(var(--ink),0.62)',
     cursor: 'pointer', transition: 'all 0.15s',
   }
 }
@@ -640,8 +640,8 @@ function footerBtn(primary: boolean, disabled?: boolean): React.CSSProperties {
     padding: '8px 16px', borderRadius: '6px',
     background: primary ? 'var(--accent)' : 'var(--surface)',
     border: primary ? 'none' : '1px solid var(--border-hi)',
-    color: primary ? 'var(--black)' : 'rgba(var(--ink),0.7)',
-    fontFamily: 'var(--font-mono)', fontSize: '12px',
+    color: primary ? 'var(--black)' : 'rgba(var(--ink),0.9)',
+    fontFamily: 'var(--font-mono)', fontSize: '14px',
     letterSpacing: '0.1em', textTransform: 'uppercase',
     fontWeight: primary ? 700 : 400,
     cursor: disabled ? 'not-allowed' : 'pointer',

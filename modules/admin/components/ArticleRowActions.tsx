@@ -28,7 +28,7 @@ export function ArticleRowActions({ id, slug }: { id: string; slug: string }) {
         style={{
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
           width: '28px', height: '28px', borderRadius: '5px',
-          border: '1px solid var(--border)', color: 'rgba(var(--ink),0.65)',
+          border: '1px solid var(--border)', color: 'rgba(var(--ink),0.85)',
           textDecoration: 'none', transition: 'all 0.15s',
         }}
         title="Edit"
@@ -38,7 +38,7 @@ export function ArticleRowActions({ id, slug }: { id: string; slug: string }) {
         }}
         onMouseLeave={e => {
           e.currentTarget.style.borderColor = 'var(--border)'
-          e.currentTarget.style.color = 'rgba(var(--ink),0.5)'
+          e.currentTarget.style.color = 'rgba(var(--ink),0.72)'
         }}
       >
         <Pencil size={11} />
@@ -52,7 +52,7 @@ export function ArticleRowActions({ id, slug }: { id: string; slug: string }) {
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
           width: '28px', height: '28px', borderRadius: '5px',
           border: '1px solid var(--border)', background: 'transparent',
-          color: 'rgba(var(--ink),0.55)', cursor: busy ? 'not-allowed' : 'pointer',
+          color: 'rgba(var(--ink),0.78)', cursor: busy ? 'not-allowed' : 'pointer',
           transition: 'all 0.15s',
         }}
         onMouseEnter={e => {
@@ -63,7 +63,7 @@ export function ArticleRowActions({ id, slug }: { id: string; slug: string }) {
         }}
         onMouseLeave={e => {
           e.currentTarget.style.borderColor = 'var(--border)'
-          e.currentTarget.style.color = 'rgba(var(--ink),0.35)'
+          e.currentTarget.style.color = 'rgba(var(--ink),0.58)'
         }}
       >
         <Trash2 size={11} />

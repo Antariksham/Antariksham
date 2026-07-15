@@ -19,7 +19,7 @@ const STATUS_TABS = [
 const STATUS_STYLES: Record<string, { color: string; icon: React.ReactNode }> = {
   published: { color: 'var(--green)',  icon: <CheckCircle size={10} /> },
   draft:     { color: 'var(--gold)',   icon: <Clock       size={10} /> },
-  archived:  { color: 'rgba(var(--ink),0.55)', icon: <Archive   size={10} /> },
+  archived:  { color: 'rgba(var(--ink),0.78)', icon: <Archive   size={10} /> },
   scheduled: { color: 'var(--purple)', icon: <AlertCircle size={10} /> },
 }
 
@@ -42,13 +42,13 @@ export default async function AdminArticlesPage({
       {/* ── Page header ─────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border)' }}>
         <div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '8px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '8px' }}>
             Content
           </span>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '30px', fontWeight: 300, color: 'var(--white)', margin: 0 }}>
             Articles
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', margin: '4px 0 0', letterSpacing: '0.06em' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.82)', margin: '4px 0 0', letterSpacing: '0.06em' }}>
             {total} article{total !== 1 ? 's' : ''} total
           </p>
         </div>
@@ -59,7 +59,7 @@ export default async function AdminArticlesPage({
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             padding: '10px 18px', borderRadius: '6px',
             background: 'var(--accent)', color: 'var(--black)',
-            fontFamily: 'var(--font-mono)', fontSize: '12px',
+            fontFamily: 'var(--font-mono)', fontSize: '14px',
             letterSpacing: '0.1em', textTransform: 'uppercase',
             fontWeight: 700, textDecoration: 'none', flexShrink: 0,
           }}
@@ -82,11 +82,11 @@ export default async function AdminArticlesPage({
                 href={`/admin/articles?status=${tab.value}${search ? `&q=${encodeURIComponent(search)}` : ''}`}
                 style={{
                   padding: '6px 14px', borderRadius: '5px',
-                  fontFamily: 'var(--font-mono)', fontSize: '11px',
+                  fontFamily: 'var(--font-mono)', fontSize: '13px',
                   letterSpacing: '0.1em', textTransform: 'uppercase',
                   textDecoration: 'none',
                   background: active ? 'var(--accent)'              : 'transparent',
-                  color:      active ? 'var(--black)'                    : 'rgba(var(--ink),0.5)',
+                  color:      active ? 'var(--black)'                    : 'rgba(var(--ink),0.72)',
                   fontWeight: active ? 700                          : 400,
                   transition: 'all 0.15s',
                 }}
@@ -108,7 +108,7 @@ export default async function AdminArticlesPage({
               padding: '7px 12px', background: 'var(--surface)',
               border: '1px solid var(--border)', borderRadius: '6px',
               color: 'var(--white)', fontFamily: 'var(--font-mono)',
-              fontSize: '12px', letterSpacing: '0.04em', outline: 'none',
+              fontSize: '14px', letterSpacing: '0.04em', outline: 'none',
               width: '200px',
             }}
           />
@@ -117,8 +117,8 @@ export default async function AdminArticlesPage({
             style={{
               padding: '7px 14px', background: 'var(--surface)',
               border: '1px solid var(--border)', borderRadius: '6px',
-              color: 'rgba(var(--ink),0.7)', fontFamily: 'var(--font-mono)',
-              fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase',
+              color: 'rgba(var(--ink),0.9)', fontFamily: 'var(--font-mono)',
+              fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase',
               cursor: 'pointer',
             }}
           >
@@ -130,11 +130,11 @@ export default async function AdminArticlesPage({
       {/* ── Table ───────────────────────────────────── */}
       {rows.length === 0 ? (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '60px', textAlign: 'center' }}>
-          <FileText size={32} style={{ color: 'rgba(var(--ink),0.5)', marginBottom: '12px' }} />
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 16px' }}>
+          <FileText size={32} style={{ color: 'rgba(var(--ink),0.72)', marginBottom: '12px' }} />
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.15em', textTransform: 'uppercase', margin: '0 0 16px' }}>
             {search ? 'No articles match your search' : 'No articles yet'}
           </p>
-          <Link href="/admin/articles/new" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--accent)', textDecoration: 'none', letterSpacing: '0.08em' }}>
+          <Link href="/admin/articles/new" style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--accent)', textDecoration: 'none', letterSpacing: '0.08em' }}>
             Create your first article →
           </Link>
         </div>
@@ -144,7 +144,7 @@ export default async function AdminArticlesPage({
           {/* Table head */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 90px 70px 80px', gap: '0', padding: '10px 20px', borderBottom: '1px solid var(--border)', background: 'rgba(var(--ink),0.02)' }}>
             {['Article', 'Type', 'Status', 'Views', 'Actions'].map(h => (
-              <span key={h} style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)' }}>
+              <span key={h} style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)' }}>
                 {h}
               </span>
             ))}
@@ -169,14 +169,14 @@ export default async function AdminArticlesPage({
                       <Star size={10} style={{ color: 'var(--gold)', flexShrink: 0 }} />
                     )}
                     <p style={{
-                      fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 400,
+                      fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 400,
                       color: 'var(--white)', margin: 0,
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>
                       {article.title}
                     </p>
                   </div>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', margin: 0, letterSpacing: '0.04em' }}>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', margin: 0, letterSpacing: '0.04em' }}>
                     {article.authorName && <span style={{ marginRight: '8px' }}>{article.authorName}</span>}
                     {article.publishedAt
                       ? formatDate(article.publishedAt)
@@ -191,22 +191,22 @@ export default async function AdminArticlesPage({
                 </div>
 
                 {/* Type */}
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.6)' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.82)' }}>
                   {article.articleType.replace('-', ' ')}
                 </span>
 
                 {/* Status badge */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <span style={{ color: statusStyle.color }}>{statusStyle.icon}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyle.color }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusStyle.color }}>
                     {article.status}
                   </span>
                 </div>
 
                 {/* Views */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'rgba(var(--ink),0.55)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'rgba(var(--ink),0.78)' }}>
                   <Eye size={10} />
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
                     {article.views.toLocaleString()}
                   </span>
                 </div>
@@ -224,16 +224,16 @@ export default async function AdminArticlesPage({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '24px' }}>
           {page > 1 && (
             <Link href={`/admin/articles?status=${status}&page=${page - 1}${search ? `&q=${encodeURIComponent(search)}` : ''}`}
-              style={{ padding: '6px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.6)', textDecoration: 'none', letterSpacing: '0.08em' }}>
+              style={{ padding: '6px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.82)', textDecoration: 'none', letterSpacing: '0.08em' }}>
               ← Prev
             </Link>
           )}
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.1em', padding: '0 8px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.1em', padding: '0 8px' }}>
             {page} / {totalPages}
           </span>
           {page < totalPages && (
             <Link href={`/admin/articles?status=${status}&page=${page + 1}${search ? `&q=${encodeURIComponent(search)}` : ''}`}
-              style={{ padding: '6px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.6)', textDecoration: 'none', letterSpacing: '0.08em' }}>
+              style={{ padding: '6px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '5px', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.82)', textDecoration: 'none', letterSpacing: '0.08em' }}>
               Next →
             </Link>
           )}
