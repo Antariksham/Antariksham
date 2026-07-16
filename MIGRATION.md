@@ -64,7 +64,12 @@ collection when Supabase env vars are absent — unrelated to app code).
   WebAssembly (artifacts in `public/wasm/`, built by that repo's
   `wasm/build.sh`), loaded client-side by `modules/lunar-sim/` and rendered as
   a space-agency telemetry dashboard (60 fps state vectors, 2-D descent
-  profile, touchdown verdict; altitude also streams to the browser console).
+  profile, touchdown verdict; altitude also streams to the browser console)
+  plus a **Three.js 3-D visual simulation** (`LunarScene.tsx`, plain `three`
+  via `next/dynamic({ssr:false})` so WebGL stays off other routes): lunar
+  surface, primitive-built lander posed 1:1 from the FSW state vectors,
+  throttle-mapped engine plume, chase camera, trajectory trail, target ring
+  and hazard-field markers, graceful no-WebGL fallback.
   The FSW repo's `wasm-publish.yml` workflow re-publishes fresh artifacts here
   on every push to its `main` (needs its `SITE_REPO_TOKEN` secret).
 - ✅ **Launch Tracker "Next Launch" card theming fix**: the featured card's
@@ -334,9 +339,8 @@ bad migration is a one-line revert.
   API-proxy pattern), advanced astronomy tools (each as its own `modules/<tool>/`).
 
 **Lunar Landing Simulator (`/lunar-sim`, testing):**
-- 3-D visualization milestone: Three.js / R3F lunar surface + lander driven by
-  the same wasm state vectors (`getStateAtTime`), via `next/dynamic({ssr:false})`
-  like the Phase-4 planet rendering.
+- ~~3-D visualization milestone~~ done — see §2. Possible polish: GLTF lander
+  model, dust particles at low altitude, orbit controls for free camera.
 - One-time setup in `antariksham/moon-landing-code`: add the `SITE_REPO_TOKEN`
   Actions secret (fine-grained PAT, `contents: write` on this repo) so its CI
   can auto-publish rebuilt wasm to `public/wasm/`.
