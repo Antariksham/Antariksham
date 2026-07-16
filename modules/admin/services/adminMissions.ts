@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase'
+import { enforceSingleFeatured } from './featuredExclusive'
 import type { MissionStatus, MissionType, MissionTimeline } from '@/types/mission'
 
 export interface AdminMissionRow {
@@ -95,6 +96,7 @@ export async function createAdminMission(p: MissionPayload): Promise<{ id: strin
   }).select('id').single()
 
   if (error || !data) { console.error('createAdminMission error:', error); return null }
+  await enforceSingleFeatured(db, 'missions', data.id, p.featured)
   return { id: data.id }
 }
 
@@ -107,6 +109,7 @@ export async function updateAdminMission(id: string, p: MissionPayload): Promise
     featured_image: p.featuredImage || null, featured: p.featured, timeline: p.timeline,
   }).eq('id', id)
   if (error) { console.error('updateAdminMission error:', error); return false }
+  await enforceSingleFeatured(db, 'missions', id, p.featured)
   return true
 }
 
