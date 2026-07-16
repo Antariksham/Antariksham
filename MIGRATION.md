@@ -59,7 +59,8 @@ collection when Supabase env vars are absent — unrelated to app code).
 - ✅ **Deep Space page** rebuilt as a data-driven replica of `deep-space.html`
   with **live-incrementing counters** and 7 probes.
 - ✅ **Original "black" design preserved** (see §8).
-- ✅ **`/lunar-sim` (testing, noindex, unlinked)** — Lunar Landing Simulator:
+- ✅ **`/lunar-sim` (SHIPPED — indexed, linked from `/live` hub + footer
+  Intelligence, OG/canonical/JSON-LD in place)** — Lunar Landing Simulator:
   the SELENE C++ flight software (`antariksham/moon-landing-code`) compiled to
   WebAssembly (artifacts in `public/wasm/`, built by that repo's
   `wasm/build.sh`), loaded client-side by `modules/lunar-sim/` and rendered as
@@ -341,12 +342,11 @@ bad migration is a one-line revert.
 **Lunar Landing Simulator (`/lunar-sim`, testing):**
 - ~~3-D visualization milestone~~ done — see §2. Possible polish: GLTF lander
   model, dust particles at low altitude, orbit controls for free camera.
-- One-time setup in `antariksham/moon-landing-code`: add the `SITE_REPO_TOKEN`
-  Actions secret (fine-grained PAT, `contents: write` on this repo) so its CI
-  can auto-publish rebuilt wasm to `public/wasm/`.
-- If the experiment ships: remove `robots noindex`, add JSON-LD/OG + sitemap
-  entry per §6, link it from `/live`. If it's dropped: delete `app/lunar-sim/`,
-  `modules/lunar-sim/`, `public/wasm/`.
+- ~~`SITE_REPO_TOKEN` setup~~ done — the FSW repo's CI has successfully
+  auto-published wasm to `public/wasm/` (see the `chore(lunar-sim)` bot commit).
+- ~~Ship-or-delete decision~~ shipped: noindex removed, OG/canonical/JSON-LD
+  added, linked from the `/live` hub and footer Intelligence column. (No
+  sitemap file exists in the app yet — when one is added, include `/lunar-sim`.)
 
 **Site-level polish TODOs:**
 - Nav links are still Antariksham's uppercase-mono style; CosmosDaily's are
