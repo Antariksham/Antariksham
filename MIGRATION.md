@@ -59,6 +59,14 @@ collection when Supabase env vars are absent — unrelated to app code).
 - ✅ **Deep Space page** rebuilt as a data-driven replica of `deep-space.html`
   with **live-incrementing counters** and 7 probes.
 - ✅ **Original "black" design preserved** (see §8).
+- ✅ **`/lunar-sim` (testing, noindex, unlinked)** — Lunar Landing Simulator:
+  the SELENE C++ flight software (`antariksham/moon-landing-code`) compiled to
+  WebAssembly (artifacts in `public/wasm/`, built by that repo's
+  `wasm/build.sh`), loaded client-side by `modules/lunar-sim/` and rendered as
+  a space-agency telemetry dashboard (60 fps state vectors, 2-D descent
+  profile, touchdown verdict; altitude also streams to the browser console).
+  The FSW repo's `wasm-publish.yml` workflow re-publishes fresh artifacts here
+  on every push to its `main` (needs its `SITE_REPO_TOKEN` secret).
 - ✅ **Launch Tracker "Next Launch" card theming fix**: the featured card's
   background was a hardcoded dark gradient (`#1a1a2e → #0a0a0f`), so it stayed
   black in light mode. Routed it through a new theme-aware `--featured-bg` token
@@ -324,6 +332,17 @@ bad migration is a one-line revert.
   (Three.js / R3F via `next/dynamic({ssr:false})`, scoped so the WebGL bundle
   never loads on other routes), satellite data control center (extend the
   API-proxy pattern), advanced astronomy tools (each as its own `modules/<tool>/`).
+
+**Lunar Landing Simulator (`/lunar-sim`, testing):**
+- 3-D visualization milestone: Three.js / R3F lunar surface + lander driven by
+  the same wasm state vectors (`getStateAtTime`), via `next/dynamic({ssr:false})`
+  like the Phase-4 planet rendering.
+- One-time setup in `antariksham/moon-landing-code`: add the `SITE_REPO_TOKEN`
+  Actions secret (fine-grained PAT, `contents: write` on this repo) so its CI
+  can auto-publish rebuilt wasm to `public/wasm/`.
+- If the experiment ships: remove `robots noindex`, add JSON-LD/OG + sitemap
+  entry per §6, link it from `/live`. If it's dropped: delete `app/lunar-sim/`,
+  `modules/lunar-sim/`, `public/wasm/`.
 
 **Site-level polish TODOs:**
 - Nav links are still Antariksham's uppercase-mono style; CosmosDaily's are
