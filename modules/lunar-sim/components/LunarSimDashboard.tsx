@@ -11,6 +11,7 @@
 // No physics happens in JavaScript.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import {
   DEFAULT_SCENARIO,
   loadSelene,
@@ -20,6 +21,19 @@ import {
   type SeleneSimResult,
   type SeleneSimState,
 } from '../services/loadSelene'
+
+// WebGL bundle stays off every other route (MIGRATION.md §10 pattern).
+const LunarScene = dynamic(() => import('./LunarScene'), {
+  ssr: false,
+  loading: () => (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      height: '100%', color: 'var(--faint)',
+    }}>
+      Loading 3-D scene…
+    </div>
+  ),
+})
 
 // ── Presentation helpers ─────────────────────────────────────────────
 const f0 = (v: number) => v.toFixed(0)
@@ -160,8 +174,10 @@ export function LunarSimDashboard() {
   const [speed, setSpeed] = useState(1)
   const [scenario, setScenario] = useState<SeleneScenarioConfig>(DEFAULT_SCENARIO)
   const [finalTargetM, setFinalTargetM] = useState(DEFAULT_SCENARIO.targetDownrangeM)
+  const [runId, setRunId] = useState(0)
 
   const moduleRef = useRef<SeleneModule | null>(null)
+  const stateRef = useRef<SeleneSimState | null>(null)
   const missionTimeRef = useRef(0)
   const lastFrameRef = useRef<number | null>(null)
   const lastLogRef = useRef(-1)
@@ -189,7 +205,9 @@ export function LunarSimDashboard() {
     // The run is already complete inside wasm, so the (post-divert) landing
     // target is known up front — the profile marker uses it from the start.
     setFinalTargetM(fsw.getResult().finalTargetDownrangeM)
+    setRunId((id) => id + 1)
     const t0 = fsw.getStateAtTime(0)
+    stateRef.current = t0
     setState(t0)
     console.log(
       `[lunar-sim] Scenario loaded — gate ${cfg.gateAltitudeM} m, ` +
@@ -232,6 +250,7 @@ export function LunarSimDashboard() {
       if (!pausedRef.current) missionTimeRef.current += dt * speedRef.current
 
       const s = fsw.getStateAtTime(missionTimeRef.current)
+      stateRef.current = s
       setState(s)
 
       const second = Math.floor(s.timeS)
@@ -338,6 +357,20 @@ export function LunarSimDashboard() {
               </button>
             </div>
 
+            {/* 3-D visual simulation — rendered from C++ state vectors */}
+            <div className="card" style={{ marginBottom: '1.5rem' }}>
+              <div style={{ height: 'clamp(320px, 48vw, 520px)' }}>
+                <LunarScene stateRef={stateRef} scenario={scenario} targetM={finalTargetM} runId={runId} />
+              </div>
+              <div style={{
+                ...labelStyle, padding: '0.6rem 1rem',
+                borderTop: '1px solid var(--border)', color: 'var(--faint)',
+              }}>
+                Visual simulation (Three.js) — position, attitude and engine plume mapped 1:1
+                from the flight software&apos;s state vectors
+              </div>
+            </div>
+
             {/* Primary telemetry */}
             <div style={{
               display: 'grid', gap: '1rem', marginBottom: '1.5rem',
@@ -439,8 +472,9 @@ export function LunarSimDashboard() {
               (C++17, compiled to WebAssembly with Emscripten) flying a closed-loop 3-DOF
               descent at 50 Hz: mission state machine, descent guidance, three PID loops,
               thrust allocation, a vertical navigation Kalman filter fed by noisy sensor
-              models, and hazard detection &amp; avoidance. Open the browser console to see
-              the raw altitude stream. 3-D visualization (Three.js) is the next milestone.
+              models, and hazard detection &amp; avoidance. The 3-D scene (Three.js) and the
+              dashboard are pure renderers of that data — no physics runs in JavaScript.
+              Open the browser console to see the raw altitude stream.
             </p>
           </>
         )}
