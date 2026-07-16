@@ -10,6 +10,7 @@ export interface KnowledgeArticle {
   relatedTopics:   string[]
   icon:            string
   featured:        boolean
+  thumbnail:       string | null
   seoId:           string | null
   createdAt:       string
   updatedAt:       string

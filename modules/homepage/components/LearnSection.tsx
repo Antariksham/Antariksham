@@ -3,11 +3,22 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { LearnCard }    from './LearnCard'
 
 async function getLearnPreview() {
-  const { data, error } = await supabaseAdmin()
+  const db = supabaseAdmin()
+
+  let { data, error }: { data: any[] | null; error: any } = await db
     .from('knowledge_articles')
-    .select('id, title, slug, excerpt, difficulty_level, icon')
+    .select('id, title, slug, excerpt, difficulty_level, icon, thumbnail')
     .order('created_at', { ascending: false })
     .limit(6)
+
+  // Retry without `thumbnail` if the column hasn't been migrated yet.
+  if (error && `${error?.message || ''} ${error?.details || ''}`.toLowerCase().includes('thumbnail')) {
+    ({ data, error } = await db
+      .from('knowledge_articles')
+      .select('id, title, slug, excerpt, difficulty_level, icon')
+      .order('created_at', { ascending: false })
+      .limit(6))
+  }
 
   if (error) return []
   return data || []

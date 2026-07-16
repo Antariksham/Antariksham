@@ -13,7 +13,7 @@ export const revalidate = 300
 
 export default async function Page() {
   const [articles, missions] = await Promise.all([
-    getLatestArticles(7),
+    getLatestArticles(6),
     getFeaturedMissions(4),
   ])
 
