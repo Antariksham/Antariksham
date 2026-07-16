@@ -67,7 +67,9 @@ export async function getFeaturedMissions(limit = 4): Promise<MissionCard[]> {
 // `featured` flag — `featured` is exclusive (only one row can hold it), so
 // relying on it here would let the grid show at most one mission. Filtering by
 // status keeps the grid populated regardless of which single mission is
-// featured for the hero.
+// featured for the hero. Active/upcoming missions come first; if there aren't
+// enough to fill the grid, it tops up with the most recent missions of any
+// status so the section never looks sparse.
 export async function getActiveMissions(limit = 4): Promise<MissionCard[]> {
   const { data, error } = await supabase
     .from('missions')
@@ -77,7 +79,21 @@ export async function getActiveMissions(limit = 4): Promise<MissionCard[]> {
     .limit(limit)
 
   if (error) return []
-  return normalizeCards(data || [])
+  const primary = data || []
+  if (primary.length >= limit) return normalizeCards(primary)
+
+  // Top up with the most recent missions of any other status.
+  const excludeIds = primary.map((m: any) => m.id)
+  let fill = supabase
+    .from('missions')
+    .select(MISSION_CARD_SELECT)
+    .not('status', 'in', '(active,upcoming)')
+    .order('launch_date', { ascending: false, nullsFirst: false })
+    .limit(limit - primary.length)
+  if (excludeIds.length) fill = fill.not('id', 'in', `(${excludeIds.join(',')})`)
+
+  const { data: extra } = await fill
+  return normalizeCards([...primary, ...(extra || [])])
 }
 
 export async function getMissionBySlug(slug: string): Promise<Mission | null> {
