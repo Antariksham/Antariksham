@@ -102,6 +102,28 @@ collection when Supabase env vars are absent — unrelated to app code).
   pattern everywhere else — cards, missions detail, learn thumbnails), so any
   external / admin-entered URL loads directly with no host allow-list to maintain.
 
+- ✅ **Admin missions could not be saved/deleted**: `MissionForm` and
+  `MissionRowActions` POST/PATCH/DELETE to `/api/admin/missions`, but that route
+  handler never existed — every save hit a 404 HTML page, `res.json()` threw, and
+  the form showed the generic “Something went wrong” error. Added
+  `app/api/admin/missions/route.ts` (POST/PATCH/DELETE, cookie-auth + enum
+  validation) that calls the already-complete `create/update/deleteAdminMission`
+  service functions.
+- ✅ **Learn thumbnails never appeared on cards or article pages**: the public
+  reader used `CARD_SELECT`/`FULL_SELECT` that omitted the `thumbnail` column, so
+  `row.thumbnail` was always `undefined` even after admins set an image. Added
+  `thumbnail` to both selects (plus the homepage `LearnSection` preview query),
+  mapped it through `normalizeFull`/the `KnowledgeArticle` type, and rendered a
+  cover image on the article reading page. Each query has a graceful fallback that
+  re-selects without `thumbnail` if the migration hasn’t been applied, so cards
+  never disappear.
+- ✅ **Learn save gave no on-screen confirmation**: `LearnForm` redirected on
+  success with no “saved” message and had no `catch`, so a thrown error surfaced
+  nothing. Added a green success banner, a catch that shows a failure message, and
+  a brief delay before redirect so the confirmation is visible.
+- ✅ **Homepage news fetched 7 but showed 6**: aligned `getLatestArticles(6)` so
+  the fetch matches the section’s slice (limits: news 6, missions 4, learn 6).
+
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 
 ---

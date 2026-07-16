@@ -51,6 +51,7 @@ export function LearnForm({ mode, article }: Props) {
 
   const [saving,  setSaving]  = useState(false)
   const [error,   setError]   = useState('')
+  const [success, setSuccess] = useState('')
   const [slugEdited, setSlugEdited] = useState(mode === 'edit')
 
   function set<K extends keyof FormState>(key: K, val: FormState[K]) {
@@ -68,6 +69,7 @@ export function LearnForm({ mode, article }: Props) {
 
     setSaving(true)
     setError('')
+    setSuccess('')
     try {
       const payload = {
         title:           form.title.trim(),
@@ -97,8 +99,11 @@ export function LearnForm({ mode, article }: Props) {
         return
       }
 
-      router.push('/admin/learn')
+      setSuccess(mode === 'new' ? 'Topic created — redirecting…' : 'Changes saved — redirecting…')
       router.refresh()
+      setTimeout(() => router.push('/admin/learn'), 900)
+    } catch {
+      setError('Something went wrong. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -110,6 +115,12 @@ export function LearnForm({ mode, article }: Props) {
       {error && (
         <div style={{ padding: '12px 16px', background: 'rgba(231,76,60,0.1)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '8px', fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--red)' }}>
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div style={{ padding: '12px 16px', background: 'rgba(46,204,113,0.1)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '8px', fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--green)' }}>
+          ✓ {success}
         </div>
       )}
 

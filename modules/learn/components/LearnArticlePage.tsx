@@ -153,6 +153,14 @@ export function LearnArticlePage({ article }: Props) {
         )}
       </div>
 
+      {/* ── Cover image (when a thumbnail is set) ──────────── */}
+      {article.thumbnail && (
+        <div style={{ marginBottom: '48px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)', aspectRatio: '16/7', background: 'var(--surface)' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={article.thumbnail} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        </div>
+      )}
+
       {/* ── Divider ────────────────────────────────────────── */}
       <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(79,142,247,0.2), transparent)', marginBottom: '48px' }} />
 
