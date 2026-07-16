@@ -63,6 +63,23 @@ export async function getFeaturedMissions(limit = 4): Promise<MissionCard[]> {
   return normalizeCards(data || [])
 }
 
+// Homepage "Active & Upcoming Missions" grid. Driven by status, NOT the
+// `featured` flag — `featured` is exclusive (only one row can hold it), so
+// relying on it here would let the grid show at most one mission. Filtering by
+// status keeps the grid populated regardless of which single mission is
+// featured for the hero.
+export async function getActiveMissions(limit = 4): Promise<MissionCard[]> {
+  const { data, error } = await supabase
+    .from('missions')
+    .select(MISSION_CARD_SELECT)
+    .in('status', ['active', 'upcoming'])
+    .order('launch_date', { ascending: false, nullsFirst: false })
+    .limit(limit)
+
+  if (error) return []
+  return normalizeCards(data || [])
+}
+
 export async function getMissionBySlug(slug: string): Promise<Mission | null> {
   const { data, error } = await supabase
     .from('missions')
