@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link              from 'next/link'
 import { siteConfig }   from '@/config/site'
-import { Satellite, Rocket, Camera, Globe } from 'lucide-react'
+import { Satellite, Rocket, Camera, Globe, Moon } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,6 +42,14 @@ const LIVE_PAGES = [
     desc:  'Live telemetry for Voyager 1, Voyager 2, Europa Clipper, Parker Solar Probe and more.',
     color: 'var(--accent)',
     badge: 'LIVE',
+  },
+  {
+    href:  '/lunar-sim',
+    icon:  <Moon size={26} />,
+    label: 'Lunar Landing Simulator',
+    desc:  'Real C++ flight software flies an autonomous moon landing in your browser — 3D view, live telemetry and hazard avoidance via WebAssembly.',
+    color: 'var(--gold)',
+    badge: 'SIM',
   },
 ]
 

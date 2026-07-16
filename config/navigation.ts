@@ -26,6 +26,7 @@ export const footerNav = {
     { label: 'ISS Tracker',     href: '/live/iss-tracker' },
     { label: 'Launch Schedule', href: '/live/launches' },
     { label: 'Deep Space',      href: '/live/deep-space' },
+    { label: 'Lunar Lander Sim', href: '/lunar-sim' },
     { label: 'NASA APOD',       href: '/live/apod' },
     { label: 'All Missions',    href: '/missions' },
   ],
