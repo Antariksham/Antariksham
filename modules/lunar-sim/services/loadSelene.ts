@@ -10,6 +10,8 @@ export interface SeleneScenarioConfig {
   gateAltitudeM: number
   gateVelocityXMps: number
   gateVelocityZMps: number
+  gatePitchRad: number
+  dryMassKg: number
   targetDownrangeM: number
   perfectNav: boolean
   hazardAtTarget: boolean
@@ -19,6 +21,8 @@ export const DEFAULT_SCENARIO: SeleneScenarioConfig = {
   gateAltitudeM: 2000,
   gateVelocityXMps: 60,
   gateVelocityZMps: -30,
+  gatePitchRad: -0.3,
+  dryMassKg: 280,
   targetDownrangeM: 1200,
   perfectNav: false,
   hazardAtTarget: false,
@@ -67,6 +71,10 @@ export interface SeleneSimResult {
 export interface SeleneModule {
   runDefaultScenario(): boolean
   runScenario(cfg: SeleneScenarioConfig): boolean
+  /** Drop all terrain hazard zones staged for the next run. */
+  clearHazardZones(): void
+  /** Stage one terrain hazard interval (m, m, deg, m) for the next run. */
+  addHazardZone(startM: number, endM: number, slopeDeg: number, roughnessM: number): boolean
   getStateAtTime(tS: number): SeleneSimState
   getResult(): SeleneSimResult
   getFlightTimeS(): number

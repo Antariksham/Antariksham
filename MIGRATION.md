@@ -73,6 +73,21 @@ collection when Supabase env vars are absent — unrelated to app code).
   and hazard-field markers, graceful no-WebGL fallback.
   The FSW repo's `wasm-publish.yml` workflow re-publishes fresh artifacts here
   on every push to its `main` (needs its `SITE_REPO_TOKEN` secret).
+- ✅ **`/lunar-sim` stochastic missions**: the simulator is now an infinite,
+  per-mission-unique experience. `modules/lunar-sim/services/proceduralTerrain.ts`
+  generates a seeded simplex-noise + crater surface each **New mission**
+  (rendered as a displaced `PlaneGeometry` in `LunarScene.tsx`), scans it for
+  the flattest reachable **safe zone** (holographic ring + beacon marker),
+  surveys the approach corridor and stages the rough stretches into the wasm
+  bridge as **hazard zones** (`clearHazardZones`/`addHazardZone`) so the C++
+  HDA reasons about the rendered surface. Gate physics are randomized per run
+  (altitude 800–1500 m, lateral drift ±5 m/s, descent rate, payload/dry-mass
+  variance, gate pitch — new `WebScenarioConfig` fields in the FSW repo's
+  `wasm/selene_wasm.cpp`; ranges validated by Monte Carlo against the FSW).
+  A **localStorage scoreboard** (`services/missionStats.ts`,
+  `cosmosdaily.lunar-sim.stats.v1`: total_attempts / safe_landings / crashes)
+  records each touchdown verdict and drives a hydration-safe **success-rate
+  widget** in the telemetry grid.
 - ✅ **Launch Tracker "Next Launch" card theming fix**: the featured card's
   background was a hardcoded dark gradient (`#1a1a2e → #0a0a0f`), so it stayed
   black in light mode. Routed it through a new theme-aware `--featured-bg` token
@@ -342,6 +357,11 @@ bad migration is a one-line revert.
 **Lunar Landing Simulator (`/lunar-sim`, testing):**
 - ~~3-D visualization milestone~~ done — see §2. Possible polish: GLTF lander
   model, dust particles at low altitude, orbit controls for free camera.
+- ~~Stochastic missions milestone~~ done — see §2 (procedural terrain,
+  safe-zone targeting, randomized gate physics, localStorage success-rate
+  widget). Possible polish: visualize the surveyed hazard zones on the 3-D
+  terrain (e.g. red tint), share-a-seed URLs (`?seed=`), difficulty presets
+  that widen the chaos ranges, streak/last-10 stats on the widget.
 - ~~`SITE_REPO_TOKEN` setup~~ done — the FSW repo's CI has successfully
   auto-published wasm to `public/wasm/` (see the `chore(lunar-sim)` bot commit).
 - ~~Ship-or-delete decision~~ shipped: noindex removed, OG/canonical/JSON-LD

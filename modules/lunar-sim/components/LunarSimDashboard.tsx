@@ -21,6 +21,18 @@ import {
   type SeleneSimResult,
   type SeleneSimState,
 } from '../services/loadSelene'
+import {
+  newMissionSeed,
+  rollMission,
+  type MissionPlan,
+} from '../services/proceduralTerrain'
+import {
+  readMissionStats,
+  recordMissionOutcome,
+  resetMissionStats,
+  successRatePct,
+  type MissionStats,
+} from '../services/missionStats'
 
 // WebGL bundle stays off every other route (MIGRATION.md §10 pattern).
 const LunarScene = dynamic(() => import('./LunarScene'), {
@@ -72,6 +84,48 @@ function Readout({ label, value, unit, color }: {
       }}>
         {value}
         {unit && <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--dim)', marginLeft: '0.3rem' }}>{unit}</span>}
+      </div>
+    </div>
+  )
+}
+
+// ── Mission record widget (localStorage-backed FSW scoreboard) ───────
+function MissionRecord({ stats, onReset }: {
+  stats: MissionStats | null
+  onReset: () => void
+}) {
+  const rate = stats ? successRatePct(stats) : null
+  const rateColor =
+    rate === null || stats!.total_attempts === 0 ? 'var(--white)'
+      : rate >= 75 ? 'var(--green)'
+        : rate >= 40 ? 'var(--gold)' : 'var(--red)'
+  return (
+    <div className="card" style={{ padding: '0.9rem 1rem' }}>
+      <div style={{ ...labelStyle, display: 'flex', justifyContent: 'space-between', gap: '0.5rem' }}>
+        <span>Success rate</span>
+        {stats !== null && stats.total_attempts > 0 && (
+          <button
+            onClick={onReset}
+            title="Reset the mission record"
+            style={{
+              ...labelStyle, cursor: 'pointer', background: 'none', border: 'none',
+              padding: 0, color: 'var(--dim)',
+            }}
+          >
+            reset
+          </button>
+        )}
+      </div>
+      <div style={{
+        fontSize: '1.55rem', fontWeight: 700, lineHeight: 1.3,
+        color: rateColor, fontVariantNumeric: 'tabular-nums',
+      }}>
+        {stats === null || stats.total_attempts === 0 ? '—' : `${rate!.toFixed(0)}%`}
+        {stats !== null && (
+          <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--dim)', marginLeft: '0.4rem' }}>
+            {stats.safe_landings}✓ / {stats.crashes}✗ · {stats.total_attempts} missions
+          </span>
+        )}
       </div>
     </div>
   )
@@ -175,6 +229,8 @@ export function LunarSimDashboard() {
   const [scenario, setScenario] = useState<SeleneScenarioConfig>(DEFAULT_SCENARIO)
   const [finalTargetM, setFinalTargetM] = useState(DEFAULT_SCENARIO.targetDownrangeM)
   const [runId, setRunId] = useState(0)
+  const [mission, setMission] = useState<MissionPlan | null>(null)
+  const [stats, setStats] = useState<MissionStats | null>(null)
 
   const moduleRef = useRef<SeleneModule | null>(null)
   const stateRef = useRef<SeleneSimState | null>(null)
@@ -182,10 +238,15 @@ export function LunarSimDashboard() {
   const lastFrameRef = useRef<number | null>(null)
   const lastLogRef = useRef(-1)
   const traceRef = useRef<Array<[number, number]>>([])
+  const recordedRunRef = useRef(-1)
   const pausedRef = useRef(paused)
   const speedRef = useRef(speed)
   pausedRef.current = paused
   speedRef.current = speed
+
+  // The scoreboard is read from localStorage only after mount so the SSR
+  // and first client render agree (hydration-safe, MIGRATION.md §5).
+  useEffect(() => { setStats(readMissionStats()) }, [])
 
   // Fly a scenario inside the wasm module and rewind the playback clock.
   const startRun = useCallback((cfg: SeleneScenarioConfig) => {
@@ -217,7 +278,31 @@ export function LunarSimDashboard() {
     console.log(`[lunar-sim] Altitude from C++ FSW at t=0: ${t0.altitudeM.toFixed(1)} m`)
   }, [])
 
-  // Bring up the wasm bridge once on mount.
+  // Roll a completely new stochastic mission: fresh seed → procedural
+  // terrain → safe-zone target → corridor hazard survey staged into the
+  // wasm TerrainModel → randomized gate physics flown by the C++ FSW.
+  const startMission = useCallback(() => {
+    const fsw = moduleRef.current
+    if (!fsw) return
+    const plan = rollMission(newMissionSeed())
+    fsw.clearHazardZones()
+    for (const hz of plan.hazards) {
+      fsw.addHazardZone(hz.startM, hz.endM, hz.slopeDeg, hz.roughnessM)
+    }
+    console.log(
+      `[lunar-sim] New mission — seed ${plan.seed.toString(16)}: ` +
+      `gate ${plan.scenario.gateAltitudeM.toFixed(0)} m, ` +
+      `drift ${plan.scenario.gateVelocityXMps.toFixed(1)} m/s, ` +
+      `dry mass ${plan.scenario.dryMassKg.toFixed(0)} kg, ` +
+      `safe zone ${plan.safeZone.downrangeM.toFixed(0)} m downrange ` +
+      `(slope ${plan.safeZone.slopeDeg.toFixed(1)}°), ` +
+      `${plan.hazards.length} terrain hazard zone(s) surveyed`
+    )
+    setMission(plan)
+    startRun(plan.scenario)
+  }, [startRun])
+
+  // Bring up the wasm bridge once on mount, then fly the first mission.
   useEffect(() => {
     let alive = true
     loadSelene()
@@ -226,14 +311,14 @@ export function LunarSimDashboard() {
         moduleRef.current = fsw
         console.log('[lunar-sim] SELENE C++ flight software → WebAssembly bridge established')
         setStatus('ready')
-        startRun(DEFAULT_SCENARIO)
+        startMission()
       })
       .catch((err) => {
         console.error('[lunar-sim] wasm bridge failed to load:', err)
         if (alive) setStatus('error')
       })
     return () => { alive = false }
-  }, [startRun])
+  }, [startMission])
 
   // 60 fps render loop: advance the mission clock, pull the state vector
   // from C++, log altitude once per mission second.
@@ -277,15 +362,20 @@ export function LunarSimDashboard() {
     return () => cancelAnimationFrame(rafId)
   }, [status])
 
+  // Score the run once its playback halts on the surface: persist the
+  // outcome to the localStorage session object and refresh the widget.
   useEffect(() => {
-    if (result) {
-      console.log(
-        `[lunar-sim] TOUCHDOWN — ${result.safeLanding ? 'SAFE LANDING' : 'LOSS OF VEHICLE'} ` +
-        `(vertical ${result.touchdownVerticalSpeedMps.toFixed(2)} m/s, ` +
-        `miss ${result.touchdownMissM.toFixed(1)} m)`
-      )
+    if (!result) return
+    console.log(
+      `[lunar-sim] TOUCHDOWN — ${result.safeLanding ? 'SAFE LANDING' : 'LOSS OF VEHICLE'} ` +
+      `(vertical ${result.touchdownVerticalSpeedMps.toFixed(2)} m/s, ` +
+      `miss ${result.touchdownMissM.toFixed(1)} m)`
+    )
+    if (recordedRunRef.current !== runId) {
+      recordedRunRef.current = runId
+      setStats(recordMissionOutcome(result.safeLanding))
     }
-  }, [result])
+  }, [result, runId])
 
   return (
     <div style={{ paddingTop: 'var(--nav-height)' }}>
@@ -300,9 +390,10 @@ export function LunarSimDashboard() {
           </span>
           <h1 className="page-title">Lunar Landing Simulator</h1>
           <p className="page-lede">
-            A live autonomous moon landing, flown end-to-end by real C++ flight software —
-            guidance, navigation, control and hazard avoidance — compiled to WebAssembly
-            and telemetered to this page at 60&nbsp;fps.
+            An infinite, stochastic moon landing: every mission generates a unique
+            procedural surface, a fresh safe-zone target and randomized starting physics —
+            then real C++ flight software (guidance, navigation, control and hazard
+            avoidance, compiled to WebAssembly) has to land it, live at 60&nbsp;fps.
           </p>
         </div>
       </header>
@@ -338,6 +429,15 @@ export function LunarSimDashboard() {
               <span style={{ ...labelStyle, fontSize: '0.85rem', color: 'var(--white)', textTransform: 'none' }}>
                 T+{f1(state.timeS)} s
               </span>
+              {mission && (
+                <span style={{ ...labelStyle, color: 'var(--dim)' }}
+                  title="Randomized initial conditions of this mission">
+                  Gate {f0(scenario.gateAltitudeM)} m ·
+                  Drift {scenario.gateVelocityXMps >= 0 ? '+' : ''}{f1(scenario.gateVelocityXMps)} m/s ·
+                  Dry {f0(scenario.dryMassKg)} kg ·
+                  Site {f0(scenario.targetDownrangeM)} m
+                </span>
+              )}
               <span style={{ flex: 1 }} />
               <button className="btn btn-outline" onClick={() => setPaused(p => !p)}>
                 {paused ? 'Resume' : 'Pause'}
@@ -348,26 +448,41 @@ export function LunarSimDashboard() {
               <button
                 className="btn btn-outline"
                 onClick={() => startRun({ ...scenario, hazardAtTarget: !scenario.hazardAtTarget })}
-                title="Restart with a boulder field on the nominal site — watch the FSW divert"
+                title="Refly this mission with a boulder field on the safe zone — watch the FSW divert"
               >
                 Hazard: {scenario.hazardAtTarget ? 'ON' : 'OFF'}
               </button>
-              <button className="btn btn-primary" onClick={() => startRun(scenario)}>
-                ↺ Restart descent
+              <button className="btn btn-outline" onClick={() => startRun(scenario)}
+                title="Refly the exact same terrain and initial conditions">
+                ↺ Replay
+              </button>
+              <button className="btn btn-primary" onClick={startMission}
+                title="Generate a new surface, target and randomized physics">
+                ▶ New mission
               </button>
             </div>
 
             {/* 3-D visual simulation — rendered from C++ state vectors */}
             <div className="card" style={{ marginBottom: '1.5rem' }}>
               <div style={{ height: 'clamp(320px, 48vw, 520px)' }}>
-                <LunarScene stateRef={stateRef} scenario={scenario} targetM={finalTargetM} runId={runId} />
+                {mission && (
+                  <LunarScene
+                    stateRef={stateRef}
+                    scenario={scenario}
+                    terrain={mission.terrain}
+                    safeZone={mission.safeZone}
+                    targetM={finalTargetM}
+                    runId={runId}
+                  />
+                )}
               </div>
               <div style={{
                 ...labelStyle, padding: '0.6rem 1rem',
                 borderTop: '1px solid var(--border)', color: 'var(--faint)',
               }}>
-                Visual simulation (Three.js) — position, attitude and engine plume mapped 1:1
-                from the flight software&apos;s state vectors
+                Visual simulation (Three.js) — procedurally generated terrain
+                (seed {mission ? mission.seed.toString(16) : '—'}); position, attitude and
+                engine plume mapped 1:1 from the flight software&apos;s state vectors
               </div>
             </div>
 
@@ -383,6 +498,10 @@ export function LunarSimDashboard() {
               <Readout label="Downrange" value={f0(state.downrangeM)} unit="m" />
               <Readout label="Pitch" value={f1(state.pitchRad * 180 / Math.PI)} unit="°" />
               <Readout label="Vehicle mass" value={f0(state.massKg)} unit="kg" />
+              <MissionRecord
+                stats={stats}
+                onReset={() => setStats(resetMissionStats())}
+              />
             </div>
 
             <div style={{
@@ -468,13 +587,19 @@ export function LunarSimDashboard() {
             )}
 
             <p style={{ marginTop: '1.5rem', color: 'var(--faint)', fontSize: '0.85rem', lineHeight: 1.6 }}>
-              Telemetry above is generated by the SELENE flight software
-              (C++17, compiled to WebAssembly with Emscripten) flying a closed-loop 3-DOF
-              descent at 50 Hz: mission state machine, descent guidance, three PID loops,
-              thrust allocation, a vertical navigation Kalman filter fed by noisy sensor
-              models, and hazard detection &amp; avoidance. The 3-D scene (Three.js) and the
-              dashboard are pure renderers of that data — no physics runs in JavaScript.
-              Open the browser console to see the raw altitude stream.
+              Every <b>New mission</b> rolls a seeded simplex-noise moon — craters, hills
+              and flatlands — scans it for the flattest reachable safe zone, surveys the
+              approach corridor and hands the rough stretches to the flight software as
+              hazard zones, then draws randomized starting conditions (gate altitude
+              800–1500&nbsp;m, lateral drift ±5&nbsp;m/s, payload mass variance). The descent
+              itself is flown end-to-end by the SELENE flight software (C++17, compiled to
+              WebAssembly with Emscripten) in a closed 50&nbsp;Hz loop: mission state machine,
+              descent guidance, three PID loops, thrust allocation, navigation Kalman
+              filters fed by noisy sensor models, and hazard detection &amp; avoidance. The
+              3-D scene (Three.js) and the dashboard are pure renderers of that data — no
+              physics runs in JavaScript. The success-rate widget tracks the FSW&apos;s
+              record against these missions in your browser&apos;s local storage. Open the
+              console to see the raw altitude stream.
             </p>
           </>
         )}
