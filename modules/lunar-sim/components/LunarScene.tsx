@@ -1,9 +1,18 @@
 'use client'
 
-// 3-D view of the SELENE descent (Three.js, milestone 3 of the wasm
-// integration). Pure renderer: every frame it reads the latest state
-// vector the C++ flight software produced (via stateRef, no physics
-// here) and poses the lander, flame, chase camera and trajectory trail.
+// 3-D view of the SELENE descent (Three.js). Pure renderer: every frame
+// it reads the latest state vector the C++ flight software produced (via
+// stateRef, no physics here) and poses the lander, flame, chase camera
+// and trajectory trail.
+//
+// The surface is procedurally generated per mission (seeded simplex
+// noise + craters, see services/proceduralTerrain.ts). The flight
+// software's world is planar (downrange x, altitude y); the scene maps
+// it onto the 3-D terrain by rotating the terrain group so the mission's
+// safe zone lies on the +x flight axis, and shifting it vertically so
+// the surface height at the landing target is exactly zero — the sim's
+// touchdown plane. A holographic marker shows where the lander is
+// aiming (the post-divert target when HDA moved the site).
 //
 // Sim frame → scene frame: downrange x → +x, altitude → +y, the planar
 // pitch rotates about z (pitch 0 = thrust straight up, positive pitch
@@ -17,16 +26,20 @@
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import type { SeleneScenarioConfig, SeleneSimState } from '../services/loadSelene'
+import { mulberry32, type SafeZone, type TerrainData } from '../services/proceduralTerrain'
 
 interface Props {
   stateRef: React.MutableRefObject<SeleneSimState | null>
   scenario: SeleneScenarioConfig
+  terrain: TerrainData
+  safeZone: SafeZone
   targetM: number
   runId: number
 }
 
 const TRAIL_MAX = 6000
 const LANDER_SCALE = 2 // cinematic license: keeps the 4 m vehicle legible from afar
+const TERRAIN_SEGMENTS = 300
 
 // ── Procedural moon texture: gray base + crater blotches ────────────
 function makeMoonTexture(): THREE.CanvasTexture {
@@ -54,6 +67,85 @@ function makeMoonTexture(): THREE.CanvasTexture {
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping
   tex.repeat.set(6, 6)
   return tex
+}
+
+// ── Terrain mesh: PlaneGeometry displaced by the mission height field ─
+function makeTerrainMesh(terrain: TerrainData, moonTex: THREE.Texture): THREE.Mesh {
+  const geo = new THREE.PlaneGeometry(
+    terrain.sizeM, terrain.sizeM, TERRAIN_SEGMENTS, TERRAIN_SEGMENTS,
+  )
+  const pos = geo.attributes.position as THREE.BufferAttribute
+  // The mesh is rotated -90° about x, so plane-local (x, y) lands at
+  // world (x, -y): sample the height field with the flipped ordinate.
+  for (let i = 0; i < pos.count; i++) {
+    pos.setZ(i, terrain.heightAt(pos.getX(i), -pos.getY(i)))
+  }
+  pos.needsUpdate = true
+  geo.computeVertexNormals()
+  const mesh = new THREE.Mesh(
+    geo,
+    new THREE.MeshStandardMaterial({
+      map: moonTex, bumpMap: moonTex, bumpScale: 1.6, roughness: 1,
+    }),
+  )
+  mesh.rotation.x = -Math.PI / 2
+  return mesh
+}
+
+// ── Rocks scattered deterministically from the terrain seed ──────────
+function makeRockField(terrain: TerrainData): THREE.Group {
+  const group = new THREE.Group()
+  const rand = mulberry32(terrain.seed ^ 0x5eed50c5)
+  const rockMat = new THREE.MeshStandardMaterial({ color: 0x77777d, roughness: 0.95 })
+  const rockGeo = new THREE.DodecahedronGeometry(1, 0)
+  for (let i = 0; i < 160; i++) {
+    const rock = new THREE.Mesh(rockGeo, rockMat)
+    const s = 0.4 + rand() * 2.6
+    rock.scale.set(s, s * (0.5 + rand() * 0.5), s)
+    const x = (rand() * 2 - 1) * 1800
+    const z = (rand() * 2 - 1) * 1800
+    rock.position.set(x, terrain.heightAt(x, z) + s * 0.2, z)
+    rock.rotation.y = rand() * Math.PI
+    group.add(rock)
+  }
+  return group
+}
+
+// ── Holographic landing-target marker (ring + pulsing beacon beam) ───
+function makeTargetMarker(): THREE.Group {
+  const group = new THREE.Group()
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(9, 13, 48),
+    new THREE.MeshBasicMaterial({
+      color: 0x2ecc71, transparent: true, opacity: 0.75, side: THREE.DoubleSide,
+      depthWrite: false,
+    }),
+  )
+  ring.rotation.x = -Math.PI / 2
+  ring.position.y = 0.2
+  group.add(ring)
+
+  const innerRing = new THREE.Mesh(
+    new THREE.RingGeometry(3, 4.2, 32),
+    new THREE.MeshBasicMaterial({
+      color: 0x9ef7c6, transparent: true, opacity: 0.9, side: THREE.DoubleSide,
+      depthWrite: false,
+    }),
+  )
+  innerRing.rotation.x = -Math.PI / 2
+  innerRing.position.y = 0.25
+  group.add(innerRing)
+
+  const beam = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.4, 8, 260, 24, 1, true),
+    new THREE.MeshBasicMaterial({
+      color: 0x2ecc71, transparent: true, opacity: 0.14,
+      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+    }),
+  )
+  beam.position.y = 130
+  group.add(beam)
+  return group
 }
 
 // ── Lander built from primitives (box body, four legs, nozzle) ──────
@@ -103,12 +195,26 @@ function makeLander(): { group: THREE.Group; flame: THREE.Mesh } {
   return { group, flame }
 }
 
-export default function LunarScene({ stateRef, scenario, targetM, runId }: Props) {
+function disposeObject(root: THREE.Object3D) {
+  root.traverse((obj) => {
+    const mesh = obj as THREE.Mesh
+    if (mesh.geometry) mesh.geometry.dispose()
+    const mat = mesh.material as THREE.Material | THREE.Material[] | undefined
+    if (Array.isArray(mat)) mat.forEach((m) => m.dispose())
+    else if (mat) mat.dispose()
+  })
+}
+
+export default function LunarScene({ stateRef, scenario, terrain, safeZone, targetM, runId }: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const [webglFailed, setWebglFailed] = useState(false)
   // Scene objects that later effects / the render loop need to reach.
   const worldRef = useRef<{
-    targetRing?: THREE.Mesh
+    scene?: THREE.Scene
+    moonTex?: THREE.Texture
+    terrainGroup?: THREE.Group
+    terrainData?: TerrainData
+    marker?: THREE.Group
     hazardPatch?: THREE.Group
     trail?: THREE.Line
     trailPositions?: Float32Array
@@ -159,37 +265,19 @@ export default function LunarScene({ stateRef, scenario, targetM, runId }: Props
       })))
     }
 
-    // Lunar surface + scattered rocks.
     const moonTex = makeMoonTexture()
-    const ground = new THREE.Mesh(
-      new THREE.CircleGeometry(9000, 72),
-      new THREE.MeshStandardMaterial({ map: moonTex, bumpMap: moonTex, bumpScale: 2.2, roughness: 1 }),
-    )
-    ground.rotation.x = -Math.PI / 2
-    ground.position.set(1200, 0, 0)
-    scene.add(ground)
 
-    const rockMat = new THREE.MeshStandardMaterial({ color: 0x77777d, roughness: 0.95 })
-    const rockGeo = new THREE.DodecahedronGeometry(1, 0)
-    for (let i = 0; i < 160; i++) {
-      const rock = new THREE.Mesh(rockGeo, rockMat)
-      const s = 0.4 + Math.random() * 2.6
-      rock.scale.set(s, s * (0.5 + Math.random() * 0.5), s)
-      rock.position.set(-400 + Math.random() * 3400, 0, -900 + Math.random() * 1800)
-      rock.rotation.y = Math.random() * Math.PI
-      scene.add(rock)
-    }
+    // Procedural terrain lives in its own group so each mission can swap
+    // the mesh and the group can be rotated/offset into the sim frame.
+    const terrainGroup = new THREE.Group()
+    scene.add(terrainGroup)
 
-    // Landing target ring (repositioned by the scenario effect below).
-    const targetRing = new THREE.Mesh(
-      new THREE.RingGeometry(9, 13, 48),
-      new THREE.MeshBasicMaterial({ color: 0x2ecc71, transparent: true, opacity: 0.75, side: THREE.DoubleSide }),
-    )
-    targetRing.rotation.x = -Math.PI / 2
-    targetRing.position.y = 0.2
-    scene.add(targetRing)
+    // Holographic landing-target marker (repositioned per run below).
+    const marker = makeTargetMarker()
+    scene.add(marker)
 
-    // Hazard patch: dark scorched circle + boulder field.
+    // Hazard patch for the boulder-field demo toggle: scorched circle +
+    // boulders dropped on the nominal site.
     const hazardPatch = new THREE.Group()
     const scorch = new THREE.Mesh(
       new THREE.CircleGeometry(40, 40),
@@ -198,8 +286,9 @@ export default function LunarScene({ stateRef, scenario, targetM, runId }: Props
     scorch.rotation.x = -Math.PI / 2
     scorch.position.y = 0.12
     hazardPatch.add(scorch)
+    const boulderGeo = new THREE.DodecahedronGeometry(1, 0)
     for (let i = 0; i < 26; i++) {
-      const b = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: 0x55322c, roughness: 1 }))
+      const b = new THREE.Mesh(boulderGeo, new THREE.MeshStandardMaterial({ color: 0x55322c, roughness: 1 }))
       const s = 1 + Math.random() * 3
       b.scale.setScalar(s)
       const r = Math.random() * 36
@@ -224,7 +313,10 @@ export default function LunarScene({ stateRef, scenario, targetM, runId }: Props
     scene.add(lander)
 
     const world = worldRef.current
-    world.targetRing = targetRing
+    world.scene = scene
+    world.moonTex = moonTex
+    world.terrainGroup = terrainGroup
+    world.marker = marker
     world.hazardPatch = hazardPatch
     world.trail = trail
     world.trailPositions = trailPositions
@@ -251,8 +343,17 @@ export default function LunarScene({ stateRef, scenario, targetM, runId }: Props
     const camGoal = new THREE.Vector3()
     const lookGoal = new THREE.Vector3()
     let rafId = 0
-    const frame = () => {
+    const frame = (now: number) => {
       rafId = requestAnimationFrame(frame)
+
+      // Holographic marker pulse (render-time animation, no physics).
+      const pulse = 0.5 + 0.5 * Math.sin(now / 350)
+      const ringMesh = marker.children[0] as THREE.Mesh
+      const beamMesh = marker.children[2] as THREE.Mesh
+      ;(ringMesh.material as THREE.MeshBasicMaterial).opacity = 0.45 + 0.35 * pulse
+      ;(beamMesh.material as THREE.MeshBasicMaterial).opacity = 0.08 + 0.10 * pulse
+      marker.rotation.y = now / 2400
+
       const s = stateRef.current
       if (s) {
         const x = s.downrangeM
@@ -297,28 +398,57 @@ export default function LunarScene({ stateRef, scenario, targetM, runId }: Props
       ro.disconnect()
       renderer.dispose()
       moonTex.dispose()
-      scene.traverse((obj) => {
-        const mesh = obj as THREE.Mesh
-        if (mesh.geometry) mesh.geometry.dispose()
-        const mat = mesh.material as THREE.Material | THREE.Material[] | undefined
-        if (Array.isArray(mat)) mat.forEach((m) => m.dispose())
-        else if (mat) mat.dispose()
-      })
+      disposeObject(scene)
       host.removeChild(renderer.domElement)
+      worldRef.current = {}
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Re-stage markers + trail when a new run starts or HDA moves the target.
+  // Rebuild the surface when a new mission generates new terrain.
   useEffect(() => {
     const world = worldRef.current
-    world.targetRing?.position.setX(targetM)
+    const group = world.terrainGroup
+    if (!group || !world.moonTex) return
+    if (world.terrainData === terrain) return
+    while (group.children.length > 0) {
+      const child = group.children[0]
+      group.remove(child)
+      disposeObject(child)
+    }
+    group.add(makeTerrainMesh(terrain, world.moonTex))
+    group.add(makeRockField(terrain))
+    world.terrainData = terrain
+  }, [terrain])
+
+  // Stage the world for the current run: rotate the terrain so the safe
+  // zone lies on the +x flight axis, drop the surface so the landing
+  // target sits at altitude zero, and place the markers.
+  useEffect(() => {
+    const world = worldRef.current
+    const group = world.terrainGroup
+    if (!group) return
+
+    const az = safeZone.azimuthRad
+    // Surface height under a sim downrange coordinate d: the flight axis
+    // maps back to the terrain-local ray toward the safe zone.
+    const groundAt = (d: number) => terrain.heightAt(Math.cos(az) * d, Math.sin(az) * d)
+
+    group.rotation.y = az
+    // Zero the surface at the flown target: the FSW touches down at
+    // altitude 0 exactly where the marker stands.
+    const drop = -groundAt(targetM)
+    group.position.y = drop
+
+    world.marker?.position.set(targetM, 0, 0)
     if (world.hazardPatch) {
       world.hazardPatch.visible = scenario.hazardAtTarget
-      world.hazardPatch.position.setX(scenario.targetDownrangeM)
+      world.hazardPatch.position.set(
+        scenario.targetDownrangeM, groundAt(scenario.targetDownrangeM) + drop, 0,
+      )
     }
     world.resetTrail?.()
-  }, [runId, targetM, scenario.hazardAtTarget, scenario.targetDownrangeM])
+  }, [runId, targetM, terrain, safeZone, scenario.hazardAtTarget, scenario.targetDownrangeM])
 
   if (webglFailed) {
     return (
