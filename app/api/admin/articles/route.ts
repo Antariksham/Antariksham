@@ -7,17 +7,11 @@ import {
 } from '@/modules/admin/services/adminArticles'
 import { readingTime } from '@/lib/utils'
 import { SlugConflictError } from '@/modules/admin/services/adminErrors'
-
-const AUTH_COOKIE = 'antariksham_admin'
-
-function isAuthed(req: NextRequest): boolean {
-  const cookie = req.cookies.get(AUTH_COOKIE)
-  return cookie?.value === process.env.ADMIN_PASSWORD
-}
+import { getAdminUser } from '@/modules/admin/services/getAdminUser'
 
 // POST /api/admin/articles — create
 export async function POST(request: NextRequest) {
-  if (!isAuthed(request)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -40,7 +34,7 @@ export async function POST(request: NextRequest) {
 
 // PATCH /api/admin/articles?id=xxx — update
 export async function PATCH(request: NextRequest) {
-  if (!isAuthed(request)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -69,7 +63,7 @@ export async function PATCH(request: NextRequest) {
 
 // DELETE /api/admin/articles?id=xxx — delete
 export async function DELETE(request: NextRequest) {
-  if (!isAuthed(request)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

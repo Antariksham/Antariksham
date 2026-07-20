@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
-import { AdminSidebar }  from '@/modules/admin/components/AdminSidebar'
+import { headers }        from 'next/headers'
+import { redirect }       from 'next/navigation'
+import { AdminSidebar }   from '@/modules/admin/components/AdminSidebar'
+import { getAdminUser }   from '@/modules/admin/services/getAdminUser'
 
 export const metadata: Metadata = {
   title: {
@@ -9,7 +12,22 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+// Auth pages render standalone (no sidebar, no gate).
+const AUTH_PATHS = ['/admin/login', '/admin/forgot-password', '/admin/reset-password']
+
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname   = headers().get('x-pathname') || ''
+  const isAuthPage = AUTH_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))
+
+  if (isAuthPage) {
+    return <>{children}</>
+  }
+
+  // Every other /admin page requires an active admin. Middleware already
+  // guarantees a session; this adds the membership/role check.
+  const admin = await getAdminUser()
+  if (!admin) redirect('/admin/login?error=not_admin')
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--black)' }}>
 

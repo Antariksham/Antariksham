@@ -7,19 +7,14 @@ import {
   deleteAdminAuthor,
 } from '@/modules/admin/services/adminAuthors'
 
+import { getAdminUser } from '@/modules/admin/services/getAdminUser'
+
 export const dynamic = 'force-dynamic'
-
-const AUTH_COOKIE = 'antariksham_admin'
-
-function isAuthed(req: NextRequest): boolean {
-  const cookie = req.cookies.get(AUTH_COOKIE)
-  return cookie?.value === process.env.ADMIN_PASSWORD
-}
 
 // GET /api/admin/authors          — list all
 // GET /api/admin/authors?id=xxx   — single author
 export async function GET(request: NextRequest) {
-  if (!isAuthed(request)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -37,7 +32,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/admin/authors — create
 export async function POST(request: NextRequest) {
-  if (!isAuthed(request)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -61,7 +56,7 @@ export async function POST(request: NextRequest) {
 
 // PATCH /api/admin/authors?id=xxx — update
 export async function PATCH(request: NextRequest) {
-  if (!isAuthed(request)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -88,7 +83,7 @@ export async function PATCH(request: NextRequest) {
 
 // DELETE /api/admin/authors?id=xxx — delete
 export async function DELETE(request: NextRequest) {
-  if (!isAuthed(request)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

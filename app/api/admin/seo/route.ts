@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin }             from '@/lib/supabase'
+import { getAdminUser }              from '@/modules/admin/services/getAdminUser'
 
 export const dynamic = 'force-dynamic'
-
-const AUTH_COOKIE = 'antariksham_admin'
-
-function isAuthed(req: NextRequest): boolean {
-  return req.cookies.get(AUTH_COOKIE)?.value === process.env.ADMIN_PASSWORD
-}
 
 // ── GET /api/admin/seo?search=xxx  ────────────────────────────
 // List all seo_metadata rows, optionally filtered by search
 export async function GET(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -45,7 +40,7 @@ export async function GET(req: NextRequest) {
 
 // ── POST /api/admin/seo — create new seo_metadata row ─────────
 export async function POST(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -85,7 +80,7 @@ export async function POST(req: NextRequest) {
 
 // ── PATCH /api/admin/seo?id=xxx — update existing row ─────────
 export async function PATCH(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -128,7 +123,7 @@ export async function PATCH(req: NextRequest) {
 
 // ── DELETE /api/admin/seo?id=xxx — delete row ─────────────────
 export async function DELETE(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

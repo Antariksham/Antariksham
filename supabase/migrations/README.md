@@ -38,6 +38,33 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260720120000_admin_users.sql`
+
+Creates the `admin_users` table that gates the `/admin` CMS now that admin auth
+uses **Supabase Auth** (real accounts) instead of a shared password. A person
+reaches `/admin` only if they are a Supabase Auth user **and** have an active
+`admin_users` row. The `role` column (default `admin`) is the hook for future
+team roles.
+
+**After running it — bootstrap your account (one time):**
+
+1. Enable **Email** auth in the Supabase dashboard (Authentication → Providers).
+2. Create your login: Authentication → Users → *Add user* (email + password), or
+   send yourself an invite.
+3. Grant access by inserting your `admin_users` row (use **your** email):
+
+   ```sql
+   insert into public.admin_users (id, email)
+   select id, email from auth.users where email = 'you@example.com'
+   on conflict (id) do update set is_active = true;
+   ```
+
+4. Sign in at `/admin/login`.
+
+Add teammates the same way; revoke with
+`update public.admin_users set is_active = false where email = '…';`.
+The old `ADMIN_PASSWORD` env var is no longer used.
+
 ### `20260713120000_add_knowledge_article_thumbnail.sql`
 
 Adds an optional `thumbnail` (text) column to `knowledge_articles` — a

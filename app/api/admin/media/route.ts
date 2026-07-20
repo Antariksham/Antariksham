@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin }             from '@/lib/supabase'
 
+import { getAdminUser } from '@/modules/admin/services/getAdminUser'
+
 export const dynamic = 'force-dynamic'
-
-const AUTH_COOKIE = 'antariksham_admin'
-
-function isAuthed(req: NextRequest): boolean {
-  const cookie = req.cookies.get(AUTH_COOKIE)
-  return cookie?.value === process.env.ADMIN_PASSWORD
-}
 
 const ALLOWED_BUCKETS = ['article-images', 'mission-images'] as const
 type Bucket = typeof ALLOWED_BUCKETS[number]
@@ -20,7 +15,7 @@ function validBucket(b: string | null): b is Bucket {
 // ── GET /api/admin/media?bucket=article-images ────────────────
 // List all files in a bucket
 export async function GET(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -68,7 +63,7 @@ export async function GET(req: NextRequest) {
 // ── POST /api/admin/media?bucket=article-images ───────────────
 // Upload a file — expects multipart/form-data with field "file"
 export async function POST(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -138,7 +133,7 @@ export async function POST(req: NextRequest) {
 
 // ── DELETE /api/admin/media?bucket=article-images&name=file.jpg
 export async function DELETE(req: NextRequest) {
-  if (!isAuthed(req)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

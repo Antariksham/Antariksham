@@ -153,6 +153,19 @@ collection when Supabase env vars are absent — unrelated to app code).
 - ✅ **Homepage news fetched 7 but showed 6**: aligned `getLatestArticles(6)` so
   the fetch matches the section’s slice (limits: news 6, missions 4, learn 6).
 
+- ✅ **Admin auth moved to Supabase Auth**: retired the single shared
+  `ADMIN_PASSWORD` (which was stored verbatim in the session cookie, with a
+  brute-force lock that lived in a client-controlled cookie). Admin access now
+  uses real Supabase Auth accounts gated by a new `admin_users` table (with a
+  `role` column as the foundation for future team roles). Sign-in supports
+  email + password and an email 6-digit code; password reset is OTP-based
+  (`supabase/migrations/20260720120000_admin_users.sql`). SSR session handling
+  lives in `utils/supabase/{client,server,middleware}.ts`; `middleware.ts`
+  refreshes the session and protects `/admin`; the admin layout and every
+  `/api/admin/*` route enforce active-admin membership via
+  `modules/admin/services/getAdminUser.ts`. Bootstrap steps are in
+  `supabase/migrations/README.md`.
+
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 
 ---
@@ -367,6 +380,13 @@ bad migration is a one-line revert.
 - ~~Ship-or-delete decision~~ shipped: noindex removed, OG/canonical/JSON-LD
   added, linked from the `/live` hub and footer Intelligence column. (No
   sitemap file exists in the app yet — when one is added, include `/lunar-sim`.)
+
+**Admin auth follow-ups:**
+- Team-management UI (`/admin/team`) to invite/deactivate members and set roles
+  — the `admin_users.role` + `is_active` columns already back this; today
+  membership is managed via SQL (see `supabase/migrations/README.md`).
+- Optionally promote `role` into a Supabase `app_metadata` JWT claim if
+  middleware-level role checks are wanted later.
 
 **Site-level polish TODOs:**
 - Nav links are still Antariksham's uppercase-mono style; CosmosDaily's are

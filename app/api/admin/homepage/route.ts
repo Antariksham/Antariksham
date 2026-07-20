@@ -4,12 +4,7 @@ import {
   updateSectionOrder,
   updateHeroConfig,
 } from '@/modules/admin/services/adminHomepage'
-
-const AUTH_COOKIE = 'antariksham_admin'
-
-function isAuthed(req: NextRequest): boolean {
-  return req.cookies.get(AUTH_COOKIE)?.value === process.env.ADMIN_PASSWORD
-}
+import { getAdminUser } from '@/modules/admin/services/getAdminUser'
 
 // PATCH /api/admin/homepage
 // Body options:
@@ -18,7 +13,7 @@ function isAuthed(req: NextRequest): boolean {
 //   { action: 'hero',    config: HeroConfig }
 
 export async function PATCH(request: NextRequest) {
-  if (!isAuthed(request)) {
+  if (!(await getAdminUser())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
