@@ -38,6 +38,57 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260720130000_media_assets.sql`
+
+**Extends your existing `media_assets` table** (which already holds rights
+metadata: `title`, `file_url`, `copyright_status`, `license_type`,
+`attribution_required`, `source_agency`, `editor_verified`, …) so the Media
+Library can also track and delete assets stored in Cloudinary. It adds
+`provider` / `storage_key` / `bucket` / `folder` / `uploaded_by` — it does **not**
+drop or redefine existing columns or data, and leaves RLS untouched (the app uses
+the service-role client). The Cloudinary action writes onto your existing columns
+(`file_url`, `file_type`, `file_size`, `title`). The Supabase tab still lists
+Storage directly and doesn't use this table.
+
+**Cloudinary env (set in `.env.local` + Vercel):**
+
+```
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+NEXT_PUBLIC_CLOUDINARY_API_KEY=your-api-key        # api key is not secret; the widget needs it
+CLOUDINARY_API_SECRET=your-api-secret              # secret — server only
+```
+
+The Cloudinary tab in the Media Library only appears when
+`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` is present, so the admin panel is unchanged
+until you add these. R2 stays unbuilt for now (the `r2` enum slot is reserved).
+
+### `20260720120000_admin_users.sql`
+
+Creates the `admin_users` table that gates the `/admin` CMS now that admin auth
+uses **Supabase Auth** (real accounts) instead of a shared password. A person
+reaches `/admin` only if they are a Supabase Auth user **and** have an active
+`admin_users` row. The `role` column (default `admin`) is the hook for future
+team roles.
+
+**After running it — bootstrap your account (one time):**
+
+1. Enable **Email** auth in the Supabase dashboard (Authentication → Providers).
+2. Create your login: Authentication → Users → *Add user* (email + password), or
+   send yourself an invite.
+3. Grant access by inserting your `admin_users` row (use **your** email):
+
+   ```sql
+   insert into public.admin_users (id, email)
+   select id, email from auth.users where email = 'you@example.com'
+   on conflict (id) do update set is_active = true;
+   ```
+
+4. Sign in at `/admin/login`.
+
+Add teammates the same way; revoke with
+`update public.admin_users set is_active = false where email = '…';`.
+The old `ADMIN_PASSWORD` env var is no longer used.
+
 ### `20260713120000_add_knowledge_article_thumbnail.sql`
 
 Adds an optional `thumbnail` (text) column to `knowledge_articles` — a

@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { enforceSingleFeatured } from './featuredExclusive'
+import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adminErrors'
 import type { MissionStatus, MissionType, MissionTimeline } from '@/types/mission'
 
 export interface AdminMissionRow {
@@ -88,6 +89,7 @@ export interface MissionPayload {
 
 export async function createAdminMission(p: MissionPayload): Promise<{ id: string } | null> {
   const db = supabaseAdmin()
+  await assertSlugAvailable(db, 'missions', p.slug)
   const { data, error } = await db.from('missions').insert({
     name: p.name, slug: p.slug, description: p.description,
     agency_id: p.agencyId || null, status: p.status, mission_type: p.missionType,
@@ -95,20 +97,29 @@ export async function createAdminMission(p: MissionPayload): Promise<{ id: strin
     featured_image: p.featuredImage || null, featured: p.featured, timeline: p.timeline,
   }).select('id').single()
 
-  if (error || !data) { console.error('createAdminMission error:', error); return null }
+  if (error || !data) {
+    if (isUniqueViolation(error)) throw new SlugConflictError()
+    console.error('createAdminMission error:', error)
+    return null
+  }
   await enforceSingleFeatured(db, 'missions', data.id, p.featured)
   return { id: data.id }
 }
 
 export async function updateAdminMission(id: string, p: MissionPayload): Promise<boolean> {
   const db = supabaseAdmin()
+  await assertSlugAvailable(db, 'missions', p.slug, id)
   const { error } = await db.from('missions').update({
     name: p.name, slug: p.slug, description: p.description,
     agency_id: p.agencyId || null, status: p.status, mission_type: p.missionType,
     destination: p.destination || null, launch_date: p.launchDate || null,
     featured_image: p.featuredImage || null, featured: p.featured, timeline: p.timeline,
   }).eq('id', id)
-  if (error) { console.error('updateAdminMission error:', error); return false }
+  if (error) {
+    if (isUniqueViolation(error)) throw new SlugConflictError()
+    console.error('updateAdminMission error:', error)
+    return false
+  }
   await enforceSingleFeatured(db, 'missions', id, p.featured)
   return true
 }

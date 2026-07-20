@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export interface AdminStats {
   totalArticles:     number
@@ -21,6 +21,12 @@ export interface RecentArticle {
 }
 
 export async function getAdminStats(): Promise<AdminStats> {
+  // Use the service-role client (like every other admin read) so drafts and
+  // other non-published rows are counted. The anon client is bound by RLS,
+  // which hides drafts and skews the dashboard's Total / Drafts / Featured
+  // counts and the "Recent Articles" list.
+  const db = supabaseAdmin()
+
   const [
     articlesResult,
     publishedResult,
@@ -31,14 +37,14 @@ export async function getAdminStats(): Promise<AdminStats> {
     upcomingMissionsResult,
     recentArticlesResult,
   ] = await Promise.all([
-    supabase.from('articles').select('id', { count: 'exact', head: true }),
-    supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-    supabase.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'draft'),
-    supabase.from('articles').select('id', { count: 'exact', head: true }).eq('featured', true),
-    supabase.from('missions').select('id', { count: 'exact', head: true }),
-    supabase.from('missions').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-    supabase.from('missions').select('id', { count: 'exact', head: true }).eq('status', 'upcoming'),
-    supabase.from('articles')
+    db.from('articles').select('id', { count: 'exact', head: true }),
+    db.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+    db.from('articles').select('id', { count: 'exact', head: true }).eq('status', 'draft'),
+    db.from('articles').select('id', { count: 'exact', head: true }).eq('featured', true),
+    db.from('missions').select('id', { count: 'exact', head: true }),
+    db.from('missions').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    db.from('missions').select('id', { count: 'exact', head: true }).eq('status', 'upcoming'),
+    db.from('articles')
       .select('id, title, slug, status, published_at, views')
       .order('created_at', { ascending: false })
       .limit(6),

@@ -107,10 +107,25 @@ export async function updateSectionOrder(id: string, sortOrder: number): Promise
 
 export async function updateHeroConfig(config: HeroConfig): Promise<boolean> {
   const db = supabaseAdmin()
-  const { error } = await db
+
+  // Update the existing hero row and ask for the affected rows back so we can
+  // tell whether anything was actually changed.
+  const { data, error } = await db
     .from('homepage_sections')
     .update({ config })
     .eq('section', 'hero')
+    .select('id')
+
   if (error) { console.error('updateHeroConfig error:', error); return false }
+
+  // No hero row existed yet — a bare UPDATE would match zero rows and report
+  // success while persisting nothing. Insert the row so the edit sticks.
+  if (!data || data.length === 0) {
+    const { error: insertError } = await db
+      .from('homepage_sections')
+      .insert({ section: 'hero', config, enabled: true, sort_order: 0 })
+    if (insertError) { console.error('updateHeroConfig insert error:', insertError); return false }
+  }
+
   return true
 }

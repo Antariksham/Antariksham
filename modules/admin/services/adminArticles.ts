@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { enforceSingleFeatured } from './featuredExclusive'
+import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adminErrors'
 import type { Article, ArticleStatus, ArticleType, ArticleCategory } from '@/types/article'
 
 // ── List / search ─────────────────────────────────────────────
@@ -151,6 +152,8 @@ export interface ArticlePayload {
 export async function createAdminArticle(payload: ArticlePayload): Promise<{ id: string } | null> {
   const db = supabaseAdmin()
 
+  await assertSlugAvailable(db, 'articles', payload.slug)
+
   const { data, error } = await db
     .from('articles')
     .insert({
@@ -171,6 +174,7 @@ export async function createAdminArticle(payload: ArticlePayload): Promise<{ id:
     .single()
 
   if (error || !data) {
+    if (isUniqueViolation(error)) throw new SlugConflictError()
     console.error('createAdminArticle error:', error)
     return null
   }
@@ -188,6 +192,8 @@ export async function updateAdminArticle(
   existingPublishedAt: string | null
 ): Promise<boolean> {
   const db = supabaseAdmin()
+
+  await assertSlugAvailable(db, 'articles', payload.slug, id)
 
   const { error } = await db
     .from('articles')
@@ -211,6 +217,7 @@ export async function updateAdminArticle(
     .eq('id', id)
 
   if (error) {
+    if (isUniqueViolation(error)) throw new SlugConflictError()
     console.error('updateAdminArticle error:', error)
     return false
   }

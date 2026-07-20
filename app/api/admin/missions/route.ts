@@ -7,8 +7,8 @@ import {
 import { slugify } from '@/lib/utils'
 import type { MissionPayload } from '@/modules/admin/services/adminMissions'
 import type { MissionStatus, MissionType, MissionTimeline } from '@/types/mission'
-
-const AUTH_COOKIE = 'antariksham_admin'
+import { SlugConflictError } from '@/modules/admin/services/adminErrors'
+import { getAdminUser } from '@/modules/admin/services/getAdminUser'
 
 const STATUSES: MissionStatus[] = [
   'active', 'upcoming', 'completed', 'failed', 'in-development', 'cancelled',
@@ -17,14 +17,9 @@ const TYPES: MissionType[] = [
   'crewed', 'robotic', 'flyby', 'orbiter', 'lander', 'rover', 'sample-return', 'telescope',
 ]
 
-function isAuthed(req: NextRequest): boolean {
-  const cookie = req.cookies.get(AUTH_COOKIE)
-  return cookie?.value === process.env.ADMIN_PASSWORD
-}
-
 // POST /api/admin/missions — create
 export async function POST(request: NextRequest) {
-  if (!isAuthed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await getAdminUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const payload = buildPayload(await request.json())
     if (!payload.name)        return NextResponse.json({ error: 'Name is required' }, { status: 400 })
@@ -35,6 +30,7 @@ export async function POST(request: NextRequest) {
     if (!result) return NextResponse.json({ error: 'Failed to create mission' }, { status: 500 })
     return NextResponse.json({ id: result.id }, { status: 201 })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
@@ -42,7 +38,7 @@ export async function POST(request: NextRequest) {
 
 // PATCH /api/admin/missions?id=xxx — update
 export async function PATCH(request: NextRequest) {
-  if (!isAuthed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await getAdminUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const id = request.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
   try {
@@ -53,6 +49,7 @@ export async function PATCH(request: NextRequest) {
     if (!ok) return NextResponse.json({ error: 'Failed to update mission' }, { status: 500 })
     return NextResponse.json({ success: true })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
@@ -60,7 +57,7 @@ export async function PATCH(request: NextRequest) {
 
 // DELETE /api/admin/missions?id=xxx — delete
 export async function DELETE(request: NextRequest) {
-  if (!isAuthed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await getAdminUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const id = request.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
   try {
@@ -68,6 +65,7 @@ export async function DELETE(request: NextRequest) {
     if (!ok) return NextResponse.json({ error: 'Failed to delete' }, { status: 500 })
     return NextResponse.json({ success: true })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }

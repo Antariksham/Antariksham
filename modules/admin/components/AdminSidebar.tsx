@@ -2,6 +2,7 @@
 
 import Link        from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/utils/supabase/client'
 import {
   LayoutDashboard,
   FileText,
@@ -40,7 +41,8 @@ export function AdminSidebar() {
   const router   = useRouter()
 
   async function handleLogout() {
-    await fetch('/api/admin/logout', { method: 'POST' })
+    const supabase = createClient()
+    await supabase.auth.signOut()
     router.push('/admin/login')
     router.refresh()
   }

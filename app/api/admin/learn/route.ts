@@ -7,18 +7,14 @@ import {
 import { slugify } from '@/lib/utils'
 import type { KnowledgePayload } from '@/modules/admin/services/adminKnowledge'
 import type { DifficultyLevel } from '@/types/knowledge'
+import { SlugConflictError } from '@/modules/admin/services/adminErrors'
+import { getAdminUser } from '@/modules/admin/services/getAdminUser'
 
-const AUTH_COOKIE = 'antariksham_admin'
 const LEVELS: DifficultyLevel[] = ['beginner', 'intermediate', 'advanced']
-
-function isAuthed(req: NextRequest): boolean {
-  const cookie = req.cookies.get(AUTH_COOKIE)
-  return cookie?.value === process.env.ADMIN_PASSWORD
-}
 
 // POST /api/admin/learn — create
 export async function POST(request: NextRequest) {
-  if (!isAuthed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await getAdminUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const payload = buildPayload(await request.json())
     if (!payload.title) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -26,6 +22,7 @@ export async function POST(request: NextRequest) {
     if (!result) return NextResponse.json({ error: 'Failed to create article' }, { status: 500 })
     return NextResponse.json({ id: result.id }, { status: 201 })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
@@ -33,7 +30,7 @@ export async function POST(request: NextRequest) {
 
 // PATCH /api/admin/learn?id=xxx — update
 export async function PATCH(request: NextRequest) {
-  if (!isAuthed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await getAdminUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const id = request.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
   try {
@@ -42,6 +39,7 @@ export async function PATCH(request: NextRequest) {
     if (!ok) return NextResponse.json({ error: 'Failed to update article' }, { status: 500 })
     return NextResponse.json({ success: true })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
@@ -49,7 +47,7 @@ export async function PATCH(request: NextRequest) {
 
 // DELETE /api/admin/learn?id=xxx — delete
 export async function DELETE(request: NextRequest) {
-  if (!isAuthed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await getAdminUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const id = request.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
   try {
@@ -57,6 +55,7 @@ export async function DELETE(request: NextRequest) {
     if (!ok) return NextResponse.json({ error: 'Failed to delete' }, { status: 500 })
     return NextResponse.json({ success: true })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
