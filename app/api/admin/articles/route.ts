@@ -6,6 +6,7 @@ import {
   getAdminArticleById,
 } from '@/modules/admin/services/adminArticles'
 import { readingTime } from '@/lib/utils'
+import { SlugConflictError } from '@/modules/admin/services/adminErrors'
 
 const AUTH_COOKIE = 'antariksham_admin'
 
@@ -23,10 +24,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const payload = buildPayload(body)
+
+    const invalid = validateArticle(payload)
+    if (invalid) return NextResponse.json({ error: invalid }, { status: 400 })
+
     const result  = await createAdminArticle(payload)
     if (!result) return NextResponse.json({ error: 'Failed to create article' }, { status: 500 })
     return NextResponse.json({ id: result.id }, { status: 201 })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
@@ -45,6 +51,9 @@ export async function PATCH(request: NextRequest) {
     const body    = await request.json()
     const payload = buildPayload(body)
 
+    const invalid = validateArticle(payload)
+    if (invalid) return NextResponse.json({ error: invalid }, { status: 400 })
+
     // Fetch existing publishedAt so we don't overwrite it
     const existing = await getAdminArticleById(id)
     const ok = await updateAdminArticle(id, payload, existing?.publishedAt ?? null)
@@ -52,6 +61,7 @@ export async function PATCH(request: NextRequest) {
     if (!ok) return NextResponse.json({ error: 'Failed to update article' }, { status: 500 })
     return NextResponse.json({ success: true })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
@@ -76,7 +86,16 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-// ── Helper ────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────
+
+// Server-side required-field validation (the UI enforces the same, but the
+// API must not trust the client). Returns an error message or null.
+function validateArticle(payload: ReturnType<typeof buildPayload>): string | null {
+  if (!payload.title)   return 'Title is required.'
+  if (!payload.slug)    return 'Slug is required.'
+  if (!payload.content) return 'Content is required.'
+  return null
+}
 
 function buildPayload(body: any) {
   return {

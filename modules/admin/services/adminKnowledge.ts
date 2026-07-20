@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase'
+import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adminErrors'
 import type { DifficultyLevel } from '@/types/knowledge'
 
 // ── Row shape for the admin list ──────────────────────────────
@@ -129,6 +130,8 @@ export async function createAdminKnowledge(payload: KnowledgePayload): Promise<{
   const db     = supabaseAdmin()
   const record = toRecord(payload)
 
+  await assertSlugAvailable(db, 'knowledge_articles', payload.slug)
+
   let { data, error } = await db.from('knowledge_articles').insert(record).select('id').single()
 
   // Retry without thumbnail if the column hasn't been added yet
@@ -138,6 +141,7 @@ export async function createAdminKnowledge(payload: KnowledgePayload): Promise<{
   }
 
   if (error || !data) {
+    if (isUniqueViolation(error)) throw new SlugConflictError()
     console.error('createAdminKnowledge error:', error)
     return null
   }
@@ -150,6 +154,8 @@ export async function updateAdminKnowledge(id: string, payload: KnowledgePayload
   const db     = supabaseAdmin()
   const record = toRecord(payload)
 
+  await assertSlugAvailable(db, 'knowledge_articles', payload.slug, id)
+
   let { error } = await db.from('knowledge_articles').update(record).eq('id', id)
 
   if (error && isMissingThumbnailColumn(error)) {
@@ -158,6 +164,7 @@ export async function updateAdminKnowledge(id: string, payload: KnowledgePayload
   }
 
   if (error) {
+    if (isUniqueViolation(error)) throw new SlugConflictError()
     console.error('updateAdminKnowledge error:', error)
     return false
   }

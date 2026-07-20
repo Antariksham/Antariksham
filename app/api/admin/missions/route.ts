@@ -7,6 +7,7 @@ import {
 import { slugify } from '@/lib/utils'
 import type { MissionPayload } from '@/modules/admin/services/adminMissions'
 import type { MissionStatus, MissionType, MissionTimeline } from '@/types/mission'
+import { SlugConflictError } from '@/modules/admin/services/adminErrors'
 
 const AUTH_COOKIE = 'antariksham_admin'
 
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
     if (!result) return NextResponse.json({ error: 'Failed to create mission' }, { status: 500 })
     return NextResponse.json({ id: result.id }, { status: 201 })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
@@ -53,6 +55,7 @@ export async function PATCH(request: NextRequest) {
     if (!ok) return NextResponse.json({ error: 'Failed to update mission' }, { status: 500 })
     return NextResponse.json({ success: true })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
@@ -68,6 +71,7 @@ export async function DELETE(request: NextRequest) {
     if (!ok) return NextResponse.json({ error: 'Failed to delete' }, { status: 500 })
     return NextResponse.json({ success: true })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
