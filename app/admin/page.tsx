@@ -6,7 +6,10 @@ import {
   PenSquare, Plus, CheckCircle, Clock,
 } from 'lucide-react'
 
-export const revalidate = 60
+// Dynamic: stats come from the service-role client (server-only) and should
+// reflect live content, so this page must render per-request rather than be
+// statically prerendered at build time.
+export const revalidate = 0
 
 export default async function AdminDashboard() {
   const stats = await getAdminStats()
