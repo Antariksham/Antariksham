@@ -40,15 +40,17 @@ export async function recordCloudinaryUpload(info: {
   const admin = await getAdminUser()
   if (!admin) return { error: 'Unauthorized' as const }
 
+  // Columns map onto the existing media_assets schema:
+  //   file_url <- secure_url, file_type <- mime, file_size <- bytes, title <- name
   const { data, error } = await supabaseAdmin()
     .from('media_assets')
     .insert({
       provider:    'cloudinary',
       storage_key: info.public_id,
-      url:         info.secure_url,
-      filename:    info.original_filename ? `${info.original_filename}.${info.format ?? ''}`.replace(/\.$/, '') : info.public_id,
-      mime_type:   info.format ? `image/${info.format}` : null,
-      size_bytes:  info.bytes,
+      file_url:    info.secure_url,
+      title:       info.original_filename || info.public_id,
+      file_type:   info.format ? `image/${info.format}` : null,
+      file_size:   info.bytes,
       width:       info.width ?? null,
       height:      info.height ?? null,
       folder:      'cloudinary',
@@ -69,7 +71,7 @@ export async function listCloudinaryMedia(): Promise<{ items: CloudinaryItem[]; 
 
   const { data, error } = await supabaseAdmin()
     .from('media_assets')
-    .select('id, url, storage_key, filename, size_bytes, width, height, created_at')
+    .select('id, file_url, storage_key, title, file_size, width, height, created_at')
     .eq('provider', 'cloudinary')
     .order('created_at', { ascending: false })
     .limit(200)
@@ -81,10 +83,10 @@ export async function listCloudinaryMedia(): Promise<{ items: CloudinaryItem[]; 
 
   const items: CloudinaryItem[] = (data || []).map((r: any) => ({
     id:        r.id,
-    url:       r.url,
+    url:       r.file_url,
     publicId:  r.storage_key,
-    filename:  r.filename || r.storage_key,
-    sizeBytes: r.size_bytes || 0,
+    filename:  r.title || r.storage_key,
+    sizeBytes: r.file_size || 0,
     width:     r.width ?? null,
     height:    r.height ?? null,
     createdAt: r.created_at || '',

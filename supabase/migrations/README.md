@@ -40,10 +40,15 @@ exists`, etc.), so re-running one is harmless.
 
 ### `20260720130000_media_assets.sql`
 
-Adds `media_assets`, a unified tracker for media stored **outside** Supabase
-Storage. The Media Library's Supabase tab lists Storage buckets directly and
-needs no table; Cloudinary (and, later, Cloudflare R2) do — we must persist each
-object's provider identity (`public_id` / key) to list and delete it.
+**Extends your existing `media_assets` table** (which already holds rights
+metadata: `title`, `file_url`, `copyright_status`, `license_type`,
+`attribution_required`, `source_agency`, `editor_verified`, …) so the Media
+Library can also track and delete assets stored in Cloudinary. It adds
+`provider` / `storage_key` / `bucket` / `folder` / `uploaded_by` — it does **not**
+drop or redefine existing columns or data, and leaves RLS untouched (the app uses
+the service-role client). The Cloudinary action writes onto your existing columns
+(`file_url`, `file_type`, `file_size`, `title`). The Supabase tab still lists
+Storage directly and doesn't use this table.
 
 **Cloudinary env (set in `.env.local` + Vercel):**
 
