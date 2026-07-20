@@ -38,6 +38,25 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260720130000_media_assets.sql`
+
+Adds `media_assets`, a unified tracker for media stored **outside** Supabase
+Storage. The Media Library's Supabase tab lists Storage buckets directly and
+needs no table; Cloudinary (and, later, Cloudflare R2) do — we must persist each
+object's provider identity (`public_id` / key) to list and delete it.
+
+**Cloudinary env (set in `.env.local` + Vercel):**
+
+```
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+NEXT_PUBLIC_CLOUDINARY_API_KEY=your-api-key        # api key is not secret; the widget needs it
+CLOUDINARY_API_SECRET=your-api-secret              # secret — server only
+```
+
+The Cloudinary tab in the Media Library only appears when
+`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` is present, so the admin panel is unchanged
+until you add these. R2 stays unbuilt for now (the `r2` enum slot is reserved).
+
 ### `20260720120000_admin_users.sql`
 
 Creates the `admin_users` table that gates the `/admin` CMS now that admin auth

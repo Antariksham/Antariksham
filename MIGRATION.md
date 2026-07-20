@@ -166,6 +166,20 @@ collection when Supabase env vars are absent — unrelated to app code).
   `modules/admin/services/getAdminUser.ts`. Bootstrap steps are in
   `supabase/migrations/README.md`.
 
+- ✅ **Multi-provider Media Library (Supabase + Cloudinary)**: refactored the
+  admin Media Library into a tabbed, provider-adapter architecture under
+  `modules/admin/media/` (thin `MediaLibrary` shell + shared `MediaGrid` +
+  per-provider panels). The Supabase tab is unchanged (lists Storage buckets
+  directly); a **Cloudinary** tab (delivery-optimized AVIF/WebP) was added with
+  signed uploads via `<CldUploadWidget>` + `actions/cloudinary-media.ts` +
+  `app/api/admin/cloudinary/sign`. A new `media_assets` table
+  (`supabase/migrations/20260720130000_media_assets.sql`) tracks non-Storage
+  providers (the enum reserves an `r2` slot for a future Cloudflare R2 tier).
+  The Cloudinary tab is **feature-flagged** on `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`,
+  so the panel is identical to before until the Cloudinary env is set. Public
+  props (`pickerMode`/`onPick`) are unchanged, so the article/mission/author/
+  learn forms need no edits.
+
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 
 ---
