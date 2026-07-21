@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getArticles } from '@/modules/news/services/getArticles'
+import { getArticles } from '@/modules/articles/services/getArticles'
 import type { ArticleCategory } from '@/types/article'
 
 // Dynamic (reads searchParams), but public read-only data — cache it at the CDN
 // edge so scroll/pagination bursts don't hammer the database.
 const CACHE = 'public, s-maxage=60, stale-while-revalidate=300'
 
-// Paged feed of published articles for the /news infinite scroll. The first
+// Paged feed of published articles for the /articles infinite scroll. The first
 // page is rendered on the server (SSR) for fast load + SEO; this route serves
 // subsequent pages as the reader scrolls, so we never fetch everything at once.
 export async function GET(req: NextRequest) {

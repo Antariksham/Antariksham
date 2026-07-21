@@ -23,7 +23,7 @@ function buildQuery(page: number, category: ArticleCategory | 'all') {
   return params.toString()
 }
 
-export function NewsPage({ articles: initialArticles, total: initialTotal }: Props) {
+export function ArticlesPage({ articles: initialArticles, total: initialTotal }: Props) {
   const [activeCategory, setActiveCategory] = useState<ArticleCategory | 'all'>('all')
 
   // Infinite scroll seeded with the SSR'd first page; the category filter is
@@ -101,7 +101,7 @@ export function NewsPage({ articles: initialArticles, total: initialTotal }: Pro
       <header className="page-header">
         <div className="container">
           <p className="card-category" style={{ marginBottom: '0.6rem' }}>Space Intelligence</p>
-          <h1 className="page-title">Latest News</h1>
+          <h1 className="page-title">Articles</h1>
           <p className="page-lede">
             Scientific journalism, mission updates, and discoveries from across the space industry.
           </p>
@@ -167,7 +167,7 @@ export function NewsPage({ articles: initialArticles, total: initialTotal }: Pro
 // ── Grid card ─────────────────────────────────────────────────
 function GridCard({ article }: { article: ArticleCard }) {
   return (
-    <a href={`/news/${article.slug}`} className="card">
+    <a href={`/articles/${article.slug}`} className="card">
       {article.featuredImage
         ? /* eslint-disable-next-line @next/next/no-img-element */
           <img className="card-image" src={article.featuredImage} alt={article.title} loading="lazy" />

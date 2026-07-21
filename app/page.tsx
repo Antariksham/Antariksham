@@ -1,7 +1,7 @@
 import type { Metadata }       from 'next'
 import { siteConfig }          from '@/config/site'
 import { HomePage }            from '@/modules/homepage/components/HomePage'
-import { getLatestArticles }   from '@/modules/news/services/getArticles'
+import { getLatestArticles }   from '@/modules/articles/services/getArticles'
 import { getActiveMissions }   from '@/modules/missions/services/getMissions'
 
 export const metadata: Metadata = {

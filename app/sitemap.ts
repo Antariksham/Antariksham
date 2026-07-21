@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { siteConfig } from '@/config/site'
-import { getAllArticleSlugs }   from '@/modules/news/services/getArticles'
+import { getAllArticleSlugs }   from '@/modules/articles/services/getArticles'
 import { getAllMissionSlugs }   from '@/modules/missions/services/getMissions'
 import { getAllKnowledgeSlugs } from '@/modules/learn/services/getKnowledgeArticles'
 
@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const STATIC: { path: string; priority: number; freq: MetadataRoute.Sitemap[number]['changeFrequency'] }[] = [
     { path: '',                  priority: 1.0, freq: 'daily'   },
-    { path: '/news',             priority: 0.9, freq: 'hourly'  },
+    { path: '/articles',         priority: 0.9, freq: 'hourly'  },
     { path: '/missions',         priority: 0.8, freq: 'daily'   },
     { path: '/learn',            priority: 0.8, freq: 'weekly'  },
     { path: '/live',             priority: 0.7, freq: 'always'  },
@@ -39,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   const dynamicRoutes: MetadataRoute.Sitemap = [
-    ...articleSlugs.map(slug => ({ url: `${base}/news/${slug}`,     lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.8 })),
+    ...articleSlugs.map(slug => ({ url: `${base}/articles/${slug}`, lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.8 })),
     ...missionSlugs.map(slug => ({ url: `${base}/missions/${slug}`, lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.6 })),
     ...learnSlugs.map(slug  => ({ url: `${base}/learn/${slug}`,     lastModified: now, changeFrequency: 'monthly' as const, priority: 0.6 })),
   ]

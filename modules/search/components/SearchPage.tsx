@@ -70,7 +70,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 function ArticleCard({ result }: { result: SearchArticleResult }) {
   const [hovered, setHovered] = useState(false)
   return (
-    <Link href={`/news/${result.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+    <Link href={`/articles/${result.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -138,7 +138,7 @@ function ArticleCard({ result }: { result: SearchArticleResult }) {
             padding:       '3px 8px',
             whiteSpace:    'nowrap',
           }}>
-            {ARTICLE_TYPE_LABELS[result.articleType] || 'News'}
+            {ARTICLE_TYPE_LABELS[result.articleType] || 'Article'}
           </span>
         </div>
         <div style={{

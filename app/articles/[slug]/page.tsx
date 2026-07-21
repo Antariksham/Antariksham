@@ -1,4 +1,4 @@
-import { getArticleBySlug, getAllArticleSlugs, getRelatedArticles } from '@/modules/news/services/getArticles'
+import { getArticleBySlug, getAllArticleSlugs, getRelatedArticles } from '@/modules/articles/services/getArticles'
 import { notFound } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
 import type { Metadata } from 'next'
@@ -64,7 +64,7 @@ export default async function ArticlePage(
         {article.categories.length > 0 && (
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
             {article.categories.map(cat => (
-              <a key={cat} href="/news" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: CAT_COLORS[cat] || '#4f8ef7', textDecoration: 'none' }}>
+              <a key={cat} href="/articles" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: CAT_COLORS[cat] || '#4f8ef7', textDecoration: 'none' }}>
                 {cat}
               </a>
             ))}
@@ -178,8 +178,8 @@ export default async function ArticlePage(
 
         {/* Back link */}
         <div style={{ marginTop: '48px', paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>
-          <a href="/news" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
-            ← Back to News
+          <a href="/articles" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
+            ← Back to Articles
           </a>
         </div>
       </article>
@@ -193,7 +193,7 @@ export default async function ArticlePage(
             </span>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: '16px' }}>
               {related.map(r => (
-                <a key={r.id} href={`/news/${r.slug}`} style={{ textDecoration: 'none' }}>
+                <a key={r.id} href={`/articles/${r.slug}`} style={{ textDecoration: 'none' }}>
                   <div
                     style={{ background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s' }}
                     
