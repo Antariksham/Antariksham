@@ -61,15 +61,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
     }}
   />
-  {/* KaTeX — CSS must load before JS for fonts/symbols to render */}
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css"
-  />
-  <script
-    defer
-    src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"
-  />
+  {/* KaTeX is self-hosted and code-split into the Learn route (see
+      modules/learn/components/LearnArticlePage.tsx) — no global CDN load. */}
 </head>
       <body>
         {isAdmin ? (

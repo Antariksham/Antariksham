@@ -2,15 +2,9 @@
 
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'   // self-hosted — bundled with this route, no CDN
 import type { KnowledgeArticle, DifficultyLevel } from '@/types/knowledge'
-
-declare global {
-  interface Window {
-    katex: {
-      renderToString: (tex: string, opts: Record<string, unknown>) => string
-    }
-  }
-}
 
 const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
   beginner:     'var(--green)',
@@ -37,7 +31,6 @@ export function LearnArticlePage({ article }: Props) {
     if (!contentRef.current) return
 
     const renderKaTeX = () => {
-      if (typeof window === 'undefined' || !window.katex) return
       const el = contentRef.current
       if (!el) return
 
@@ -49,7 +42,7 @@ export function LearnArticlePage({ article }: Props) {
         const blockMatch = text.match(/^\$\$([\s\S]+?)\$\$$/)
         if (blockMatch) {
           try {
-            const rendered = window.katex.renderToString(blockMatch[1].trim(), {
+            const rendered = katex.renderToString(blockMatch[1].trim(), {
               displayMode: true,
               throwOnError: false,
             })
@@ -68,7 +61,7 @@ export function LearnArticlePage({ article }: Props) {
             /\$([^\n$]+?)\$/g,
             (_, tex) => {
               try {
-                return window.katex.renderToString(tex.trim(), {
+                return katex.renderToString(tex.trim(), {
                   displayMode: false,
                   throwOnError: false,
                 })
@@ -79,17 +72,7 @@ export function LearnArticlePage({ article }: Props) {
       })
     }
 
-    if (window.katex) {
-      renderKaTeX()
-    } else {
-      const interval = setInterval(() => {
-        if (window.katex) {
-          clearInterval(interval)
-          renderKaTeX()
-        }
-      }, 100)
-      return () => clearInterval(interval)
-    }
+    renderKaTeX()
   }, [article.content])
 
   const htmlContent = markdownToHtml(article.content)
