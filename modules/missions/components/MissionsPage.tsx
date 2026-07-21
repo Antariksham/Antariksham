@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import type { MissionCard, MissionStatus } from '@/types/mission'
 import { formatDate } from '@/lib/utils'
 
@@ -27,8 +27,55 @@ interface Props {
   total:    number
 }
 
-export function MissionsPage({ missions, total }: Props) {
+const PER_PAGE = 12
+
+export function MissionsPage({ missions: initialMissions, total: initialTotal }: Props) {
   const [activeStatus, setActiveStatus] = useState<MissionStatus | 'all'>('all')
+
+  // Infinite scroll: seed with the SSR'd first page, then append as we scroll.
+  const [missions, setMissions] = useState<MissionCard[]>(initialMissions)
+  const [page,     setPage]     = useState(1)
+  const [total,    setTotal]    = useState(initialTotal)
+  const [loading,  setLoading]  = useState(false)
+
+  const loadingRef  = useRef(false)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const reachedEnd  = missions.length >= total
+
+  const loadMore = useCallback(async () => {
+    if (loadingRef.current || missions.length >= total) return
+    loadingRef.current = true
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/missions?page=${page + 1}&perPage=${PER_PAGE}`)
+      if (res.ok) {
+        const data = await res.json()
+        const incoming: MissionCard[] = data.missions || []
+        setMissions(prev => {
+          const seen = new Set(prev.map(m => m.id))
+          return [...prev, ...incoming.filter(m => !seen.has(m.id))]
+        })
+        setPage(p => p + 1)
+        if (typeof data.total === 'number') setTotal(data.total)
+      }
+    } catch {
+      /* transient — the sentinel stays and we retry on the next scroll */
+    } finally {
+      loadingRef.current = false
+      setLoading(false)
+    }
+  }, [missions.length, total, page])
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      entries => { if (entries[0].isIntersecting) loadMore() },
+      { rootMargin: '600px' },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [loadMore])
 
   const gridItems = activeStatus === 'all'
     ? missions
@@ -62,21 +109,35 @@ export function MissionsPage({ missions, total }: Props) {
 
       {/* Content */}
       <main className="container section">
-        {missions.length === 0 ? (
+        {missions.length === 0 && reachedEnd ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛸</div>
             <p style={{ color: 'var(--text-muted)', letterSpacing: '0.05em' }}>No missions found.</p>
           </div>
-        ) : gridItems.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No missions with this status.</p>
         ) : (
           <>
-            <div className="grid-3">
-              {gridItems.map(mission => <MissionGridCard key={mission.id} mission={mission} />)}
-            </div>
-            {total > missions.length && (
+            {gridItems.length > 0 && (
+              <div className="grid-3">
+                {gridItems.map(mission => <MissionGridCard key={mission.id} mission={mission} />)}
+              </div>
+            )}
+
+            {/* Active status matched nothing in what's loaded, and nothing more to load */}
+            {gridItems.length === 0 && reachedEnd && (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No missions with this status.</p>
+            )}
+
+            {/* Infinite scroll: sentinel triggers the next page while more remain */}
+            {!reachedEnd && <div ref={sentinelRef} aria-hidden style={{ height: '1px' }} />}
+
+            {loading && (
               <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
-                Showing {missions.length} of {total} missions
+                Loading more…
+              </p>
+            )}
+            {reachedEnd && gridItems.length > 0 && (
+              <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
+                You&rsquo;ve reached the end · {total} mission{total !== 1 ? 's' : ''}
               </p>
             )}
           </>
