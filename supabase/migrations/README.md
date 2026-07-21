@@ -38,6 +38,24 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260720160000_rls_policies.sql`
+
+**Pre-launch security — review + test before applying.** Enables Row-Level
+Security and adds public **read-only** policies on the tables the site serves
+through the anon key (`articles` published-only; `missions`, `knowledge_articles`
+and reference/join tables fully readable; `media_assets` locked). No write
+policies are defined for the anon role, so the public key can never write. The
+admin CMS uses the service-role key (bypasses RLS) and is unaffected. Apply on a
+Supabase branch/staging first, then load the public site and confirm nothing is
+blank — a blank section means a missing SELECT policy for that table.
+
+### `20260720150000_unique_slug_indexes.sql`
+
+Adds unique indexes on `slug` for `articles`, `missions`, `knowledge_articles` —
+the database's final guard against duplicate slugs (backs up the app-level
+pre-check). **Check for existing duplicates first** (the file has the queries);
+it will fail if any exist.
+
 ### `20260720140000_article_views_rpc.sql`
 
 Adds `increment_article_views(uuid)`, a `SECURITY DEFINER` function that bumps an
