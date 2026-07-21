@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getMissions } from '@/modules/missions/services/getMissions'
 import type { MissionStatus } from '@/types/mission'
 
-export const dynamic = 'force-dynamic'
+// Dynamic (reads searchParams), but public read-only data — cache it at the CDN
+// edge so scroll/pagination bursts don't hammer the database.
+const CACHE = 'public, s-maxage=60, stale-while-revalidate=300'
 
 // Paged feed of missions for the /missions infinite scroll. The first page is
 // server-rendered (SSR) for fast load + SEO; this serves later pages as the
@@ -13,5 +15,5 @@ export async function GET(req: NextRequest) {
   const status  = req.nextUrl.searchParams.get('status') || undefined
 
   const { missions, total } = await getMissions({ page, perPage, status: status as MissionStatus | undefined })
-  return NextResponse.json({ missions, total, page })
+  return NextResponse.json({ missions, total, page }, { headers: { 'Cache-Control': CACHE } })
 }

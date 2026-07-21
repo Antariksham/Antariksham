@@ -136,7 +136,7 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
       >
         <input
           ref={fileInputRef} type="file" multiple
-          accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+          accept="image/jpeg,image/png,image/webp,image/gif"
           style={{ display: 'none' }}
           onChange={e => handleUpload(e.target.files)}
         />
@@ -149,7 +149,7 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
               Drop images here or click to upload
             </div>
             <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(var(--ink),0.72)' }}>
-              JPG, PNG, WebP, GIF, SVG · Max 5MB each
+              JPG, PNG, WebP, GIF · Max 5MB each
             </div>
           </>
         )}

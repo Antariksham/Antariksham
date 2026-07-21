@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getArticles } from '@/modules/news/services/getArticles'
 import type { ArticleCategory } from '@/types/article'
 
-export const dynamic = 'force-dynamic'
+// Dynamic (reads searchParams), but public read-only data — cache it at the CDN
+// edge so scroll/pagination bursts don't hammer the database.
+const CACHE = 'public, s-maxage=60, stale-while-revalidate=300'
 
 // Paged feed of published articles for the /news infinite scroll. The first
 // page is rendered on the server (SSR) for fast load + SEO; this route serves
@@ -13,5 +15,5 @@ export async function GET(req: NextRequest) {
   const category = req.nextUrl.searchParams.get('category') || undefined
 
   const { articles, total } = await getArticles({ page, perPage, category: category as ArticleCategory | undefined })
-  return NextResponse.json({ articles, total, page })
+  return NextResponse.json({ articles, total, page }, { headers: { 'Cache-Control': CACHE } })
 }

@@ -78,12 +78,11 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 
   if (error || !data) return null
 
-  // Increment view count (fire and forget)
+  // Increment view count (fire and forget) via a SECURITY DEFINER RPC, so the
+  // public anon key never needs write access to the articles table.
   supabase
-    .from('articles')
-    .update({ views: (data.views || 0) + 1 })
-    .eq('id', data.id)
-    .then(() => {})
+    .rpc('increment_article_views', { article_id: data.id })
+    .then(() => {}, () => {})
 
   return normalizeFullArticle(data)
 }
