@@ -8,6 +8,15 @@ const ARTICLE_CARD_SELECT = `
   article_categories ( categories ( name, slug, color ) )
 `
 
+// Inner-join variant: only articles that HAVE the requested category, so the
+// filter restricts the parent rows (and the exact count) at the database.
+const ARTICLE_CARD_SELECT_FILTERED = `
+  id, title, slug, excerpt, featured_image,
+  published_at, reading_time, article_type, featured,
+  authors ( name, avatar ),
+  article_categories!inner ( categories!inner ( name, slug, color ) )
+`
+
 const ARTICLE_FULL_SELECT = `
   id, title, slug, excerpt, content, featured_image,
   published_at, updated_at, reading_time, views, article_type, featured,
@@ -23,12 +32,16 @@ export async function getArticles({
   const from = (page - 1) * perPage
   const to   = from + perPage - 1
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from('articles')
-    .select(ARTICLE_CARD_SELECT, { count: 'exact' })
+    .select(category ? ARTICLE_CARD_SELECT_FILTERED : ARTICLE_CARD_SELECT, { count: 'exact' })
     .eq('status', 'published')
     .order('published_at', { ascending: false })
     .range(from, to)
+
+  if (category) query = query.eq('article_categories.categories.name', category)
+
+  const { data, error, count } = await query
 
   if (error) {
     console.error('getArticles error:', error)

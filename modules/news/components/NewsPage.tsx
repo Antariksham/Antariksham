@@ -17,25 +17,52 @@ interface Props {
   total:    number
 }
 
+function buildQuery(page: number, category: ArticleCategory | 'all') {
+  const params = new URLSearchParams({ page: String(page), perPage: String(PER_PAGE) })
+  if (category !== 'all') params.set('category', category)
+  return params.toString()
+}
+
 export function NewsPage({ articles: initialArticles, total: initialTotal }: Props) {
   const [activeCategory, setActiveCategory] = useState<ArticleCategory | 'all'>('all')
 
-  // Infinite scroll: seed with the SSR'd first page, then append as we scroll.
+  // Infinite scroll seeded with the SSR'd first page; the category filter is
+  // applied at the database (see /api/articles) so we only ever load matching rows.
   const [articles, setArticles] = useState<ArticleCard[]>(initialArticles)
   const [page,     setPage]     = useState(1)
   const [total,    setTotal]    = useState(initialTotal)
   const [loading,  setLoading]  = useState(false)
 
-  const loadingRef  = useRef(false)               // guards against double-fires
+  const loadingRef  = useRef(false)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const firstRender = useRef(true)
   const reachedEnd  = articles.length >= total
+
+  // Category change → reset and load page 1 for that filter from the server.
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return } // SSR already has page 1 of "all"
+    let cancelled = false
+    loadingRef.current = true
+    setLoading(true)
+    setArticles([])
+    setPage(1)
+    fetch(`/api/articles?${buildQuery(1, activeCategory)}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (cancelled || !data) return
+        setArticles(data.articles || [])
+        setTotal(typeof data.total === 'number' ? data.total : 0)
+      })
+      .finally(() => { if (!cancelled) { loadingRef.current = false; setLoading(false) } })
+    return () => { cancelled = true }
+  }, [activeCategory])
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || articles.length >= total) return
     loadingRef.current = true
     setLoading(true)
     try {
-      const res = await fetch(`/api/articles?page=${page + 1}&perPage=${PER_PAGE}`)
+      const res = await fetch(`/api/articles?${buildQuery(page + 1, activeCategory)}`)
       if (res.ok) {
         const data = await res.json()
         const incoming: ArticleCard[] = data.articles || []
@@ -52,10 +79,8 @@ export function NewsPage({ articles: initialArticles, total: initialTotal }: Pro
       loadingRef.current = false
       setLoading(false)
     }
-  }, [articles.length, total, page])
+  }, [articles.length, total, page, activeCategory])
 
-  // Fire loadMore a little before the sentinel is visible (rootMargin) so new
-  // cards are ready by the time the reader reaches the bottom.
   useEffect(() => {
     const el = sentinelRef.current
     if (!el) return
@@ -67,9 +92,7 @@ export function NewsPage({ articles: initialArticles, total: initialTotal }: Pro
     return () => obs.disconnect()
   }, [loadMore])
 
-  const gridItems = activeCategory === 'all'
-    ? articles
-    : articles.filter(a => a.categories.includes(activeCategory))
+  const switching = loading && articles.length === 0
 
   return (
     <div style={{ paddingTop: 'var(--nav-height)' }}>
@@ -101,26 +124,25 @@ export function NewsPage({ articles: initialArticles, total: initialTotal }: Pro
 
       {/* Content */}
       <main className="container section">
-        {articles.length === 0 && reachedEnd ? (
+        {switching ? (
+          <p style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontSize: '0.9rem', letterSpacing: '0.05em' }}>Loading…</p>
+        ) : articles.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>📡</div>
-            <p style={{ color: 'var(--text-muted)', letterSpacing: '0.05em' }}>No articles published yet.</p>
-            <p style={{ color: 'var(--text-muted)', marginTop: '8px', fontSize: '0.9rem' }}>
-              Articles published from the admin panel will appear here.
+            <p style={{ color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
+              {activeCategory === 'all' ? 'No articles published yet.' : 'No articles in this category yet.'}
             </p>
+            {activeCategory === 'all' && (
+              <p style={{ color: 'var(--text-muted)', marginTop: '8px', fontSize: '0.9rem' }}>
+                Articles published from the admin panel will appear here.
+              </p>
+            )}
           </div>
         ) : (
           <>
-            {gridItems.length > 0 && (
-              <div className="grid-3">
-                {gridItems.map(article => <GridCard key={article.id} article={article} />)}
-              </div>
-            )}
-
-            {/* Active category matched nothing in what's loaded, and nothing more to load */}
-            {gridItems.length === 0 && reachedEnd && (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No articles in this category yet.</p>
-            )}
+            <div className="grid-3">
+              {articles.map(article => <GridCard key={article.id} article={article} />)}
+            </div>
 
             {/* Infinite scroll: sentinel triggers the next page while more remain */}
             {!reachedEnd && <div ref={sentinelRef} aria-hidden style={{ height: '1px' }} />}
@@ -130,7 +152,7 @@ export function NewsPage({ articles: initialArticles, total: initialTotal }: Pro
                 Loading more…
               </p>
             )}
-            {reachedEnd && gridItems.length > 0 && (
+            {reachedEnd && (
               <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
                 You&rsquo;ve reached the end · {total} article{total !== 1 ? 's' : ''}
               </p>
