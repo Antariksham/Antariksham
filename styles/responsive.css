@@ -18,4 +18,7 @@
 
   /* Hide search kbd shortcut on mobile */
   .nav-kbd { display: none; }
+
+  /* Homepage missions: show 6 on desktop (fills 3-col rows), only 4 on mobile */
+  .home-missions > *:nth-child(n+5) { display: none; }
 }
