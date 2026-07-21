@@ -1,9 +1,7 @@
-'use client'
-
-import { useEffect, useRef } from 'react'
+// Server Component: the markdown + KaTeX math are rendered on the server, so no
+// KaTeX JS ships to the browser (only the CSS, imported on the route page).
 import Link from 'next/link'
 import katex from 'katex'
-import 'katex/dist/katex.min.css'   // self-hosted — bundled with this route, no CDN
 import type { KnowledgeArticle, DifficultyLevel } from '@/types/knowledge'
 
 const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
@@ -23,57 +21,8 @@ interface Props {
 }
 
 export function LearnArticlePage({ article }: Props) {
-  const contentRef = useRef<HTMLDivElement>(null)
   const diffColor  = DIFFICULTY_COLORS[article.difficultyLevel] ?? 'var(--accent)'
   const diffLabel  = DIFFICULTY_LABELS[article.difficultyLevel] ?? article.difficultyLevel
-
-  useEffect(() => {
-    if (!contentRef.current) return
-
-    const renderKaTeX = () => {
-      const el = contentRef.current
-      if (!el) return
-
-      // Replace block math $$...$$ — must do this on raw text nodes only
-      // Walk all <p> elements and replace those that are purely math
-      const paragraphs = el.querySelectorAll('p')
-      paragraphs.forEach(p => {
-        const text = p.textContent || ''
-        const blockMatch = text.match(/^\$\$([\s\S]+?)\$\$$/)
-        if (blockMatch) {
-          try {
-            const rendered = katex.renderToString(blockMatch[1].trim(), {
-              displayMode: true,
-              throwOnError: false,
-            })
-            const div = document.createElement('div')
-            div.className = 'katex-block'
-            div.innerHTML = rendered
-            p.replaceWith(div)
-          } catch { /* keep as-is */ }
-        }
-      })
-
-      // Replace inline math $...$ in remaining text nodes
-      el.querySelectorAll('p, li, h2, h3').forEach(node => {
-        if (node.innerHTML.includes('$')) {
-          node.innerHTML = node.innerHTML.replace(
-            /\$([^\n$]+?)\$/g,
-            (_, tex) => {
-              try {
-                return katex.renderToString(tex.trim(), {
-                  displayMode: false,
-                  throwOnError: false,
-                })
-              } catch { return _ }
-            }
-          )
-        }
-      })
-    }
-
-    renderKaTeX()
-  }, [article.content])
 
   const htmlContent = markdownToHtml(article.content)
 
@@ -149,7 +98,6 @@ export function LearnArticlePage({ article }: Props) {
 
       {/* ── Article content ────────────────────────────────── */}
       <div
-        ref={contentRef}
         dangerouslySetInnerHTML={{ __html: htmlContent }}
         style={{ fontFamily: 'var(--font-sans)' }}
       />
@@ -234,7 +182,7 @@ export function LearnArticlePage({ article }: Props) {
   )
 }
 
-// ── Markdown → HTML (strips $$ lines from paragraphs so KaTeX handles them) ──
+// ── Markdown → HTML with server-rendered KaTeX (no client JS) ────────────────
 function markdownToHtml(md: string): string {
   const lines   = md.split('\n')
   const output: string[] = []
@@ -264,9 +212,9 @@ function markdownToHtml(md: string): string {
     }
     if (inList) { output.push('</ul>'); inList = false }
 
-    // Block math lines — wrap in <p> with $$ markers intact for useEffect to detect
+    // Block math ($$ … $$ on its own line) → display-mode block, typeset here.
     if (line.startsWith('$$') && line.endsWith('$$') && line.length > 4) {
-      output.push(`<p>${line}</p>`)
+      output.push(`<div class="katex-block">${renderMath(line.slice(2, -2).trim(), true)}</div>`)
       continue
     }
 
@@ -278,8 +226,26 @@ function markdownToHtml(md: string): string {
 }
 
 function inlineFormat(text: string): string {
-  return text
+  // Extract inline math into placeholders first, so the markdown formatters
+  // below (bold/italic/code) never mangle the TeX; restore after formatting.
+  const math: string[] = []
+  const withPlaceholders = text.replace(/\$([^\n$]+?)\$/g, (_, tex) => {
+    math.push(renderMath(tex.trim(), false))
+    return `\u0000M${math.length - 1}\u0000`
+  })
+
+  const formatted = withPlaceholders
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g,     '<em>$1</em>')
     .replace(/`(.+?)`/g,       '<code>$1</code>')
+
+  return formatted.replace(/\u0000M(\d+)\u0000/g, (_, i) => math[Number(i)])
+}
+
+function renderMath(tex: string, displayMode: boolean): string {
+  try {
+    return katex.renderToString(tex, { displayMode, throwOnError: false })
+  } catch {
+    return displayMode ? `$$${tex}$$` : `$${tex}$`
+  }
 }
