@@ -38,6 +38,14 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260720140000_article_views_rpc.sql`
+
+Adds `increment_article_views(uuid)`, a `SECURITY DEFINER` function that bumps an
+article's view count. The public reader calls this RPC instead of doing a direct
+`UPDATE` with the anon key — so anon can keep write access **off** on the
+`articles` table while the view counter still works. Run this, then keep the
+articles table's RLS write policies closed to anon.
+
 ### `20260720130000_media_assets.sql`
 
 **Extends your existing `media_assets` table** (which already holds rights

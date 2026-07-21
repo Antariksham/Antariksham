@@ -32,7 +32,7 @@ export function MissionsSection({ missions }: Props) {
       {missions.length === 0 ? (
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No missions tracked yet.</p>
       ) : (
-        <div className="grid-3">
+        <div className="grid-3 home-missions">
           {missions.map(mission => {
             const statusColor = STATUS_COLOR[mission.status] || 'var(--text-muted)'
             return (

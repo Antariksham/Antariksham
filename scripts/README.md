@@ -61,9 +61,9 @@ skip), `--slug=X` (one article), `--limit=N`.
 ### URL / SEO cutover (do NOT skip — MIGRATION.md §6/§9)
 
 Slugs are preserved, but the **path shape changes**: old `/article/:slug` → new
-`/news/:slug`. Before pointing `cosmosdaily.space` traffic at the new engine:
+`/articles/:slug`. Before pointing `cosmosdaily.space` traffic at the new engine:
 
-1. Add **301 redirects** `/article/:slug → /news/:slug` (Next `redirects()` or
+1. Add **301 redirects** `/article/:slug → /articles/:slug` (Next `redirects()` or
    `space-website/vercel.json`).
 2. Confirm JSON-LD / OG / canonical parity (the script writes `canonical_url`).
 3. Keep the sitemap in sync, then cut over **page-by-page** behind the

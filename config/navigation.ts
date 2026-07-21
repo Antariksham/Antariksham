@@ -6,7 +6,7 @@ export type NavItem = {
 }
 
 export const mainNav: NavItem[] = [
-  { label: 'News',    href: '/news' },
+  { label: 'Articles', href: '/articles' },
   { label: 'Explore', href: '/explore' },
   { label: 'Live',    href: '/live', isLive: true },
   { label: 'Learn',   href: '/learn' },
@@ -16,7 +16,7 @@ export const mainNav: NavItem[] = [
 
 export const footerNav = {
   platform: [
-    { label: 'News',    href: '/news' },
+    { label: 'Articles', href: '/articles' },
     { label: 'Explore', href: '/explore' },
     { label: 'Live',    href: '/live' },
     { label: 'Learn',   href: '/learn' },

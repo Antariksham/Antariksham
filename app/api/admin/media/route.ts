@@ -80,10 +80,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Validate file type
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml']
+    // Validate file type. SVG is intentionally excluded — it can carry inline
+    // scripts (stored-XSS vector); use a raster format instead.
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
     if (!allowed.includes(file.type)) {
-      return NextResponse.json({ error: 'Only image files are allowed (jpg, png, webp, gif, svg)' }, { status: 400 })
+      return NextResponse.json({ error: 'Only image files are allowed (jpg, png, webp, gif)' }, { status: 400 })
     }
 
     // Validate file size — max 5MB

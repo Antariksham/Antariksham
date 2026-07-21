@@ -14,7 +14,7 @@ const TYPE_LABEL: Record<string, string> = {
 
 interface Props { articles: ArticleCard[] }
 
-export function LatestNewsSection({ articles }: Props) {
+export function LatestArticlesSection({ articles }: Props) {
   const items = articles.slice(0, 6)
 
   return (
@@ -24,7 +24,7 @@ export function LatestNewsSection({ articles }: Props) {
           <h2 className="section-title">Latest Articles</h2>
           <span className="section-eyebrow">Space intelligence &amp; journalism</span>
         </div>
-        <Link href="/news" className="btn btn-outline">View all</Link>
+        <Link href="/articles" className="btn btn-outline">View all</Link>
       </div>
 
       {items.length === 0 ? (
@@ -32,7 +32,7 @@ export function LatestNewsSection({ articles }: Props) {
       ) : (
         <div className="grid-3">
           {items.map(a => (
-            <Link key={a.id} href={`/news/${a.slug}`} className="card">
+            <Link key={a.id} href={`/articles/${a.slug}`} className="card">
               {a.featuredImage
                 ? /* eslint-disable-next-line @next/next/no-img-element */
                   <img className="card-image" src={a.featuredImage} alt={a.title} loading="lazy" />

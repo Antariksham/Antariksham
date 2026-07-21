@@ -172,7 +172,7 @@ async function migrateOne(a) {
     meta_title:       a.title,
     meta_description: a.excerpt || '',
     og_image:         a.image || null,
-    canonical_url:    `${CONFIG.siteUrl}/news/${slug}`,
+    canonical_url:    `${CONFIG.siteUrl}/articles/${slug}`,
     keywords:         tags,
   }, { onConflict: 'article_id' })
 

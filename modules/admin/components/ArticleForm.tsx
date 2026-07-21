@@ -186,7 +186,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
 
         {/* Slug */}
         <div>
-          <FieldLabel hint={`/news/${form.slug || '…'}`}>Slug</FieldLabel>
+          <FieldLabel hint={`/articles/${form.slug || '…'}`}>Slug</FieldLabel>
           <input
             value={form.slug}
             onChange={e => { setSlugEdited(true); set('slug', e.target.value.toLowerCase().replace(/\s+/g, '-')) }}
@@ -330,7 +330,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
             </button>
             {mode === 'edit' && article?.slug && (
               <a
-                href={`/news/${article.slug}`}
+                href={`/articles/${article.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ ...btnStyle({}), textDecoration: 'none', textAlign: 'center' as const, justifyContent: 'center' }}

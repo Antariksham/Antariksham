@@ -44,7 +44,7 @@ collection when Supabase env vars are absent — unrelated to app code).
 - ✅ **CosmosDaily class system ported** into `styles/globals.css` (`.container`,
   `.section`, `.card`, `.grid-3`, `.btn*`, `.page-header`, `.page-title`,
   `.prose`, `.tag`, `.hero-badge`, etc.).
-- ✅ **Every public page rebuilt on that system**: homepage, `/news`, `/missions`,
+- ✅ **Every public page rebuilt on that system**: homepage, `/articles`, `/missions`,
   `/live` hub, `/live/deep-space`, `/search`, article & learn reading pages, all
   static/legal pages, nav, footer.
 - ✅ **Typography**: sans (Segoe UI stack) for UI/headings/cards; **Merriweather
@@ -124,7 +124,7 @@ collection when Supabase env vars are absent — unrelated to app code).
   (0.40→0.78 dark, 0.32→0.85 light) — the token is only used by the homepage hero,
   so nothing else is affected. Headline/excerpt stay legible in both themes.
 - ✅ **Article hero image broken on the reading page**: the article detail page
-  (`app/news/[slug]`) was the only place still using `next/image`. With an empty
+  (`app/articles/[slug]`) was the only place still using `next/image`. With an empty
   `next.config.js` (no `images.remotePatterns`), the Next optimizer returns 400
   for any external host, so the featured image and author avatar broke — while the
   cards (plain `<img>`) worked. Converted both to plain `<img>` (the site's house
@@ -179,6 +179,12 @@ collection when Supabase env vars are absent — unrelated to app code).
   so the panel is identical to before until the Cloudinary env is set. Public
   props (`pickerMode`/`onPick`) are unchanged, so the article/mission/author/
   learn forms need no edits.
+
+- ✅ **Renamed the news section to "Articles"**: `/news` → `/articles` (route,
+  nav, page header, all internal links, sitemap) with permanent **301 redirects**
+  from `/news` and `/news/:slug` in `next.config.js`. Code moved to
+  `modules/articles/` (`ArticlesPage`, `getArticles`). The eventual CosmosDaily
+  cutover 301s are now `/article/:slug → /articles/:slug`.
 
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 
@@ -270,7 +276,7 @@ reading column) · `.tag` / `.tags-row` (filters/chips) · `.hero-badge`.
 - **Sans** (`var(--font-sans)`, Segoe UI stack) for UI, headings, card titles,
   labels. Headings are **bold sans**.
 - **Merriweather serif** (`var(--font-serif)`) **only** for the *reading body* of
-  article (`app/news/[slug]`) and learn pages. Nowhere else.
+  article (`app/articles/[slug]`) and learn pages. Nowhere else.
 - **DM Sans** (`var(--font-mono)` — misnamed; it's the label face) for
   eyebrows/meta/labels.
 
@@ -287,7 +293,7 @@ reading column) · `.tag` / `.tags-row` (filters/chips) · `.hero-badge`.
 5. **SEO discipline (Plan §8)** — non-negotiable for the eventual cutover:
    - Keep URLs stable; any changed URL gets a **permanent 301** (never JS redirect).
    - Carry forward/improve **meta description, OG tags, canonical URL, JSON-LD**
-     on every migrated page (the `app/news/[slug]` route is the proven pattern).
+     on every migrated page (the `app/articles/[slug]` route is the proven pattern).
    - Keep `sitemap.xml` in sync; preserve `robots.txt` (admin stays disallowed).
    - Roll out **one page at a time** behind the `vercel.json` rewrite; watch
      Search Console 1–2 weeks before the next. Never gut page content.
@@ -307,7 +313,7 @@ reading column) · `.tag` / `.tags-row` (filters/chips) · `.hero-badge`.
 a `<header className="page-header"><div className="container">…</div></header>`
 (eyebrow via `.card-category`, `.page-title`, `.page-lede`), then
 `<main className="container section">` with a `.grid-3` of `.card`s or a
-`.prose` column. Copy `/news` or `/about` as a template.
+`.prose` column. Copy `/articles` or `/about` as a template.
 
 **Add a card:** `<a className="card"><img className="card-image"/><div
 className="card-body"><p className="card-category"/><h3 className="card-title"/>
@@ -373,7 +379,7 @@ bad migration is a one-line revert.
   and new are **separate** Supabase projects, so it does export→import→reshape.
   Not yet run — needs the two projects' service keys + a go-ahead. See
   `scripts/README.md` for the field mapping, gap decisions, and the required
-  `/article/:slug → /news/:slug` 301s.
+  `/article/:slug → /articles/:slug` 301s.
 - **Phase 3 — URL & metadata parity, then staged cutover** via `vercel.json`
   (see §9), honoring §6.5.
 - **Phase 4 — Advanced features** (only after cutover): 3D planet rendering

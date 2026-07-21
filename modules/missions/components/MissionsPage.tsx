@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import type { MissionCard, MissionStatus } from '@/types/mission'
 import { formatDate } from '@/lib/utils'
 
@@ -21,18 +21,90 @@ const STATUS_COLOR: Record<string, string> = {
   cancelled:       '#e74c3c',
 }
 
+const PER_PAGE = 12
+
 interface Props {
   missions: MissionCard[]
   featured: MissionCard[]
   total:    number
 }
 
-export function MissionsPage({ missions, total }: Props) {
+function buildQuery(page: number, status: MissionStatus | 'all') {
+  const params = new URLSearchParams({ page: String(page), perPage: String(PER_PAGE) })
+  if (status !== 'all') params.set('status', status)
+  return params.toString()
+}
+
+export function MissionsPage({ missions: initialMissions, total: initialTotal }: Props) {
   const [activeStatus, setActiveStatus] = useState<MissionStatus | 'all'>('all')
 
-  const gridItems = activeStatus === 'all'
-    ? missions
-    : missions.filter(m => m.status === activeStatus)
+  // Infinite scroll seeded with the SSR'd first page; the status filter is
+  // applied at the database (see /api/missions) so we only load matching rows.
+  const [missions, setMissions] = useState<MissionCard[]>(initialMissions)
+  const [page,     setPage]     = useState(1)
+  const [total,    setTotal]    = useState(initialTotal)
+  const [loading,  setLoading]  = useState(false)
+
+  const loadingRef  = useRef(false)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const firstRender = useRef(true)
+  const reachedEnd  = missions.length >= total
+
+  // Status change → reset and load page 1 for that filter from the server.
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return } // SSR already has page 1 of "all"
+    let cancelled = false
+    loadingRef.current = true
+    setLoading(true)
+    setMissions([])
+    setPage(1)
+    fetch(`/api/missions?${buildQuery(1, activeStatus)}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (cancelled || !data) return
+        setMissions(data.missions || [])
+        setTotal(typeof data.total === 'number' ? data.total : 0)
+      })
+      .finally(() => { if (!cancelled) { loadingRef.current = false; setLoading(false) } })
+    return () => { cancelled = true }
+  }, [activeStatus])
+
+  const loadMore = useCallback(async () => {
+    if (loadingRef.current || missions.length >= total) return
+    loadingRef.current = true
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/missions?${buildQuery(page + 1, activeStatus)}`)
+      if (res.ok) {
+        const data = await res.json()
+        const incoming: MissionCard[] = data.missions || []
+        setMissions(prev => {
+          const seen = new Set(prev.map(m => m.id))
+          return [...prev, ...incoming.filter(m => !seen.has(m.id))]
+        })
+        setPage(p => p + 1)
+        if (typeof data.total === 'number') setTotal(data.total)
+      }
+    } catch {
+      /* transient — the sentinel stays and we retry on the next scroll */
+    } finally {
+      loadingRef.current = false
+      setLoading(false)
+    }
+  }, [missions.length, total, page, activeStatus])
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      entries => { if (entries[0].isIntersecting) loadMore() },
+      { rootMargin: '600px' },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [loadMore])
+
+  const switching = loading && missions.length === 0
 
   return (
     <div style={{ paddingTop: 'var(--nav-height)' }}>
@@ -62,21 +134,32 @@ export function MissionsPage({ missions, total }: Props) {
 
       {/* Content */}
       <main className="container section">
-        {missions.length === 0 ? (
+        {switching ? (
+          <p style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontSize: '0.9rem', letterSpacing: '0.05em' }}>Loading…</p>
+        ) : missions.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛸</div>
-            <p style={{ color: 'var(--text-muted)', letterSpacing: '0.05em' }}>No missions found.</p>
+            <p style={{ color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
+              {activeStatus === 'all' ? 'No missions found.' : 'No missions with this status.'}
+            </p>
           </div>
-        ) : gridItems.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No missions with this status.</p>
         ) : (
           <>
             <div className="grid-3">
-              {gridItems.map(mission => <MissionGridCard key={mission.id} mission={mission} />)}
+              {missions.map(mission => <MissionGridCard key={mission.id} mission={mission} />)}
             </div>
-            {total > missions.length && (
+
+            {/* Infinite scroll: sentinel triggers the next page while more remain */}
+            {!reachedEnd && <div ref={sentinelRef} aria-hidden style={{ height: '1px' }} />}
+
+            {loading && (
               <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
-                Showing {missions.length} of {total} missions
+                Loading more…
+              </p>
+            )}
+            {reachedEnd && (
+              <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
+                You&rsquo;ve reached the end · {total} mission{total !== 1 ? 's' : ''}
               </p>
             )}
           </>
