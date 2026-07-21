@@ -14,7 +14,7 @@ const TYPE_LABEL: Record<string, string> = {
 
 interface Props { articles: ArticleCard[] }
 
-export function LatestNewsSection({ articles }: Props) {
+export function LatestArticlesSection({ articles }: Props) {
   const items = articles.slice(0, 6)
 
   return (
