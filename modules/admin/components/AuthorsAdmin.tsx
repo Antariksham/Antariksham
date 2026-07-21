@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Pencil, Trash2, User, Star, FileText, X, Save, AlertCircle, ExternalLink } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
+import { slugify } from '@/lib/utils'
 import type { AdminAuthorRow, AdminAuthorFull, SocialLinks } from '@/modules/admin/services/adminAuthors'
 
 // ── Form state ────────────────────────────────────────────────
 
 interface FormState {
   name:             string
+  slug:             string
   bio:              string
   avatar:           string
   twitter:          string
@@ -20,6 +22,7 @@ interface FormState {
 
 const EMPTY_FORM: FormState = {
   name:              '',
+  slug:              '',
   bio:               '',
   avatar:            '',
   twitter:           '',
@@ -32,6 +35,7 @@ const EMPTY_FORM: FormState = {
 function authorToForm(a: AdminAuthorFull): FormState {
   return {
     name:              a.name,
+    slug:              a.slug,
     bio:               a.bio,
     avatar:            a.avatar,
     twitter:           a.socialLinks?.twitter  || '',
@@ -249,6 +253,17 @@ function AuthorModal({
             </div>
           </div>
 
+          {/* Slug */}
+          <div>
+            <FieldLabel hint={`/authors/${form.slug || '…'}`}>Slug</FieldLabel>
+            <input
+              value={form.slug}
+              onChange={e => onChange('slug', e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+              placeholder="author-name"
+              style={inputStyle({})}
+            />
+          </div>
+
           {/* Avatar URL */}
           <div>
             <FieldLabel hint="Upload via Media Library or paste a URL">Avatar Image</FieldLabel>
@@ -382,6 +397,7 @@ export function AuthorsAdmin() {
   const [formError,   setFormError]   = useState('')
   const [deleteTarget,setDeleteTarget]= useState<{ id: string; name: string } | null>(null)
   const [deleting,    setDeleting]    = useState(false)
+  const [slugEdited,  setSlugEdited]  = useState(false)
 
   // ── Fetch ────────────────────────────────────────────────
 
@@ -405,7 +421,12 @@ export function AuthorsAdmin() {
   // ── Form helpers ─────────────────────────────────────────
 
   function handleChange(key: keyof FormState, val: any) {
-    setForm(f => ({ ...f, [key]: val }))
+    setForm(f => {
+      // Auto-fill the slug from the name until the admin edits the slug directly.
+      if (key === 'name' && !slugEdited) return { ...f, name: val, slug: slugify(val) }
+      return { ...f, [key]: val }
+    })
+    if (key === 'slug') setSlugEdited(true)
     setFormError('')
   }
 
@@ -413,6 +434,7 @@ export function AuthorsAdmin() {
     setForm(EMPTY_FORM)
     setEditingId(null)
     setFormError('')
+    setSlugEdited(false)
     setModalMode('new')
   }
 
@@ -420,6 +442,7 @@ export function AuthorsAdmin() {
     setFormError('')
     setEditingId(id)
     setModalMode('edit')
+    setSlugEdited(true) // keep the existing slug stable when the name is edited
     setForm(EMPTY_FORM) // show modal immediately with empty while fetching
 
     const res  = await fetch(`/api/admin/authors?id=${id}`, { cache: 'no-store' })
@@ -443,6 +466,7 @@ export function AuthorsAdmin() {
 
     const payload = {
       name:        form.name.trim(),
+      slug:        form.slug.trim(),
       bio:         form.bio.trim()    || null,
       avatar:      form.avatar.trim() || null,
       socialLinks: {
