@@ -1,4 +1,4 @@
-import { getArticleBySlug, getTranslatedArticleSlugs, getRelatedArticles } from '@/modules/articles/services/getArticles'
+import { getArticleBySlug, getRelatedArticles } from '@/modules/articles/services/getArticles'
 import { buildArticleMetadata } from '@/modules/articles/services/articleMetadata'
 import { ArticleView } from '@/modules/articles/components/ArticleView'
 import { notFound } from 'next/navigation'
@@ -6,16 +6,14 @@ import type { Metadata } from 'next'
 
 const LANG = 'hi' as const
 
-export const revalidate = 300
-
-// Pre-render only the articles that actually have a published Hindi
-// translation. Other slugs still resolve on demand (dynamicParams) and fall
-// back to English content — handled in buildArticleMetadata (canonical +
-// noindex) and getArticleBySlug (served language).
-export async function generateStaticParams() {
-  const slugs = await getTranslatedArticleSlugs(LANG)
-  return slugs.map(slug => ({ slug }))
-}
+// Rendered dynamically (per request), NOT statically pre-generated. Two reasons:
+//  1. The root layout reads headers() (x-pathname) — an on-demand *static* (ISR)
+//     render of a not-pre-generated slug would throw DYNAMIC_SERVER_USAGE. Which
+//     Hindi slugs exist depends on which translations are published, so they
+//     can't all be pre-generated at build → this route must be dynamic.
+//  2. Authors expect a freshly-written translation to appear immediately, with
+//     no wait for revalidation.
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(
   { params }: { params: { slug: string } }

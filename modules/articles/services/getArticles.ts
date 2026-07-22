@@ -5,18 +5,16 @@ import {
   DEFAULT_LANGUAGE, isLanguageCode, type LanguageCode,
 } from '@/lib/i18n'
 
-// Translations are embedded via the article_id foreign key. RLS on
-// article_translations only exposes rows where is_published = true, so anon
-// reads here can only ever see published translations — no extra filter needed.
-const CARD_TRANSLATIONS = `article_translations ( language_code, title, excerpt )`
-const FULL_TRANSLATIONS = `article_translations ( language_code, title, excerpt, content )`
-
+// NOTE: translations are fetched SEPARATELY (see fetch* helpers below), never
+// embedded in these selects. That keeps the core article read independent of
+// the article_translations table — English content always loads even if that
+// table doesn't exist yet (migration not applied), and a failed translation
+// lookup degrades gracefully to English instead of breaking the page.
 const ARTICLE_CARD_SELECT = `
   id, title, slug, excerpt, featured_image,
   published_at, reading_time, article_type, featured,
   authors ( name, avatar ),
-  article_categories ( categories ( name, slug, color ) ),
-  ${CARD_TRANSLATIONS}
+  article_categories ( categories ( name, slug, color ) )
 `
 
 // Inner-join variant: only articles that HAVE the requested category, so the
@@ -25,8 +23,7 @@ const ARTICLE_CARD_SELECT_FILTERED = `
   id, title, slug, excerpt, featured_image,
   published_at, reading_time, article_type, featured,
   authors ( name, avatar ),
-  article_categories!inner ( categories!inner ( name, slug, color ) ),
-  ${CARD_TRANSLATIONS}
+  article_categories!inner ( categories!inner ( name, slug, color ) )
 `
 
 const ARTICLE_FULL_SELECT = `
@@ -35,9 +32,50 @@ const ARTICLE_FULL_SELECT = `
   authors ( id, slug, name, bio, avatar, social_links, featured ),
   article_categories ( categories ( name, slug, color ) ),
   article_tags ( tags ( name, slug ) ),
-  seo_metadata ( meta_title, meta_description, og_image, keywords, canonical_url ),
-  ${FULL_TRANSLATIONS}
+  seo_metadata ( meta_title, meta_description, og_image, keywords, canonical_url )
 `
+
+// ── Translation lookups (tolerant) ────────────────────────────
+// Any failure here — table missing, RLS, network — resolves to "no
+// translation" so the base English content is served unchanged.
+
+interface CardTranslation { title: string; excerpt: string | null }
+interface FullTranslation { language_code: string; title: string; excerpt: string | null; content: string | null }
+
+// Card overlay (title/excerpt) for a page of articles, for one language.
+async function fetchCardTranslations(
+  ids: string[], lang: LanguageCode,
+): Promise<Map<string, CardTranslation>> {
+  const map = new Map<string, CardTranslation>()
+  if (lang === DEFAULT_LANGUAGE || ids.length === 0) return map
+
+  const { data, error } = await supabase
+    .from('article_translations')
+    .select('article_id, title, excerpt')
+    .in('article_id', ids)
+    .eq('language_code', lang)
+    .eq('is_published', true)
+
+  if (error || !data) return map
+  for (const r of data as any[]) map.set(r.article_id, { title: r.title, excerpt: r.excerpt })
+  return map
+}
+
+// ALL published translations for a single article (every language), so the
+// detail page can both overlay the requested language AND know which languages
+// to offer in the toggle.
+async function fetchArticleTranslations(articleId: string): Promise<FullTranslation[]> {
+  const { data, error } = await supabase
+    .from('article_translations')
+    .select('language_code, title, excerpt, content')
+    .eq('article_id', articleId)
+    .eq('is_published', true)
+
+  if (error || !data) return []
+  return data as FullTranslation[]
+}
+
+// ── Cards ─────────────────────────────────────────────────────
 
 export async function getArticles({
   page = 1, perPage = 12, category, authorId, lang = DEFAULT_LANGUAGE,
@@ -66,7 +104,7 @@ export async function getArticles({
   }
 
   return {
-    articles:   normalizeCards(data || [], lang),
+    articles:   await toCards(data || [], lang),
     total:      count || 0,
     totalPages: Math.ceil((count || 0) / perPage),
   }
@@ -82,8 +120,37 @@ export async function getFeaturedArticles(limit = 7, lang: LanguageCode = DEFAUL
     .limit(limit)
 
   if (error) return []
-  return normalizeCards(data || [], lang)
+  return toCards(data || [], lang)
 }
+
+export async function getRelatedArticles(
+  articleId: string, limit = 3, lang: LanguageCode = DEFAULT_LANGUAGE,
+) {
+  const { data, error } = await supabase
+    .from('articles')
+    .select(ARTICLE_CARD_SELECT)
+    .eq('status', 'published')
+    .neq('id', articleId)
+    .order('published_at', { ascending: false })
+    .limit(limit)
+
+  if (error) return []
+  return toCards(data || [], lang)
+}
+
+export async function getLatestArticles(limit = 5, lang: LanguageCode = DEFAULT_LANGUAGE) {
+  const { data, error } = await supabase
+    .from('articles')
+    .select(ARTICLE_CARD_SELECT)
+    .eq('status', 'published')
+    .order('published_at', { ascending: false })
+    .limit(limit)
+
+  if (error) return []
+  return toCards(data || [], lang)
+}
+
+// ── Single article ────────────────────────────────────────────
 
 // Wrapped in React cache() so the page's generateMetadata and its body — which
 // both call this in the same render — share a single DB read and a single view
@@ -108,35 +175,11 @@ export const getArticleBySlug = cache(async (
     .rpc('increment_article_views', { article_id: data.id })
     .then(() => {}, () => {})
 
-  return normalizeFullArticle(data, lang)
+  const translations = await fetchArticleTranslations(data.id)
+  return normalizeFullArticle(data, lang, translations)
 })
 
-export async function getRelatedArticles(
-  articleId: string, limit = 3, lang: LanguageCode = DEFAULT_LANGUAGE,
-) {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(ARTICLE_CARD_SELECT)
-    .eq('status', 'published')
-    .neq('id', articleId)
-    .order('published_at', { ascending: false })
-    .limit(limit)
-
-  if (error) return []
-  return normalizeCards(data || [], lang)
-}
-
-export async function getLatestArticles(limit = 5, lang: LanguageCode = DEFAULT_LANGUAGE) {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(ARTICLE_CARD_SELECT)
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .limit(limit)
-
-  if (error) return []
-  return normalizeCards(data || [], lang)
-}
+// ── Slug lists ────────────────────────────────────────────────
 
 export async function getAllArticleSlugs(): Promise<string[]> {
   const { data, error } = await supabase
@@ -149,47 +192,32 @@ export async function getAllArticleSlugs(): Promise<string[]> {
 }
 
 // Slugs of published articles that HAVE a published translation in `lang`. Used
-// to statically pre-render only the language pages that actually exist.
+// to statically pre-render only the language pages that actually exist. Tolerant:
+// returns [] if the translations table isn't there yet.
 export async function getTranslatedArticleSlugs(lang: LanguageCode): Promise<string[]> {
   if (lang === DEFAULT_LANGUAGE) return getAllArticleSlugs()
 
   const { data, error } = await supabase
-    .from('articles')
-    .select('slug, article_translations!inner ( language_code )')
-    .eq('status', 'published')
-    .eq('article_translations.language_code', lang)
+    .from('article_translations')
+    .select('is_published, articles!inner ( slug, status )')
+    .eq('language_code', lang)
+    .eq('is_published', true)
 
-  if (error) return []
-  return (data || []).map((r: any) => r.slug)
+  if (error || !data) return []
+  return (data as any[])
+    .filter(r => r.articles?.status === 'published')
+    .map(r => r.articles.slug)
 }
 
 // ── Normalizers ───────────────────────────────────────────────
 
-// Pick the translation row for `lang` from an embedded article_translations
-// array (only ever holds published rows, thanks to RLS). Returns null for the
-// default language or when no translation exists.
-function pickTranslation(row: any, lang: LanguageCode) {
-  if (lang === DEFAULT_LANGUAGE) return null
-  const list = Array.isArray(row.article_translations) ? row.article_translations : []
-  return list.find((t: any) => t.language_code === lang) || null
-}
-
-// Every language this article can be read in: 'en' plus each published
-// translation present on the row.
-function availableLanguagesOf(row: any): LanguageCode[] {
-  const list: any[] = Array.isArray(row.article_translations) ? row.article_translations : []
-  const codes: LanguageCode[] = list
-    .map((t: any) => t.language_code)
-    .filter((c: any): c is LanguageCode => isLanguageCode(c) && c !== DEFAULT_LANGUAGE)
-  return [DEFAULT_LANGUAGE, ...Array.from(new Set(codes))]
-}
-
-function normalizeCards(rows: any[], lang: LanguageCode): ArticleCard[] {
+async function toCards(rows: any[], lang: LanguageCode): Promise<ArticleCard[]> {
+  const overlay = await fetchCardTranslations(rows.map(r => r.id), lang)
   return rows.map(row => {
-    const t = pickTranslation(row, lang)
+    const t = overlay.get(row.id)
     return {
       id:            row.id,
-      title:         (t?.title   || row.title),
+      title:         t?.title || row.title,
       slug:          row.slug,
       excerpt:       (t?.excerpt ?? row.excerpt) || '',
       featuredImage: row.featured_image || null,
@@ -203,13 +231,20 @@ function normalizeCards(rows: any[], lang: LanguageCode): ArticleCard[] {
   })
 }
 
-function normalizeFullArticle(row: any, lang: LanguageCode): Article {
-  const t        = pickTranslation(row, lang)
+function normalizeFullArticle(row: any, lang: LanguageCode, translations: FullTranslation[]): Article {
+  const t = lang !== DEFAULT_LANGUAGE
+    ? translations.find(x => x.language_code === lang) || null
+    : null
   const served: LanguageCode = t ? lang : DEFAULT_LANGUAGE
+
+  const otherLangs = translations
+    .map(x => x.language_code)
+    .filter((c): c is LanguageCode => isLanguageCode(c) && c !== DEFAULT_LANGUAGE)
+  const availableLanguages: LanguageCode[] = [DEFAULT_LANGUAGE, ...Array.from(new Set(otherLangs))]
 
   return {
     id:            row.id,
-    title:         (t?.title   || row.title),
+    title:         t?.title || row.title,
     slug:          row.slug,
     excerpt:       (t?.excerpt ?? row.excerpt) || '',
     content:       (t?.content || row.content) || '',
@@ -226,6 +261,6 @@ function normalizeFullArticle(row: any, lang: LanguageCode): Article {
     categories:    (row.article_categories || []).map((ac: any) => ac.categories?.name).filter(Boolean),
     tags:          (row.article_tags || []).map((at: any) => at.tags?.name).filter(Boolean),
     language:           served,
-    availableLanguages: availableLanguagesOf(row),
+    availableLanguages,
   }
 }
