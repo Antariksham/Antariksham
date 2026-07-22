@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { ArticleCard, ArticleCategory } from '@/types/article'
 import { timeAgo } from '@/lib/utils'
+import { langPrefix, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
 
 const CATEGORIES: ArticleCategory[] = [
   'NASA', 'SpaceX', 'ISRO', 'ESA', 'JAXA',
@@ -15,15 +16,19 @@ interface Props {
   articles: ArticleCard[]
   featured: ArticleCard[]
   total:    number
+  /** Language of the listing — English by default; 'hi' for the /hi listing. */
+  lang?:    LanguageCode
 }
 
-function buildQuery(page: number, category: ArticleCategory | 'all') {
+function buildQuery(page: number, category: ArticleCategory | 'all', lang: LanguageCode) {
   const params = new URLSearchParams({ page: String(page), perPage: String(PER_PAGE) })
   if (category !== 'all') params.set('category', category)
+  if (lang !== DEFAULT_LANGUAGE) params.set('lang', lang)
   return params.toString()
 }
 
-export function ArticlesPage({ articles: initialArticles, total: initialTotal }: Props) {
+export function ArticlesPage({ articles: initialArticles, total: initialTotal, lang = DEFAULT_LANGUAGE }: Props) {
+  const base = langPrefix(lang)
   const [activeCategory, setActiveCategory] = useState<ArticleCategory | 'all'>('all')
 
   // Infinite scroll seeded with the SSR'd first page; the category filter is
@@ -46,7 +51,7 @@ export function ArticlesPage({ articles: initialArticles, total: initialTotal }:
     setLoading(true)
     setArticles([])
     setPage(1)
-    fetch(`/api/articles?${buildQuery(1, activeCategory)}`)
+    fetch(`/api/articles?${buildQuery(1, activeCategory, lang)}`)
       .then(r => (r.ok ? r.json() : null))
       .then(data => {
         if (cancelled || !data) return
@@ -55,14 +60,14 @@ export function ArticlesPage({ articles: initialArticles, total: initialTotal }:
       })
       .finally(() => { if (!cancelled) { loadingRef.current = false; setLoading(false) } })
     return () => { cancelled = true }
-  }, [activeCategory])
+  }, [activeCategory, lang])
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || articles.length >= total) return
     loadingRef.current = true
     setLoading(true)
     try {
-      const res = await fetch(`/api/articles?${buildQuery(page + 1, activeCategory)}`)
+      const res = await fetch(`/api/articles?${buildQuery(page + 1, activeCategory, lang)}`)
       if (res.ok) {
         const data = await res.json()
         const incoming: ArticleCard[] = data.articles || []
@@ -79,7 +84,7 @@ export function ArticlesPage({ articles: initialArticles, total: initialTotal }:
       loadingRef.current = false
       setLoading(false)
     }
-  }, [articles.length, total, page, activeCategory])
+  }, [articles.length, total, page, activeCategory, lang])
 
   useEffect(() => {
     const el = sentinelRef.current
@@ -141,7 +146,7 @@ export function ArticlesPage({ articles: initialArticles, total: initialTotal }:
         ) : (
           <>
             <div className="grid-3">
-              {articles.map(article => <GridCard key={article.id} article={article} />)}
+              {articles.map(article => <GridCard key={article.id} article={article} base={base} lang={lang} />)}
             </div>
 
             {/* Infinite scroll: sentinel triggers the next page while more remain */}
@@ -165,9 +170,9 @@ export function ArticlesPage({ articles: initialArticles, total: initialTotal }:
 }
 
 // ── Grid card ─────────────────────────────────────────────────
-function GridCard({ article }: { article: ArticleCard }) {
+function GridCard({ article, base, lang }: { article: ArticleCard; base: string; lang: LanguageCode }) {
   return (
-    <a href={`/articles/${article.slug}`} className="card">
+    <a href={`${base}/articles/${article.slug}`} className="card">
       {article.featuredImage
         ? /* eslint-disable-next-line @next/next/no-img-element */
           <img className="card-image" src={article.featuredImage} alt={article.title} loading="lazy" />
@@ -179,8 +184,8 @@ function GridCard({ article }: { article: ArticleCard }) {
           </span>
         )}
         <p className="card-category">{article.categories[0] || 'Space'}</p>
-        <h3 className="card-title">{article.title}</h3>
-        {article.excerpt && <p className="card-excerpt">{article.excerpt}</p>}
+        <h3 className="card-title" lang={lang}>{article.title}</h3>
+        {article.excerpt && <p className="card-excerpt" lang={lang}>{article.excerpt}</p>}
         <div className="card-meta">
           {article.publishedAt && <span>{timeAgo(article.publishedAt)}</span>}
           {article.readingTime ? <span>{article.readingTime} min read</span> : null}

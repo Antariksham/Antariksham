@@ -16,6 +16,8 @@ import {
   Save, Eye, Globe, ChevronDown, X, Plus, AlertCircle,
 } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
+import { ArticleTranslationEditor } from '@/modules/admin/components/ArticleTranslationEditor'
+import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 
 // ── Constants ─────────────────────────────────────────────────
 
@@ -78,6 +80,9 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
   const [error,   setError]   = useState('')
   const [success, setSuccess] = useState('')
   const [slugEdited, setSlugEdited] = useState(mode === 'edit')
+  // Which language pane is showing. English = the article itself; other codes
+  // edit a translation (only once the article exists, i.e. edit mode).
+  const [activeLang, setActiveLang] = useState<LanguageCode>('en')
 
   // Auto-generate slug from title
   function handleTitleChange(val: string) {
@@ -168,7 +173,28 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
   // ── Render ──────────────────────────────────────────────────
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '24px', alignItems: 'start' }}>
+    <div>
+
+      {/* ── Language tabs ─────────────────────────── */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', borderBottom: '1px solid var(--border)' }}>
+        <LangTab active={activeLang === 'en'} onClick={() => setActiveLang('en')}>
+          English
+        </LangTab>
+        {TRANSLATION_LANGUAGES.map(l => (
+          <LangTab
+            key={l.code}
+            active={activeLang === l.code}
+            disabled={mode === 'new'}
+            title={mode === 'new' ? 'Save the article first, then add translations' : undefined}
+            onClick={() => { if (mode !== 'new') setActiveLang(l.code) }}
+          >
+            {l.native}
+          </LangTab>
+        ))}
+      </div>
+
+      {/* ── English pane (the article itself) ─────── */}
+      <div style={{ display: activeLang === 'en' ? 'grid' : 'none', gridTemplateColumns: '1fr 280px', gap: '24px', alignItems: 'start' }}>
 
       {/* ── Left: main content ────────────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -470,11 +496,58 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
         </SidePanel>
 
       </div>
+      </div>
+      {/* ── /English pane ─────────────────────────── */}
+
+      {/* ── Translation panes — mounted in edit mode, kept alive so unsaved
+             edits survive tab switches; only the active one is visible. ── */}
+      {mode === 'edit' && article && TRANSLATION_LANGUAGES.map(l => (
+        <div key={l.code} style={{ display: activeLang === l.code ? 'block' : 'none' }}>
+          <ArticleTranslationEditor
+            articleId={article.id}
+            lang={l.code}
+            english={{ title: form.title, excerpt: form.excerpt, content: form.content }}
+          />
+        </div>
+      ))}
+
     </div>
   )
 }
 
 // ── Sub-components ────────────────────────────────────────────
+
+function LangTab({
+  active, disabled, title, onClick, children,
+}: {
+  active: boolean; disabled?: boolean; title?: string
+  onClick: () => void; children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        fontFamily:    'var(--font-mono)',
+        fontSize:      '13px',
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        padding:       '9px 16px',
+        background:    'transparent',
+        border:        'none',
+        borderBottom:  `2px solid ${active ? 'var(--accent)' : 'transparent'}`,
+        color:         active ? 'var(--accent)' : disabled ? 'rgba(var(--ink),0.35)' : 'rgba(var(--ink),0.7)',
+        cursor:        disabled ? 'not-allowed' : 'pointer',
+        marginBottom:  '-1px',
+        transition:    'color 0.15s, border-color 0.15s',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
 
 function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (

@@ -1,0 +1,220 @@
+import { formatDate } from '@/lib/utils'
+import { articleHref, articlesListHref, type LanguageCode } from '@/lib/i18n'
+import { LanguageToggle } from './LanguageToggle'
+import type { Article, ArticleCard } from '@/types/article'
+
+const CAT_COLORS: Record<string, string> = {
+  NASA: '#4f8ef7', SpaceX: '#4f8ef7', ISRO: '#f39c12',
+  ESA: '#2ecc71', JAXA: '#f39c12', Astronomy: '#4f8ef7',
+  Discoveries: '#2ecc71', Technology: '#4f8ef7',
+  Missions: '#f39c12', Science: 'var(--white)',
+}
+
+// Devanagari-first font stacks for Hindi. These prepend widely-installed
+// Devanagari faces (Android/Windows/Apple all ship one) ahead of the site's
+// Latin stacks — no webfont download, matching the project's system-font
+// convention. English keeps the plain tokens.
+const HI_SANS  = "'Noto Sans Devanagari','Nirmala UI','Mangal',var(--font-sans)"
+const HI_SERIF = "'Noto Serif Devanagari','Tiro Devanagari Hindi','Nirmala UI',var(--font-serif)"
+
+// Shared renderer for an article in ANY language. The English route and the
+// /hi route both render this; `lang` drives the reading fonts, the language
+// toggle, and the internal link prefixes so a reader stays in their language.
+export function ArticleView({
+  article, related, lang,
+}: {
+  article: Article
+  related: ArticleCard[]
+  lang:    LanguageCode
+}) {
+  const isHi      = lang === 'hi'
+  const sansFont  = isHi ? HI_SANS  : 'var(--font-sans)'
+  const serifFont = isHi ? HI_SERIF : 'var(--font-serif)'
+
+  return (
+    <div style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
+
+      {/* ── Single centered column — everything flows here ── */}
+      <article
+        lang={lang}
+        style={{
+          maxWidth:  '740px',
+          margin:    '0 auto',
+          padding:   'clamp(32px, 6vw, 64px) clamp(20px, 5vw, 40px)',
+        }}
+      >
+
+        {/* Language switch — only shows when a translation exists */}
+        <LanguageToggle slug={article.slug} current={article.language} available={article.availableLanguages} />
+
+        {/* Breaking badge */}
+        {article.articleType === 'breaking-news' && (
+          <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--black)', background: '#e74c3c', padding: '3px 8px', borderRadius: '3px', marginBottom: '20px', width: 'fit-content' }}>
+            Breaking
+          </span>
+        )}
+
+        {/* Categories */}
+        {article.categories.length > 0 && (
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+            {article.categories.map(cat => (
+              <a key={cat} href={articlesListHref(lang)} style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: CAT_COLORS[cat] || '#4f8ef7', textDecoration: 'none' }}>
+                {cat}
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* Title */}
+        <h1 style={{
+          fontFamily:  sansFont,
+          fontSize:    'clamp(28px, 4.5vw, 48px)',
+          fontWeight:  800,
+          color:       'var(--white)',
+          lineHeight:  1.12,
+          margin:      '0 0 20px',
+          letterSpacing: '-0.01em',
+        }}>
+          {article.title}
+        </h1>
+
+        {/* Excerpt */}
+        {article.excerpt && (
+          <p style={{
+            fontFamily:  serifFont,
+            fontSize:    'clamp(16px, 2vw, 19px)',
+            color:       'rgba(var(--ink),0.9)',
+            lineHeight:  1.6,
+            margin:      '0 0 28px',
+            fontWeight:  400,
+          }}>
+            {article.excerpt}
+          </p>
+        )}
+
+        {/* Meta row */}
+        <div style={{
+          display:       'flex',
+          alignItems:    'center',
+          gap:           '20px',
+          flexWrap:      'wrap',
+          fontFamily:    'var(--font-mono)',
+          fontSize: '12px',
+          color:         'rgba(var(--ink),0.6)',
+          paddingBottom: '28px',
+          borderBottom:  '1px solid rgba(var(--ink),0.08)',
+          marginBottom:  '36px',
+        }}>
+          {article.author && (article.author.slug ? (
+            <a href={`/authors/${article.author.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+              {article.author.avatar && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={article.author.avatar} alt={article.author.name} loading="lazy"
+                  style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+              )}
+              <span style={{ color: 'var(--accent)' }}>{article.author.name}</span>
+            </a>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {article.author.avatar && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={article.author.avatar} alt={article.author.name} loading="lazy"
+                  style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+              )}
+              <span style={{ color: 'rgba(var(--ink),0.7)' }}>{article.author.name}</span>
+            </div>
+          ))}
+          {article.publishedAt && <span>{formatDate(article.publishedAt)}</span>}
+          <span>{article.readingTime} min read</span>
+          <span>{article.views} views</span>
+        </div>
+
+        {/* Hero image — proper aspect ratio, rounded, contained */}
+        {article.featuredImage && (
+          <div style={{
+            width:        '100%',
+            aspectRatio:  '16 / 9',
+            borderRadius: '12px',
+            overflow:     'hidden',
+            marginBottom: '44px',
+            background:   'var(--surface)',
+            position:     'relative',
+          }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={article.featuredImage}
+              alt={article.title}
+              loading="lazy"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
+        )}
+
+        {/* Article body */}
+        <div style={{
+          fontFamily:  serifFont,
+          fontSize:    'clamp(16px, 1.8vw, 18px)',
+          lineHeight:  1.9,
+          color:       'rgba(var(--ink),0.9)',
+          letterSpacing: '0.01em',
+        }}
+          dangerouslySetInnerHTML={{ __html: article.content }}
+        />
+
+        {/* Tags */}
+        {article.tags && article.tags.length > 0 && (
+          <div style={{ marginTop: '56px', paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', marginRight: '4px' }}>
+              Tags
+            </span>
+            {article.tags.map(tag => (
+              <span key={tag} style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)', border: '1px solid rgba(var(--ink),0.1)', borderRadius: '4px', padding: '3px 10px' }}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Back link */}
+        <div style={{ marginTop: '48px', paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>
+          <a href={articlesListHref(lang)} style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
+            ← Back to Articles
+          </a>
+        </div>
+      </article>
+
+      {/* Related articles — full width section below article */}
+      {related.length > 0 && (
+        <div style={{ borderTop: '1px solid rgba(var(--ink),0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
+          <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
+              Related Stories
+            </span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: '16px' }}>
+              {related.map(r => (
+                <a key={r.id} href={articleHref(r.slug, lang)} style={{ textDecoration: 'none' }}>
+                  <div
+                    style={{ background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s' }}
+                  >
+                    {r.categories[0] && (
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: CAT_COLORS[r.categories[0]] || '#4f8ef7', display: 'block', marginBottom: '10px' }}>
+                        {r.categories[0]}
+                      </span>
+                    )}
+                    <h3 lang={lang} style={{ fontFamily: sansFont, fontSize: '18px', fontWeight: 700, color: 'var(--white)', lineHeight: 1.3, margin: '0 0 14px' }}>
+                      {r.title}
+                    </h3>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.1em' }}>
+                      {r.readingTime} min read
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  )
+}
