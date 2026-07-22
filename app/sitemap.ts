@@ -3,6 +3,7 @@ import { siteConfig } from '@/config/site'
 import { getAllArticleSlugs }   from '@/modules/articles/services/getArticles'
 import { getAllMissionSlugs }   from '@/modules/missions/services/getMissions'
 import { getAllKnowledgeSlugs } from '@/modules/learn/services/getKnowledgeArticles'
+import { getAllAuthorSlugs }    from '@/modules/authors/services/getAuthors'
 
 // Rebuilt hourly. Content pages are listed dynamically from the database; if a
 // query fails at build/runtime it degrades to the static routes rather than
@@ -28,10 +29,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/terms',            priority: 0.3, freq: 'yearly'  },
   ]
 
-  const [articleSlugs, missionSlugs, learnSlugs] = await Promise.all([
+  const [articleSlugs, missionSlugs, learnSlugs, authorSlugs] = await Promise.all([
     getAllArticleSlugs().catch(() => []),
     getAllMissionSlugs().catch(() => []),
     getAllKnowledgeSlugs().catch(() => []),
+    getAllAuthorSlugs().catch(() => []),
   ])
 
   const staticRoutes: MetadataRoute.Sitemap = STATIC.map(s => ({
@@ -42,6 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...articleSlugs.map(slug => ({ url: `${base}/articles/${slug}`, lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.8 })),
     ...missionSlugs.map(slug => ({ url: `${base}/missions/${slug}`, lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.6 })),
     ...learnSlugs.map(slug  => ({ url: `${base}/learn/${slug}`,     lastModified: now, changeFrequency: 'monthly' as const, priority: 0.6 })),
+    ...authorSlugs.map(slug => ({ url: `${base}/authors/${slug}`,   lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.4 })),
   ]
 
   return [...staticRoutes, ...dynamicRoutes]

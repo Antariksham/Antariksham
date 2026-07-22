@@ -111,20 +111,25 @@ export default async function ArticlePage(
           borderBottom:  '1px solid rgba(var(--ink),0.08)',
           marginBottom:  '36px',
         }}>
-          {article.author && (
+          {article.author && (article.author.slug ? (
+            <a href={`/authors/${article.author.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+              {article.author.avatar && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={article.author.avatar} alt={article.author.name} loading="lazy"
+                  style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+              )}
+              <span style={{ color: 'var(--accent)' }}>{article.author.name}</span>
+            </a>
+          ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {article.author.avatar && (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={article.author.avatar}
-                  alt={article.author.name}
-                  loading="lazy"
-                  style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
-                />
+                <img src={article.author.avatar} alt={article.author.name} loading="lazy"
+                  style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
               )}
               <span style={{ color: 'rgba(var(--ink),0.7)' }}>{article.author.name}</span>
             </div>
-          )}
+          ))}
           {article.publishedAt && <span>{formatDate(article.publishedAt)}</span>}
           <span>{article.readingTime} min read</span>
           <span>{article.views} views</span>

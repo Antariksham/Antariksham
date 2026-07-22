@@ -23,6 +23,7 @@ export type ArticleCategory =
 
 export interface Author {
   id:          string
+  slug:        string
   name:        string
   bio:         string | null
   avatar:      string | null

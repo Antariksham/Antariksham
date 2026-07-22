@@ -38,6 +38,13 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260720170000_authors_slug.sql`
+
+Adds a `slug` column to `authors` (unique, backfilled from the name) so each
+author gets a public profile page at `/authors/:slug` with their bio, links, and
+articles. The admin author editor manages the slug (auto-generated from the name,
+editable). Run this before relying on author pages.
+
 ### `20260720160000_rls_policies.sql`
 
 **Pre-launch security — review + test before applying.** Enables Row-Level

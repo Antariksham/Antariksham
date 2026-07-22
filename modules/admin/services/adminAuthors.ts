@@ -1,9 +1,11 @@
 import { supabaseAdmin } from '@/lib/supabase'
+import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adminErrors'
 
 // ── Types ─────────────────────────────────────────────────────
 
 export interface AdminAuthorRow {
   id:         string
+  slug:       string
   name:       string
   bio:        string | null
   avatar:     string | null
@@ -14,6 +16,7 @@ export interface AdminAuthorRow {
 
 export interface AdminAuthorFull {
   id:           string
+  slug:         string
   name:         string
   bio:          string
   avatar:       string
@@ -28,6 +31,7 @@ export interface SocialLinks {
 }
 
 export interface AuthorPayload {
+  slug:        string
   name:        string
   bio:         string | null
   avatar:      string | null
@@ -42,7 +46,7 @@ export async function getAdminAuthors(): Promise<AdminAuthorRow[]> {
 
   const { data, error } = await db
     .from('authors')
-    .select('id, name, bio, avatar, featured, created_at')
+    .select('id, slug, name, bio, avatar, featured, created_at')
     .order('name')
 
   if (error) { console.error('getAdminAuthors error:', error); return [] }
@@ -64,6 +68,7 @@ export async function getAdminAuthors(): Promise<AdminAuthorRow[]> {
 
   return (data || []).map((r: any) => ({
     id:           r.id,
+    slug:         r.slug || '',
     name:         r.name,
     bio:          r.bio || null,
     avatar:       r.avatar || null,
@@ -79,7 +84,7 @@ export async function getAdminAuthorById(id: string): Promise<AdminAuthorFull | 
   const db = supabaseAdmin()
   const { data, error } = await db
     .from('authors')
-    .select('id, name, bio, avatar, social_links, featured')
+    .select('id, slug, name, bio, avatar, social_links, featured')
     .eq('id', id)
     .single()
 
@@ -87,6 +92,7 @@ export async function getAdminAuthorById(id: string): Promise<AdminAuthorFull | 
 
   return {
     id:          data.id,
+    slug:        data.slug         || '',
     name:        data.name,
     bio:         data.bio          || '',
     avatar:      data.avatar       || '',
@@ -99,9 +105,11 @@ export async function getAdminAuthorById(id: string): Promise<AdminAuthorFull | 
 
 export async function createAdminAuthor(p: AuthorPayload): Promise<{ id: string } | null> {
   const db = supabaseAdmin()
+  await assertSlugAvailable(db, 'authors', p.slug)
   const { data, error } = await db
     .from('authors')
     .insert({
+      slug:         p.slug,
       name:         p.name,
       bio:          p.bio          || null,
       avatar:       p.avatar       || null,
@@ -111,7 +119,11 @@ export async function createAdminAuthor(p: AuthorPayload): Promise<{ id: string 
     .select('id')
     .single()
 
-  if (error || !data) { console.error('createAdminAuthor error:', error); return null }
+  if (error || !data) {
+    if (isUniqueViolation(error)) throw new SlugConflictError()
+    console.error('createAdminAuthor error:', error)
+    return null
+  }
   return { id: data.id }
 }
 
@@ -119,9 +131,11 @@ export async function createAdminAuthor(p: AuthorPayload): Promise<{ id: string 
 
 export async function updateAdminAuthor(id: string, p: AuthorPayload): Promise<boolean> {
   const db = supabaseAdmin()
+  await assertSlugAvailable(db, 'authors', p.slug, id)
   const { error } = await db
     .from('authors')
     .update({
+      slug:         p.slug,
       name:         p.name,
       bio:          p.bio          || null,
       avatar:       p.avatar       || null,
@@ -130,7 +144,11 @@ export async function updateAdminAuthor(id: string, p: AuthorPayload): Promise<b
     })
     .eq('id', id)
 
-  if (error) { console.error('updateAdminAuthor error:', error); return false }
+  if (error) {
+    if (isUniqueViolation(error)) throw new SlugConflictError()
+    console.error('updateAdminAuthor error:', error)
+    return false
+  }
   return true
 }
 

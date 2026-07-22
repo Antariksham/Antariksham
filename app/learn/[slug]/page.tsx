@@ -3,6 +3,7 @@ import { notFound }                     from 'next/navigation'
 import { getKnowledgeArticleBySlug }    from '@/modules/learn/services/getKnowledgeArticles'
 import { LearnArticlePage }             from '@/modules/learn/components/LearnArticlePage'
 import { siteConfig }                   from '@/config/site'
+import 'katex/dist/katex.min.css' // math is server-rendered; only the CSS ships
 
 export const dynamic = 'force-dynamic'
 

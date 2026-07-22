@@ -8,6 +8,8 @@ import {
 } from '@/modules/admin/services/adminAuthors'
 
 import { getAdminUser } from '@/modules/admin/services/getAdminUser'
+import { SlugConflictError } from '@/modules/admin/services/adminErrors'
+import { slugify } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ id: result.id }, { status: 201 })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error('POST /api/admin/authors error:', err)
     return NextResponse.json({ error: 'Server error.' }, { status: 500 })
   }
@@ -76,6 +79,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (err) {
+    if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error('PATCH /api/admin/authors error:', err)
     return NextResponse.json({ error: 'Server error.' }, { status: 500 })
   }
@@ -103,8 +107,10 @@ export async function DELETE(request: NextRequest) {
 // ── Helper ────────────────────────────────────────────────────
 
 function buildPayload(body: any) {
+  const name = String(body.name || '').trim()
   return {
-    name:     String(body.name    || '').trim(),
+    slug:     String(body.slug || slugify(name)).trim(),
+    name,
     bio:      String(body.bio     || '').trim() || null,
     avatar:   String(body.avatar  || '').trim() || null,
     socialLinks: {

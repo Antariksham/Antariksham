@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Pencil, Trash2, User, Star, FileText, X, Save, AlertCircle, ExternalLink } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
+import { slugify } from '@/lib/utils'
 import type { AdminAuthorRow, AdminAuthorFull, SocialLinks } from '@/modules/admin/services/adminAuthors'
 
 // ── Form state ────────────────────────────────────────────────
 
 interface FormState {
   name:             string
+  slug:             string
   bio:              string
   avatar:           string
   twitter:          string
@@ -20,6 +22,7 @@ interface FormState {
 
 const EMPTY_FORM: FormState = {
   name:              '',
+  slug:              '',
   bio:               '',
   avatar:            '',
   twitter:           '',
@@ -32,6 +35,7 @@ const EMPTY_FORM: FormState = {
 function authorToForm(a: AdminAuthorFull): FormState {
   return {
     name:              a.name,
+    slug:              a.slug,
     bio:               a.bio,
     avatar:            a.avatar,
     twitter:           a.socialLinks?.twitter  || '',
@@ -49,17 +53,27 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+// Prepend https:// when the user omits the protocol, so byline links aren't
+// treated as relative paths. Empty → undefined.
+function normalizeUrl(v: string): string | undefined {
+  const t = v.trim()
+  if (!t) return undefined
+  return /^https?:\/\//i.test(t) ? t : `https://${t}`
+}
+
 // ── Avatar ────────────────────────────────────────────────────
 
 function Avatar({ src, name, size = 36 }: { src: string | null; name: string; size?: number }) {
+  const [failed, setFailed] = useState(false)
+  useEffect(() => { setFailed(false) }, [src])   // reset when the URL changes (e.g. editing)
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
-  if (src) {
+  if (src && !failed) {
     return (
       <img
         src={src}
         alt={name}
         style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border)' }}
-        onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+        onError={() => setFailed(true)}   // fall back to initials instead of a blank gap
       />
     )
   }
@@ -183,7 +197,16 @@ function AuthorModal({
     }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div style={{
+      <div
+        onKeyDown={e => {
+          if (e.key === 'Escape') { onClose(); return }
+          // Enter on a single-line field saves; textarea + the picker are exempt.
+          if (e.key === 'Enter' && (e.target as HTMLElement).tagName === 'INPUT' && !form._showAvatarPicker && !saving) {
+            e.preventDefault()
+            onSave()
+          }
+        }}
+        style={{
         background:   'var(--black)',
         border:       '1px solid var(--border)',
         borderRadius: '12px',
@@ -228,6 +251,17 @@ function AuthorModal({
                 autoFocus
               />
             </div>
+          </div>
+
+          {/* Slug */}
+          <div>
+            <FieldLabel hint={`/authors/${form.slug || '…'}`}>Slug</FieldLabel>
+            <input
+              value={form.slug}
+              onChange={e => onChange('slug', e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+              placeholder="author-name"
+              style={inputStyle({})}
+            />
           </div>
 
           {/* Avatar URL */}
@@ -363,6 +397,7 @@ export function AuthorsAdmin() {
   const [formError,   setFormError]   = useState('')
   const [deleteTarget,setDeleteTarget]= useState<{ id: string; name: string } | null>(null)
   const [deleting,    setDeleting]    = useState(false)
+  const [slugEdited,  setSlugEdited]  = useState(false)
 
   // ── Fetch ────────────────────────────────────────────────
 
@@ -386,7 +421,12 @@ export function AuthorsAdmin() {
   // ── Form helpers ─────────────────────────────────────────
 
   function handleChange(key: keyof FormState, val: any) {
-    setForm(f => ({ ...f, [key]: val }))
+    setForm(f => {
+      // Auto-fill the slug from the name until the admin edits the slug directly.
+      if (key === 'name' && !slugEdited) return { ...f, name: val, slug: slugify(val) }
+      return { ...f, [key]: val }
+    })
+    if (key === 'slug') setSlugEdited(true)
     setFormError('')
   }
 
@@ -394,6 +434,7 @@ export function AuthorsAdmin() {
     setForm(EMPTY_FORM)
     setEditingId(null)
     setFormError('')
+    setSlugEdited(false)
     setModalMode('new')
   }
 
@@ -401,6 +442,7 @@ export function AuthorsAdmin() {
     setFormError('')
     setEditingId(id)
     setModalMode('edit')
+    setSlugEdited(true) // keep the existing slug stable when the name is edited
     setForm(EMPTY_FORM) // show modal immediately with empty while fetching
 
     const res  = await fetch(`/api/admin/authors?id=${id}`, { cache: 'no-store' })
@@ -424,12 +466,13 @@ export function AuthorsAdmin() {
 
     const payload = {
       name:        form.name.trim(),
+      slug:        form.slug.trim(),
       bio:         form.bio.trim()    || null,
       avatar:      form.avatar.trim() || null,
       socialLinks: {
-        twitter:  form.twitter.trim()  || undefined,
-        linkedin: form.linkedin.trim() || undefined,
-        website:  form.website.trim()  || undefined,
+        twitter:  normalizeUrl(form.twitter),
+        linkedin: normalizeUrl(form.linkedin),
+        website:  normalizeUrl(form.website),
       },
       featured: form.featured,
     }

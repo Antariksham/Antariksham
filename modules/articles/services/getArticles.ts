@@ -20,15 +20,15 @@ const ARTICLE_CARD_SELECT_FILTERED = `
 const ARTICLE_FULL_SELECT = `
   id, title, slug, excerpt, content, featured_image,
   published_at, updated_at, reading_time, views, article_type, featured,
-  authors ( id, name, bio, avatar, social_links, featured ),
+  authors ( id, slug, name, bio, avatar, social_links, featured ),
   article_categories ( categories ( name, slug, color ) ),
   article_tags ( tags ( name, slug ) ),
   seo_metadata ( meta_title, meta_description, og_image, keywords, canonical_url )
 `
 
 export async function getArticles({
-  page = 1, perPage = 12, category,
-}: { page?: number; perPage?: number; category?: ArticleCategory } = {}) {
+  page = 1, perPage = 12, category, authorId,
+}: { page?: number; perPage?: number; category?: ArticleCategory; authorId?: string } = {}) {
   const from = (page - 1) * perPage
   const to   = from + perPage - 1
 
@@ -40,6 +40,7 @@ export async function getArticles({
     .range(from, to)
 
   if (category) query = query.eq('article_categories.categories.name', category)
+  if (authorId) query = query.eq('author_id', authorId)
 
   const { data, error, count } = await query
 
