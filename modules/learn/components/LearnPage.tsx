@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { LearnThumb } from './LearnThumb'
 import type { KnowledgeArticleCard, DifficultyLevel } from '@/types/knowledge'
+import { langPrefix, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
 
 type FilterOption = DifficultyLevel | 'all'
 
@@ -25,10 +26,12 @@ const FILTERS: FilterOption[] = ['all', 'beginner', 'intermediate', 'advanced']
 
 interface Props {
   articles: KnowledgeArticleCard[]
+  lang?:    LanguageCode
 }
 
-export function LearnPage({ articles }: Props) {
+export function LearnPage({ articles, lang = DEFAULT_LANGUAGE }: Props) {
   const [activeFilter, setActiveFilter] = useState<FilterOption>('all')
+  const base = langPrefix(lang)
 
   const filtered = useMemo(() =>
     activeFilter === 'all'
@@ -93,7 +96,7 @@ export function LearnPage({ articles }: Props) {
       ) : (
         <div className="grid-3">
           {filtered.map(article => (
-            <ArticleCard key={article.id} article={article} />
+            <ArticleCard key={article.id} article={article} base={base} lang={lang} />
           ))}
         </div>
       )}
@@ -102,12 +105,12 @@ export function LearnPage({ articles }: Props) {
   )
 }
 
-function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
+function ArticleCard({ article, base, lang }: { article: KnowledgeArticleCard; base: string; lang: LanguageCode }) {
   const diffColor = DIFFICULTY_COLORS[article.difficultyLevel] ?? 'var(--accent)'
   const diffLabel = DIFFICULTY_LABELS[article.difficultyLevel] ?? article.difficultyLevel
 
   return (
-    <Link href={`/learn/${article.slug}`} className="card">
+    <Link href={`${base}/learn/${article.slug}`} className="card">
       <LearnThumb icon={article.icon} seed={article.slug} image={article.thumbnail} />
       <div className="card-body">
         {/* Difficulty + featured badges */}
@@ -118,8 +121,8 @@ function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
           )}
         </div>
 
-        <h3 className="card-title">{article.title}</h3>
-        {article.excerpt && <p className="card-excerpt">{article.excerpt}</p>}
+        <h3 className="card-title" lang={lang}>{article.title}</h3>
+        {article.excerpt && <p className="card-excerpt" lang={lang}>{article.excerpt}</p>}
 
         {/* Related topics */}
         {article.relatedTopics.length > 0 && (

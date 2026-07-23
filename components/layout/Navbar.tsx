@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { siteConfig } from '@/config/site'
 import { mainNav } from '@/config/navigation'
 import { ThemeToggle } from './ThemeToggle'
+import { LanguageSwitch } from './LanguageSwitch'
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -41,6 +42,7 @@ export function Navbar() {
             Search
             <span style={{ background: 'rgba(var(--ink),0.08)', borderRadius: '3px', padding: '1px 6px', fontSize: '11px', color: 'rgba(var(--ink),0.65)' }}>⌘K</span>
           </Link>
+          <LanguageSwitch />
           <ThemeToggle />
         </div>
 
@@ -68,6 +70,9 @@ export function Navbar() {
               {item.label}
             </Link>
           ))}
+          <div style={{ marginTop: '24px' }}>
+            <LanguageSwitch big onNavigate={() => setMenuOpen(false)} />
+          </div>
         </div>
       )}
 

@@ -31,16 +31,44 @@ const MISSION_FULL_SELECT = `
   space_agencies ( id, name, slug, short_name, country, logo_url, description, website_url )
 `
 
+// Tolerant card-name overlay for a language (empty on any failure).
+async function fetchMissionCardTranslations(
+  ids: string[], lang: LanguageCode,
+): Promise<Map<string, { name: string; description: string | null }>> {
+  const map = new Map<string, { name: string; description: string | null }>()
+  if (lang === DEFAULT_LANGUAGE || ids.length === 0) return map
+  const { data, error } = await supabase
+    .from('mission_translations')
+    .select('mission_id, name, description')
+    .in('mission_id', ids)
+    .eq('language_code', lang)
+    .eq('is_published', true)
+  if (error || !data) return map
+  for (const r of data as any[]) map.set(r.mission_id, { name: r.name, description: r.description })
+  return map
+}
+
+async function overlayMissionCards(cards: MissionCard[], lang: LanguageCode): Promise<MissionCard[]> {
+  if (lang === DEFAULT_LANGUAGE || cards.length === 0) return cards
+  const overlay = await fetchMissionCardTranslations(cards.map(c => c.id), lang)
+  return cards.map(c => {
+    const t = overlay.get(c.id)
+    return t ? { ...c, name: t.name || c.name, description: (t.description ?? c.description) || '' } : c
+  })
+}
+
 export async function getMissions({
   page    = 1,
   perPage = 12,
   status,
   type,
+  lang = DEFAULT_LANGUAGE,
 }: {
   page?    : number
   perPage? : number
   status?  : MissionStatus
   type?    : MissionType
+  lang?    : LanguageCode
 } = {}) {
   const from = (page - 1) * perPage
   const to   = from + perPage - 1
@@ -62,7 +90,7 @@ export async function getMissions({
   }
 
   return {
-    missions:   normalizeCards(data || []),
+    missions:   await overlayMissionCards(normalizeCards(data || []), lang),
     total:      count || 0,
     totalPages: Math.ceil((count || 0) / perPage),
   }

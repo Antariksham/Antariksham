@@ -434,16 +434,17 @@ bad migration is a one-line revert.
 
 **Internationalization follow-ups:**
 - Bilingual **Articles, Learn & Missions** shipped (§2) — detail pages + toggle
-  + admin language tabs. Remaining discoverability/expansion:
-  - **`/hi` listing pages** (`/hi/articles` exists; add `/hi/learn`, `/hi/missions`)
-    and a **global language switch in the nav** + a `/hi` home, so Hindi readers
-    can enter and stay in Hindi site-wide (today the entry point is the toggle on
-    an individual English page). Current scope is **content only** — site
-    chrome/labels stay English by design.
+  + admin language tabs. **Discoverability shipped**: `/hi/articles`, `/hi/learn`,
+  `/hi/missions` listing pages (translated cards) + a **global nav language
+  switch** (`components/layout/LanguageSwitch`) that swaps the current URL between
+  languages on translatable sections and routes into `/hi/articles` elsewhere.
+  Remaining:
+  - A dedicated **`/hi` home** (the nav switch currently routes non-translatable
+    pages into `/hi/articles`). Site chrome/labels stay English by design.
   - **Mission `timeline`** entries (structured JSON) are not yet translated —
     only name + description are. Can be added without a schema change.
-  - When a sitemap is added, include the `/hi/*` detail URLs for translated items
-    with `hreflang` alternates.
+  - When a sitemap is added, include the `/hi/*` URLs for translated items with
+    `hreflang` alternates.
 
 **Site-level polish TODOs:**
 - Nav links are still Antariksham's uppercase-mono style; CosmosDaily's are
