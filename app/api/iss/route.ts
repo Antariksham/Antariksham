@@ -1,17 +1,25 @@
 import { NextResponse } from 'next/server'
+import {
+  twoline2satrec,
+  propagate,
+  gstime,
+  eciToGeodetic,
+  degreesLat,
+  degreesLong,
+} from 'satellite.js'
 
-// Live proxy to wheretheiss.at via a no-store upstream fetch — must never be
-// statically evaluated at build time. Without this, Next tries to prerender the
-// handler, the no-store fetch throws DYNAMIC_SERVER_USAGE, and the catch below
-// swallows that signal into a baked-in 500 response.
+// Live proxy — must never be statically evaluated at build time (a no-store
+// upstream fetch during prerender throws DYNAMIC_SERVER_USAGE).
 export const dynamic = 'force-dynamic'
 
 // Cap the function so a slow upstream can't blow past Vercel's serverless limit
-// (Hobby = 10s). The internal fetch timeout below (8s) is the real guarantee.
+// (Hobby = 10s). In practice the per-request path is pure local math (see below),
+// so this is just a safety net for the occasional TLE refresh.
 export const maxDuration = 10
 
-// ISS_ID for the International Space Station on wheretheiss.at
-const ISS_ID = 25544
+// International Space Station (NORAD catalog number 25544)
+const ISS_CATNR = 25544
+const TLE_URL = `https://celestrak.org/NORAD/elements/gp.php?CATNR=${ISS_CATNR}&FORMAT=TLE`
 
 // Crew — hardcoded for now (open-notify's crew feed is defunct).
 // Update manually on crew rotation.
@@ -25,78 +33,73 @@ const CREW = [
   { name: 'Alexander Grebenkin', craft: 'ISS' },
 ]
 
-interface ISSPosition {
-  latitude:  number
-  longitude: number
-  altitude:  number
-  velocity:  number
-  timestamp: number
-}
-interface ISSPayload {
-  position: ISSPosition
-  crew:     { name: string; craft: string }[]
-  stale?:   boolean
-}
+interface TLE { line1: string; line2: string }
 
-// Module-level last-good cache. On a warm serverless instance this both throttles
-// the upstream (wheretheiss.at rate-limits ~1 req/s per IP, and every visitor's
-// 5s poll funnels through Vercel's shared egress IP) and provides a fallback when
-// the upstream blips — the two causes of the intermittent "Signal Lost".
-let cache: { payload: ISSPayload; ts: number } | null = null
-// ISS moves ~7.6 km/s, so a 4s cache is ~30km off — negligible on a world map.
-const CACHE_TTL_MS = 4000
-// Serve the last-good position (flagged stale) for up to this long when the
-// upstream is failing, so brief trouble shows the last location instead of going
-// dark. Beyond this it's genuinely lost (the orbit is ~90 min), so we 503.
-const STALE_MAX_MS = 60_000
+// Why TLE + local propagation instead of a live position API:
+// the previous source (wheretheiss.at) takes ~12s per request — over Vercel's
+// 10s function limit — so every call 504'd and the tracker showed "Signal Lost".
+// Orbital elements (a TLE) stay accurate for days, so we fetch them from
+// Celestrak at most every few hours and compute the current position locally
+// with satellite.js on each request (sub-millisecond, no per-request network).
+let tleCache: { tle: TLE; ts: number } | null = null
+const TLE_TTL_MS = 3 * 60 * 60 * 1000 // 3 hours
 
-// NOTE: the previous open-notify fallback was removed — that service is defunct
-// (connection reset), so it never helped and its ~11s hang could push the whole
-// function past Vercel's 10s limit, causing a 504. wheretheiss.at is the single
-// source; resilience comes from the cache + stale-serving below.
-async function fetchISS(timeoutMs = 8000): Promise<ISSPosition> {
+async function fetchTLE(timeoutMs = 8000): Promise<TLE> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), timeoutMs)
   try {
-    const res = await fetch(`https://api.wheretheiss.at/v1/satellites/${ISS_ID}`, {
-      cache:   'no-store',
-      signal:  ctrl.signal,
-      headers: { Accept: 'application/json' },
-    })
-    if (!res.ok) throw new Error(`wheretheiss.at -> ${res.status}`)
-    const p = await res.json()
-    return {
-      latitude:  p.latitude,
-      longitude: p.longitude,
-      altitude:  Math.round(p.altitude),
-      velocity:  Math.round(p.velocity),
-      timestamp: p.timestamp,
-    }
+    const res = await fetch(TLE_URL, { cache: 'no-store', signal: ctrl.signal })
+    if (!res.ok) throw new Error(`celestrak -> ${res.status}`)
+    const text  = await res.text()
+    const lines = text.split('\n').map(l => l.trimEnd()).filter(Boolean)
+    const line1 = lines.find(l => l.startsWith('1 '))
+    const line2 = lines.find(l => l.startsWith('2 '))
+    if (!line1 || !line2) throw new Error('celestrak: malformed TLE')
+    return { line1, line2 }
   } finally {
     clearTimeout(timer)
   }
 }
 
-// GET /api/iss — proxies ISS position and crew data
-export async function GET() {
+async function getTLE(): Promise<TLE> {
   const now = Date.now()
-
-  // Serve a fresh cached value without touching the upstream (throttle).
-  if (cache && now - cache.ts < CACHE_TTL_MS) {
-    return NextResponse.json(cache.payload)
-  }
-
+  if (tleCache && now - tleCache.ts < TLE_TTL_MS) return tleCache.tle
   try {
-    const position = await fetchISS()
-    const payload: ISSPayload = { position, crew: CREW }
-    cache = { payload, ts: now }
-    return NextResponse.json(payload)
+    const tle = await fetchTLE()
+    tleCache = { tle, ts: now }
+    return tle
+  } catch (err) {
+    // Celestrak blip — keep using the last TLE (valid for days) if we have one.
+    if (tleCache) return tleCache.tle
+    throw err
+  }
+}
+
+function computePosition(tle: TLE) {
+  const satrec = twoline2satrec(tle.line1, tle.line2)
+  const now    = new Date()
+  const pv     = propagate(satrec, now)
+  if (!pv || !pv.position || !pv.velocity) throw new Error('propagation failed')
+
+  const gmst = gstime(now)
+  const geo  = eciToGeodetic(pv.position, gmst)
+  const { x, y, z } = pv.velocity
+
+  return {
+    latitude:  degreesLat(geo.latitude),
+    longitude: degreesLong(geo.longitude),
+    altitude:  Math.round(geo.height),                       // km
+    velocity:  Math.round(Math.sqrt(x * x + y * y + z * z) * 3600), // km/s -> km/h
+    timestamp: Math.floor(now.getTime() / 1000),
+  }
+}
+
+// GET /api/iss — computes live ISS position from a cached TLE, plus crew
+export async function GET() {
+  try {
+    const position = computePosition(await getTLE())
+    return NextResponse.json({ position, crew: CREW })
   } catch (err: any) {
-    // Upstream slow/blocked — serve the last good value (flagged stale) so the UI
-    // keeps the last known position, unless it's too old to be meaningful.
-    if (cache && now - cache.ts < STALE_MAX_MS) {
-      return NextResponse.json({ ...cache.payload, stale: true })
-    }
     console.error('ISS API error:', err)
     return NextResponse.json(
       { error: err.message || 'ISS position unavailable' },
