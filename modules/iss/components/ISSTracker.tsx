@@ -22,6 +22,7 @@ export function ISSTracker({ initialPosition, crew }: Props) {
   const [crewList, setCrewList]     = useState<ISSCrew[]>(crew)
   const intervalRef                 = useRef<NodeJS.Timeout | null>(null)
   const failCountRef                = useRef(0)
+  const busyRef                     = useRef(false)
 
   useEffect(() => {
     if (initialPosition) {
@@ -30,8 +31,16 @@ export function ISSTracker({ initialPosition, crew }: Props) {
     }
 
     const tick = async () => {
+      // Skip if a previous request is still in flight (the endpoint can take a
+      // few seconds), so slow responses don't pile up on the 5s interval.
+      if (busyRef.current) return
+      busyRef.current = true
+
+      // Client-side timeout so a hung request can't stall the tracker.
+      const ctrl  = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 9000)
       try {
-        const res  = await fetch('/api/iss')
+        const res  = await fetch('/api/iss', { signal: ctrl.signal })
         const data = await res.json()
         if (data.position) {
           failCountRef.current = 0
@@ -50,6 +59,9 @@ export function ISSTracker({ initialPosition, crew }: Props) {
       } catch {
         failCountRef.current += 1
         if (failCountRef.current >= 3) setIsLive(false)
+      } finally {
+        clearTimeout(timer)
+        busyRef.current = false
       }
     }
 
