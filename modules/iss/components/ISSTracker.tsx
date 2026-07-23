@@ -21,6 +21,8 @@ export function ISSTracker({ initialPosition, crew }: Props) {
   const [isLive, setIsLive]         = useState(true)
   const [crewList, setCrewList]     = useState<ISSCrew[]>(crew)
   const intervalRef                 = useRef<NodeJS.Timeout | null>(null)
+  const failCountRef                = useRef(0)
+  const busyRef                     = useRef(false)
 
   useEffect(() => {
     if (initialPosition) {
@@ -28,11 +30,20 @@ export function ISSTracker({ initialPosition, crew }: Props) {
       setTrail([pt])
     }
 
-    intervalRef.current = setInterval(async () => {
+    const tick = async () => {
+      // Skip if a previous request is still in flight (the endpoint can take a
+      // few seconds), so slow responses don't pile up on the 5s interval.
+      if (busyRef.current) return
+      busyRef.current = true
+
+      // Client-side timeout so a hung request can't stall the tracker.
+      const ctrl  = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 9000)
       try {
-        const res  = await fetch('/api/iss')
+        const res  = await fetch('/api/iss', { signal: ctrl.signal })
         const data = await res.json()
         if (data.position) {
+          failCountRef.current = 0
           setPosition(data.position)
           setLastUpdate(new Date())
           setIsLive(true)
@@ -40,12 +51,22 @@ export function ISSTracker({ initialPosition, crew }: Props) {
           const pt = latLngToSVG(data.position.latitude, data.position.longitude, MAP_W, MAP_H)
           setTrail(prev => [...prev, pt].slice(-MAX_TRAIL))
         } else {
-          setIsLive(false)
+          // Tolerate transient upstream blips — keep the last known position and
+          // only declare "Signal Lost" after a few consecutive misses (~15s).
+          failCountRef.current += 1
+          if (failCountRef.current >= 3) setIsLive(false)
         }
       } catch {
-        setIsLive(false)
+        failCountRef.current += 1
+        if (failCountRef.current >= 3) setIsLive(false)
+      } finally {
+        clearTimeout(timer)
+        busyRef.current = false
       }
-    }, 5000)
+    }
+
+    tick() // fetch immediately so the static shell fills without waiting 5s
+    intervalRef.current = setInterval(tick, 5000)
 
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [])
