@@ -1,5 +1,22 @@
+import { cache } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Mission, MissionCard, MissionStatus, MissionType } from '@/types/mission'
+import { DEFAULT_LANGUAGE, isLanguageCode, type LanguageCode } from '@/lib/i18n'
+
+interface MissionTranslation { language_code: string; name: string; description: string | null }
+
+// Published translations for a mission (all languages). Tolerant: if the
+// mission_translations table doesn't exist yet or the query fails, returns []
+// so the English content still renders.
+async function fetchMissionTranslations(missionId: string): Promise<MissionTranslation[]> {
+  const { data, error } = await supabase
+    .from('mission_translations')
+    .select('language_code, name, description')
+    .eq('mission_id', missionId)
+    .eq('is_published', true)
+  if (error || !data) return []
+  return data as MissionTranslation[]
+}
 
 const MISSION_CARD_SELECT = `
   id, name, slug, description, status, launch_date,
@@ -96,7 +113,11 @@ export async function getActiveMissions(limit = 4): Promise<MissionCard[]> {
   return normalizeCards([...primary, ...(extra || [])])
 }
 
-export async function getMissionBySlug(slug: string): Promise<Mission | null> {
+// Wrapped in cache() so the page's generateMetadata + body share one read.
+export const getMissionBySlug = cache(async (
+  slug: string,
+  lang: LanguageCode = DEFAULT_LANGUAGE,
+): Promise<Mission | null> => {
   const { data, error } = await supabase
     .from('missions')
     .select(MISSION_FULL_SELECT)
@@ -104,8 +125,10 @@ export async function getMissionBySlug(slug: string): Promise<Mission | null> {
     .single()
 
   if (error || !data) return null
-  return normalizeFull(data)
-}
+
+  const translations = await fetchMissionTranslations(data.id)
+  return normalizeFull(data, lang, translations)
+})
 
 export async function getAllMissionSlugs(): Promise<string[]> {
   const { data, error } = await supabase
@@ -118,7 +141,8 @@ export async function getAllMissionSlugs(): Promise<string[]> {
 
 export async function getRelatedMissions(
   missionId: string,
-  limit = 3
+  limit = 3,
+  lang: LanguageCode = DEFAULT_LANGUAGE,
 ): Promise<MissionCard[]> {
   const { data, error } = await supabase
     .from('missions')
@@ -128,7 +152,19 @@ export async function getRelatedMissions(
     .limit(limit)
 
   if (error) return []
-  return normalizeCards(data || [])
+  const cards = normalizeCards(data || [])
+  if (lang === DEFAULT_LANGUAGE || cards.length === 0) return cards
+
+  // Overlay translated names (tolerant — English on any failure).
+  const { data: tr } = await supabase
+    .from('mission_translations')
+    .select('mission_id, name')
+    .in('mission_id', cards.map(c => c.id))
+    .eq('language_code', lang)
+    .eq('is_published', true)
+  if (!tr) return cards
+  const names = new Map((tr as any[]).map(r => [r.mission_id, r.name]))
+  return cards.map(c => ({ ...c, name: names.get(c.id) || c.name }))
 }
 
 // ── Normalizers ───────────────────────────────────────────────
@@ -150,14 +186,19 @@ function normalizeCards(rows: any[]): MissionCard[] {
   }))
 }
 
-function normalizeFull(row: any): Mission {
+function normalizeFull(row: any, lang: LanguageCode = DEFAULT_LANGUAGE, translations: MissionTranslation[] = []): Mission {
   const ag = row.space_agencies
+  const t = lang !== DEFAULT_LANGUAGE ? translations.find(x => x.language_code === lang) || null : null
+  const served: LanguageCode = t ? lang : DEFAULT_LANGUAGE
+  const otherLangs = translations
+    .map(x => x.language_code)
+    .filter((c): c is LanguageCode => isLanguageCode(c) && c !== DEFAULT_LANGUAGE)
   return {
     id:            row.id,
-    name:          row.name,
+    name:          t?.name || row.name,
     slug:          row.slug,
     agencyId:      row.agency_id || '',
-    description:   row.description || '',
+    description:   (t?.description ?? row.description) || '',
     status:        row.status,
     launchDate:    row.launch_date || null,
     missionType:   row.mission_type,
@@ -177,5 +218,7 @@ function normalizeFull(row: any): Mission {
       description: ag.description || null,
       websiteUrl:  ag.website_url || null,
     } : null,
+    language:            served,
+    availableLanguages: [DEFAULT_LANGUAGE, ...Array.from(new Set(otherLangs))],
   }
 }

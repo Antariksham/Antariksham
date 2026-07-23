@@ -1,3 +1,5 @@
+import type { LanguageCode } from '@/lib/i18n'
+
 export type MissionStatus =
   | 'active'
   | 'upcoming'
@@ -43,6 +45,10 @@ export interface Mission {
   featured:      boolean
   createdAt:     string
   updatedAt:     string
+  // i18n — language actually served (falls back to 'en') + every language it
+  // can be read in.
+  language:           LanguageCode
+  availableLanguages: LanguageCode[]
 }
 
 export interface MissionTimeline {

@@ -7,6 +7,8 @@ import type { MissionStatus, MissionType, MissionTimeline } from '@/types/missio
 import type { AdminMissionFull, AgencyOption } from '@/modules/admin/services/adminMissions'
 import { Save, Globe, ChevronDown, Plus, Trash2, AlertCircle, ChevronUp } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
+import { TranslationEditor } from '@/modules/admin/components/TranslationEditor'
+import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 
 const STATUSES: { value: MissionStatus; label: string; color: string }[] = [
   { value: 'active',         label: 'Active',         color: 'var(--green)'  },
@@ -71,6 +73,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
   const [error,      setError]      = useState('')
   const [success,    setSuccess]    = useState('')
   const [slugEdited, setSlugEdited] = useState(mode === 'edit')
+  const [activeLang, setActiveLang] = useState<LanguageCode>('en')
 
   function handleNameChange(val: string) {
     setForm(f => ({ ...f, name: val, slug: slugEdited ? f.slug : slugify(val) }))
@@ -158,7 +161,44 @@ export function MissionForm({ mode, mission, agencies }: Props) {
   const currentStatus = STATUSES.find(s => s.value === form.status)
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '24px', alignItems: 'start' }}>
+    <div>
+
+      {/* Language tabs */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', borderBottom: '1px solid var(--border)' }}>
+        <LangTab active={activeLang === 'en'} onClick={() => setActiveLang('en')}>English</LangTab>
+        {TRANSLATION_LANGUAGES.map(l => (
+          <LangTab
+            key={l.code}
+            active={activeLang === l.code}
+            disabled={mode === 'new'}
+            title={mode === 'new' ? 'Save the mission first, then add translations' : undefined}
+            onClick={() => { if (mode !== 'new') setActiveLang(l.code) }}
+          >
+            {l.native}
+          </LangTab>
+        ))}
+      </div>
+
+      {/* Translation panes (edit mode) — kept mounted so edits survive tab switches */}
+      {mode === 'edit' && mission && TRANSLATION_LANGUAGES.map(l => (
+        <div key={l.code} style={{ display: activeLang === l.code ? 'block' : 'none' }}>
+          <TranslationEditor
+            endpoint="/api/admin/missions/translations"
+            idParam="id"
+            entityId={mission.id}
+            lang={l.code}
+            fields={[
+              { key: 'name',        label: 'Name',        type: 'input' },
+              { key: 'description', label: 'Description', type: 'code', rows: 10 },
+            ]}
+            english={{ name: form.name, description: form.description }}
+            requiredKeys={['name', 'description']}
+          />
+        </div>
+      ))}
+
+      {/* English pane */}
+      <div style={{ display: activeLang === 'en' ? 'grid' : 'none', gridTemplateColumns: '1fr 280px', gap: '24px', alignItems: 'start' }}>
 
       {/* ── Left column ───────────────────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -494,11 +534,33 @@ export function MissionForm({ mode, mission, agencies }: Props) {
         </SidePanel>
 
       </div>
+      </div>
+      {/* /English pane */}
     </div>
   )
 }
 
 // ── Sub-components ────────────────────────────────────────────
+
+function LangTab({ active, disabled, title, onClick, children }: { active: boolean; disabled?: boolean; title?: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase',
+        padding: '9px 16px', background: 'transparent', border: 'none',
+        borderBottom: `2px solid ${active ? 'var(--accent)' : 'transparent'}`,
+        color: active ? 'var(--accent)' : disabled ? 'rgba(var(--ink),0.35)' : 'rgba(var(--ink),0.7)',
+        cursor: disabled ? 'not-allowed' : 'pointer', marginBottom: '-1px',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
 
 function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (

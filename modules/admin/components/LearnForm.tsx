@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation'
 import { slugify } from '@/lib/utils'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { LearnThumb } from '@/modules/learn/components/LearnThumb'
+import { TranslationEditor } from '@/modules/admin/components/TranslationEditor'
 import type { AdminKnowledgeFull } from '@/modules/admin/services/adminKnowledge'
 import type { DifficultyLevel } from '@/types/knowledge'
+import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 import { Save } from 'lucide-react'
 
 const LEVELS: { value: DifficultyLevel; label: string }[] = [
@@ -53,6 +55,7 @@ export function LearnForm({ mode, article }: Props) {
   const [error,   setError]   = useState('')
   const [success, setSuccess] = useState('')
   const [slugEdited, setSlugEdited] = useState(mode === 'edit')
+  const [activeLang, setActiveLang] = useState<LanguageCode>('en')
 
   function set<K extends keyof FormState>(key: K, val: FormState[K]) {
     setForm(f => ({ ...f, [key]: val }))
@@ -110,7 +113,45 @@ export function LearnForm({ mode, article }: Props) {
   }
 
   return (
-    <div style={{ maxWidth: '760px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+    <div style={{ maxWidth: '760px' }}>
+
+      {/* Language tabs */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '22px', borderBottom: '1px solid var(--border)' }}>
+        <LangTab active={activeLang === 'en'} onClick={() => setActiveLang('en')}>English</LangTab>
+        {TRANSLATION_LANGUAGES.map(l => (
+          <LangTab
+            key={l.code}
+            active={activeLang === l.code}
+            disabled={mode === 'new'}
+            title={mode === 'new' ? 'Save the topic first, then add translations' : undefined}
+            onClick={() => { if (mode !== 'new') setActiveLang(l.code) }}
+          >
+            {l.native}
+          </LangTab>
+        ))}
+      </div>
+
+      {/* Translation panes (edit mode) — kept mounted so edits survive tab switches */}
+      {mode === 'edit' && article && TRANSLATION_LANGUAGES.map(l => (
+        <div key={l.code} style={{ display: activeLang === l.code ? 'block' : 'none' }}>
+          <TranslationEditor
+            endpoint="/api/admin/learn/translations"
+            idParam="id"
+            entityId={article.id}
+            lang={l.code}
+            fields={[
+              { key: 'title',   label: 'Title',   type: 'input' },
+              { key: 'excerpt', label: 'Excerpt', type: 'textarea', rows: 2 },
+              { key: 'content', label: 'Content', type: 'code', rows: 14 },
+            ]}
+            english={{ title: form.title, excerpt: form.excerpt, content: form.content }}
+            requiredKeys={['title', 'content']}
+          />
+        </div>
+      ))}
+
+      {/* English pane */}
+      <div style={{ display: activeLang === 'en' ? 'flex' : 'none', flexDirection: 'column', gap: '22px' }}>
 
       {error && (
         <div style={{ padding: '12px 16px', background: 'rgba(231,76,60,0.1)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '8px', fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--red)' }}>
@@ -204,11 +245,33 @@ export function LearnForm({ mode, article }: Props) {
           Cancel
         </button>
       </div>
+      </div>
+      {/* /English pane */}
     </div>
   )
 }
 
 // ── Small helpers ─────────────────────────────────────────────
+
+function LangTab({ active, disabled, title, onClick, children }: { active: boolean; disabled?: boolean; title?: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase',
+        padding: '9px 16px', background: 'transparent', border: 'none',
+        borderBottom: `2px solid ${active ? 'var(--accent)' : 'transparent'}`,
+        color: active ? 'var(--accent)' : disabled ? 'rgba(var(--ink),0.35)' : 'rgba(var(--ink),0.7)',
+        cursor: disabled ? 'not-allowed' : 'pointer', marginBottom: '-1px',
+      }}
+    >
+      {children}
+    </button>
+  )
+}
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
