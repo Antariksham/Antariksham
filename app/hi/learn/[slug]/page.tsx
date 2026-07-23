@@ -3,10 +3,12 @@ import { notFound }                     from 'next/navigation'
 import { getKnowledgeArticleBySlug }    from '@/modules/learn/services/getKnowledgeArticles'
 import { buildKnowledgeMetadata }       from '@/modules/learn/services/knowledgeMetadata'
 import { LearnArticlePage }             from '@/modules/learn/components/LearnArticlePage'
-import 'katex/dist/katex.min.css' // math is server-rendered; only the CSS ships
+import 'katex/dist/katex.min.css'
 
-const LANG = 'en' as const
+const LANG = 'hi' as const
 
+// Dynamic: which Hindi slugs exist depends on which translations are published,
+// and the root layout reads headers() (see /articles/[slug] for the full note).
 export const dynamic = 'force-dynamic'
 
 interface Props {
@@ -15,11 +17,11 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await getKnowledgeArticleBySlug(params.slug, LANG)
-  if (!article) return { title: 'Not Found' }
+  if (!article) return { title: 'नहीं मिला' }
   return buildKnowledgeMetadata(article, LANG)
 }
 
-export default async function LearnArticleRoute({ params }: Props) {
+export default async function HindiLearnArticleRoute({ params }: Props) {
   const article = await getKnowledgeArticleBySlug(params.slug, LANG)
   if (!article) notFound()
 

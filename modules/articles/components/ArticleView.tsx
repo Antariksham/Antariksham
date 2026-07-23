@@ -1,6 +1,6 @@
 import { formatDate } from '@/lib/utils'
-import { articleHref, articlesListHref, type LanguageCode } from '@/lib/i18n'
-import { LanguageToggle } from './LanguageToggle'
+import { articleHref, articlesListHref, HI_SANS, HI_SERIF, type LanguageCode } from '@/lib/i18n'
+import { LanguageToggle } from '@/components/LanguageToggle'
 import type { Article, ArticleCard } from '@/types/article'
 
 const CAT_COLORS: Record<string, string> = {
@@ -9,13 +9,6 @@ const CAT_COLORS: Record<string, string> = {
   Discoveries: '#2ecc71', Technology: '#4f8ef7',
   Missions: '#f39c12', Science: 'var(--white)',
 }
-
-// Devanagari-first font stacks for Hindi. These prepend widely-installed
-// Devanagari faces (Android/Windows/Apple all ship one) ahead of the site's
-// Latin stacks — no webfont download, matching the project's system-font
-// convention. English keeps the plain tokens.
-const HI_SANS  = "'Noto Sans Devanagari','Nirmala UI','Mangal',var(--font-sans)"
-const HI_SERIF = "'Noto Serif Devanagari','Tiro Devanagari Hindi','Nirmala UI',var(--font-serif)"
 
 // Shared renderer for an article in ANY language. The English route and the
 // /hi route both render this; `lang` drives the reading fonts, the language
@@ -45,7 +38,11 @@ export function ArticleView({
       >
 
         {/* Language switch — only shows when a translation exists */}
-        <LanguageToggle slug={article.slug} current={article.language} available={article.availableLanguages} />
+        <LanguageToggle
+          current={article.language}
+          available={article.availableLanguages}
+          hrefFor={c => articleHref(article.slug, c)}
+        />
 
         {/* Breaking badge */}
         {article.articleType === 'breaking-news' && (

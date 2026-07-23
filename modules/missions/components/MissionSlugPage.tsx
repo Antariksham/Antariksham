@@ -3,6 +3,8 @@
 import type { Mission, MissionCard } from '@/types/mission'
 import { StatusBadge } from './MissionsPage'
 import { formatDate } from '@/lib/utils'
+import { LanguageToggle } from '@/components/LanguageToggle'
+import { sectionHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
 
 const TYPE_LABEL: Record<string, string> = {
   crewed:         'Crewed',
@@ -18,11 +20,13 @@ const TYPE_LABEL: Record<string, string> = {
 interface Props {
   mission: Mission
   related: MissionCard[]
+  lang?:   LanguageCode
 }
 
-export function MissionSlugPage({ mission, related }: Props) {
+export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
+  const isHi = lang === 'hi'
   return (
-    <div style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
+    <div lang={lang} style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
 
       {/* ── Hero image ──────────────────────────────── */}
       {mission.featuredImage && (
@@ -39,6 +43,9 @@ export function MissionSlugPage({ mission, related }: Props) {
 
       {/* ── Main content column ─────────────────────── */}
       <article style={{ maxWidth: '800px', margin: '0 auto', padding: 'clamp(32px,6vw,64px) clamp(20px,5vw,40px)' }}>
+
+        {/* Language switch — only shows when a translation exists */}
+        <LanguageToggle current={mission.language} available={mission.availableLanguages} hrefFor={c => sectionHref('missions', mission.slug, c)} />
 
         {/* Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.1em' }}>
@@ -63,7 +70,7 @@ export function MissionSlugPage({ mission, related }: Props) {
         </div>
 
         {/* Mission name */}
-        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(32px,5vw,56px)', fontWeight: 400, color: 'var(--white)', lineHeight: 1.1, margin: '0 0 16px', letterSpacing: '-0.01em' }}>
+        <h1 style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: 'clamp(32px,5vw,56px)', fontWeight: 400, color: 'var(--white)', lineHeight: 1.1, margin: '0 0 16px', letterSpacing: '-0.01em' }}>
           {mission.name}
         </h1>
 
@@ -85,7 +92,7 @@ export function MissionSlugPage({ mission, related }: Props) {
         </div>
 
         {/* Description */}
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(16px,1.8vw,18px)', lineHeight: 1.9, color: 'rgba(var(--ink),0.9)', margin: '0 0 48px', letterSpacing: '0.01em' }}>
+        <p style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: 'clamp(16px,1.8vw,18px)', lineHeight: 1.9, color: 'rgba(var(--ink),0.9)', margin: '0 0 48px', letterSpacing: '0.01em' }}>
           {mission.description}
         </p>
 
@@ -164,7 +171,7 @@ export function MissionSlugPage({ mission, related }: Props) {
             </span>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: '16px' }}>
               {related.map(r => (
-                <a key={r.id} href={`/missions/${r.slug}`} style={{ textDecoration: 'none' }}>
+                <a key={r.id} href={sectionHref('missions', r.slug, lang)} style={{ textDecoration: 'none' }}>
                   <div
                     style={{ background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s' }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(var(--ink),0.16)'; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--card-shadow)' }}

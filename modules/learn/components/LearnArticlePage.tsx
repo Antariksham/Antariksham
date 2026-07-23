@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import katex from 'katex'
 import type { KnowledgeArticle, DifficultyLevel } from '@/types/knowledge'
+import { LanguageToggle } from '@/components/LanguageToggle'
+import { sectionHref, HI_SANS, HI_SERIF, type LanguageCode } from '@/lib/i18n'
 
 const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
   beginner:     'var(--green)',
@@ -18,24 +20,31 @@ const DIFFICULTY_LABELS: Record<DifficultyLevel, string> = {
 
 interface Props {
   article: KnowledgeArticle
+  lang?:   LanguageCode
 }
 
-export function LearnArticlePage({ article }: Props) {
+export function LearnArticlePage({ article, lang = 'en' }: Props) {
   const diffColor  = DIFFICULTY_COLORS[article.difficultyLevel] ?? 'var(--accent)'
   const diffLabel  = DIFFICULTY_LABELS[article.difficultyLevel] ?? article.difficultyLevel
+  const isHi       = lang === 'hi'
 
   const htmlContent = markdownToHtml(article.content)
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '60px 24px 100px' }}>
+    <div lang={lang} style={{ maxWidth: '800px', margin: '0 auto', padding: '60px 24px 100px' }}>
 
-      {/* ── Back link ──────────────────────────────────────── */}
-      <Link
-        href="/learn"
-        style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '40px' }}
-      >
-        ← Back to Learn
-      </Link>
+      {/* ── Back link + language switch ────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '40px' }}>
+        <Link
+          href="/learn"
+          style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+        >
+          ← Back to Learn
+        </Link>
+        <div style={{ marginBottom: '-24px' }}>
+          <LanguageToggle current={article.language} available={article.availableLanguages} hrefFor={c => sectionHref('learn', article.slug, c)} />
+        </div>
+      </div>
 
       {/* ── Article header ─────────────────────────────────── */}
       <div style={{ marginBottom: '48px' }}>
@@ -56,11 +65,11 @@ export function LearnArticlePage({ article }: Props) {
           </span>
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.15 }}>
+        <h1 style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.15 }}>
           {article.title}
         </h1>
 
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', lineHeight: 1.75, color: 'rgba(var(--ink),0.9)', margin: '0 0 24px' }}>
+        <p style={{ fontFamily: isHi ? HI_SERIF : 'var(--font-serif)', fontSize: '17px', lineHeight: 1.75, color: 'rgba(var(--ink),0.9)', margin: '0 0 24px' }}>
           {article.excerpt}
         </p>
 

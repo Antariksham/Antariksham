@@ -1,17 +1,15 @@
-import { LANGUAGE_LIST, articleHref, type LanguageCode } from '@/lib/i18n'
+import { LANGUAGE_LIST, type LanguageCode } from '@/lib/i18n'
 
-// A small "English | हिन्दी" switch shown on an article when it exists in more
-// than one language. Pure links (no client JS) — each points at the same
-// article in the other language, so the reader stays on the same story and the
-// shared view counter keeps ticking on one id.
+// A small "English | हिन्दी" switch shown on any localized page that exists in
+// more than one language. Pure links (no client JS) — `hrefFor` returns the URL
+// for a given language, so this works for articles, learn, missions, etc.
 export function LanguageToggle({
-  slug, current, available,
+  current, available, hrefFor,
 }: {
-  slug: string
-  current: LanguageCode
+  current:   LanguageCode
   available: LanguageCode[]
+  hrefFor:   (code: LanguageCode) => string
 }) {
-  // Nothing to switch to — don't render the control at all.
   if (available.length < 2) return null
 
   const langs = LANGUAGE_LIST.filter(l => available.includes(l.code))
@@ -19,7 +17,7 @@ export function LanguageToggle({
   return (
     <div
       role="group"
-      aria-label="Choose article language"
+      aria-label="Choose language"
       style={{
         display: 'inline-flex', alignItems: 'center', gap: '2px',
         border: '1px solid rgba(var(--ink),0.14)', borderRadius: '999px',
@@ -31,7 +29,7 @@ export function LanguageToggle({
         return (
           <a
             key={l.code}
-            href={articleHref(slug, l.code)}
+            href={hrefFor(l.code)}
             hrefLang={l.code}
             aria-current={active ? 'true' : undefined}
             style={{

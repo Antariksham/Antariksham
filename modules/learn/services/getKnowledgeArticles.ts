@@ -1,5 +1,22 @@
+import { cache } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { KnowledgeArticle, KnowledgeArticleCard } from '@/types/knowledge'
+import { DEFAULT_LANGUAGE, isLanguageCode, type LanguageCode } from '@/lib/i18n'
+
+interface KnowledgeTranslation { language_code: string; title: string; excerpt: string | null; content: string | null }
+
+// Published translations for a knowledge article (all languages). Tolerant: if
+// the knowledge_translations table doesn't exist yet or the query fails, returns
+// [] so the English content still renders.
+async function fetchKnowledgeTranslations(articleId: string): Promise<KnowledgeTranslation[]> {
+  const { data, error } = await supabase
+    .from('knowledge_translations')
+    .select('language_code, title, excerpt, content')
+    .eq('knowledge_article_id', articleId)
+    .eq('is_published', true)
+  if (error || !data) return []
+  return data as KnowledgeTranslation[]
+}
 
 const CARD_SELECT = `
   id, title, slug, excerpt, difficulty_level, related_topics, icon, featured, thumbnail
@@ -44,9 +61,11 @@ export async function getKnowledgeArticles(): Promise<KnowledgeArticleCard[]> {
 }
 
 // ── Single article by slug ────────────────────────────────────
-export async function getKnowledgeArticleBySlug(
-  slug: string
-): Promise<KnowledgeArticle | null> {
+// Wrapped in cache() so the page's generateMetadata + body share one read.
+export const getKnowledgeArticleBySlug = cache(async (
+  slug: string,
+  lang: LanguageCode = DEFAULT_LANGUAGE,
+): Promise<KnowledgeArticle | null> => {
   let { data, error }: { data: any; error: any } = await supabase
     .from('knowledge_articles')
     .select(FULL_SELECT)
@@ -63,8 +82,9 @@ export async function getKnowledgeArticleBySlug(
 
   if (error || !data) return null
 
-  return normalizeFull(data)
-}
+  const translations = await fetchKnowledgeTranslations(data.id)
+  return normalizeFull(data, lang, translations)
+})
 
 // ── All slugs (for generateStaticParams) ─────────────────────
 export async function getAllKnowledgeSlugs(): Promise<string[]> {
@@ -91,13 +111,19 @@ function normalizeCard(row: any): KnowledgeArticleCard {
   }
 }
 
-function normalizeFull(row: any): KnowledgeArticle {
+function normalizeFull(row: any, lang: LanguageCode = DEFAULT_LANGUAGE, translations: KnowledgeTranslation[] = []): KnowledgeArticle {
+  const t = lang !== DEFAULT_LANGUAGE ? translations.find(x => x.language_code === lang) || null : null
+  const served: LanguageCode = t ? lang : DEFAULT_LANGUAGE
+  const otherLangs = translations
+    .map(x => x.language_code)
+    .filter((c): c is LanguageCode => isLanguageCode(c) && c !== DEFAULT_LANGUAGE)
+
   return {
     id:              row.id,
-    title:           row.title,
+    title:           t?.title || row.title,
     slug:            row.slug,
-    content:         row.content || '',
-    excerpt:         row.excerpt || '',
+    content:         (t?.content || row.content) || '',
+    excerpt:         (t?.excerpt ?? row.excerpt) || '',
     difficultyLevel: row.difficulty_level || 'Beginner',
     relatedTopics:   row.related_topics || [],
     icon:            row.icon || '🔭',
@@ -106,6 +132,8 @@ function normalizeFull(row: any): KnowledgeArticle {
     seoId:           row.seo_id || null,
     createdAt:       row.created_at || '',
     updatedAt:       row.updated_at || '',
+    language:            served,
+    availableLanguages: [DEFAULT_LANGUAGE, ...Array.from(new Set(otherLangs))],
   }
 }
 
