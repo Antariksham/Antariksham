@@ -28,7 +28,7 @@ export function ISSTracker({ initialPosition, crew }: Props) {
       setTrail([pt])
     }
 
-    intervalRef.current = setInterval(async () => {
+    const tick = async () => {
       try {
         const res  = await fetch('/api/iss')
         const data = await res.json()
@@ -45,7 +45,10 @@ export function ISSTracker({ initialPosition, crew }: Props) {
       } catch {
         setIsLive(false)
       }
-    }, 5000)
+    }
+
+    tick() // fetch immediately so the static shell fills without waiting 5s
+    intervalRef.current = setInterval(tick, 5000)
 
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [])

@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server'
 
+// Live proxy to wheretheiss.at via a no-store upstream fetch — must never be
+// statically evaluated at build time. Without this, Next tries to prerender the
+// handler, the no-store fetch throws DYNAMIC_SERVER_USAGE, and the catch below
+// swallows that signal into a baked-in 500 response.
+export const dynamic = 'force-dynamic'
+
 // ISS_ID for the International Space Station on wheretheiss.at
 const ISS_ID = 25544
 
