@@ -21,6 +21,7 @@ export function ISSTracker({ initialPosition, crew }: Props) {
   const [isLive, setIsLive]         = useState(true)
   const [crewList, setCrewList]     = useState<ISSCrew[]>(crew)
   const intervalRef                 = useRef<NodeJS.Timeout | null>(null)
+  const failCountRef                = useRef(0)
 
   useEffect(() => {
     if (initialPosition) {
@@ -33,6 +34,7 @@ export function ISSTracker({ initialPosition, crew }: Props) {
         const res  = await fetch('/api/iss')
         const data = await res.json()
         if (data.position) {
+          failCountRef.current = 0
           setPosition(data.position)
           setLastUpdate(new Date())
           setIsLive(true)
@@ -40,10 +42,14 @@ export function ISSTracker({ initialPosition, crew }: Props) {
           const pt = latLngToSVG(data.position.latitude, data.position.longitude, MAP_W, MAP_H)
           setTrail(prev => [...prev, pt].slice(-MAX_TRAIL))
         } else {
-          setIsLive(false)
+          // Tolerate transient upstream blips — keep the last known position and
+          // only declare "Signal Lost" after a few consecutive misses (~15s).
+          failCountRef.current += 1
+          if (failCountRef.current >= 3) setIsLive(false)
         }
       } catch {
-        setIsLive(false)
+        failCountRef.current += 1
+        if (failCountRef.current >= 3) setIsLive(false)
       }
     }
 
