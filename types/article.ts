@@ -1,3 +1,5 @@
+import type { LanguageCode } from '@/lib/i18n'
+
 export type ArticleStatus = 'draft' | 'published' | 'scheduled' | 'archived'
 
 export type ArticleType =
@@ -49,6 +51,10 @@ export interface Article {
   views:         number
   categories:    ArticleCategory[]
   tags:          string[]
+  // i18n — the language actually served (falls back to 'en' when no published
+  // translation exists) and every language this article is readable in.
+  language:           LanguageCode
+  availableLanguages: LanguageCode[]
 }
 
 export interface ArticleCard {

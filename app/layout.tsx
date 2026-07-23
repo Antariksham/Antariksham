@@ -44,10 +44,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // Middleware sets x-pathname on every request
   const pathname = headers().get('x-pathname') || ''
   const isAdmin  = pathname.startsWith('/admin')
+  // Language-prefixed routes (/hi/…) render in that language.
+  const htmlLang = (pathname === '/hi' || pathname.startsWith('/hi/')) ? 'hi' : 'en'
 
   return (
     <html
-      lang="en"
+      lang={htmlLang}
       suppressHydrationWarning
       style={{
         '--font-serif': merriweather.style.fontFamily,

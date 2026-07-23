@@ -186,6 +186,20 @@ collection when Supabase env vars are absent — unrelated to app code).
   `modules/articles/` (`ArticlesPage`, `getArticles`). The eventual CosmosDaily
   cutover 301s are now `/article/:slug → /articles/:slug`.
 
+- ✅ **Bilingual articles (Hindi, extensible)**: an article can be read in English
+  or a hand-written translation **without becoming a separate article** — one
+  slug, one shared `views` counter. English lives in `articles`; other languages
+  live in `article_translations` (`supabase/migrations/20260722180000_…`, RLS
+  public-read published-only, no anon writes). English is unprefixed; other
+  languages are path-prefixed (`/hi/articles/:slug`) with an on-page language
+  toggle, `hreflang`/canonical alternates, `lang` attributes, and a Devanagari
+  system-font stack for the Hindi reading body. Untranslated articles fall back
+  to English (the `/hi` fallback page is `canonical→EN` + `noindex`). Admin: a
+  language tab in the article editor writes translations with their own
+  publish flag (`ArticleTranslationEditor` → `/api/admin/articles/translations`).
+  Config in `lib/i18n.ts` — add a language there + write its translations, no
+  schema change. **Run migration `20260722180000_article_translations.sql`.**
+
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 
 ---
@@ -407,6 +421,17 @@ bad migration is a one-line revert.
   membership is managed via SQL (see `supabase/migrations/README.md`).
 - Optionally promote `role` into a Supabase `app_metadata` JWT claim if
   middleware-level role checks are wanted later.
+
+**Internationalization follow-ups:**
+- Bilingual articles shipped (§2). To extend the SAME pattern to **Learn**
+  (`knowledge_articles`) and **Missions**: add a matching `*_translations` table,
+  thread `lang` through that module's read service + a `/<lang>/…` route, and add
+  a language tab to its admin editor. `lib/i18n.ts` already centralises the
+  language list + path prefixes.
+- Optional: a global language entry point in the nav, and a `/hi` home. Current
+  scope is article **content only** — site chrome/labels stay English by design.
+- When a sitemap is added, include `/hi/articles/:slug` for translated articles
+  with `hreflang` alternates.
 
 **Site-level polish TODOs:**
 - Nav links are still Antariksham's uppercase-mono style; CosmosDaily's are
