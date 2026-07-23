@@ -1,4 +1,4 @@
-import { getArticleBySlug, getAllArticleSlugs, getRelatedArticles } from '@/modules/articles/services/getArticles'
+import { getArticleBySlug, getRelatedArticles } from '@/modules/articles/services/getArticles'
 import { buildArticleMetadata } from '@/modules/articles/services/articleMetadata'
 import { ArticleView } from '@/modules/articles/components/ArticleView'
 import { notFound } from 'next/navigation'
@@ -6,12 +6,12 @@ import type { Metadata } from 'next'
 
 const LANG = 'en' as const
 
-export const revalidate = 300
-
-export async function generateStaticParams() {
-  const slugs = await getAllArticleSlugs()
-  return slugs.map(slug => ({ slug }))
-}
+// Rendered dynamically (per request). The root layout reads headers()
+// (x-pathname), so this route can't be statically pre-rendered / ISR-revalidated
+// without throwing DYNAMIC_SERVER_USAGE — which meant a newly-published article
+// (not in the last build) 500'd on-demand. Dynamic rendering fixes that and
+// keeps content + the shared view counter fresh on every view.
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(
   { params }: { params: { slug: string } }
