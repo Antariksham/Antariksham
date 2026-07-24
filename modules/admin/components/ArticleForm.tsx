@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter }             from 'next/navigation'
 import { slugify, readingTime }  from '@/lib/utils'
 import type {
@@ -13,11 +13,26 @@ import type {
   AuthorOption,
 } from '@/modules/admin/services/adminArticles'
 import {
-  Save, Eye, Globe, ChevronDown, X, Plus, AlertCircle,
+  Save, Eye, Globe, ChevronDown, X, Plus, AlertCircle, Pencil, Columns2,
 } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { ArticleTranslationEditor } from '@/modules/admin/components/ArticleTranslationEditor'
+import { ArticlePreview } from '@/modules/admin/preview/ArticlePreview'
+import type { ArticleRenderModel } from '@/modules/articles/components/ArticleBody'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
+
+// Debounce a fast-changing value so the (potentially heavy) live preview
+// re-renders on a pause rather than on every keystroke — typing never stalls.
+function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(id)
+  }, [value, delay])
+  return debounced
+}
+
+type ViewMode = 'editor' | 'split' | 'preview'
 
 // ── Constants ─────────────────────────────────────────────────
 
@@ -83,6 +98,37 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
   // Which language pane is showing. English = the article itself; other codes
   // edit a translation (only once the article exists, i.e. edit mode).
   const [activeLang, setActiveLang] = useState<LanguageCode>('en')
+  // Editor / Split / Preview — the live preview shares the production renderer.
+  const [viewMode, setViewMode] = useState<ViewMode>('editor')
+
+  // The body HTML can be large, so debounce it into the preview; every other
+  // (cheap) field flows through live for instant feedback.
+  const debouncedContent = useDebouncedValue(form.content, 180)
+
+  const previewModel: ArticleRenderModel = useMemo(() => {
+    const author = authors.find(a => a.id === form.authorId)
+    return {
+      title:         form.title,
+      excerpt:       form.excerpt,
+      content:       debouncedContent,
+      featuredImage: form.featuredImage || null,
+      categories:    form.categoryIds
+        .map(id => categories.find(c => c.id === id)?.name)
+        .filter((n): n is string => Boolean(n)),
+      tags:          form.tagIds
+        .map(id => tags.find(t => t.id === id)?.name)
+        .filter((n): n is string => Boolean(n)),
+      author:        author ? { name: author.name, avatar: null } : null,
+      publishedAt:   article?.publishedAt ?? null,
+      readingTime:   readingTime(debouncedContent),
+      views:         null,
+      articleType:   form.articleType,
+    }
+  }, [
+    form.title, form.excerpt, debouncedContent, form.featuredImage,
+    form.categoryIds, form.tagIds, form.authorId, form.articleType,
+    categories, tags, authors, article,
+  ])
 
   // Auto-generate slug from title
   function handleTitleChange(val: string) {
@@ -170,6 +216,12 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
   const wordCount = form.content.trim().split(/\s+/).filter(Boolean).length
   const rt        = readingTime(form.content)
 
+  const showEditor  = viewMode !== 'preview'
+  const showPreview = viewMode !== 'editor'
+  const gridCols    = viewMode === 'split'
+    ? 'minmax(0, 1fr) minmax(0, 1fr) 280px'
+    : 'minmax(0, 1fr) 280px'
+
   // ── Render ──────────────────────────────────────────────────
 
   return (
@@ -194,10 +246,15 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
       </div>
 
       {/* ── English pane (the article itself) ─────── */}
-      <div style={{ display: activeLang === 'en' ? 'grid' : 'none', gridTemplateColumns: '1fr 280px', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: activeLang === 'en' ? 'block' : 'none' }}>
+
+      {/* View-mode toggle — Editor / Split / Preview (shared production renderer) */}
+      <ViewModeTabs mode={viewMode} onChange={setViewMode} />
+
+      <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: '24px', alignItems: 'start' }}>
 
       {/* ── Left: main content ────────────────────── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: showEditor ? 'flex' : 'none', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
 
         {/* Title */}
         <div>
@@ -318,6 +375,13 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
         </div>
 
       </div>
+
+      {/* ── Live preview column (shares the production ArticleBody) ── */}
+      {showPreview && (
+        <div style={{ minWidth: 0, position: 'sticky', top: '24px' }}>
+          <ArticlePreview model={previewModel} />
+        </div>
+      )}
 
       {/* ── Right: sidebar controls ───────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'sticky', top: '24px' }}>
@@ -497,6 +561,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
 
       </div>
       </div>
+      </div>
       {/* ── /English pane ─────────────────────────── */}
 
       {/* ── Translation panes — mounted in edit mode, kept alive so unsaved
@@ -546,6 +611,43 @@ function LangTab({
     >
       {children}
     </button>
+  )
+}
+
+function ViewModeTabs({ mode, onChange }: { mode: ViewMode; onChange: (m: ViewMode) => void }) {
+  const opts: { value: ViewMode; label: string; icon: typeof Eye }[] = [
+    { value: 'editor',  label: 'Editor',  icon: Pencil },
+    { value: 'split',   label: 'Split',   icon: Columns2 },
+    { value: 'preview', label: 'Preview', icon: Eye },
+  ]
+  return (
+    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+      <div role="group" aria-label="Editor view mode" style={{ display: 'inline-flex', gap: '2px', background: 'rgba(var(--ink),0.04)', border: '1px solid var(--border)', padding: '3px', borderRadius: '8px' }}>
+        {opts.map(o => {
+          const active = mode === o.value
+          const Icon = o.icon
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => onChange(o.value)}
+              aria-pressed={active}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', border: 'none',
+                background: active ? 'var(--accent)' : 'transparent',
+                color: active ? 'var(--black)' : 'rgba(var(--ink),0.72)',
+                fontFamily: 'var(--font-mono)', fontSize: '12px',
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                transition: 'all 0.15s',
+              }}
+            >
+              <Icon size={13} /> {o.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
