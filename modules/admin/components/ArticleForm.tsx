@@ -18,6 +18,10 @@ import {
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { ArticleTranslationEditor } from '@/modules/admin/components/ArticleTranslationEditor'
 import { ArticlePreview } from '@/modules/admin/preview/ArticlePreview'
+import { ContentEditorField } from '@/modules/admin/editor/ContentEditorField'
+import { wordCountFromHtml } from '@/modules/admin/editor/sanitizeHtml'
+import { useAutosave, AutosaveSkip } from '@/modules/admin/editor/useAutosave'
+import { SaveStatus } from '@/modules/admin/editor/SaveStatus'
 import type { ArticleRenderModel } from '@/modules/articles/components/ArticleBody'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 
@@ -130,6 +134,51 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
     categories, tags, authors, article,
   ])
 
+  // ── Autosave ──────────────────────────────────────────────────
+  // The serialisable snapshot that gets backed up + persisted.
+  const snapshot = useMemo(() => ({
+    title:         form.title,
+    slug:          form.slug,
+    excerpt:       form.excerpt,
+    content:       form.content,
+    featuredImage: form.featuredImage,
+    authorId:      form.authorId,
+    status:        form.status,
+    articleType:   form.articleType,
+    featured:      form.featured,
+    categoryIds:   form.categoryIds,
+    tagIds:        form.tagIds,
+  }), [
+    form.title, form.slug, form.excerpt, form.content, form.featuredImage,
+    form.authorId, form.status, form.articleType, form.featured,
+    form.categoryIds, form.tagIds,
+  ])
+
+  const draftKey = `antariksham:draft:article:${mode === 'edit' && article ? article.id : 'new'}`
+
+  // Server persistence only in edit mode; a new article keeps a local backup
+  // until its first manual save. Autosave never changes the publish state — it
+  // sends the article's current status, and the API preserves published_at.
+  const serverSave = useMemo(() => {
+    if (mode !== 'edit' || !article) return undefined
+    return async (data: typeof snapshot) => {
+      if (!data.title.trim() || !data.slug.trim() || !data.content.trim()) throw new AutosaveSkip()
+      const res = await fetch(`/api/admin/articles?id=${article.id}`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ ...data, featuredImage: data.featuredImage || null, authorId: data.authorId || null }),
+      })
+      if (!res.ok) throw new Error('save failed')
+    }
+  }, [mode, article])
+
+  const autosave = useAutosave({ storageKey: draftKey, data: snapshot, save: serverSave })
+
+  function handleRestoreDraft() {
+    const restored = autosave.restore()
+    if (restored) setForm(f => ({ ...f, ...restored }))
+  }
+
   // Auto-generate slug from title
   function handleTitleChange(val: string) {
     setForm(f => ({
@@ -198,6 +247,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
       }
 
       setSuccess(saveStatus === 'published' ? 'Published!' : 'Saved as draft.')
+      autosave.markSaved()
 
       if (mode === 'new') {
         // Redirect to edit page after create
@@ -213,7 +263,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
     }
   }
 
-  const wordCount = form.content.trim().split(/\s+/).filter(Boolean).length
+  const wordCount = wordCountFromHtml(form.content)
   const rt        = readingTime(form.content)
 
   const showEditor  = viewMode !== 'preview'
@@ -247,6 +297,30 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
 
       {/* ── English pane (the article itself) ─────── */}
       <div style={{ display: activeLang === 'en' ? 'block' : 'none' }}>
+
+      {/* Draft recovery — restore unsaved changes from a crash / reload */}
+      {autosave.restorable && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', padding: '10px 14px', marginBottom: '16px', background: 'rgba(var(--gold-rgb),0.08)', border: '1px solid rgba(var(--gold-rgb),0.3)', borderRadius: '8px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--gold)', letterSpacing: '0.04em' }}>
+            Unsaved changes from a previous session were found.
+          </span>
+          <div style={{ display: 'flex', gap: '6px', marginLeft: 'auto' }}>
+            <button type="button" onClick={handleRestoreDraft} style={{ padding: '5px 12px', borderRadius: '6px', border: 'none', background: 'var(--gold)', color: 'var(--black)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer' }}>
+              Restore
+            </button>
+            <button type="button" onClick={autosave.dismissRestore} style={{ padding: '5px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'rgba(var(--ink),0.72)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer' }}>
+              Discard
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Multi-tab conflict warning */}
+      {autosave.conflict && (
+        <div style={{ padding: '10px 14px', marginBottom: '16px', background: 'rgba(var(--gold-rgb),0.06)', border: '1px solid rgba(var(--gold-rgb),0.25)', borderRadius: '8px', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--gold)', letterSpacing: '0.04em' }}>
+          This article is open in another tab — saving here may overwrite changes made there.
+        </div>
+      )}
 
       {/* View-mode toggle — Editor / Split / Preview (shared production renderer) */}
       <ViewModeTabs mode={viewMode} onChange={setViewMode} />
@@ -357,21 +431,12 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
         {/* Content */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
-            <FieldLabel>Content (HTML)</FieldLabel>
+            <FieldLabel>Content</FieldLabel>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', color: 'rgba(var(--ink),0.78)' }}>
               {wordCount} words · {rt} min read
             </span>
           </div>
-          <textarea
-            value={form.content}
-            onChange={e => set('content', e.target.value)}
-            placeholder={'<p>Start writing your article…</p>\n\n<p>Use standard HTML for formatting. Paragraphs, headings, bold, links.</p>'}
-            rows={22}
-            style={{ ...inputStyle({}), resize: 'vertical', lineHeight: 1.7, fontFamily: 'var(--font-mono)', fontSize: '14px' }}
-          />
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', margin: '6px 0 0', letterSpacing: '0.06em' }}>
-            Content is rendered as HTML. Use &lt;p&gt;, &lt;h2&gt;–&lt;h4&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;a href=""&gt;, &lt;ul&gt;&lt;li&gt;, &lt;blockquote&gt;.
-          </p>
+          <ContentEditorField value={form.content} onChange={html => set('content', html)} />
         </div>
 
       </div>
@@ -401,6 +466,9 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
 
         {/* Publish actions */}
         <SidePanel label="Publish">
+          <div style={{ marginBottom: '10px' }}>
+            <SaveStatus state={autosave.state} lastSavedAt={autosave.lastSavedAt} />
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <button
               onClick={() => handleSave('published')}
