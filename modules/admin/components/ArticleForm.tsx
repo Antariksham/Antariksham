@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter }             from 'next/navigation'
 import { slugify, readingTime }  from '@/lib/utils'
 import type {
@@ -13,11 +13,35 @@ import type {
   AuthorOption,
 } from '@/modules/admin/services/adminArticles'
 import {
-  Save, Eye, Globe, ChevronDown, X, Plus, AlertCircle,
+  Save, Eye, Globe, ChevronDown, X, Plus, AlertCircle, Pencil, Columns2, Search,
 } from 'lucide-react'
-import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { ArticleTranslationEditor } from '@/modules/admin/components/ArticleTranslationEditor'
+import { ArticlePreview } from '@/modules/admin/preview/ArticlePreview'
+import { ContentEditorField } from '@/modules/admin/editor/ContentEditorField'
+import { FeaturedImageManager } from '@/modules/admin/media/FeaturedImageManager'
+import { wordCountFromHtml } from '@/modules/admin/editor/sanitizeHtml'
+import { useAutosave, AutosaveSkip } from '@/modules/admin/editor/useAutosave'
+import { SaveStatus } from '@/modules/admin/editor/SaveStatus'
+import { validateArticle } from '@/modules/admin/publish/validation'
+import { PublishChecklist } from '@/modules/admin/publish/PublishChecklist'
+import { ScoreMeter } from '@/modules/admin/publish/ScoreMeter'
+import { SeoWorkspace } from '@/modules/admin/seo/SeoWorkspace'
+import type { ArticleRenderModel } from '@/modules/articles/components/ArticleBody'
+import type { FeaturedImageMeta } from '@/types/article'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
+
+// Debounce a fast-changing value so the (potentially heavy) live preview
+// re-renders on a pause rather than on every keystroke — typing never stalls.
+function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(id)
+  }, [value, delay])
+  return debounced
+}
+
+type ViewMode = 'editor' | 'split' | 'preview' | 'seo'
 
 // ── Constants ─────────────────────────────────────────────────
 
@@ -39,6 +63,7 @@ interface FormState {
   excerpt:            string
   content:            string
   featuredImage:      string
+  featuredImageMeta:  FeaturedImageMeta
   authorId:           string
   status:             ArticleStatus
   articleType:        ArticleType
@@ -67,6 +92,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
     excerpt:       article?.excerpt       || '',
     content:       article?.content       || '',
     featuredImage: article?.featuredImage || '',
+    featuredImageMeta: article?.featuredImageMeta || {},
     authorId:      article?.authorId      || '',
     status:        article?.status        || 'draft',
     articleType:   article?.articleType   || 'explainer',
@@ -83,6 +109,103 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
   // Which language pane is showing. English = the article itself; other codes
   // edit a translation (only once the article exists, i.e. edit mode).
   const [activeLang, setActiveLang] = useState<LanguageCode>('en')
+  // Editor / Split / Preview / SEO — the live preview shares the production renderer.
+  const [viewMode, setViewMode] = useState<ViewMode>('editor')
+  // Session-only SEO focus keyword (drives keyword analysis + the checklist).
+  const [focusKeyword, setFocusKeyword] = useState('')
+
+  // The body HTML can be large, so debounce it into the preview; every other
+  // (cheap) field flows through live for instant feedback.
+  const debouncedContent = useDebouncedValue(form.content, 180)
+
+  // Live publish/SEO validation. Uses the debounced body so parsing huge docs
+  // never stalls typing.
+  const validation = useMemo(() => validateArticle({
+    title:            form.title,
+    slug:             form.slug,
+    excerpt:          form.excerpt,
+    content:          debouncedContent,
+    featuredImage:    form.featuredImage || null,
+    featuredImageAlt: form.featuredImageMeta.alt,
+    categoryIds:      form.categoryIds,
+    authorId:         form.authorId || null,
+    focusKeyword,
+  }), [
+    form.title, form.slug, form.excerpt, debouncedContent, form.featuredImage,
+    form.featuredImageMeta, form.categoryIds, form.authorId, focusKeyword,
+  ])
+
+  const previewModel: ArticleRenderModel = useMemo(() => {
+    const author = authors.find(a => a.id === form.authorId)
+    return {
+      title:         form.title,
+      excerpt:       form.excerpt,
+      content:       debouncedContent,
+      featuredImage: form.featuredImage || null,
+      featuredImageMeta: form.featuredImageMeta,
+      categories:    form.categoryIds
+        .map(id => categories.find(c => c.id === id)?.name)
+        .filter((n): n is string => Boolean(n)),
+      tags:          form.tagIds
+        .map(id => tags.find(t => t.id === id)?.name)
+        .filter((n): n is string => Boolean(n)),
+      author:        author ? { name: author.name, avatar: null } : null,
+      publishedAt:   article?.publishedAt ?? null,
+      readingTime:   readingTime(debouncedContent),
+      views:         null,
+      articleType:   form.articleType,
+    }
+  }, [
+    form.title, form.excerpt, debouncedContent, form.featuredImage, form.featuredImageMeta,
+    form.categoryIds, form.tagIds, form.authorId, form.articleType,
+    categories, tags, authors, article,
+  ])
+
+  // ── Autosave ──────────────────────────────────────────────────
+  // The serialisable snapshot that gets backed up + persisted.
+  const snapshot = useMemo(() => ({
+    title:         form.title,
+    slug:          form.slug,
+    excerpt:       form.excerpt,
+    content:       form.content,
+    featuredImage: form.featuredImage,
+    featuredImageMeta: form.featuredImageMeta,
+    authorId:      form.authorId,
+    status:        form.status,
+    articleType:   form.articleType,
+    featured:      form.featured,
+    categoryIds:   form.categoryIds,
+    tagIds:        form.tagIds,
+  }), [
+    form.title, form.slug, form.excerpt, form.content, form.featuredImage, form.featuredImageMeta,
+    form.authorId, form.status, form.articleType, form.featured,
+    form.categoryIds, form.tagIds,
+  ])
+
+  const draftKey = `antariksham:draft:article:${mode === 'edit' && article ? article.id : 'new'}`
+
+  // Server persistence only in edit mode; a new article keeps a local backup
+  // until its first manual save. Autosave never changes the publish state — it
+  // sends the article's current status, and the API preserves published_at.
+  const serverSave = useMemo(() => {
+    if (mode !== 'edit' || !article) return undefined
+    return async (data: typeof snapshot) => {
+      if (!data.title.trim() || !data.slug.trim() || !data.content.trim()) throw new AutosaveSkip()
+      const res = await fetch(`/api/admin/articles?id=${article.id}`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ ...data, featuredImage: data.featuredImage || null, authorId: data.authorId || null }),
+      })
+      if (!res.ok) throw new Error('save failed')
+    }
+  }, [mode, article])
+
+  const autosave = useAutosave({ storageKey: draftKey, data: snapshot, save: serverSave })
+
+  function handleRestoreDraft() {
+    const restored = autosave.restore()
+    if (restored) setForm(f => ({ ...f, ...restored }))
+  }
 
   // Auto-generate slug from title
   function handleTitleChange(val: string) {
@@ -152,6 +275,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
       }
 
       setSuccess(saveStatus === 'published' ? 'Published!' : 'Saved as draft.')
+      autosave.markSaved()
 
       if (mode === 'new') {
         // Redirect to edit page after create
@@ -167,8 +291,15 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
     }
   }
 
-  const wordCount = form.content.trim().split(/\s+/).filter(Boolean).length
+  const wordCount = wordCountFromHtml(form.content)
   const rt        = readingTime(form.content)
+
+  const showEditor  = viewMode === 'editor' || viewMode === 'split'
+  const showPreview = viewMode === 'split'  || viewMode === 'preview'
+  const showSeo     = viewMode === 'seo'
+  const gridCols    = viewMode === 'split'
+    ? 'minmax(0, 1fr) minmax(0, 1fr) 280px'
+    : 'minmax(0, 1fr) 280px'
 
   // ── Render ──────────────────────────────────────────────────
 
@@ -194,10 +325,39 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
       </div>
 
       {/* ── English pane (the article itself) ─────── */}
-      <div style={{ display: activeLang === 'en' ? 'grid' : 'none', gridTemplateColumns: '1fr 280px', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: activeLang === 'en' ? 'block' : 'none' }}>
+
+      {/* Draft recovery — restore unsaved changes from a crash / reload */}
+      {autosave.restorable && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', padding: '10px 14px', marginBottom: '16px', background: 'rgba(var(--gold-rgb),0.08)', border: '1px solid rgba(var(--gold-rgb),0.3)', borderRadius: '8px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--gold)', letterSpacing: '0.04em' }}>
+            Unsaved changes from a previous session were found.
+          </span>
+          <div style={{ display: 'flex', gap: '6px', marginLeft: 'auto' }}>
+            <button type="button" onClick={handleRestoreDraft} style={{ padding: '5px 12px', borderRadius: '6px', border: 'none', background: 'var(--gold)', color: 'var(--black)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer' }}>
+              Restore
+            </button>
+            <button type="button" onClick={autosave.dismissRestore} style={{ padding: '5px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'transparent', color: 'rgba(var(--ink),0.72)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer' }}>
+              Discard
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Multi-tab conflict warning */}
+      {autosave.conflict && (
+        <div style={{ padding: '10px 14px', marginBottom: '16px', background: 'rgba(var(--gold-rgb),0.06)', border: '1px solid rgba(var(--gold-rgb),0.25)', borderRadius: '8px', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'var(--gold)', letterSpacing: '0.04em' }}>
+          This article is open in another tab — saving here may overwrite changes made there.
+        </div>
+      )}
+
+      {/* View-mode toggle — Editor / Split / Preview (shared production renderer) */}
+      <ViewModeTabs mode={viewMode} onChange={setViewMode} />
+
+      <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: '24px', alignItems: 'start' }}>
 
       {/* ── Left: main content ────────────────────── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: showEditor ? 'flex' : 'none', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
 
         {/* Title */}
         <div>
@@ -234,90 +394,58 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
           />
         </div>
 
-        {/* Featured image */}
+        {/* Featured image — newsroom-grade manager (validation, focal point,
+            attribution & licensing metadata) */}
         <div>
-          <FieldLabel hint="Upload via Media Library or paste a URL directly">Featured Image</FieldLabel>
-
-          {/* URL input + Media Library picker toggle */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
-            <input
-              value={form.featuredImage}
-              onChange={e => set('featuredImage', e.target.value)}
-              placeholder="https://… or pick from Media Library →"
-              style={{ ...inputStyle({}), flex: 1 }}
-            />
-            <button
-              type="button"
-              onClick={() => set('_showMediaPicker', !form._showMediaPicker)}
-              style={{
-                flexShrink:    0,
-                padding:       '0 14px',
-                background:    form._showMediaPicker ? 'var(--accent)' : 'rgba(var(--ink),0.05)',
-                border:        '1px solid',
-                borderColor:   form._showMediaPicker ? 'var(--accent)' : 'rgba(var(--ink),0.12)',
-                borderRadius:  '6px',
-                color:         form._showMediaPicker ? 'var(--black)' : 'rgba(var(--ink),0.9)',
-                fontFamily:    'var(--font-mono)',
-                fontSize: '13px',
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                cursor:        'pointer',
-                whiteSpace:    'nowrap',
-                transition:    'all 0.15s',
-              }}
-            >
-              {form._showMediaPicker ? '✕ Close' : '📁 Browse'}
-            </button>
-          </div>
-
-          {/* Inline media picker */}
-          {form._showMediaPicker && (
-            <div style={{ marginTop: '12px', padding: '20px', background: 'rgba(var(--ink),0.02)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-              <MediaLibrary
-                pickerMode
-                defaultBucket="article-images"
-                onPick={url => {
-                  set('featuredImage', url)
-                  set('_showMediaPicker', false)
-                }}
-              />
-            </div>
-          )}
-
-          {/* Image preview */}
-          {form.featuredImage && !form._showMediaPicker && (
-            <div style={{ marginTop: '10px', borderRadius: '8px', overflow: 'hidden', aspectRatio: '16/5', background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <img
-                src={form.featuredImage}
-                alt="preview"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-              />
-            </div>
-          )}
+          <FieldLabel hint="Drag/drop, paste, or Browse — set focal point + alt text">Featured Image</FieldLabel>
+          <FeaturedImageManager
+            url={form.featuredImage}
+            meta={form.featuredImageMeta}
+            onUrl={v => set('featuredImage', v)}
+            onMeta={v => set('featuredImageMeta', v)}
+          />
         </div>
 
         {/* Content */}
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
-            <FieldLabel>Content (HTML)</FieldLabel>
+            <FieldLabel>Content</FieldLabel>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', color: 'rgba(var(--ink),0.78)' }}>
               {wordCount} words · {rt} min read
             </span>
           </div>
-          <textarea
-            value={form.content}
-            onChange={e => set('content', e.target.value)}
-            placeholder={'<p>Start writing your article…</p>\n\n<p>Use standard HTML for formatting. Paragraphs, headings, bold, links.</p>'}
-            rows={22}
-            style={{ ...inputStyle({}), resize: 'vertical', lineHeight: 1.7, fontFamily: 'var(--font-mono)', fontSize: '14px' }}
-          />
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', margin: '6px 0 0', letterSpacing: '0.06em' }}>
-            Content is rendered as HTML. Use &lt;p&gt;, &lt;h2&gt;–&lt;h4&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;a href=""&gt;, &lt;ul&gt;&lt;li&gt;, &lt;blockquote&gt;.
-          </p>
+          <ContentEditorField value={form.content} onChange={html => set('content', html)} />
         </div>
 
       </div>
+
+      {/* ── Live preview column (shares the production ArticleBody) ── */}
+      {showPreview && (
+        <div style={{ minWidth: 0, position: 'sticky', top: '24px' }}>
+          <ArticlePreview model={previewModel} />
+        </div>
+      )}
+
+      {/* ── SEO workspace column ──────────────────── */}
+      {showSeo && (
+        <div style={{ minWidth: 0 }}>
+          <SeoWorkspace
+            title={form.title}
+            excerpt={form.excerpt}
+            content={form.content}
+            slug={form.slug}
+            featuredImage={form.featuredImage || null}
+            authorName={authors.find(a => a.id === form.authorId)?.name || null}
+            publishedAt={article?.publishedAt ?? null}
+            articleType={form.articleType}
+            focusKeyword={focusKeyword}
+            onFocusKeyword={setFocusKeyword}
+            onTitle={v => set('title', v)}
+            onExcerpt={v => set('excerpt', v)}
+            report={validation}
+          />
+        </div>
+      )}
 
       {/* ── Right: sidebar controls ───────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'sticky', top: '24px' }}>
@@ -337,11 +465,15 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
 
         {/* Publish actions */}
         <SidePanel label="Publish">
+          <div style={{ marginBottom: '10px' }}>
+            <SaveStatus state={autosave.state} lastSavedAt={autosave.lastSavedAt} />
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <button
               onClick={() => handleSave('published')}
-              disabled={saving}
-              style={btnStyle({ primary: true, disabled: saving })}
+              disabled={saving || !validation.canPublish}
+              title={!validation.canPublish ? `Resolve ${validation.failCount} required check${validation.failCount === 1 ? '' : 's'} first` : undefined}
+              style={btnStyle({ primary: true, disabled: saving || !validation.canPublish })}
             >
               <Globe size={12} />
               {saving ? 'Publishing…' : 'Publish'}
@@ -382,6 +514,16 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
               {form.status}
             </span>
           </div>
+        </SidePanel>
+
+        {/* Pre-flight — live scores + publish checklist */}
+        <SidePanel label="Pre-flight">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '14px' }}>
+            <ScoreMeter compact label="SEO"     value={validation.scores.seo} />
+            <ScoreMeter compact label="Read"    value={validation.scores.readability} />
+            <ScoreMeter compact label="Content" value={validation.scores.content} />
+          </div>
+          <PublishChecklist report={validation} />
         </SidePanel>
 
         {/* Article type */}
@@ -497,6 +639,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
 
       </div>
       </div>
+      </div>
       {/* ── /English pane ─────────────────────────── */}
 
       {/* ── Translation panes — mounted in edit mode, kept alive so unsaved
@@ -546,6 +689,44 @@ function LangTab({
     >
       {children}
     </button>
+  )
+}
+
+function ViewModeTabs({ mode, onChange }: { mode: ViewMode; onChange: (m: ViewMode) => void }) {
+  const opts: { value: ViewMode; label: string; icon: typeof Eye }[] = [
+    { value: 'editor',  label: 'Editor',  icon: Pencil },
+    { value: 'split',   label: 'Split',   icon: Columns2 },
+    { value: 'preview', label: 'Preview', icon: Eye },
+    { value: 'seo',     label: 'SEO',     icon: Search },
+  ]
+  return (
+    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+      <div role="group" aria-label="Editor view mode" style={{ display: 'inline-flex', gap: '2px', background: 'rgba(var(--ink),0.04)', border: '1px solid var(--border)', padding: '3px', borderRadius: '8px' }}>
+        {opts.map(o => {
+          const active = mode === o.value
+          const Icon = o.icon
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => onChange(o.value)}
+              aria-pressed={active}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', border: 'none',
+                background: active ? 'var(--accent)' : 'transparent',
+                color: active ? 'var(--black)' : 'rgba(var(--ink),0.72)',
+                fontFamily: 'var(--font-mono)', fontSize: '12px',
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                transition: 'all 0.15s',
+              }}
+            >
+              <Icon size={13} /> {o.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 

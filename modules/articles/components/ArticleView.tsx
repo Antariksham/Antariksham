@@ -1,6 +1,7 @@
-import { formatDate } from '@/lib/utils'
-import { articleHref, articlesListHref, HI_SANS, HI_SERIF, type LanguageCode } from '@/lib/i18n'
+import { articleHref, articlesListHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
 import { LanguageToggle } from '@/components/LanguageToggle'
+import { ArticleBody, type ArticleRenderModel } from './ArticleBody'
+import { buildArticleJsonLd } from '../services/articleMetadata'
 import type { Article, ArticleCard } from '@/types/article'
 
 const CAT_COLORS: Record<string, string> = {
@@ -10,9 +11,31 @@ const CAT_COLORS: Record<string, string> = {
   Missions: '#f39c12', Science: 'var(--white)',
 }
 
+// Map the full DB article onto the shared render model consumed by ArticleBody.
+export function toRenderModel(article: Article): ArticleRenderModel {
+  return {
+    title:         article.title,
+    excerpt:       article.excerpt,
+    content:       article.content,
+    featuredImage: article.featuredImage,
+    featuredImageMeta: article.featuredImageMeta,
+    categories:    article.categories,
+    tags:          article.tags,
+    author:        article.author
+      ? { name: article.author.name, avatar: article.author.avatar, slug: article.author.slug }
+      : null,
+    publishedAt:   article.publishedAt,
+    readingTime:   article.readingTime,
+    views:         article.views,
+    articleType:   article.articleType,
+  }
+}
+
 // Shared renderer for an article in ANY language. The English route and the
 // /hi route both render this; `lang` drives the reading fonts, the language
 // toggle, and the internal link prefixes so a reader stays in their language.
+// The reading column itself lives in ArticleBody — the same component the admin
+// live-preview renders, so the editor preview is always identical to production.
 export function ArticleView({
   article, related, lang,
 }: {
@@ -20,12 +43,17 @@ export function ArticleView({
   related: ArticleCard[]
   lang:    LanguageCode
 }) {
-  const isHi      = lang === 'hi'
-  const sansFont  = isHi ? HI_SANS  : 'var(--font-sans)'
-  const serifFont = isHi ? HI_SERIF : 'var(--font-serif)'
+  const isHi     = lang === 'hi'
+  const sansFont = isHi ? HI_SANS : 'var(--font-sans)'
 
   return (
     <div style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
+
+      {/* Structured data (Article/NewsArticle JSON-LD) for search engines */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildArticleJsonLd(article)) }}
+      />
 
       {/* ── Single centered column — everything flows here ── */}
       <article
@@ -44,133 +72,8 @@ export function ArticleView({
           hrefFor={c => articleHref(article.slug, c)}
         />
 
-        {/* Breaking badge */}
-        {article.articleType === 'breaking-news' && (
-          <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--black)', background: '#e74c3c', padding: '3px 8px', borderRadius: '3px', marginBottom: '20px', width: 'fit-content' }}>
-            Breaking
-          </span>
-        )}
-
-        {/* Categories */}
-        {article.categories.length > 0 && (
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
-            {article.categories.map(cat => (
-              <a key={cat} href={articlesListHref(lang)} style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: CAT_COLORS[cat] || '#4f8ef7', textDecoration: 'none' }}>
-                {cat}
-              </a>
-            ))}
-          </div>
-        )}
-
-        {/* Title */}
-        <h1 style={{
-          fontFamily:  sansFont,
-          fontSize:    'clamp(28px, 4.5vw, 48px)',
-          fontWeight:  800,
-          color:       'var(--white)',
-          lineHeight:  1.12,
-          margin:      '0 0 20px',
-          letterSpacing: '-0.01em',
-        }}>
-          {article.title}
-        </h1>
-
-        {/* Excerpt */}
-        {article.excerpt && (
-          <p style={{
-            fontFamily:  serifFont,
-            fontSize:    'clamp(16px, 2vw, 19px)',
-            color:       'rgba(var(--ink),0.9)',
-            lineHeight:  1.6,
-            margin:      '0 0 28px',
-            fontWeight:  400,
-          }}>
-            {article.excerpt}
-          </p>
-        )}
-
-        {/* Meta row */}
-        <div style={{
-          display:       'flex',
-          alignItems:    'center',
-          gap:           '20px',
-          flexWrap:      'wrap',
-          fontFamily:    'var(--font-mono)',
-          fontSize: '12px',
-          color:         'rgba(var(--ink),0.6)',
-          paddingBottom: '28px',
-          borderBottom:  '1px solid rgba(var(--ink),0.08)',
-          marginBottom:  '36px',
-        }}>
-          {article.author && (article.author.slug ? (
-            <a href={`/authors/${article.author.slug}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-              {article.author.avatar && (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={article.author.avatar} alt={article.author.name} loading="lazy"
-                  style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
-              )}
-              <span style={{ color: 'var(--accent)' }}>{article.author.name}</span>
-            </a>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {article.author.avatar && (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={article.author.avatar} alt={article.author.name} loading="lazy"
-                  style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
-              )}
-              <span style={{ color: 'rgba(var(--ink),0.7)' }}>{article.author.name}</span>
-            </div>
-          ))}
-          {article.publishedAt && <span>{formatDate(article.publishedAt)}</span>}
-          <span>{article.readingTime} min read</span>
-          <span>{article.views} views</span>
-        </div>
-
-        {/* Hero image — proper aspect ratio, rounded, contained */}
-        {article.featuredImage && (
-          <div style={{
-            width:        '100%',
-            aspectRatio:  '16 / 9',
-            borderRadius: '12px',
-            overflow:     'hidden',
-            marginBottom: '44px',
-            background:   'var(--surface)',
-            position:     'relative',
-          }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={article.featuredImage}
-              alt={article.title}
-              loading="lazy"
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </div>
-        )}
-
-        {/* Article body */}
-        <div style={{
-          fontFamily:  serifFont,
-          fontSize:    'clamp(16px, 1.8vw, 18px)',
-          lineHeight:  1.9,
-          color:       'rgba(var(--ink),0.9)',
-          letterSpacing: '0.01em',
-        }}
-          dangerouslySetInnerHTML={{ __html: article.content }}
-        />
-
-        {/* Tags */}
-        {article.tags && article.tags.length > 0 && (
-          <div style={{ marginTop: '56px', paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', marginRight: '4px' }}>
-              Tags
-            </span>
-            {article.tags.map(tag => (
-              <span key={tag} style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)', border: '1px solid rgba(var(--ink),0.1)', borderRadius: '4px', padding: '3px 10px' }}>
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* Reading column (shared with the admin preview) */}
+        <ArticleBody model={toRenderModel(article)} lang={lang} />
 
         {/* Back link */}
         <div style={{ marginTop: '48px', paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>

@@ -231,6 +231,39 @@ collection when Supabase env vars are absent — unrelated to app code).
   `.footer-link`/`.press` (hover brightens to primary text, active press) to
   match the nav. (Branch `claude/click-feedback-indicators-l6tm8o`, PR #41.)
 
+- ✅ **Mission Control editor experience upgrade (Phase 1)** — the article editor
+  (`ArticleForm`) is now a modern editorial system, backward compatible (content
+  stays HTML; existing articles untouched). Branch `claude/nice-volta-x4b9yy`, PR #42.
+  1. **Live preview** — the public reading column was extracted from `ArticleView`
+     into a shared **`ArticleBody`** + `ArticleRenderModel` (one renderer for site
+     *and* preview, so they can't drift). New **`.article-body`** stylesheet in
+     `globals.css` is the theme-aware rendering contract for every rich block
+     (headings, lists, checklists, quotes, callouts, tables, code, figures, fact
+     cards, FAQ, timeline, references, math, kbd/mark/sup/sub) — it also gave
+     articles proper paragraph spacing and restored list markers Tailwind Preflight
+     strips. `modules/admin/preview/` renders it inside a same-origin **iframe**
+     (real viewport → honest Desktop/Tablet/Mobile) with an Editor/Split/Preview/SEO
+     toggle. New RGB-triplet tokens (`--accent-rgb`/`--green-rgb`/`--gold-rgb`/`--red-rgb`).
+  2. **Rich block editor** (`modules/admin/editor/`) — contentEditable editor over
+     the content field (toolbar, **slash commands**, shortcuts, markdown rules,
+     sanitized paste) emitting the clean semantic HTML the `.article-body` classes
+     style; Rich⇄HTML toggle. `sanitizeHtml` (allowlist, XSS-safe). **Autosave**
+     (`useAutosave`): local backup + debounced server save (reuses the PATCH route,
+     never republishes) + draft recovery + multi-tab conflict warning + SaveStatus.
+  3. **Publish validation** (`modules/admin/publish/`) — `analyzeContent` +
+     `validateArticle` → required/warning/SEO checks + live SEO/readability/content
+     scores; sidebar **pre-flight checklist** gates Publish (Save-as-Draft always ok).
+  4. **Featured image manager** (`modules/admin/media/FeaturedImageManager.tsx`) —
+     drag-drop/paste/URL/library, validation, **focal point**, and attribution +
+     licensing metadata persisted in the additive **`articles.featured_image_meta`**
+     JSONB column (graceful fallback in admin + public reads; run
+     `supabase/migrations/20260724120000_article_featured_image_meta.sql`). The
+     public hero uses alt / focal / caption / credit.
+  5. **SEO workspace** (`modules/admin/seo/`, "SEO" tab) — Google/X/Facebook
+     previews of the real shipped metadata, focus-keyword analysis, meta
+     optimise/generate, and Article/NewsArticle **JSON-LD** now emitted on the
+     reading page (`ArticleView`) — structured data was previously absent.
+
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 
 ---
@@ -465,6 +498,19 @@ bad migration is a one-line revert.
     only name + description are. Can be added without a schema change.
   - When a sitemap is added, include the `/hi/*` detail URLs for translated items
     with `hreflang` alternates.
+
+**Editor experience follow-ups (Phase 1 upgrade shipped — see §2):**
+- Per-article SEO overrides (custom SEO title / meta description / social image /
+  robots) currently derive from the article's title/excerpt/featuredImage (what
+  actually ships); persisting independent overrides would need columns or a link
+  to the existing `seo_metadata` table.
+- Autosave sends the full payload only when something changed (no redundant
+  saves); a true partial/field-level PATCH would need an API change.
+- Editor niceties: block drag-to-reorder, inline image upload-on-drop (today
+  drop takes a URL; files go through the Media Library), and KaTeX rendering for
+  `.math-block` (the class is styled; live rendering is code-split into Learn).
+- Multi-tab conflict is a *warning* (+ local backup); a real 3-way merge is not
+  implemented.
 
 **Site-level polish TODOs:**
 - Nav links are still Antariksham's uppercase-mono style; CosmosDaily's are
