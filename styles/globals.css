@@ -251,6 +251,14 @@ a { color: inherit; text-decoration: none; }
   50%       { transform: translateY(-6px); }
 }
 
+/* Global spin — used by refresh/loading spinners (RefreshCw, Spinner).
+   Previously only defined inside LaunchTracker's local <style>, so spinners
+   on any other route (e.g. admin Launches) never actually rotated. */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 /* ─────────────────────────────────────────────────────────────
    COSMOSDAILY COMPONENT CLASSES  (homepage sibling)
    Ported from CosmosDaily's live css/style.css so shared surfaces
@@ -360,6 +368,46 @@ a { color: inherit; text-decoration: none; }
 }
 .tag:hover, .tag.active { background: var(--accent); color: #ffffff; border-color: var(--accent); }
 .tags-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* ─────────────────────────────────────────────────────────────
+   CLICK & NAVIGATION FEEDBACK
+   So a user always sees that a tap/click registered and that a
+   page transition is in flight. Pressed states use transform +
+   filter (not color/opacity) so they never collide with the
+   inline styles on nav links, and — unlike :hover — they fire on
+   touch devices too.
+   ───────────────────────────────────────────────────────────── */
+.btn:active     { transform: translateY(1px) scale(0.98); filter: brightness(0.92); }
+.card:active    { transform: translateY(-2px) scale(0.99); box-shadow: var(--card-shadow); }
+.tag:active     { transform: scale(0.95); }
+/* opt-in press feedback for bespoke inline-styled links (nav, etc.) */
+.press:active   { transform: scale(0.96); filter: brightness(0.9); }
+
+/* Top-of-page navigation progress bar (see components/layout/NavProgress).
+   Creeps toward 90% while a route transition is pending, snaps to 100%
+   and fades out on completion — the site-wide "your click is loading" cue. */
+.nav-progress {
+  position: fixed; top: 0; left: 0; height: 2.5px; width: 0;
+  z-index: 100; opacity: 0; pointer-events: none;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent), 0 0 4px var(--accent);
+  border-radius: 0 3px 3px 0;
+  transition: width 0.2s ease, opacity 0.3s ease;
+}
+.nav-progress.loading {
+  opacity: 1; width: 90%;
+  transition: width 12s cubic-bezier(0.12, 0.8, 0.15, 1);
+}
+.nav-progress.done {
+  opacity: 0; width: 100%;
+  transition: width 0.2s ease, opacity 0.4s ease 0.1s;
+}
+
+/* Respect reduced-motion: keep the feedback, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .btn:active, .card:active, .tag:active, .press:active { transform: none; }
+  .nav-progress.loading { transition: opacity 0.2s ease; }
+}
 
 /* page header (CosmosDaily inner-page pattern) */
 .page-header {

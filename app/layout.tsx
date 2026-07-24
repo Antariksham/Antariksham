@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from 'next'
 import { Merriweather, DM_Sans } from 'next/font/google'
 import { headers } from 'next/headers'
+import { Suspense } from 'react'
 import { siteConfig } from '@/config/site'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { NavProgress } from '@/components/layout/NavProgress'
 import '@/styles/globals.css'
 import '@/styles/responsive.css'
 
@@ -67,6 +69,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       modules/learn/components/LearnArticlePage.tsx) — no global CDN load. */}
 </head>
       <body>
+        {/* Site-wide "your click is loading" cue for route transitions.
+            Suspense is required because NavProgress reads useSearchParams(). */}
+        <Suspense fallback={null}>
+          <NavProgress />
+        </Suspense>
         {isAdmin ? (
           // Admin — no Navbar or Footer, AdminLayout handles its own chrome
           <>{children}</>
