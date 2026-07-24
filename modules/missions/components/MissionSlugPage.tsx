@@ -173,9 +173,8 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
               {related.map(r => (
                 <a key={r.id} href={sectionHref('missions', r.slug, lang)} style={{ textDecoration: 'none' }}>
                   <div
-                    style={{ background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(var(--ink),0.16)'; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--card-shadow)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(var(--ink),0.08)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+                    className="card"
+                    style={{ padding: '24px', height: '100%', cursor: 'pointer', alignItems: 'flex-start' }}
                   >
                     {r.agency && (
                       <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '10px' }}>

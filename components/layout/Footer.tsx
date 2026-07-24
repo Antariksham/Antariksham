@@ -37,7 +37,7 @@ export function Footer() {
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {col.links.map((item) => (
                   <li key={item.href}>
-                    <Link href={item.href} style={{ fontSize: '15px', fontWeight: 400, color: 'rgba(var(--ink),0.85)', textDecoration: 'none' }}>
+                    <Link href={item.href} className="footer-link press" style={{ fontSize: '15px', fontWeight: 400 }}>
                       {item.label}
                     </Link>
                   </li>
@@ -61,7 +61,7 @@ export function Footer() {
               { label: 'Sources',          href: '/sources'          },
               { label: 'Contact',          href: '/contact'          },
             ].map((item) => (
-              <Link key={item.href} href={item.href} style={{ fontSize: '13px', color: 'rgba(var(--ink),0.6)', textDecoration: 'none', fontFamily: 'var(--font-mono)' }}>
+              <Link key={item.href} href={item.href} className="footer-link footer-link--muted press" style={{ fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
                 {item.label}
               </Link>
             ))}

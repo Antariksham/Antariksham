@@ -223,8 +223,13 @@ collection when Supabase env vars are absent — unrelated to app code).
   (3) hoisted `@keyframes spin` from `LaunchTracker`'s local `<style>` into
   `globals.css` (the admin Launches refresh spinner never actually rotated) and
   added a reusable theme-aware `components/ui/Spinner.tsx`. All feedback respects
-  `prefers-reduced-motion`. (Branch `claude/click-feedback-indicators-l6tm8o`,
-  PR #41.)
+  `prefers-reduced-motion`. Follow-up: the article/mission **"Related"
+  recommendation cards** on detail pages were bespoke inline-styled divs (the
+  article ones had no hover at all; the mission ones used imperative
+  `onMouseEnter` JS) — converted both to the shared `.card` class so they get the
+  same hover-lift + `:active` press as every other card. **Footer links** now use
+  `.footer-link`/`.press` (hover brightens to primary text, active press) to
+  match the nav. (Branch `claude/click-feedback-indicators-l6tm8o`, PR #41.)
 
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 

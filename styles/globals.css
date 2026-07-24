@@ -383,6 +383,13 @@ a { color: inherit; text-decoration: none; }
 /* opt-in press feedback for bespoke inline-styled links (nav, etc.) */
 .press:active   { transform: scale(0.96); filter: brightness(0.9); }
 
+/* Footer links — hover brightens to primary text + shared .press active,
+   so they respond like the nav. Color lives here (not inline) so :hover can
+   win over it. */
+.footer-link        { color: rgba(var(--ink), 0.85); text-decoration: none; transition: color 0.15s ease; }
+.footer-link:hover  { color: var(--white); }
+.footer-link--muted { color: rgba(var(--ink), 0.6); }
+
 /* Top-of-page navigation progress bar (see components/layout/NavProgress).
    Creeps toward 90% while a route transition is pending, snaps to 100%
    and fades out on completion — the site-wide "your click is loading" cue. */
