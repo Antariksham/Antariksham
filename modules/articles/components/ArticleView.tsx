@@ -1,6 +1,7 @@
 import { articleHref, articlesListHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { ArticleBody, type ArticleRenderModel } from './ArticleBody'
+import { buildArticleJsonLd } from '../services/articleMetadata'
 import type { Article, ArticleCard } from '@/types/article'
 
 const CAT_COLORS: Record<string, string> = {
@@ -17,6 +18,7 @@ export function toRenderModel(article: Article): ArticleRenderModel {
     excerpt:       article.excerpt,
     content:       article.content,
     featuredImage: article.featuredImage,
+    featuredImageMeta: article.featuredImageMeta,
     categories:    article.categories,
     tags:          article.tags,
     author:        article.author
@@ -46,6 +48,12 @@ export function ArticleView({
 
   return (
     <div style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
+
+      {/* Structured data (Article/NewsArticle JSON-LD) for search engines */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildArticleJsonLd(article)) }}
+      />
 
       {/* ── Single centered column — everything flows here ── */}
       <article

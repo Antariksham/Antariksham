@@ -13,16 +13,21 @@ import type {
   AuthorOption,
 } from '@/modules/admin/services/adminArticles'
 import {
-  Save, Eye, Globe, ChevronDown, X, Plus, AlertCircle, Pencil, Columns2,
+  Save, Eye, Globe, ChevronDown, X, Plus, AlertCircle, Pencil, Columns2, Search,
 } from 'lucide-react'
-import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { ArticleTranslationEditor } from '@/modules/admin/components/ArticleTranslationEditor'
 import { ArticlePreview } from '@/modules/admin/preview/ArticlePreview'
 import { ContentEditorField } from '@/modules/admin/editor/ContentEditorField'
+import { FeaturedImageManager } from '@/modules/admin/media/FeaturedImageManager'
 import { wordCountFromHtml } from '@/modules/admin/editor/sanitizeHtml'
 import { useAutosave, AutosaveSkip } from '@/modules/admin/editor/useAutosave'
 import { SaveStatus } from '@/modules/admin/editor/SaveStatus'
+import { validateArticle } from '@/modules/admin/publish/validation'
+import { PublishChecklist } from '@/modules/admin/publish/PublishChecklist'
+import { ScoreMeter } from '@/modules/admin/publish/ScoreMeter'
+import { SeoWorkspace } from '@/modules/admin/seo/SeoWorkspace'
 import type { ArticleRenderModel } from '@/modules/articles/components/ArticleBody'
+import type { FeaturedImageMeta } from '@/types/article'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 
 // Debounce a fast-changing value so the (potentially heavy) live preview
@@ -36,7 +41,7 @@ function useDebouncedValue<T>(value: T, delay: number): T {
   return debounced
 }
 
-type ViewMode = 'editor' | 'split' | 'preview'
+type ViewMode = 'editor' | 'split' | 'preview' | 'seo'
 
 // ── Constants ─────────────────────────────────────────────────
 
@@ -58,6 +63,7 @@ interface FormState {
   excerpt:            string
   content:            string
   featuredImage:      string
+  featuredImageMeta:  FeaturedImageMeta
   authorId:           string
   status:             ArticleStatus
   articleType:        ArticleType
@@ -86,6 +92,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
     excerpt:       article?.excerpt       || '',
     content:       article?.content       || '',
     featuredImage: article?.featuredImage || '',
+    featuredImageMeta: article?.featuredImageMeta || {},
     authorId:      article?.authorId      || '',
     status:        article?.status        || 'draft',
     articleType:   article?.articleType   || 'explainer',
@@ -102,12 +109,31 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
   // Which language pane is showing. English = the article itself; other codes
   // edit a translation (only once the article exists, i.e. edit mode).
   const [activeLang, setActiveLang] = useState<LanguageCode>('en')
-  // Editor / Split / Preview — the live preview shares the production renderer.
+  // Editor / Split / Preview / SEO — the live preview shares the production renderer.
   const [viewMode, setViewMode] = useState<ViewMode>('editor')
+  // Session-only SEO focus keyword (drives keyword analysis + the checklist).
+  const [focusKeyword, setFocusKeyword] = useState('')
 
   // The body HTML can be large, so debounce it into the preview; every other
   // (cheap) field flows through live for instant feedback.
   const debouncedContent = useDebouncedValue(form.content, 180)
+
+  // Live publish/SEO validation. Uses the debounced body so parsing huge docs
+  // never stalls typing.
+  const validation = useMemo(() => validateArticle({
+    title:            form.title,
+    slug:             form.slug,
+    excerpt:          form.excerpt,
+    content:          debouncedContent,
+    featuredImage:    form.featuredImage || null,
+    featuredImageAlt: form.featuredImageMeta.alt,
+    categoryIds:      form.categoryIds,
+    authorId:         form.authorId || null,
+    focusKeyword,
+  }), [
+    form.title, form.slug, form.excerpt, debouncedContent, form.featuredImage,
+    form.featuredImageMeta, form.categoryIds, form.authorId, focusKeyword,
+  ])
 
   const previewModel: ArticleRenderModel = useMemo(() => {
     const author = authors.find(a => a.id === form.authorId)
@@ -116,6 +142,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
       excerpt:       form.excerpt,
       content:       debouncedContent,
       featuredImage: form.featuredImage || null,
+      featuredImageMeta: form.featuredImageMeta,
       categories:    form.categoryIds
         .map(id => categories.find(c => c.id === id)?.name)
         .filter((n): n is string => Boolean(n)),
@@ -129,7 +156,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
       articleType:   form.articleType,
     }
   }, [
-    form.title, form.excerpt, debouncedContent, form.featuredImage,
+    form.title, form.excerpt, debouncedContent, form.featuredImage, form.featuredImageMeta,
     form.categoryIds, form.tagIds, form.authorId, form.articleType,
     categories, tags, authors, article,
   ])
@@ -142,6 +169,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
     excerpt:       form.excerpt,
     content:       form.content,
     featuredImage: form.featuredImage,
+    featuredImageMeta: form.featuredImageMeta,
     authorId:      form.authorId,
     status:        form.status,
     articleType:   form.articleType,
@@ -149,7 +177,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
     categoryIds:   form.categoryIds,
     tagIds:        form.tagIds,
   }), [
-    form.title, form.slug, form.excerpt, form.content, form.featuredImage,
+    form.title, form.slug, form.excerpt, form.content, form.featuredImage, form.featuredImageMeta,
     form.authorId, form.status, form.articleType, form.featured,
     form.categoryIds, form.tagIds,
   ])
@@ -266,8 +294,9 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
   const wordCount = wordCountFromHtml(form.content)
   const rt        = readingTime(form.content)
 
-  const showEditor  = viewMode !== 'preview'
-  const showPreview = viewMode !== 'editor'
+  const showEditor  = viewMode === 'editor' || viewMode === 'split'
+  const showPreview = viewMode === 'split'  || viewMode === 'preview'
+  const showSeo     = viewMode === 'seo'
   const gridCols    = viewMode === 'split'
     ? 'minmax(0, 1fr) minmax(0, 1fr) 280px'
     : 'minmax(0, 1fr) 280px'
@@ -365,67 +394,16 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
           />
         </div>
 
-        {/* Featured image */}
+        {/* Featured image — newsroom-grade manager (validation, focal point,
+            attribution & licensing metadata) */}
         <div>
-          <FieldLabel hint="Upload via Media Library or paste a URL directly">Featured Image</FieldLabel>
-
-          {/* URL input + Media Library picker toggle */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
-            <input
-              value={form.featuredImage}
-              onChange={e => set('featuredImage', e.target.value)}
-              placeholder="https://… or pick from Media Library →"
-              style={{ ...inputStyle({}), flex: 1 }}
-            />
-            <button
-              type="button"
-              onClick={() => set('_showMediaPicker', !form._showMediaPicker)}
-              style={{
-                flexShrink:    0,
-                padding:       '0 14px',
-                background:    form._showMediaPicker ? 'var(--accent)' : 'rgba(var(--ink),0.05)',
-                border:        '1px solid',
-                borderColor:   form._showMediaPicker ? 'var(--accent)' : 'rgba(var(--ink),0.12)',
-                borderRadius:  '6px',
-                color:         form._showMediaPicker ? 'var(--black)' : 'rgba(var(--ink),0.9)',
-                fontFamily:    'var(--font-mono)',
-                fontSize: '13px',
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                cursor:        'pointer',
-                whiteSpace:    'nowrap',
-                transition:    'all 0.15s',
-              }}
-            >
-              {form._showMediaPicker ? '✕ Close' : '📁 Browse'}
-            </button>
-          </div>
-
-          {/* Inline media picker */}
-          {form._showMediaPicker && (
-            <div style={{ marginTop: '12px', padding: '20px', background: 'rgba(var(--ink),0.02)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-              <MediaLibrary
-                pickerMode
-                defaultBucket="article-images"
-                onPick={url => {
-                  set('featuredImage', url)
-                  set('_showMediaPicker', false)
-                }}
-              />
-            </div>
-          )}
-
-          {/* Image preview */}
-          {form.featuredImage && !form._showMediaPicker && (
-            <div style={{ marginTop: '10px', borderRadius: '8px', overflow: 'hidden', aspectRatio: '16/5', background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <img
-                src={form.featuredImage}
-                alt="preview"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-              />
-            </div>
-          )}
+          <FieldLabel hint="Drag/drop, paste, or Browse — set focal point + alt text">Featured Image</FieldLabel>
+          <FeaturedImageManager
+            url={form.featuredImage}
+            meta={form.featuredImageMeta}
+            onUrl={v => set('featuredImage', v)}
+            onMeta={v => set('featuredImageMeta', v)}
+          />
         </div>
 
         {/* Content */}
@@ -445,6 +423,27 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
       {showPreview && (
         <div style={{ minWidth: 0, position: 'sticky', top: '24px' }}>
           <ArticlePreview model={previewModel} />
+        </div>
+      )}
+
+      {/* ── SEO workspace column ──────────────────── */}
+      {showSeo && (
+        <div style={{ minWidth: 0 }}>
+          <SeoWorkspace
+            title={form.title}
+            excerpt={form.excerpt}
+            content={form.content}
+            slug={form.slug}
+            featuredImage={form.featuredImage || null}
+            authorName={authors.find(a => a.id === form.authorId)?.name || null}
+            publishedAt={article?.publishedAt ?? null}
+            articleType={form.articleType}
+            focusKeyword={focusKeyword}
+            onFocusKeyword={setFocusKeyword}
+            onTitle={v => set('title', v)}
+            onExcerpt={v => set('excerpt', v)}
+            report={validation}
+          />
         </div>
       )}
 
@@ -472,8 +471,9 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <button
               onClick={() => handleSave('published')}
-              disabled={saving}
-              style={btnStyle({ primary: true, disabled: saving })}
+              disabled={saving || !validation.canPublish}
+              title={!validation.canPublish ? `Resolve ${validation.failCount} required check${validation.failCount === 1 ? '' : 's'} first` : undefined}
+              style={btnStyle({ primary: true, disabled: saving || !validation.canPublish })}
             >
               <Globe size={12} />
               {saving ? 'Publishing…' : 'Publish'}
@@ -514,6 +514,16 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
               {form.status}
             </span>
           </div>
+        </SidePanel>
+
+        {/* Pre-flight — live scores + publish checklist */}
+        <SidePanel label="Pre-flight">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '14px' }}>
+            <ScoreMeter compact label="SEO"     value={validation.scores.seo} />
+            <ScoreMeter compact label="Read"    value={validation.scores.readability} />
+            <ScoreMeter compact label="Content" value={validation.scores.content} />
+          </div>
+          <PublishChecklist report={validation} />
         </SidePanel>
 
         {/* Article type */}
@@ -687,6 +697,7 @@ function ViewModeTabs({ mode, onChange }: { mode: ViewMode; onChange: (m: ViewMo
     { value: 'editor',  label: 'Editor',  icon: Pencil },
     { value: 'split',   label: 'Split',   icon: Columns2 },
     { value: 'preview', label: 'Preview', icon: Eye },
+    { value: 'seo',     label: 'SEO',     icon: Search },
   ]
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>

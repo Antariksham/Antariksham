@@ -98,6 +98,7 @@ function buildPayload(body: any) {
     excerpt:       String(body.excerpt      || '').trim(),
     content:       String(body.content      || '').trim(),
     featuredImage: body.featuredImage || null,
+    featuredImageMeta: body.featuredImageMeta && typeof body.featuredImageMeta === 'object' ? body.featuredImageMeta : null,
     authorId:      body.authorId      || null,
     status:        body.status        || 'draft',
     articleType:   body.articleType   || 'explainer',

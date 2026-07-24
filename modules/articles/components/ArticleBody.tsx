@@ -1,6 +1,6 @@
 import { formatDate } from '@/lib/utils'
 import { articlesListHref, HI_SANS, HI_SERIF, type LanguageCode } from '@/lib/i18n'
-import type { ArticleType } from '@/types/article'
+import type { ArticleType, FeaturedImageMeta } from '@/types/article'
 
 // ── Shared render model ───────────────────────────────────────
 // The single shape both the production reader and the admin live-preview feed
@@ -11,6 +11,7 @@ export interface ArticleRenderModel {
   excerpt:       string
   content:       string          // trusted HTML (semantic, uses .article-body classes)
   featuredImage: string | null
+  featuredImageMeta?: FeaturedImageMeta | null
   categories:    string[]        // display names
   tags:          string[]
   author:        { name: string; avatar: string | null; slug?: string | null } | null
@@ -142,26 +143,35 @@ export function ArticleBody({
           : model.views != null && <span>{model.views} views</span>}
       </div>
 
-      {/* Hero image — proper aspect ratio, rounded, contained */}
-      {model.featuredImage && (
-        <div style={{
-          width:        '100%',
-          aspectRatio:  '16 / 9',
-          borderRadius: '12px',
-          overflow:     'hidden',
-          marginBottom: '44px',
-          background:   'var(--surface)',
-          position:     'relative',
-        }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={model.featuredImage}
-            alt={model.title}
-            loading="lazy"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        </div>
-      )}
+      {/* Hero image — proper aspect ratio, rounded, contained. Uses the
+          featured-image metadata (alt for accessibility/SEO, focal point for
+          object-position, caption/credit for attribution) when present. */}
+      {model.featuredImage && (() => {
+        const m       = model.featuredImageMeta
+        const alt     = (m?.alt || '').trim() || model.title
+        const focal   = m && (m.focalX != null || m.focalY != null)
+          ? `${m.focalX ?? 50}% ${m.focalY ?? 50}%` : 'center'
+        const caption = m?.caption?.trim()
+        const credit  = m?.credit?.trim()
+        return (
+          <figure style={{ margin: '0 0 44px' }}>
+            <div style={{ width: '100%', aspectRatio: '16 / 9', borderRadius: '12px', overflow: 'hidden', background: 'var(--surface)', position: 'relative' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={model.featuredImage}
+                alt={alt}
+                loading="lazy"
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: focal }}
+              />
+            </div>
+            {(caption || credit) && (
+              <figcaption style={{ marginTop: '10px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', textAlign: 'center', letterSpacing: '0.02em', lineHeight: 1.5 }}>
+                {caption}{caption && credit ? ' — ' : ''}{credit && <span style={{ opacity: 0.75 }}>{credit}</span>}
+              </figcaption>
+            )}
+          </figure>
+        )
+      })()}
 
       {/* Article body — .article-body carries the shared rich-content styling
           (headings, lists, quotes, callouts, tables, code, figures, …) so
