@@ -375,11 +375,7 @@ export function LaunchTracker({ initialUpcoming, initialRecent }: Props) {
           )}
         </>
       )}
-
-      {/* Spin animation */}
-      <style>{`
-        @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
-      `}</style>
+      {/* @keyframes spin is defined globally in styles/globals.css */}
     </div>
   )
 }

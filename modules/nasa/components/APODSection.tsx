@@ -27,8 +27,10 @@ export function APODSection({ apod }: Props) {
     <div style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
 
       {/* ── Page header ─────────────────────────────── */}
-      <div style={{ borderBottom: '1px solid rgba(var(--ink),0.08)', padding: 'clamp(32px,5vw,56px) clamp(20px,5vw,48px) 28px' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+      {/* padding lives on the inner 900px box (like the main content below) so
+          the header text aligns with the image; border stays full-width. */}
+      <div style={{ borderBottom: '1px solid rgba(var(--ink),0.08)', padding: 'clamp(32px,5vw,56px) 0 28px' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 clamp(20px,5vw,48px)' }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '10px' }}>
             NASA
           </span>

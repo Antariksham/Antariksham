@@ -210,6 +210,27 @@ collection when Supabase env vars are absent — unrelated to app code).
   `20260722180000_article_translations.sql`, `20260723090000_knowledge_translations.sql`,
   `20260723091000_mission_translations.sql`.**
 
+- ✅ **Click & navigation feedback indicators**: clicks worked but gave users no
+  signal that the click registered or that a page was loading. Added (1) pressed
+  `:active` states for `.btn`/`.card`/`.tag` plus an opt-in `.press` helper
+  (transform+filter so it never collides with inline nav-link colors and fires
+  on touch, where `:hover` doesn't) — applied to the nav links/logo/search pills;
+  (2) a dependency-free site-wide top **navigation progress bar**
+  (`components/layout/NavProgress.tsx`) that starts on any internal link click /
+  browser back-forward and completes when the route commits
+  (`usePathname`/`useSearchParams`), wired into the root layout under `Suspense`
+  — the main "your click is loading" cue for slow `force-dynamic`/live routes;
+  (3) hoisted `@keyframes spin` from `LaunchTracker`'s local `<style>` into
+  `globals.css` (the admin Launches refresh spinner never actually rotated) and
+  added a reusable theme-aware `components/ui/Spinner.tsx`. All feedback respects
+  `prefers-reduced-motion`. Follow-up: the article/mission **"Related"
+  recommendation cards** on detail pages were bespoke inline-styled divs (the
+  article ones had no hover at all; the mission ones used imperative
+  `onMouseEnter` JS) — converted both to the shared `.card` class so they get the
+  same hover-lift + `:active` press as every other card. **Footer links** now use
+  `.footer-link`/`.press` (hover brightens to primary text, active press) to
+  match the nav. (Branch `claude/click-feedback-indicators-l6tm8o`, PR #41.)
+
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 
 ---

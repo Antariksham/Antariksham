@@ -191,7 +191,8 @@ export function ArticleView({
               {related.map(r => (
                 <a key={r.id} href={articleHref(r.slug, lang)} style={{ textDecoration: 'none' }}>
                   <div
-                    style={{ background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '12px', padding: '24px', height: '100%', cursor: 'pointer', transition: 'border-color 0.2s' }}
+                    className="card"
+                    style={{ padding: '24px', height: '100%', cursor: 'pointer', alignItems: 'flex-start' }}
                   >
                     {r.categories[0] && (
                       <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: CAT_COLORS[r.categories[0]] || '#4f8ef7', display: 'block', marginBottom: '10px' }}>
