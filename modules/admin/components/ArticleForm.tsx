@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter }             from 'next/navigation'
 import { slugify, readingTime }  from '@/lib/utils'
 import type {
@@ -26,20 +26,10 @@ import { validateArticle } from '@/modules/admin/publish/validation'
 import { PublishChecklist } from '@/modules/admin/publish/PublishChecklist'
 import { ScoreMeter } from '@/modules/admin/publish/ScoreMeter'
 import { SeoWorkspace } from '@/modules/admin/seo/SeoWorkspace'
+import { useDebouncedValue } from '@/modules/admin/editor/useDebouncedValue'
 import type { ArticleRenderModel } from '@/modules/articles/components/ArticleBody'
 import type { FeaturedImageMeta } from '@/types/article'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
-
-// Debounce a fast-changing value so the (potentially heavy) live preview
-// re-renders on a pause rather than on every keystroke — typing never stalls.
-function useDebouncedValue<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(id)
-  }, [value, delay])
-  return debounced
-}
 
 type ViewMode = 'editor' | 'split' | 'preview' | 'seo'
 
@@ -650,6 +640,15 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
             articleId={article.id}
             lang={l.code}
             english={{ title: form.title, excerpt: form.excerpt, content: form.content }}
+            shared={{
+              featuredImage:     form.featuredImage || null,
+              featuredImageMeta: form.featuredImageMeta,
+              categories:        form.categoryIds.map(id => categories.find(c => c.id === id)?.name).filter((n): n is string => Boolean(n)),
+              tags:              form.tagIds.map(id => tags.find(t => t.id === id)?.name).filter((n): n is string => Boolean(n)),
+              authorName:        authors.find(a => a.id === form.authorId)?.name || null,
+              publishedAt:       article.publishedAt,
+              articleType:       form.articleType,
+            }}
           />
         </div>
       ))}

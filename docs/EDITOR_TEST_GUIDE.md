@@ -258,13 +258,32 @@ count — **only the text changes.** It lives in a separate language tab.
 1. **Save/create the English article first** (Publish or Save as Draft). Translations are
    only available in **edit mode**, so the हिन्दी tab is disabled on a brand-new article.
 2. At the top of the editor, click the **हिन्दी** language tab (next to **English**).
-3. Paste the Hindi **Title**, **Excerpt** and **Content** below. The English content is
-   shown beside the Hindi box as a reference — **keep the same HTML tags, translate only
+   The translation tab has its own **Editor / Split / Preview** toggle and autosave.
+3. Paste the Hindi **Title** and **Excerpt** below. For the **Content**, switch the
+   content editor to **`HTML source`**, paste the Hindi HTML block, then toggle back to
+   **`Rich`** — it renders as blocks in the Devanagari reading font, with the rendered
+   **English reference** beside it. The rule: **keep the same HTML tags, translate only
    the words between them** (already done for you below).
 4. Turn on **"Show this हिन्दी translation to readers"**, then **Save translation**.
 5. Visit **`/hi/articles/<slug>`** (e.g. `/hi/articles/artemis-ii-nasas-first-crewed-return-to-the-moon`).
    Verify the on-page **language toggle (EN ⇄ हिन्दी)** appears on both language pages,
    the Devanagari reading font is used, and every block renders exactly like English.
+
+### Feature checks (the translation editor has its own upgrades)
+- [ ] **Rich editor** — same block editor as English (toolbar, `/` slash commands,
+      shortcuts, sanitized paste), typing in the Devanagari serif font.
+- [ ] **Editor mode** — the **rendered English reference** sits beside the Hindi editor.
+- [ ] **Split / Preview** — the live preview renders the Hindi text with the **shared
+      English metadata** (featured image + focal point, categories, tags, author) — i.e.
+      exactly what `/hi/articles/<slug>` will ship — with device + theme switching.
+- [ ] **Autosave** — the save-state pill (Saving… / Saved just now), reload **draft
+      recovery**, and the **two-tab conflict** warning all work for the translation too.
+      *(Server autosave starts after the first manual "Create translation"; before that
+      changes are backed up locally.)*
+- [ ] **Translation pre-flight** — with the Hindi block below pasted, it shows
+      ✓ *HTML structure matches English (tag-for-tag)* and ✓ *Length in line with
+      English*. Now **delete one callout** from the Hindi content — the pre-flight flips
+      to ⚠ and names the first mismatching block. Undo to go green again.
 
 ### Paste — Hindi fields
 

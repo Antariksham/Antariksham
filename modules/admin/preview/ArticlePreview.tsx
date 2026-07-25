@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Monitor, Tablet, Smartphone, Sun, Moon } from 'lucide-react'
 import { ArticleBody, countWords, type ArticleRenderModel } from '@/modules/articles/components/ArticleBody'
+import type { LanguageCode } from '@/lib/i18n'
 import { PreviewFrame } from './PreviewFrame'
 
 type Device = 'desktop' | 'tablet' | 'mobile'
@@ -20,7 +21,7 @@ const DEVICES: Record<Device, { w: number; h: number; label: string; icon: typeo
  * editor can check both light/dark and all three breakpoints without leaving
  * the form.
  */
-export function ArticlePreview({ model }: { model: ArticleRenderModel }) {
+export function ArticlePreview({ model, lang = 'en' }: { model: ArticleRenderModel; lang?: LanguageCode }) {
   const [device, setDevice] = useState<Device>('desktop')
   const [theme, setTheme]   = useState<'light' | 'dark'>('dark')
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -125,14 +126,14 @@ export function ArticlePreview({ model }: { model: ArticleRenderModel }) {
         <PreviewFrame deviceWidth={d.w} deviceHeight={d.h} theme={theme} fitWidth={Math.max(280, fitWidth - 32)}>
           <div style={{ background: 'var(--black)', minHeight: '100%' }}>
             <article
-              lang="en"
+              lang={lang}
               style={{
                 maxWidth: '740px',
                 margin:   '0 auto',
                 padding:  'clamp(32px, 6vw, 64px) clamp(20px, 5vw, 40px)',
               }}
             >
-              <ArticleBody model={model} lang="en" preview />
+              <ArticleBody model={model} lang={lang} preview />
             </article>
           </div>
         </PreviewFrame>

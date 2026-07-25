@@ -13,10 +13,12 @@ import { sanitizeHtml } from './sanitizeHtml'
  * the public `.article-body` renderer already styles.
  */
 export function ContentEditorField({
-  value, onChange,
+  value, onChange, lang = 'en',
 }: {
   value:    string
   onChange: (html: string) => void
+  /** Content language — forwarded to the editor (lang attribute + reading font). */
+  lang?:    string
 }) {
   const [mode, setMode] = useState<'rich' | 'html'>('rich')
   const [showMedia, setShowMedia] = useState(false)
@@ -46,6 +48,7 @@ export function ContentEditorField({
           value={value}
           onChange={onChange}
           onPickImage={() => setShowMedia(true)}
+          lang={lang}
         />
       ) : (
         <textarea
@@ -53,6 +56,7 @@ export function ContentEditorField({
           onChange={e => onChange(e.target.value)}
           placeholder={'<p>Start writing your article…</p>'}
           rows={22}
+          lang={lang}
           spellCheck={false}
           style={{
             width: '100%', padding: '14px', background: 'var(--black)',

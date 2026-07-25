@@ -263,6 +263,18 @@ collection when Supabase env vars are absent — unrelated to app code).
      previews of the real shipped metadata, focus-keyword analysis, meta
      optimise/generate, and Article/NewsArticle **JSON-LD** now emitted on the
      reading page (`ArticleView`) — structured data was previously absent.
+  6. **Translation editor parity** (`ArticleTranslationEditor` rewritten) — the
+     हिन्दी tab now gets the same rich block editor (Devanagari-aware via a `lang`
+     prop threaded through `ContentEditorField`/`RichEditor`), Editor/Split/Preview
+     modes (Editor shows the **rendered English reference** beside the Hindi editor;
+     preview renders `lang="hi"` with the **shared** English metadata passed down as
+     a `shared` prop from `ArticleForm`), autosave (per-language storage key, draft
+     recovery, tab-conflict warning; server autosave only once the translation
+     exists), and a **translation pre-flight** whose structure-parity check
+     (`modules/admin/editor/translationChecks.ts`) enforces "same HTML tags,
+     different words" against the English body. SEO workspace and featured-image
+     manager are deliberately NOT in the translation tab — those fields are shared
+     from English by design.
 
 **Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
 

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { sanitizeHtml } from './sanitizeHtml'
 import { EDITOR_BLOCKS, type EditorBlock } from './editorBlocks'
+import { HI_SERIF } from '@/lib/i18n'
 
 export interface RichEditorHandle {
   insertImage: (opts: { src: string; alt?: string; caption?: string; credit?: string }) => void
@@ -21,6 +22,8 @@ interface Props {
   onChange:    (html: string) => void
   onPickImage: () => void
   ariaLabel?:  string
+  /** Content language — drives the lang attribute + reading font (hi → Devanagari). */
+  lang?:       string
 }
 
 // Parse a YouTube / Vimeo URL into an embeddable iframe src.
@@ -38,7 +41,7 @@ function escapeHtml(s: string): string {
 }
 
 export const RichEditor = forwardRef<RichEditorHandle, Props>(function RichEditor(
-  { value, onChange, onPickImage, ariaLabel }, ref,
+  { value, onChange, onPickImage, ariaLabel, lang = 'en' }, ref,
 ) {
   const editorRef   = useRef<HTMLDivElement>(null)
   const lastEmitted = useRef<string>(value)
@@ -344,6 +347,7 @@ export const RichEditor = forwardRef<RichEditorHandle, Props>(function RichEdito
         role="textbox"
         aria-multiline="true"
         aria-label={ariaLabel || 'Article content'}
+        lang={lang}
         onInput={() => { emit(); refreshSlash() }}
         onKeyDown={handleKeyDown}
         onKeyUp={refreshSlash}
@@ -356,7 +360,7 @@ export const RichEditor = forwardRef<RichEditorHandle, Props>(function RichEdito
           overflowY: 'auto',
           padding: '20px 22px',
           outline: 'none',
-          fontFamily: 'var(--font-serif)',
+          fontFamily: lang === 'hi' ? HI_SERIF : 'var(--font-serif)',
           fontSize: '17px',
           lineHeight: 1.75,
           color: 'rgba(var(--ink),0.92)',
