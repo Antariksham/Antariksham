@@ -5,9 +5,11 @@ import { getAdminUser } from '@/modules/admin/services/getAdminUser'
 export const dynamic = 'force-dynamic'
 
 // GET/POST /api/cron/publish — promote due scheduled articles and archive
-// expired ones. Meant to be called on a schedule by Vercel Cron (see
-// vercel.json). Authorised by the CRON_SECRET env (Vercel sends it as a Bearer
-// token); an authenticated admin may also trigger it manually from the panel.
+// expired ones. The AUTOMATIC transitions are handled inside Postgres by
+// pg_cron (see supabase/migrations/*_article_scheduling.sql), so no external
+// scheduler is required. This endpoint remains for a manual "run now": an
+// authenticated admin, or a caller presenting the CRON_SECRET (e.g. an external
+// uptime pinger) if you ever want to drive it from outside the database.
 async function authorized(req: NextRequest): Promise<boolean> {
   const secret = process.env.CRON_SECRET
   if (secret) {

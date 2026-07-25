@@ -446,10 +446,14 @@ collection when Supabase env vars are absent — unrelated to app code).
     (`scheduled_at`, `expire_at` + partial indexes; run it). Service reads/writes
     with graceful fallback and honours `republish`; `runScheduledPublishing`
     promotes due scheduled → published and archives expired.
-  - **Cron**: `app/api/cron/publish` (auth via `CRON_SECRET`, or an admin for
-    manual runs) + a root **`vercel.json`** crons entry (`*/15 * * * *`).
-    Scheduled/expired articles never leak — public reads already filter
-    `status = 'published'`.
+  - **Automatic transitions run inside Postgres via pg_cron** — the migration
+    defines `public.run_scheduled_publishing()` and schedules it every minute, so
+    **no external scheduler is required** (Vercel Hobby only allows daily crons).
+    `app/api/cron/publish` remains for a manual "run now" (an admin, or a caller
+    with `CRON_SECRET`). Scheduled/expired articles never leak — public reads
+    already filter `status = 'published'`. If the migration can't enable pg_cron
+    (permissions), it only NOTICEs — turn on pg_cron in Supabase → Database →
+    Extensions and re-run.
   - **Known follow-up**: recurring publishing + real email/push notifications
     (the endpoint currently just performs the transitions; a scheduled-run digest
     is the natural next step).
