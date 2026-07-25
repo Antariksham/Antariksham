@@ -132,6 +132,8 @@ so it's the best way to load every block at once.
 
 <hr>
 
+<!-- QA ONLY — this paragraph and the <hr> above it exist only to exercise every
+     inline style in one place. DELETE both before publishing a real article. -->
 <p><strong>Formatting sampler (for QA):</strong> <strong>bold</strong>, <em>italic</em>, <u>underline</u>, <s>strikethrough</s>, <mark>highlight</mark>, <code>inline code</code>, keyboard <kbd>Ctrl</kbd>+<kbd>K</kbd>, an external source at <a href="https://www.nasa.gov/artemis">NASA.gov</a>, superscript 10<sup>3</sup>, and subscript H<sub>2</sub>O.</p>
 
 <div class="references">
@@ -145,6 +147,12 @@ so it's the best way to load every block at once.
 
 > There is a fourth callout colour, `callout-danger` (red), available via HTML
 > (`<div class="callout callout-danger">…</div>`) — add one if you want to see it.
+
+> **About the last paragraph ("Formatting sampler (for QA)").** That line — and the
+> `<hr>` above it — are **not real article content**. They exist only to render every
+> inline style (bold, italic, underline, strikethrough, highlight, inline code, `kbd`,
+> link, superscript, subscript) in one visible place so you can confirm they all work.
+> **Delete both before publishing a real article** (the same applies to the Hindi copy).
 
 ---
 
@@ -355,6 +363,8 @@ count — **only the text changes.** It lives in a separate language tab.
 
 <hr>
 
+<!-- QA ONLY — this paragraph and the <hr> above it exist only to exercise every
+     inline style in one place. DELETE both before publishing a real article. -->
 <p><strong>फ़ॉर्मेटिंग नमूना (QA के लिए):</strong> <strong>बोल्ड</strong>, <em>इटैलिक</em>, <u>रेखांकित</u>, <s>काट</s>, <mark>हाइलाइट</mark>, <code>इनलाइन कोड</code>, कीबोर्ड <kbd>Ctrl</kbd>+<kbd>K</kbd>, <a href="https://www.nasa.gov/artemis">NASA.gov</a> पर एक बाहरी स्रोत, सुपरस्क्रिप्ट 10<sup>3</sup>, और सबस्क्रिप्ट H<sub>2</sub>O।</p>
 
 <div class="references">
