@@ -331,10 +331,38 @@ collection when Supabase env vars are absent — unrelated to app code).
     (light + dark, `prefers-reduced-motion`, full keyboard/ARIA). Zero-dependency
     `node:test` unit tests (`modules/articles/reader/reader.test.ts`).
 
-**Not yet done:** Phase 2 Features 3–8 (Advanced Article Components, Publishing
-Scheduler, Analytics Dashboard, Internal Linking, Citation Management, Advanced
-Search) — building one at a time on request. Phases 3–4 of the plan, and the
-polish items in §10.
+- ✅ **Advanced Article Components (Phase 2, Feature 3)** — a big library of
+  premium content blocks, all authored as sanitized semantic HTML (SEO-friendly,
+  printable, backward compatible) and, where interactive, upgraded client-side.
+  New `modules/articles/blocks/`.
+  - **New static blocks** (pure `.article-body` CSS + editor entries): Key
+    Takeaways, Did You Know, Alert box, Pull Quote, Mission Statistics grid,
+    Glossary, Research Summary, Comparison Table, Specification Table, Horizontal
+    Timeline — alongside the Phase-1 blocks (fact card, callouts, FAQ, vertical
+    timeline, references, footnotes, math, table, code, gallery).
+  - **`ArticleEnhancer`** (client, progressive enhancement, iframe-safe,
+    defensive per-block, idempotent): code **syntax highlighting + copy button**
+    (dependency-free tokenizer in `blockUtils.ts`), live **Countdown**, **Image
+    Carousel** (track + arrows + dots), image **Lightbox** (gallery/carousel/
+    opt-in), **sortable Data Table** (click/keyboard, `aria-sort`), **Embedded
+    PDF**, and **KaTeX math** (code-split — `import('katex')` only when the
+    article has math; CSS ships from the route page). Everything degrades
+    gracefully with JS off.
+  - **Embeds**: YouTube (existing), Embedded PDF, Tweet/X facade, NASA/ESA media
+    (agency-badged figures).
+  - **Editor**: ~18 new blocks added to `EDITOR_BLOCKS` (slash-searchable); the
+    `sanitizeHtml` allowlist was extended for the new classes, structural
+    containers and `data-*` config attributes (URLs still validated at enhance
+    time).
+  - **CSS**: theme-aware block styles + interactive-UI styles + the site's first
+    **`@media print`** rules (drops the reading chrome, avoids break-inside on
+    cards/tables, reveals collapsed FAQ answers, prints link URLs). Wired into
+    `ArticleView` via `<ArticleEnhancer />`. Pure helpers covered by
+    zero-dependency `node:test` tests (`modules/articles/blocks/blocks.test.ts`).
+
+**Not yet done:** Phase 2 Features 4–8 (Publishing Scheduler, Analytics
+Dashboard, Internal Linking, Citation Management, Advanced Search) — building one
+at a time on request. Phases 3–4 of the plan, and the polish items in §10.
 
 ---
 

@@ -24,23 +24,40 @@ const ALLOWED_CLASSES = new Set([
   'embed', 'embed-video', 'references', 'references-title', 'footnotes',
   'footnotes-title', 'footnote-ref', 'math-block', 'math-inline', 'timeline',
   't-when', 'faq', 'credit',
+  // Phase 2, Feature 3 — advanced components
+  'key-takeaways', 'did-you-know', 'pullquote', 'stat-grid', 'stat', 'stat-value',
+  'stat-label', 'glossary', 'research-summary', 'rs-title', 'comparison', 'spec',
+  'timeline-h', 'countdown', 'cd-title', 'cd-target', 'carousel', 'embed-doc',
+  'embed-tweet', 'embed-media',
 ])
 
 // Bare <div>/<span> are only kept when they carry one of these structural
 // classes; otherwise they're unwrapped (div→contents, promoted to <p> at the
 // block level) so we never emit meaningless wrappers.
-const STRUCTURAL_DIV_CLASSES = ['callout', 'table-wrap', 'embed', 'gallery']
-const STRUCTURAL_SPAN_CLASSES = ['math-inline', 'footnote-ref', 'credit', 't-when', 'fact-label', 'callout-title']
+const STRUCTURAL_DIV_CLASSES = [
+  'callout', 'table-wrap', 'embed', 'gallery',
+  'stat-grid', 'stat', 'countdown', 'carousel', 'embed-doc', 'embed-tweet',
+]
+const STRUCTURAL_SPAN_CLASSES = [
+  'math-inline', 'footnote-ref', 'credit', 't-when', 'fact-label', 'callout-title',
+  'stat-value', 'stat-label',
+]
 
 const ATTR_ALLOWLIST: Record<string, Set<string>> = {
   a:       new Set(['href', 'title']),
-  img:     new Set(['src', 'alt', 'title', 'loading']),
+  img:     new Set(['src', 'alt', 'title', 'loading', 'data-zoomable']),
   iframe:  new Set(['src', 'title', 'allow', 'allowfullscreen']),
   td:      new Set(['colspan', 'rowspan']),
   th:      new Set(['colspan', 'rowspan', 'scope']),
   li:      new Set(['data-checked']),
   ol:      new Set(['start']),
   details: new Set(['open']),
+  // Advanced components carry their config in data-* attributes read by the
+  // client ArticleEnhancer (which validates any URL before use).
+  div:     new Set(['data-to', 'data-kind', 'data-src', 'data-sortable']),
+  figure:  new Set(['data-kind']),
+  pre:     new Set(['data-lang']),
+  code:    new Set(['data-lang']),
 }
 
 // Only these iframe hosts are allowed (video/embeds). Everything else is dropped.

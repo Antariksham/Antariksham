@@ -5,6 +5,7 @@ import { TableOfContents } from './TableOfContents'
 import { buildToc, tocCount } from '../services/toc'
 import { buildArticleJsonLd } from '../services/articleMetadata'
 import { ReaderProvider, type ReaderMeta } from '../reader/ReaderContext'
+import { ArticleEnhancer } from '../blocks/ArticleEnhancer'
 import { ReadingProgressBar } from '../reader/ReadingProgressBar'
 import { ShareRail } from '../reader/ShareRail'
 import { ReaderDock } from '../reader/ReaderDock'
@@ -169,6 +170,11 @@ export function ArticleView({
           </div>
         </div>
       )}
+
+      {/* Progressive enhancement for advanced article components (Feature 3):
+          code highlight/copy, countdown, carousel, lightbox, sortable tables,
+          embedded PDF, KaTeX math. Degrades gracefully with JS off. */}
+      <ArticleEnhancer />
 
       {/* Reader chrome — mobile action dock, preferences panel, resume pill */}
       <ReaderDock />
