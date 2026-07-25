@@ -29,13 +29,15 @@ const ALLOWED_CLASSES = new Set([
   'stat-label', 'glossary', 'research-summary', 'rs-title', 'comparison', 'spec',
   'timeline-h', 'countdown', 'cd-title', 'cd-target', 'carousel', 'embed-doc',
   'embed-tweet', 'embed-media',
+  // Phase 2, Feature 7 — citations
+  'citations', 'cite-ref', 'cite-back',
 ])
 
 // Bare <div>/<span> are only kept when they carry one of these structural
 // classes; otherwise they're unwrapped (div→contents, promoted to <p> at the
 // block level) so we never emit meaningless wrappers.
 const STRUCTURAL_DIV_CLASSES = [
-  'callout', 'table-wrap', 'embed', 'gallery',
+  'callout', 'table-wrap', 'embed', 'gallery', 'references',
   'stat-grid', 'stat', 'countdown', 'carousel', 'embed-doc', 'embed-tweet',
 ]
 const STRUCTURAL_SPAN_CLASSES = [
@@ -49,12 +51,14 @@ const ATTR_ALLOWLIST: Record<string, Set<string>> = {
   iframe:  new Set(['src', 'title', 'allow', 'allowfullscreen']),
   td:      new Set(['colspan', 'rowspan']),
   th:      new Set(['colspan', 'rowspan', 'scope']),
-  li:      new Set(['data-checked']),
+  li:      new Set(['data-checked', 'id', 'data-cite']),   // id/data-cite → citation refs
   ol:      new Set(['start']),
+  sup:     new Set(['id']),                                 // citation marker anchors
   details: new Set(['open']),
   // Advanced components carry their config in data-* attributes read by the
-  // client ArticleEnhancer (which validates any URL before use).
-  div:     new Set(['data-to', 'data-kind', 'data-src', 'data-sortable']),
+  // client ArticleEnhancer (which validates any URL before use). data-style is
+  // set on the citations block so the Citation Manager can restore the style.
+  div:     new Set(['data-to', 'data-kind', 'data-src', 'data-sortable', 'data-style']),
   figure:  new Set(['data-kind']),
   pre:     new Set(['data-lang']),
   code:    new Set(['data-lang']),

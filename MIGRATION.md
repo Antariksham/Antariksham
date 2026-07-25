@@ -360,9 +360,36 @@ collection when Supabase env vars are absent — unrelated to app code).
     `ArticleView` via `<ArticleEnhancer />`. Pure helpers covered by
     zero-dependency `node:test` tests (`modules/articles/blocks/blocks.test.ts`).
 
-**Not yet done:** Phase 2 Features 4–8 (Publishing Scheduler, Analytics
-Dashboard, Internal Linking, Citation Management, Advanced Search) — building one
-at a time on request. Phases 3–4 of the plan, and the polish items in §10.
+- ✅ **Reference & Citation Management (Phase 2, Feature 7)** — a scientific
+  citation system for the editor. New `modules/admin/citations/`.
+  - **Pure core** (`citationTypes.ts` + `formatCitation.ts`): 12 citation types
+    (journal, book, research paper, conference, arXiv, DOI, website, video,
+    dataset, NASA, ESA, ISRO) formatted in **APA / MLA / Chicago / IEEE** (+
+    verbatim Custom), with per-style author reformatting (e.g. APA “Last, I. I.”
+    vs IEEE “I. I. Last”), `validateCitation` (missing title/source/year, broken
+    URL, malformed DOI), a stable reuse `citationKey`, duplicate detection, and
+    the inline-marker + numbered references-block builders. All output is
+    escaped (XSS-safe) and survives the editor sanitizer. 20 zero-dependency
+    `node:test` cases (`citations.test.ts`).
+  - **Citation Manager** (`CitationManager.tsx`): a modal launched from a new
+    editor-toolbar button. Build a citation with type-specific fields, see it
+    live-formatted + validated, then **insert a numbered inline `[n]` marker**
+    at the caret and (re)generate the article’s **References section**. A
+    browser-local **library** (`citationLibrary.ts`) makes citations reusable;
+    the chosen style is stamped on the block (`data-style`) so it restores on
+    reopen. Auto-numbering by add-order with de-dupe (reusing a source keeps its
+    number).
+  - **Public rendering**: inline `.cite-ref` superscript links + a numbered,
+    anchored `.references.citations` list with `:target` highlight and
+    back-links. `sanitizeHtml` extended (id/data-cite/data-style, `references`
+    made structural, cite classes). Theme-aware CSS incl. print.
+  - **Known follow-ups**: numbering is by add-order (removing/reordering may
+    leave a stale inline marker — a full by-appearance renumber, and a shared
+    server-backed team library, are natural next steps).
+
+**Not yet done:** Phase 2 Features 4, 5, 6, 8 (Publishing Scheduler, Analytics
+Dashboard, Internal Linking, Advanced Search) — building one at a time on
+request. Phases 3–4 of the plan, and the polish items in §10.
 
 ---
 

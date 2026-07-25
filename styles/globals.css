@@ -1104,6 +1104,92 @@ a { color: inherit; text-decoration: none; }
 .article-body .references ol, .article-body .footnotes ol { font-size: 0.86em; color: rgba(var(--ink), 0.7); }
 .article-body .footnote-ref { font-size: 0.72em; vertical-align: super; color: var(--accent); text-decoration: none; }
 
+/* ══════════════════════════════════════════════════════════════
+   REFERENCE & CITATION MANAGEMENT  (Phase 2, Feature 7)
+   Public: inline [n] markers + a numbered, anchored references list.
+   Admin: the Citation Manager modal. Theme-aware throughout.
+   ══════════════════════════════════════════════════════════════ */
+.article-body .cite-ref { font-size: 0.72em; vertical-align: super; line-height: 0; }
+.article-body .cite-ref a { color: var(--accent); text-decoration: none; }
+.article-body .cite-ref a:hover { text-decoration: underline; }
+.article-body .cite-ref:target { background: rgba(var(--accent-rgb), 0.18); border-radius: 3px; }
+.article-body .references.citations ol { padding-left: 1.7em; }
+.article-body .references.citations li {
+  margin: 0.55em 0; padding-left: 0.2em;
+  scroll-margin-top: calc(var(--nav-height) + 16px);
+}
+.article-body .references.citations li:target { background: rgba(var(--accent-rgb), 0.10); border-radius: 4px; }
+.article-body .cite-back { margin-left: 0.4em; color: rgba(var(--ink), 0.5); text-decoration: none; font-size: 0.9em; }
+.article-body .cite-back:hover { color: var(--accent); }
+
+/* ── Citation Manager modal (admin) ── */
+.cite-modal { position: fixed; inset: 0; z-index: 120; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.cite-scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); }
+.cite-panel {
+  position: relative; width: 100%; max-width: 900px; max-height: 90vh; overflow: auto;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+}
+.cite-head {
+  position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--panel);
+}
+.cite-title { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-sans); font-weight: 700; font-size: 15px; color: var(--white); }
+.cite-icon {
+  display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;
+  border: 1px solid var(--border); border-radius: 7px; background: none; cursor: pointer; color: rgba(var(--ink), 0.7);
+}
+.cite-icon:hover { color: var(--accent); border-color: var(--accent); }
+.cite-body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 18px; }
+@media (max-width: 760px) { .cite-body { grid-template-columns: 1fr; } }
+.cite-col { min-width: 0; display: flex; flex-direction: column; }
+.cite-h { margin: 0 0 8px; font-family: var(--font-sans); font-size: 13px; font-weight: 700; color: var(--white); }
+.cite-count { margin-left: 6px; font-family: var(--font-mono); font-size: 11px; color: rgba(var(--ink), 0.5); }
+.cite-label { display: block; margin: 10px 0 4px; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(var(--ink), 0.6); }
+.cite-hint { text-transform: none; letter-spacing: 0; color: rgba(var(--ink), 0.4); }
+.cite-input {
+  width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px;
+  background: var(--surface); color: var(--white); font-family: var(--font-sans); font-size: 13px;
+}
+.cite-input:focus { outline: none; border-color: var(--accent); }
+textarea.cite-input { resize: vertical; font-family: var(--font-mono); }
+.cite-issues { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.cite-issues li { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.cite-issues .is-error { color: var(--red); }
+.cite-issues .is-warn { color: var(--gold); }
+.cite-preview {
+  margin-top: 4px; padding: 10px 12px; border: 1px dashed var(--border); border-radius: 8px;
+  background: rgba(var(--ink), 0.02); font-family: var(--font-serif); font-size: 13.5px; line-height: 1.6; color: rgba(var(--ink), 0.9);
+}
+.cite-preview em { font-style: italic; }
+.cite-preview a { color: var(--accent); word-break: break-all; }
+.cite-btn {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  padding: 7px 12px; border: 1px solid var(--border); border-radius: 7px; background: transparent;
+  color: rgba(var(--ink), 0.85); font-family: var(--font-sans); font-size: 12.5px; font-weight: 500;
+}
+.cite-btn:hover { border-color: var(--accent); color: var(--accent); }
+.cite-btn--primary { background: var(--accent); color: var(--black); border-color: transparent; }
+.cite-btn--primary:hover { background: var(--accent-hover); color: var(--black); }
+.cite-btn--primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.cite-btn--sm { padding: 4px 8px; font-size: 11.5px; }
+.cite-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.cite-list li { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(var(--ink), 0.02); }
+.cite-list li.is-dup { border-color: var(--gold); }
+.cite-num { flex: 0 0 auto; font-family: var(--font-mono); font-size: 12px; color: var(--accent); min-width: 18px; }
+.cite-doc-body { flex: 1 1 auto; min-width: 0; font-family: var(--font-serif); font-size: 12.5px; line-height: 1.5; color: rgba(var(--ink), 0.85); word-break: break-word; }
+.cite-doc-body em { font-style: italic; }
+.cite-doc-body a { color: var(--accent); }
+.cite-row-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; }
+.cite-empty { font-size: 12.5px; color: rgba(var(--ink), 0.5); padding: 8px 2px; }
+.cite-lib { max-height: 260px; overflow: auto; }
+
+/* Print: references stay; back-links and superscript markers are subtle. */
+@media print {
+  .cite-modal { display: none !important; }
+  .article-body .cite-back { display: none; }
+}
+
 /* Math — .math-block (display) / .math-inline. KaTeX CSS loads on the reader;
    this is the graceful, theme-aware baseline (and the sandbox has no KaTeX CDN). */
 .article-body .math-block {
