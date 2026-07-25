@@ -238,3 +238,136 @@ scores in the high band.
 One expected **suggestion** (a warning, not a blocker) remains: **"Has imagery"** — the
 pasted article has no in-body `<img>`. Insert one body image (step B) to clear it. Any
 other ⚠ rows are optional polish; warnings never block Publish.
+
+---
+
+## 6. Bilingual (Hindi) translation test  *(हिन्दी)*
+
+The Hindi version shares the English article's slug, image, author, categories and view
+count — **only the text changes.** It lives in a separate language tab.
+
+### Flow
+1. **Save/create the English article first** (Publish or Save as Draft). Translations are
+   only available in **edit mode**, so the हिन्दी tab is disabled on a brand-new article.
+2. At the top of the editor, click the **हिन्दी** language tab (next to **English**).
+3. Paste the Hindi **Title**, **Excerpt** and **Content** below. The English content is
+   shown beside the Hindi box as a reference — **keep the same HTML tags, translate only
+   the words between them** (already done for you below).
+4. Turn on **"Show this हिन्दी translation to readers"**, then **Save translation**.
+5. Visit **`/hi/articles/<slug>`** (e.g. `/hi/articles/artemis-ii-nasas-first-crewed-return-to-the-moon`).
+   Verify the on-page **language toggle (EN ⇄ हिन्दी)** appears on both language pages,
+   the Devanagari reading font is used, and every block renders exactly like English.
+
+### Paste — Hindi fields
+
+| Field | Value |
+|---|---|
+| **Title (हिन्दी)** | `आर्टेमिस II: नासा की चंद्रमा पर पहली मानवयुक्त वापसी` |
+| **Excerpt (हिन्दी)** | `आर्टेमिस II 2026 में चार अंतरिक्ष यात्रियों को चंद्रमा के चारों ओर ले जाएगा — अपोलो के बाद नासा की पहली मानवयुक्त चंद्र यात्रा। मिशन, दल और समयरेखा की पूरी जानकारी।` |
+
+### Paste — Hindi content (same structure as English)
+
+```html
+<p>अपोलो 17 द्वारा चंद्र धूल में अंतिम मानव पदचिह्न छोड़े जाने के आधी सदी बाद, <strong>आर्टेमिस II</strong> चार अंतरिक्ष यात्रियों को चंद्रमा के चारों ओर ले जाने की तैयारी कर रहा है। यह नासा के <em>आर्टेमिस</em> कार्यक्रम की पहली मानवयुक्त उड़ान होगी — और उसके बाद होने वाली लैंडिंग का पूर्ण पूर्वाभ्यास।</p>
+
+<h2>आर्टेमिस II क्या करेगा</h2>
+<p>यह मिशन एक <strong>फ्री-रिटर्न</strong> यात्रा है: ओरायन अंतरिक्ष यान चंद्रमा के पीछे चक्कर लगाता है और कक्षा में प्रवेश किए बिना चंद्र गुरुत्वाकर्षण का उपयोग करके घर की ओर लौटता है। यह <a href="/articles/artemis-iii-south-pole-landing">आर्टेमिस III</a> द्वारा दक्षिणी-ध्रुव लैंडिंग का प्रयास करने से पहले हर मानवयुक्त प्रणाली को सत्यापित करता है।</p>
+<ul>
+  <li>स्पेस लॉन्च सिस्टम (SLS) पर प्रक्षेपण</li>
+  <li>चंद्रमा के चारों ओर और वापसी की लगभग 10-दिन की उड़ान</li>
+  <li>1972 के बाद निम्न-पृथ्वी कक्षा छोड़ने वाला पहला दल</li>
+</ul>
+
+<h3>तैयारी चेकलिस्ट</h3>
+<ul class="checklist">
+  <li data-checked="true">ओरायन क्रू मॉड्यूल एकीकृत</li>
+  <li data-checked="true">SLS कोर स्टेज संयोजित</li>
+  <li data-checked="false">मानवयुक्त प्रक्षेपण — 2026 के लिए लक्षित</li>
+</ul>
+
+<div class="callout callout-info">
+  <p class="callout-title">जानकारी</p>
+  <p>एक <strong>फ्री-रिटर्न प्रक्षेप-पथ</strong> इस तरह आकार दिया जाता है कि बिना किसी इंजन बर्न के भी, चंद्रमा का गुरुत्वाकर्षण अंतरिक्ष यान को पृथ्वी की ओर वापस भेज देता है।</p>
+</div>
+<div class="callout callout-warning">
+  <p class="callout-title">सावधानी</p>
+  <p>सभी तिथियाँ लक्ष्य हैं, गारंटी नहीं — हार्डवेयर परीक्षण की माँग के अनुसार मानवयुक्त कार्यक्रम खिसकते रहते हैं।</p>
+</div>
+<div class="callout callout-success">
+  <p class="callout-title">उपलब्धि</p>
+  <p>आर्टेमिस I पहले ही 2022 में ओरायन को बिना दल के चंद्रमा के चारों ओर उड़ा चुका है, जिससे दल के लिए रास्ता साफ़ हो गया।</p>
+</div>
+
+<h3>दल</h3>
+<blockquote>
+  हम चंद्रमा पर वापस जा रहे हैं — और इस बार, रुकने के लिए।
+  <cite>नासा प्रशासक</cite>
+</blockquote>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>भूमिका</th><th>अंतरिक्ष यात्री</th><th>एजेंसी</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>कमांडर</td><td>रीड वाइज़मैन</td><td>नासा</td></tr>
+      <tr><td>पायलट</td><td>विक्टर ग्लोवर</td><td>नासा</td></tr>
+      <tr><td>मिशन विशेषज्ञ</td><td>क्रिस्टीना कोच</td><td>नासा</td></tr>
+      <tr><td>मिशन विशेषज्ञ</td><td>जेरेमी हैनसेन</td><td>CSA</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<aside class="fact-card">
+  <p class="fact-label">मिशन तथ्य</p>
+  <dl>
+    <dt>अंतरिक्ष यान</dt><dd>ओरायन</dd>
+    <dt>रॉकेट</dt><dd>SLS ब्लॉक 1</dd>
+    <dt>दल</dt><dd>4 अंतरिक्ष यात्री</dd>
+    <dt>अवधि</dt><dd>~10 दिन</dd>
+  </dl>
+</aside>
+
+<h2>प्रक्षेप-पथ कैसे काम करता है</h2>
+<p>वृत्ताकार-कक्षा वेग गुरुत्वाकर्षण प्राचल <em>GM</em> और कक्षीय त्रिज्या <em>r</em> के साथ बदलता है:</p>
+<p class="math-block">v = &radic;(GM / r)</p>
+<p>इंजीनियर पलायन शर्त को E = &frac12;mv<sup>2</sup> &minus; GMm/r &ge; 0 के रूप में लिखते हैं, जहाँ संदर्भ ऊँचाई को r<sub>0</sub> से दर्शाया जाता है।</p>
+<pre><code>def specific_energy(v, r, GM):
+    # positive energy => escape trajectory
+    return 0.5 * v**2 - GM / r</code></pre>
+
+<h3>समयरेखा</h3>
+<ol class="timeline">
+  <li><span class="t-when">1972</span>अपोलो 17 — अंतिम मानवयुक्त चंद्र मिशन</li>
+  <li><span class="t-when">2022</span>आर्टेमिस I — चंद्रमा के चारों ओर ओरायन की बिना-दल उड़ान</li>
+  <li><span class="t-when">2026</span>आर्टेमिस II — पहली मानवयुक्त आर्टेमिस उड़ान</li>
+  <li><span class="t-when">2027+</span>आर्टेमिस III — मानवयुक्त दक्षिणी-ध्रुव लैंडिंग</li>
+</ol>
+
+<h3>सामान्य प्रश्न</h3>
+<details class="faq">
+  <summary>क्या आर्टेमिस II चंद्रमा पर उतरेगा?</summary>
+  <p>नहीं। आर्टेमिस II एक मानवयुक्त फ्लाई-बाय है; लैंडिंग आर्टेमिस III है।</p>
+</details>
+<details class="faq">
+  <summary>नासा के अंतरराष्ट्रीय साझेदार कौन हैं?</summary>
+  <p>कनाडाई अंतरिक्ष एजेंसी एक अंतरिक्ष यात्री और रोबोटिक्स प्रदान करती है; ESA ओरायन का सर्विस मॉड्यूल बनाता है।</p>
+</details>
+
+<hr>
+
+<p><strong>फ़ॉर्मेटिंग नमूना (QA के लिए):</strong> <strong>बोल्ड</strong>, <em>इटैलिक</em>, <u>रेखांकित</u>, <s>काट</s>, <mark>हाइलाइट</mark>, <code>इनलाइन कोड</code>, कीबोर्ड <kbd>Ctrl</kbd>+<kbd>K</kbd>, <a href="https://www.nasa.gov/artemis">NASA.gov</a> पर एक बाहरी स्रोत, सुपरस्क्रिप्ट 10<sup>3</sup>, और सबस्क्रिप्ट H<sub>2</sub>O।</p>
+
+<div class="references">
+  <p class="references-title">संदर्भ</p>
+  <ol>
+    <li>नासा, <em>आर्टेमिस II मिशन अवलोकन</em>, nasa.gov (2026)।</li>
+    <li>कनाडाई अंतरिक्ष एजेंसी, <em>जेरेमी हैनसेन — आर्टेमिस II</em> (2026)।</li>
+  </ol>
+</div>
+```
+
+> **Tag parity matters:** the Hindi HTML above intentionally mirrors the English tag/class
+> structure one-to-one (same `<h2>/<h3>`, `checklist`, `callout-*`, `table-wrap`,
+> `fact-card`, `timeline`, `faq`, `references`, `math-block`, and the same `href`s), so the
+> Hindi page renders identically — only the words are translated. The `<pre><code>` block is
+> code, so it's left unchanged.
