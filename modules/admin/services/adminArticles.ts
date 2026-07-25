@@ -10,6 +10,21 @@ function isMissingFeaturedMetaColumn(error: any): boolean {
   return msg.includes('featured_image_meta') && (msg.includes('does not exist') || msg.includes('column') || error?.code === '42703')
 }
 
+// Same graceful degradation for the scheduling columns (Feature 4) before that
+// migration has been applied.
+function isMissingSchedulingColumn(error: any): boolean {
+  const msg = (error?.message || '').toLowerCase()
+  return (msg.includes('scheduled_at') || msg.includes('expire_at')) &&
+    (msg.includes('does not exist') || msg.includes('column') || error?.code === '42703')
+}
+function isMissingOptionalColumn(error: any): boolean {
+  return isMissingFeaturedMetaColumn(error) || isMissingSchedulingColumn(error)
+}
+function stripOptional(row: Record<string, any>): Record<string, any> {
+  const { featured_image_meta, scheduled_at, expire_at, ...rest } = row
+  return rest
+}
+
 // ── List / search ─────────────────────────────────────────────
 
 export interface AdminArticleRow {
@@ -20,9 +35,11 @@ export interface AdminArticleRow {
   articleType: ArticleType
   featured:    boolean
   views:       number
+  readingTime: number
   publishedAt: string | null
   updatedAt:   string
   categories:  string[]
+  tags:        string[]
   authorName:  string | null
 }
 
@@ -44,9 +61,10 @@ export async function getAdminArticles({
   let query = db
     .from('articles')
     .select(
-      `id, title, slug, status, article_type, featured, views, published_at, updated_at,
+      `id, title, slug, status, article_type, featured, views, reading_time, published_at, updated_at,
        authors ( name ),
-       article_categories ( categories ( name ) )`,
+       article_categories ( categories ( name ) ),
+       article_tags ( tags ( name ) )`,
       { count: 'exact' }
     )
     .order('updated_at', { ascending: false })
@@ -70,9 +88,11 @@ export async function getAdminArticles({
     articleType: r.article_type,
     featured:    r.featured || false,
     views:       r.views || 0,
+    readingTime: r.reading_time || 0,
     publishedAt: r.published_at || null,
     updatedAt:   r.updated_at,
     categories:  (r.article_categories || []).map((ac: any) => ac.categories?.name).filter(Boolean),
+    tags:        (r.article_tags || []).map((at: any) => at.tags?.name).filter(Boolean),
     authorName:  r.authors?.name || null,
   }))
 
@@ -98,6 +118,8 @@ export interface AdminArticleFull {
   articleType:   ArticleType
   featured:      boolean
   publishedAt:   string | null
+  scheduledAt:   string | null
+  expireAt:      string | null
   readingTime:   number
   views:         number
   categoryIds:   string[]
@@ -116,11 +138,14 @@ export async function getAdminArticleById(id: string): Promise<AdminArticleFull 
 
   let { data, error }: { data: any; error: any } = await db
     .from('articles')
-    .select(`${baseCols}, featured_image_meta`)
+    .select(`${baseCols}, featured_image_meta, scheduled_at, expire_at`)
     .eq('id', id)
     .single()
 
-  // Retry without the meta column if the migration hasn't been applied yet.
+  // Drop optional columns progressively if their migrations aren't applied yet.
+  if (error && isMissingSchedulingColumn(error)) {
+    ({ data, error } = await db.from('articles').select(`${baseCols}, featured_image_meta`).eq('id', id).single())
+  }
   if (error && isMissingFeaturedMetaColumn(error)) {
     ({ data, error } = await db.from('articles').select(baseCols).eq('id', id).single())
   }
@@ -140,6 +165,8 @@ export async function getAdminArticleById(id: string): Promise<AdminArticleFull 
     articleType:   data.article_type,
     featured:      data.featured || false,
     publishedAt:   data.published_at || null,
+    scheduledAt:   data.scheduled_at || null,
+    expireAt:      data.expire_at || null,
     readingTime:   data.reading_time || 5,
     views:         data.views || 0,
     categoryIds:   (data.article_categories as any[] || []).map((ac) => ac.category_id),
@@ -163,6 +190,9 @@ export interface ArticlePayload {
   readingTime:   number
   categoryIds:   string[]
   tagIds:        string[]
+  scheduledAt?:  string | null   // ISO — when status is 'scheduled'
+  expireAt?:     string | null   // ISO — auto-archive at this time
+  republish?:    boolean         // re-stamp published_at to now even if already published
 }
 
 export async function createAdminArticle(payload: ArticlePayload): Promise<{ id: string } | null> {
@@ -183,15 +213,16 @@ export async function createAdminArticle(payload: ArticlePayload): Promise<{ id:
     featured:       payload.featured,
     reading_time:   payload.readingTime,
     published_at:   payload.status === 'published' ? new Date().toISOString() : null,
+    scheduled_at:   payload.status === 'scheduled' ? (payload.scheduledAt || null) : null,
+    expire_at:      payload.expireAt || null,
     views:          0,
   }
 
   let { data, error }: { data: any; error: any } = await db.from('articles').insert(row).select('id').single()
 
-  // Retry without the meta column if the migration hasn't been applied yet.
-  if (error && isMissingFeaturedMetaColumn(error)) {
-    const { featured_image_meta, ...rest } = row
-    ;({ data, error } = await db.from('articles').insert(rest).select('id').single())
+  // Retry without the optional columns if their migrations aren't applied yet.
+  if (error && isMissingOptionalColumn(error)) {
+    ({ data, error } = await db.from('articles').insert(stripOptional(row)).select('id').single())
   }
 
   if (error || !data) {
@@ -228,19 +259,21 @@ export async function updateAdminArticle(
     article_type:   payload.articleType,
     featured:       payload.featured,
     reading_time:   payload.readingTime,
-    // Set published_at only when first publishing
+    // Stamp published_at on first publish, or when explicitly republishing;
+    // otherwise keep the original date.
     published_at:
-      payload.status === 'published' && !existingPublishedAt
+      payload.status === 'published' && (payload.republish || !existingPublishedAt)
         ? new Date().toISOString()
         : existingPublishedAt,
+    scheduled_at:   payload.status === 'scheduled' ? (payload.scheduledAt || null) : null,
+    expire_at:      payload.expireAt || null,
   }
 
   let { error }: { error: any } = await db.from('articles').update(row).eq('id', id)
 
-  // Retry without the meta column if the migration hasn't been applied yet.
-  if (error && isMissingFeaturedMetaColumn(error)) {
-    const { featured_image_meta, ...rest } = row
-    ;({ error } = await db.from('articles').update(rest).eq('id', id))
+  // Retry without the optional columns if their migrations aren't applied yet.
+  if (error && isMissingOptionalColumn(error)) {
+    ({ error } = await db.from('articles').update(stripOptional(row)).eq('id', id))
   }
 
   if (error) {
@@ -264,6 +297,98 @@ export async function deleteAdminArticle(id: string): Promise<boolean> {
     return false
   }
   return true
+}
+
+// ── Bulk actions (Feature 8) ──────────────────────────────────
+// Efficient set-based operations over many selected articles. Each runs a
+// single `.in('id', ids)` query rather than N round-trips.
+
+export async function bulkUpdateStatus(ids: string[], status: ArticleStatus): Promise<boolean> {
+  if (ids.length === 0) return true
+  const db = supabaseAdmin()
+  const { error } = await db.from('articles').update({ status }).in('id', ids)
+  if (error) { console.error('bulkUpdateStatus error:', error); return false }
+  // First-time publish: stamp published_at only where it's still null.
+  if (status === 'published') {
+    await db.from('articles').update({ published_at: new Date().toISOString() }).in('id', ids).is('published_at', null)
+  }
+  return true
+}
+
+export async function bulkDeleteArticles(ids: string[]): Promise<boolean> {
+  if (ids.length === 0) return true
+  const db = supabaseAdmin()
+  const { error } = await db.from('articles').delete().in('id', ids)
+  if (error) { console.error('bulkDeleteArticles error:', error); return false }
+  return true
+}
+
+export async function bulkAssignAuthor(ids: string[], authorId: string): Promise<boolean> {
+  if (ids.length === 0) return true
+  const db = supabaseAdmin()
+  const { error } = await db.from('articles').update({ author_id: authorId || null }).in('id', ids)
+  if (error) { console.error('bulkAssignAuthor error:', error); return false }
+  return true
+}
+
+/** Append a category to every selected article (existing links are kept). */
+export async function bulkAddCategory(ids: string[], categoryId: string): Promise<boolean> {
+  if (ids.length === 0 || !categoryId) return true
+  const db = supabaseAdmin()
+  const rows = ids.map(id => ({ article_id: id, category_id: categoryId }))
+  const { error } = await db.from('article_categories').upsert(rows, { onConflict: 'article_id,category_id', ignoreDuplicates: true })
+  if (error) { console.error('bulkAddCategory error:', error); return false }
+  return true
+}
+
+/** Append a tag to every selected article (existing links are kept). */
+export async function bulkAddTag(ids: string[], tagId: string): Promise<boolean> {
+  if (ids.length === 0 || !tagId) return true
+  const db = supabaseAdmin()
+  const rows = ids.map(id => ({ article_id: id, tag_id: tagId }))
+  const { error } = await db.from('article_tags').upsert(rows, { onConflict: 'article_id,tag_id', ignoreDuplicates: true })
+  if (error) { console.error('bulkAddTag error:', error); return false }
+  return true
+}
+
+// ── Scheduled publishing / expiry (Feature 4) ─────────────────
+// Run by /api/cron/publish (Vercel Cron). Promotes scheduled articles whose
+// time has arrived and archives published ones past their expiry. No-ops
+// gracefully until the scheduling migration is applied.
+export async function runScheduledPublishing(
+  nowIso: string = new Date().toISOString(),
+): Promise<{ published: number; expired: number }> {
+  const db = supabaseAdmin()
+  let published = 0
+  let expired = 0
+
+  const pub = await db
+    .from('articles')
+    .update({ status: 'published', published_at: nowIso, scheduled_at: null })
+    .eq('status', 'scheduled')
+    .lte('scheduled_at', nowIso)
+    .select('id')
+  if (pub.error) {
+    if (isMissingSchedulingColumn(pub.error)) return { published: 0, expired: 0 }
+    console.error('runScheduledPublishing/publish:', pub.error)
+  } else {
+    published = pub.data?.length || 0
+  }
+
+  const exp = await db
+    .from('articles')
+    .update({ status: 'archived' })
+    .eq('status', 'published')
+    .lte('expire_at', nowIso)
+    .select('id')
+  if (exp.error) {
+    if (isMissingSchedulingColumn(exp.error)) return { published, expired: 0 }
+    console.error('runScheduledPublishing/expire:', exp.error)
+  } else {
+    expired = exp.data?.length || 0
+  }
+
+  return { published, expired }
 }
 
 // ── Categories & Tags (for the form dropdowns) ────────────────

@@ -276,7 +276,227 @@ collection when Supabase env vars are absent — unrelated to app code).
      manager are deliberately NOT in the translation tab — those fields are shared
      from English by design.
 
-**Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
+- ✅ **Automatic Table of Contents (Phase 2, Feature 1)** — every article now
+  gets a TOC generated automatically from its H2/H3/H4 headings; no manual
+  authoring, works for every article, updates live in the editor preview and on
+  publish. Branch `claude/antariksham-phase-2-upgrade-erz812`.
+  - **Pure, isomorphic core** (`modules/articles/services/toc.ts`): `buildToc`
+    injects a stable, de-duplicated, unicode-aware (Hindi-safe) slug `id` onto
+    every H2/H3/H4 and returns a nested `TocItem` tree. Deterministic → the ids
+    rendered during SSR match what the client computes (hydration-safe) and
+    authored ids are preserved. Zero-dependency unit tests (`toc.test.ts`, Node's
+    built-in `node:test`; run `node --test --experimental-strip-types …`).
+  - **`TableOfContents` component** (`modules/articles/components/TableOfContents.tsx`):
+    sticky sidebar rail on desktop, collapsible `<details>` panel on mobile;
+    scroll-spy current-section highlight, reading-progress meter, smooth
+    scrolling, deep-link anchors + copy-section-link, expand/collapse, full
+    keyboard/ARIA support, `prefers-reduced-motion`. **Iframe-safe**: resolves
+    `document`/`window` from the nav's `ownerDocument`/`defaultView`, so
+    scroll-spy is correct both on the real reader and inside the admin
+    live-preview iframe.
+  - **Integration**: `ArticleBody` injects the ids (so anchors work everywhere,
+    including the preview) and renders the inline TOC; `ArticleView` adds the
+    desktop rail inside a centred 3-track `.article-layout` grid (reading measure
+    stays centred, rail floats in the right gutter). New theme-aware
+    `.article-layout`/`.article-toc*` styles in `styles/globals.css` (tokens +
+    `rgba(var(--ink),a)`; light + dark). Backward compatible — only additive
+    `id`s change existing article HTML.
+
+- ✅ **Professional Reader Experience (Phase 2, Feature 2)** — the article
+  reading page gained an enterprise-grade reading layer, all additive and
+  backward compatible. New `modules/articles/reader/` module.
+  - **Reading progress bar** (`ReadingProgressBar`) — thin accent bar pinned
+    under the nav, fills continuously via a GPU `scaleX` transform.
+  - **Share** — desktop **sticky share rail** in the article grid's LEFT gutter
+    (mirroring the TOC rail on the right): X, Facebook, LinkedIn, WhatsApp,
+    Telegram, Email, Copy Link, Bookmark. Mobile **action dock** (`ReaderDock`)
+    with a share FAB that uses the **native Web Share API** when present and a
+    fallback menu otherwise, plus a back-to-top FAB. URL builders are pure &
+    tested (`shareLinks.ts`).
+  - **Reading preferences** (`ReaderPreferencesPanel`) — modal to set **font
+    size / reading width / line height / theme**, persisted to localStorage and
+    applied as CSS custom properties (`--reader-font-scale`, `--reader-line`,
+    `--reader-measure`) the article body reads with fallbacks — so defaults and
+    the admin preview are byte-identical to before. Pure prefs model + mapping
+    tested (`readerPrefs.ts`).
+  - **Reading statistics** — word count, reading time, views, publish + updated
+    dates, and a live **“% complete · min left”** in the preferences panel.
+  - **Scroll behaviour** — smooth anchor scrolling (shared with the TOC),
+    back-to-top, and **remember/resume last position** per slug
+    (`ResumeReading`, offers a resume pill on reload).
+  - **Architecture**: a client `ReaderProvider` context holds prefs/bookmark/
+    share-meta/panel-open; scroll work is isolated in a small `useReadingProgress`
+    hook (no context re-renders on scroll). Wired into `ArticleView`; the body
+    honours the reader vars. Theme-aware `.reader-*` styles in `globals.css`
+    (light + dark, `prefers-reduced-motion`, full keyboard/ARIA). Zero-dependency
+    `node:test` unit tests (`modules/articles/reader/reader.test.ts`).
+
+- ✅ **Advanced Article Components (Phase 2, Feature 3)** — a big library of
+  premium content blocks, all authored as sanitized semantic HTML (SEO-friendly,
+  printable, backward compatible) and, where interactive, upgraded client-side.
+  New `modules/articles/blocks/`.
+  - **New static blocks** (pure `.article-body` CSS + editor entries): Key
+    Takeaways, Did You Know, Alert box, Pull Quote, Mission Statistics grid,
+    Glossary, Research Summary, Comparison Table, Specification Table, Horizontal
+    Timeline — alongside the Phase-1 blocks (fact card, callouts, FAQ, vertical
+    timeline, references, footnotes, math, table, code, gallery).
+  - **`ArticleEnhancer`** (client, progressive enhancement, iframe-safe,
+    defensive per-block, idempotent): code **syntax highlighting + copy button**
+    (dependency-free tokenizer in `blockUtils.ts`), live **Countdown**, **Image
+    Carousel** (track + arrows + dots), image **Lightbox** (gallery/carousel/
+    opt-in), **sortable Data Table** (click/keyboard, `aria-sort`), **Embedded
+    PDF**, and **KaTeX math** (code-split — `import('katex')` only when the
+    article has math; CSS ships from the route page). Everything degrades
+    gracefully with JS off.
+  - **Embeds**: YouTube (existing), Embedded PDF, Tweet/X facade, NASA/ESA media
+    (agency-badged figures).
+  - **Editor**: ~18 new blocks added to `EDITOR_BLOCKS` (slash-searchable); the
+    `sanitizeHtml` allowlist was extended for the new classes, structural
+    containers and `data-*` config attributes (URLs still validated at enhance
+    time).
+  - **CSS**: theme-aware block styles + interactive-UI styles + the site's first
+    **`@media print`** rules (drops the reading chrome, avoids break-inside on
+    cards/tables, reveals collapsed FAQ answers, prints link URLs). Wired into
+    `ArticleView` via `<ArticleEnhancer />`. Pure helpers covered by
+    zero-dependency `node:test` tests (`modules/articles/blocks/blocks.test.ts`).
+
+- ✅ **Reference & Citation Management (Phase 2, Feature 7)** — a scientific
+  citation system for the editor. New `modules/admin/citations/`.
+  - **Pure core** (`citationTypes.ts` + `formatCitation.ts`): 12 citation types
+    (journal, book, research paper, conference, arXiv, DOI, website, video,
+    dataset, NASA, ESA, ISRO) formatted in **APA / MLA / Chicago / IEEE** (+
+    verbatim Custom), with per-style author reformatting (e.g. APA “Last, I. I.”
+    vs IEEE “I. I. Last”), `validateCitation` (missing title/source/year, broken
+    URL, malformed DOI), a stable reuse `citationKey`, duplicate detection, and
+    the inline-marker + numbered references-block builders. All output is
+    escaped (XSS-safe) and survives the editor sanitizer. 20 zero-dependency
+    `node:test` cases (`citations.test.ts`).
+  - **Citation Manager** (`CitationManager.tsx`): a modal launched from a new
+    editor-toolbar button. Build a citation with type-specific fields, see it
+    live-formatted + validated, then **insert a numbered inline `[n]` marker**
+    at the caret and (re)generate the article’s **References section**. A
+    browser-local **library** (`citationLibrary.ts`) makes citations reusable;
+    the chosen style is stamped on the block (`data-style`) so it restores on
+    reopen. Auto-numbering by add-order with de-dupe (reusing a source keeps its
+    number).
+  - **Public rendering**: inline `.cite-ref` superscript links + a numbered,
+    anchored `.references.citations` list with `:target` highlight and
+    back-links. `sanitizeHtml` extended (id/data-cite/data-style, `references`
+    made structural, cite classes). Theme-aware CSS incl. print.
+  - **Known follow-ups**: numbering is by add-order (removing/reordering may
+    leave a stale inline marker — a full by-appearance renumber, and a shared
+    server-backed team library, are natural next steps).
+
+- ✅ **Advanced Search & Content Discovery (Phase 2, Feature 8)** — the admin
+  Articles list became a professional content browser. New `modules/admin/search/`.
+  - **Pure core** (`articleSearch.ts`): `searchArticles` = full-text search
+    (every token must match across title/slug/author/category/tag) + filters by
+    status/type/category/tag/author/featured, views & reading-time ranges, and a
+    date range, then sort (updated/published/title/views/reading, asc/desc).
+    Plus `computeFacets` (distinct values + counts) and `toCsv`. 11 zero-dep
+    `node:test` cases (`articleSearch.test.ts`).
+  - **`ArticleBrowser`** (client): instant search, a faceted filter panel
+    (status/type/category/tag/author chips with counts, metric ranges, date
+    range, featured), **saved filter presets** (`savedFilters.ts`, localStorage),
+    a sortable table with per-row + select-all **multi-select**, client
+    pagination, and a **bulk action bar**: Publish / Draft / Archive / Delete /
+    Add category / Add tag / Assign author / **Export CSV**.
+  - **Bulk backend**: efficient set-based service fns (`bulkUpdateStatus`,
+    `bulkDeleteArticles`, `bulkAssignAuthor`, `bulkAddCategory`, `bulkAddTag` —
+    single `.in('id', …)` queries) behind `app/api/admin/articles/bulk` (cookie-
+    authed); the browser refreshes server data after each op. `getAdminArticles`
+    now also returns `readingTime` + `tags`. The admin page loads a generous
+    batch (500) and filters client-side.
+  - **Known follow-up**: for very large libraries, push the filters into the DB
+    query (the pure core is written to be reused server-side) — MIGRATION §10.
+
+- ✅ **Internal Linking Assistant (Phase 2, Feature 6)** — an editor helper for
+  internal linking (better topical authority + crawlability, fewer orphans). New
+  `modules/admin/links/`.
+  - **Pure core** (`internalLinks.ts`): `suggestLinks` ranks internal pages by
+    title-token overlap with the draft text (+ shared category/tag), excluding
+    the current page and pages already linked (no duplicates); `searchTargets`
+    (manual search); `extractInternalHrefs` + `findBrokenLinks` (internal links
+    that don't resolve to a known page); `computeOrphans` (pages nothing links
+    to); `buildLinkHtml`. 9 zero-dep `node:test` cases (`internalLinks.test.ts`).
+  - **`LinkAssistant`** (editor modal, new toolbar button): fetches internal
+    pages from `app/api/admin/link-targets` (published **articles** with facets,
+    **missions**, **learn** pages, **authors** — real slug routes only, so a
+    suggestion never itself becomes a broken link), shows ranked suggestions
+    with colour-coded kind badges, a manual search, **one-click insert** (wraps
+    the current selection or inserts the page title), an "already-linked" marker,
+    and a **broken-internal-links** panel for the current draft.
+  - **Known follow-ups**: tags/categories/launches have no dedicated slug pages
+    yet (excluded to avoid broken links); a site-wide **orphan-pages dashboard**
+    (the pure `computeOrphans` is ready) needs a cheap server link-graph.
+
+- ✅ **Publishing Scheduler (Phase 2, Feature 4)** — schedule a future publish +
+  automatic expiry, with the full publish lifecycle. New `modules/admin/scheduling/`.
+  - **Pure core** (`scheduling.ts`): UTC-ISO ⇄ `datetime-local` conversion,
+    `scheduleView` (draft/scheduled/live/expiring/expired/archived + countdown),
+    `validateSchedule` (past schedule, expiry-before-publish), `humanizeMs`, and
+    `dueForPublish`/`dueForExpiry` (cron selection). 5 zero-dep `node:test` cases.
+  - **`PublishingScheduler`** panel (editor Publish sidebar): a live state pill +
+    countdown, **Schedule publish** + **Auto-expire** datetime pickers (local
+    time, stored UTC), validation, and lifecycle actions — **Publish now**
+    (existing button), **Schedule**, **Republish** (re-stamp `published_at`),
+    **Unpublish**, **Archive**, **Restore**. Hydration-safe (local-time inputs
+    populate after mount).
+  - **Backend**: additive migration **`20260726120000_article_scheduling.sql`**
+    (`scheduled_at`, `expire_at` + partial indexes; run it). Service reads/writes
+    with graceful fallback and honours `republish`; `runScheduledPublishing`
+    promotes due scheduled → published and archives expired.
+  - **Automatic transitions run inside Postgres via pg_cron** — the migration
+    defines `public.run_scheduled_publishing()` and schedules it every minute, so
+    **no external scheduler is required** (Vercel Hobby only allows daily crons).
+    `app/api/cron/publish` remains for a manual "run now" (an admin, or a caller
+    with `CRON_SECRET`). Scheduled/expired articles never leak — public reads
+    already filter `status = 'published'`. If the migration can't enable pg_cron
+    (permissions), it only NOTICEs — turn on pg_cron in Supabase → Database →
+    Extensions and re-run.
+  - **Known follow-up**: recurring publishing + real email/push notifications
+    (the endpoint currently just performs the transitions; a scheduled-run digest
+    is the natural next step).
+
+- ✅ **Analytics Dashboard (Phase 2, Feature 5)** — a privacy-friendly audience &
+  engagement dashboard at **`/admin/analytics`**. New `modules/admin/analytics/`.
+  - **Pure core** (`analytics.ts`): DOM-free classifiers (`classifyReferrer`,
+    `deviceFromUA`), `aggregateMetrics` (views, unique/returning visitors, avg
+    read time, avg scroll depth, completion %, bounce %, shares, bookmarks),
+    `timeSeries` bucketing (day/week/month/year), dimension `breakdown`
+    (device/source/referrer/country), and `buildInsights` (best performing,
+    fastest growing, top categories/tags/authors). Chart geometry helpers
+    (`chartUtils.ts`: `niceMax`, `linePoints`, `toPath`, `toAreaPath`). 15
+    zero-dep `node:test` cases (`analytics.test.ts`, `chartUtils.test.ts`).
+  - **Privacy-friendly collection**: additive migration
+    **`20260726130000_article_events.sql`** (`article_events`, RLS on, no public
+    policies — service-role only; run it). No cookies, no PII: `visitor` is an
+    opaque localStorage token, `session` a sessionStorage token; referrer is
+    reduced to a host + coarse type, device to mobile/tablet/desktop, location to
+    an ISO-2 country from the edge geo header. A client beacon (`beacon.ts` +
+    `AnalyticsBeacon.tsx`, `navigator.sendBeacon`) records **view** on mount and
+    **read** (max scroll depth + dwell) on page-hide; **share** and **bookmark**
+    fire from the reader chrome. `app/api/analytics/collect` (public POST, always
+    200) derives device/referrer/country server-side and inserts the row.
+  - **Dashboard** (`AnalyticsDashboard.tsx`, client): a range selector (24h / 7d /
+    30d / 12mo + custom dates), KPI tiles, a **single-series views-over-time
+    line/area chart** with hover crosshair + tooltip, single-hue rounded
+    horizontal **breakdown bars** (device / sources / referrers / countries),
+    editorial **highlights** (best performing, fastest growing, top
+    categories/tags), and a **top-articles** list. Follows the dataviz method
+    (one accent hue, no legend — the title names the series; thin marks; recessive
+    grid) and is **theme-aware by construction** (charts read `--accent-rgb` +
+    `--ink`, so light + dark come for free). SSR fallback → client refresh from
+    the admin-authed `app/api/admin/analytics` proxy on range change.
+    `getAnalytics.ts` joins events with article metadata and **degrades gracefully**
+    (friendly empty state) if the migration hasn't been applied. New sidebar link.
+  - **Known follow-ups** (data populates as events accumulate): per-article deep
+    dives, a scroll-depth heatmap, and metrics not yet tracked (comments/likes,
+    city-level geo) are natural next steps; the collector + pure core are written
+    to extend into them.
+
+**Not yet done:** All 8 Phase 2 features are complete. Remaining: Phases 3–4 of
+the plan, and the polish items in §10.
 
 ---
 

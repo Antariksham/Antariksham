@@ -1,3 +1,4 @@
+import 'katex/dist/katex.min.css' // math blocks (Feature 3) render via KaTeX; only the CSS ships here
 import { getArticleBySlug, getRelatedArticles } from '@/modules/articles/services/getArticles'
 import { buildArticleMetadata } from '@/modules/articles/services/articleMetadata'
 import { ArticleView } from '@/modules/articles/components/ArticleView'

@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Users,
   GraduationCap,
+  BarChart3,
 } from 'lucide-react'
 
 interface NavItem {
@@ -27,6 +28,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard',        href: '/admin',           icon: <LayoutDashboard size={15} /> },
   { label: 'Articles',         href: '/admin/articles',  icon: <FileText        size={15} /> },
+  { label: 'Analytics',        href: '/admin/analytics', icon: <BarChart3       size={15} /> },
   { label: 'Missions',         href: '/admin/missions',  icon: <Rocket          size={15} /> },
   { label: 'Learn',            href: '/admin/learn',     icon: <GraduationCap   size={15} /> },
   { label: 'Authors',          href: '/admin/authors',   icon: <Users           size={15} /> },

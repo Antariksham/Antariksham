@@ -24,6 +24,7 @@ import { useAutosave, AutosaveSkip } from '@/modules/admin/editor/useAutosave'
 import { SaveStatus } from '@/modules/admin/editor/SaveStatus'
 import { validateArticle } from '@/modules/admin/publish/validation'
 import { PublishChecklist } from '@/modules/admin/publish/PublishChecklist'
+import { PublishingScheduler } from '@/modules/admin/scheduling/PublishingScheduler'
 import { ScoreMeter } from '@/modules/admin/publish/ScoreMeter'
 import { SeoWorkspace } from '@/modules/admin/seo/SeoWorkspace'
 import { useDebouncedValue } from '@/modules/admin/editor/useDebouncedValue'
@@ -60,6 +61,8 @@ interface FormState {
   featured:           boolean
   categoryIds:        string[]
   tagIds:             string[]
+  scheduledAt:        string | null
+  expireAt:           string | null
   _showMediaPicker:   boolean
 }
 
@@ -90,6 +93,8 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
     _showMediaPicker: false,
     categoryIds:   article?.categoryIds   || [],
     tagIds:        article?.tagIds        || [],
+    scheduledAt:   article?.scheduledAt   ?? null,
+    expireAt:      article?.expireAt      ?? null,
   })
 
   const [saving,  setSaving]  = useState(false)
@@ -166,10 +171,13 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
     featured:      form.featured,
     categoryIds:   form.categoryIds,
     tagIds:        form.tagIds,
+    // Preserve scheduling on autosave (otherwise a content edit would wipe it).
+    scheduledAt:   form.scheduledAt,
+    expireAt:      form.expireAt,
   }), [
     form.title, form.slug, form.excerpt, form.content, form.featuredImage, form.featuredImageMeta,
     form.authorId, form.status, form.articleType, form.featured,
-    form.categoryIds, form.tagIds,
+    form.categoryIds, form.tagIds, form.scheduledAt, form.expireAt,
   ])
 
   const draftKey = `antariksham:draft:article:${mode === 'edit' && article ? article.id : 'new'}`
@@ -231,7 +239,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
 
   // ── Save ─────────────────────────────────────────────────────
 
-  async function handleSave(saveStatus: ArticleStatus) {
+  async function handleSave(saveStatus: ArticleStatus, extra?: { republish?: boolean }) {
     if (!form.title.trim()) { setError('Title is required.'); return }
     if (!form.slug.trim())  { setError('Slug is required.');  return }
     if (!form.content.trim()) { setError('Content is required.'); return }
@@ -246,6 +254,10 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
       readingTime:  readingTime(form.content),
       featuredImage: form.featuredImage || null,
       authorId:      form.authorId || null,
+      // Only carry a scheduled time when actually scheduling.
+      scheduledAt:  saveStatus === 'scheduled' ? form.scheduledAt : null,
+      expireAt:     form.expireAt,
+      republish:    extra?.republish ?? false,
     }
 
     try {
@@ -264,7 +276,11 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
         return
       }
 
-      setSuccess(saveStatus === 'published' ? 'Published!' : 'Saved as draft.')
+      setSuccess(
+        saveStatus === 'published' ? 'Published!'
+        : saveStatus === 'scheduled' ? 'Scheduled!'
+        : saveStatus === 'archived' ? 'Archived.'
+        : 'Saved as draft.')
       autosave.markSaved()
 
       if (mode === 'new') {
@@ -503,6 +519,21 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
             }}>
               {form.status}
             </span>
+          </div>
+
+          {/* Publishing Scheduler (Feature 4) */}
+          <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
+            <PublishingScheduler
+              status={form.status}
+              publishedAt={article?.publishedAt ?? null}
+              scheduledAt={form.scheduledAt}
+              expireAt={form.expireAt}
+              saving={saving}
+              canPublish={validation.canPublish}
+              onChangeSchedule={iso => setForm(f => ({ ...f, scheduledAt: iso }))}
+              onChangeExpire={iso => setForm(f => ({ ...f, expireAt: iso }))}
+              onAction={(status, extra) => handleSave(status, extra)}
+            />
           </div>
         </SidePanel>
 

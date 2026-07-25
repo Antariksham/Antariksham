@@ -6,10 +6,14 @@ import {
 import {
   Bold, Italic, Underline, Strikethrough, Highlighter, Code, Link2,
   Heading2, Heading3, List, ListOrdered, Quote, Minus, Image as ImageIcon,
-  Table as TableIcon, Info, Plus,
+  Table as TableIcon, Info, Plus, BookMarked, Waypoints,
 } from 'lucide-react'
 import { sanitizeHtml } from './sanitizeHtml'
 import { EDITOR_BLOCKS, type EditorBlock } from './editorBlocks'
+import { CitationManager } from '@/modules/admin/citations/CitationManager'
+import { LinkAssistant } from '@/modules/admin/links/LinkAssistant'
+import { decodeCitation } from '@/modules/admin/citations/formatCitation'
+import type { Citation, CitationStyle } from '@/modules/admin/citations/citationTypes'
 import { HI_SERIF } from '@/lib/i18n'
 
 export interface RichEditorHandle {
@@ -51,6 +55,8 @@ export const RichEditor = forwardRef<RichEditorHandle, Props>(function RichEdito
   const [slash, setSlash] = useState<{ open: boolean; query: string; top: number; left: number; index: number }>(
     { open: false, query: '', top: 0, left: 0, index: 0 },
   )
+  const [citeOpen, setCiteOpen] = useState(false)
+  const [linkOpen, setLinkOpen] = useState(false)
 
   // ── Emit (sanitize → onChange), debounced so huge docs don't stall typing ──
   const emit = useCallback((immediate = false) => {
@@ -155,6 +161,63 @@ export const RichEditor = forwardRef<RichEditorHandle, Props>(function RichEdito
     const fig = `<figure><img src="${escapeHtml(opts.src)}" alt="${escapeHtml(opts.alt || '')}" loading="lazy">${cap ? `<figcaption>${cap}</figcaption>` : '<figcaption>Add a caption…</figcaption>'}</figure><p><br></p>`
     insertHtml(fig)
   }, [insertHtml])
+
+  // ── Citations & references (Feature 7) ──────────────────────
+  // The Citation Manager owns the form/library; the editor owns the DOM: it
+  // re-hydrates the article's citations from the References block, inserts the
+  // numbered inline marker at the caret, and upserts the References block.
+  const citeHydrate = useCallback((): Citation[] => {
+    const el = editorRef.current
+    if (!el) return []
+    const out: Citation[] = []
+    el.querySelectorAll('.references.citations li[data-cite]').forEach(li => {
+      const c = decodeCitation(li.getAttribute('data-cite') || '')
+      if (c) out.push(c)
+    })
+    return out
+  }, [])
+
+  const citeInitialStyle = useCallback((): CitationStyle => {
+    const div = editorRef.current?.querySelector('.references.citations')
+    return (div?.getAttribute('data-style') as CitationStyle) || 'ieee'
+  }, [])
+
+  const citeInsertInline = useCallback((html: string) => {
+    restoreSelection()
+    insertHtml(html)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [insertHtml])
+
+  const citeSetReferences = useCallback((html: string) => {
+    const el = editorRef.current
+    if (!el) return
+    const existing = el.querySelector('.references.citations')
+    if (!html) {
+      existing?.remove()
+    } else {
+      const tpl = document.createElement('template')
+      tpl.innerHTML = html
+      const node = tpl.content.firstElementChild
+      if (node) { if (existing) existing.replaceWith(node); else el.appendChild(node) }
+    }
+    emit(true)
+  }, [emit])
+
+  // ── Internal Linking Assistant (Feature 6) ──────────────────
+  const linkGetText = useCallback(() => editorRef.current?.innerText || '', [])
+  const linkGetHtml = useCallback(() => editorRef.current?.innerHTML || '', [])
+  const linkInsert = useCallback((href: string, text: string) => {
+    restoreSelection()
+    const sel = window.getSelection()
+    if (sel && !sel.isCollapsed) {
+      // Wrap the current selection in the internal link.
+      try { document.execCommand('createLink', false, href) } catch { /* ignore */ }
+      emit(true)
+    } else {
+      insertHtml(`<a href="${escapeHtml(href)}">${escapeHtml(text)}</a>`)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [insertHtml, emit])
 
   useImperativeHandle(ref, () => ({
     insertImage,
@@ -333,6 +396,8 @@ export const RichEditor = forwardRef<RichEditorHandle, Props>(function RichEdito
         <TB icon={ImageIcon}     title="Image"                onClick={onPickImage} />
         <TB icon={TableIcon}     title="Table"                onClick={() => insertHtml(EDITOR_BLOCKS.find(b => b.id === 'table')!.html!)} />
         <TB icon={Info}          title="Info callout"         onClick={() => insertHtml(EDITOR_BLOCKS.find(b => b.id === 'callout-info')!.html!)} />
+        <TB icon={BookMarked}    title="Citations & references" onClick={() => setCiteOpen(true)} />
+        <TB icon={Waypoints}     title="Internal links"        onClick={() => setLinkOpen(true)} />
         <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '0 8px', color: 'rgba(var(--ink),0.5)', fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.05em' }}>
           <Plus size={11} /> type <kbd style={{ fontFamily: 'var(--font-mono)', background: 'rgba(var(--ink),0.06)', border: '1px solid var(--border)', borderRadius: '3px', padding: '0 4px' }}>/</kbd> for blocks
         </span>
@@ -402,6 +467,27 @@ export const RichEditor = forwardRef<RichEditorHandle, Props>(function RichEdito
             </button>
           ))}
         </div>
+      )}
+
+      {/* Citations & references manager (Feature 7) */}
+      {citeOpen && (
+        <CitationManager
+          initialStyle={citeInitialStyle()}
+          hydrate={citeHydrate}
+          onInsertInline={citeInsertInline}
+          onSetReferences={citeSetReferences}
+          onClose={() => setCiteOpen(false)}
+        />
+      )}
+
+      {/* Internal Linking Assistant (Feature 6) */}
+      {linkOpen && (
+        <LinkAssistant
+          getText={linkGetText}
+          getHtml={linkGetHtml}
+          onInsert={linkInsert}
+          onClose={() => setLinkOpen(false)}
+        />
       )}
     </div>
   )
