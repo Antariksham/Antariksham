@@ -106,5 +106,8 @@ function buildPayload(body: any) {
     readingTime:   readingTime(body.content || ''),
     categoryIds:   Array.isArray(body.categoryIds) ? body.categoryIds : [],
     tagIds:        Array.isArray(body.tagIds)       ? body.tagIds      : [],
+    scheduledAt:   typeof body.scheduledAt === 'string' ? body.scheduledAt : null,
+    expireAt:      typeof body.expireAt === 'string' ? body.expireAt : null,
+    republish:     Boolean(body.republish),
   }
 }

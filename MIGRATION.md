@@ -430,9 +430,32 @@ collection when Supabase env vars are absent — unrelated to app code).
     yet (excluded to avoid broken links); a site-wide **orphan-pages dashboard**
     (the pure `computeOrphans` is ready) needs a cheap server link-graph.
 
-**Not yet done:** Phase 2 Features 4, 5 (Publishing Scheduler, Analytics
-Dashboard) — building one at a time on request. Phases 3–4 of the plan, and the
-polish items in §10.
+- ✅ **Publishing Scheduler (Phase 2, Feature 4)** — schedule a future publish +
+  automatic expiry, with the full publish lifecycle. New `modules/admin/scheduling/`.
+  - **Pure core** (`scheduling.ts`): UTC-ISO ⇄ `datetime-local` conversion,
+    `scheduleView` (draft/scheduled/live/expiring/expired/archived + countdown),
+    `validateSchedule` (past schedule, expiry-before-publish), `humanizeMs`, and
+    `dueForPublish`/`dueForExpiry` (cron selection). 5 zero-dep `node:test` cases.
+  - **`PublishingScheduler`** panel (editor Publish sidebar): a live state pill +
+    countdown, **Schedule publish** + **Auto-expire** datetime pickers (local
+    time, stored UTC), validation, and lifecycle actions — **Publish now**
+    (existing button), **Schedule**, **Republish** (re-stamp `published_at`),
+    **Unpublish**, **Archive**, **Restore**. Hydration-safe (local-time inputs
+    populate after mount).
+  - **Backend**: additive migration **`20260726120000_article_scheduling.sql`**
+    (`scheduled_at`, `expire_at` + partial indexes; run it). Service reads/writes
+    with graceful fallback and honours `republish`; `runScheduledPublishing`
+    promotes due scheduled → published and archives expired.
+  - **Cron**: `app/api/cron/publish` (auth via `CRON_SECRET`, or an admin for
+    manual runs) + a root **`vercel.json`** crons entry (`*/15 * * * *`).
+    Scheduled/expired articles never leak — public reads already filter
+    `status = 'published'`.
+  - **Known follow-up**: recurring publishing + real email/push notifications
+    (the endpoint currently just performs the transitions; a scheduled-run digest
+    is the natural next step).
+
+**Not yet done:** Phase 2 Feature 5 (Analytics Dashboard) — building one at a
+time on request. Phases 3–4 of the plan, and the polish items in §10.
 
 ---
 
