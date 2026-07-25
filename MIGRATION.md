@@ -387,9 +387,32 @@ collection when Supabase env vars are absent — unrelated to app code).
     leave a stale inline marker — a full by-appearance renumber, and a shared
     server-backed team library, are natural next steps).
 
-**Not yet done:** Phase 2 Features 4, 5, 6, 8 (Publishing Scheduler, Analytics
-Dashboard, Internal Linking, Advanced Search) — building one at a time on
-request. Phases 3–4 of the plan, and the polish items in §10.
+- ✅ **Advanced Search & Content Discovery (Phase 2, Feature 8)** — the admin
+  Articles list became a professional content browser. New `modules/admin/search/`.
+  - **Pure core** (`articleSearch.ts`): `searchArticles` = full-text search
+    (every token must match across title/slug/author/category/tag) + filters by
+    status/type/category/tag/author/featured, views & reading-time ranges, and a
+    date range, then sort (updated/published/title/views/reading, asc/desc).
+    Plus `computeFacets` (distinct values + counts) and `toCsv`. 11 zero-dep
+    `node:test` cases (`articleSearch.test.ts`).
+  - **`ArticleBrowser`** (client): instant search, a faceted filter panel
+    (status/type/category/tag/author chips with counts, metric ranges, date
+    range, featured), **saved filter presets** (`savedFilters.ts`, localStorage),
+    a sortable table with per-row + select-all **multi-select**, client
+    pagination, and a **bulk action bar**: Publish / Draft / Archive / Delete /
+    Add category / Add tag / Assign author / **Export CSV**.
+  - **Bulk backend**: efficient set-based service fns (`bulkUpdateStatus`,
+    `bulkDeleteArticles`, `bulkAssignAuthor`, `bulkAddCategory`, `bulkAddTag` —
+    single `.in('id', …)` queries) behind `app/api/admin/articles/bulk` (cookie-
+    authed); the browser refreshes server data after each op. `getAdminArticles`
+    now also returns `readingTime` + `tags`. The admin page loads a generous
+    batch (500) and filters client-side.
+  - **Known follow-up**: for very large libraries, push the filters into the DB
+    query (the pure core is written to be reused server-side) — MIGRATION §10.
+
+**Not yet done:** Phase 2 Features 4, 5, 6 (Publishing Scheduler, Analytics
+Dashboard, Internal Linking Assistant) — building one at a time on request.
+Phases 3–4 of the plan, and the polish items in §10.
 
 ---
 

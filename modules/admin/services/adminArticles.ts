@@ -20,9 +20,11 @@ export interface AdminArticleRow {
   articleType: ArticleType
   featured:    boolean
   views:       number
+  readingTime: number
   publishedAt: string | null
   updatedAt:   string
   categories:  string[]
+  tags:        string[]
   authorName:  string | null
 }
 
@@ -44,9 +46,10 @@ export async function getAdminArticles({
   let query = db
     .from('articles')
     .select(
-      `id, title, slug, status, article_type, featured, views, published_at, updated_at,
+      `id, title, slug, status, article_type, featured, views, reading_time, published_at, updated_at,
        authors ( name ),
-       article_categories ( categories ( name ) )`,
+       article_categories ( categories ( name ) ),
+       article_tags ( tags ( name ) )`,
       { count: 'exact' }
     )
     .order('updated_at', { ascending: false })
@@ -70,9 +73,11 @@ export async function getAdminArticles({
     articleType: r.article_type,
     featured:    r.featured || false,
     views:       r.views || 0,
+    readingTime: r.reading_time || 0,
     publishedAt: r.published_at || null,
     updatedAt:   r.updated_at,
     categories:  (r.article_categories || []).map((ac: any) => ac.categories?.name).filter(Boolean),
+    tags:        (r.article_tags || []).map((at: any) => at.tags?.name).filter(Boolean),
     authorName:  r.authors?.name || null,
   }))
 
@@ -263,6 +268,58 @@ export async function deleteAdminArticle(id: string): Promise<boolean> {
     console.error('deleteAdminArticle error:', error)
     return false
   }
+  return true
+}
+
+// ── Bulk actions (Feature 8) ──────────────────────────────────
+// Efficient set-based operations over many selected articles. Each runs a
+// single `.in('id', ids)` query rather than N round-trips.
+
+export async function bulkUpdateStatus(ids: string[], status: ArticleStatus): Promise<boolean> {
+  if (ids.length === 0) return true
+  const db = supabaseAdmin()
+  const { error } = await db.from('articles').update({ status }).in('id', ids)
+  if (error) { console.error('bulkUpdateStatus error:', error); return false }
+  // First-time publish: stamp published_at only where it's still null.
+  if (status === 'published') {
+    await db.from('articles').update({ published_at: new Date().toISOString() }).in('id', ids).is('published_at', null)
+  }
+  return true
+}
+
+export async function bulkDeleteArticles(ids: string[]): Promise<boolean> {
+  if (ids.length === 0) return true
+  const db = supabaseAdmin()
+  const { error } = await db.from('articles').delete().in('id', ids)
+  if (error) { console.error('bulkDeleteArticles error:', error); return false }
+  return true
+}
+
+export async function bulkAssignAuthor(ids: string[], authorId: string): Promise<boolean> {
+  if (ids.length === 0) return true
+  const db = supabaseAdmin()
+  const { error } = await db.from('articles').update({ author_id: authorId || null }).in('id', ids)
+  if (error) { console.error('bulkAssignAuthor error:', error); return false }
+  return true
+}
+
+/** Append a category to every selected article (existing links are kept). */
+export async function bulkAddCategory(ids: string[], categoryId: string): Promise<boolean> {
+  if (ids.length === 0 || !categoryId) return true
+  const db = supabaseAdmin()
+  const rows = ids.map(id => ({ article_id: id, category_id: categoryId }))
+  const { error } = await db.from('article_categories').upsert(rows, { onConflict: 'article_id,category_id', ignoreDuplicates: true })
+  if (error) { console.error('bulkAddCategory error:', error); return false }
+  return true
+}
+
+/** Append a tag to every selected article (existing links are kept). */
+export async function bulkAddTag(ids: string[], tagId: string): Promise<boolean> {
+  if (ids.length === 0 || !tagId) return true
+  const db = supabaseAdmin()
+  const rows = ids.map(id => ({ article_id: id, tag_id: tagId }))
+  const { error } = await db.from('article_tags').upsert(rows, { onConflict: 'article_id,tag_id', ignoreDuplicates: true })
+  if (error) { console.error('bulkAddTag error:', error); return false }
   return true
 }
 
