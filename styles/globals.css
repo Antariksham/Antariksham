@@ -45,6 +45,15 @@
   --green-dim:  rgba(46,204,113,0.10);
   --red:        #e74c3c;   /* → --danger  */
 
+  /* RGB triplets for the accent/semantic colors — like --ink, these let
+     components build translucent tints at any alpha with rgba(var(--x-rgb), a)
+     instead of hardcoding the color. Used by .article-body callouts, the
+     publish checklist and the SEO score meters. */
+  --accent-rgb: 79, 142, 247;
+  --green-rgb:  46, 204, 113;
+  --gold-rgb:   243, 156, 18;
+  --red-rgb:    231, 76, 60;
+
   /* Purple has no CosmosDaily equivalent — folded into the accent */
   --purple:     #4f8ef7;
 
@@ -99,6 +108,7 @@
   --accent:      #2563eb;
   --accent-hover:#1d4ed8;
   --accent-dim:  rgba(37,99,235,0.10);
+  --accent-rgb: 37, 99, 235;
   --purple:     #2563eb;
   --border:     #e0e4f0;
   --border-hi:  #c8cfe4;
@@ -258,6 +268,8 @@ a { color: inherit; text-decoration: none; }
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
+.spin { animation: spin 0.8s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
 
 /* ─────────────────────────────────────────────────────────────
    COSMOSDAILY COMPONENT CLASSES  (homepage sibling)
@@ -451,6 +463,320 @@ a { color: inherit; text-decoration: none; }
 .prose li { margin: 0.35rem 0; }
 .prose hr { border: none; border-top: 1px solid var(--border); margin: 2.4rem 0; }
 .prose strong { color: var(--text-primary); }
+
+/* ═══════════════════════════════════════════════════════════════
+   ARTICLE BODY — the shared rich-content rendering contract.
+   ONE stylesheet drives BOTH the public reader (ArticleView) and the
+   admin live-preview (ArticlePreview), so the editor preview is always
+   byte-identical to what ships. The block editor emits exactly these
+   classes/elements. Theme-aware throughout (rgba(var(--ink),a) + tokens).
+   The reading font-family/size come from the wrapper (serif, i18n-aware);
+   here we own element spacing, headings, and every rich block.
+   ══════════════════════════════════════════════════════════════ */
+.article-body > *:first-child { margin-top: 0; }
+.article-body > *:last-child  { margin-bottom: 0; }
+
+.article-body p { color: inherit; font-size: inherit; line-height: inherit; margin: 0 0 1.4em; }
+
+/* Headings — bold sans (design-system rule), with anchor scroll offset */
+.article-body h2,
+.article-body h3,
+.article-body h4 {
+  font-family: var(--font-sans);
+  color: var(--white);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  scroll-margin-top: calc(var(--nav-height) + 16px);
+}
+.article-body h2 { font-size: 1.65em; margin: 1.9em 0 0.6em; }
+.article-body h3 { font-size: 1.32em; margin: 1.7em 0 0.5em; }
+.article-body h4 { font-size: 1.12em; margin: 1.5em 0 0.45em; }
+
+/* Inline formatting */
+.article-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.article-body a:hover { color: var(--accent-hover); }
+.article-body strong, .article-body b { color: var(--white); font-weight: 700; }
+.article-body em, .article-body i { font-style: italic; }
+.article-body u { text-decoration: underline; text-underline-offset: 2px; }
+.article-body s, .article-body del, .article-body strike { text-decoration: line-through; opacity: 0.75; }
+.article-body sup, .article-body sub { font-size: 0.72em; line-height: 0; }
+.article-body mark {
+  background: rgba(var(--gold-rgb), 0.22);
+  color: inherit;
+  padding: 0.05em 0.22em;
+  border-radius: 3px;
+}
+.article-body code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: rgba(var(--ink), 0.07);
+  border: 1px solid rgba(var(--ink), 0.1);
+  border-radius: 5px;
+  padding: 0.1em 0.4em;
+  color: var(--white);
+}
+.article-body kbd {
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  background: var(--raised);
+  border: 1px solid var(--border-hi);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 0.12em 0.5em;
+  color: var(--white);
+  white-space: nowrap;
+}
+
+/* Lists — restore markers Tailwind Preflight strips from ul/ol */
+.article-body ul { list-style: disc; margin: 0 0 1.4em; padding-left: 1.5em; }
+.article-body ol { list-style: decimal; margin: 0 0 1.4em; padding-left: 1.5em; }
+.article-body li { margin: 0.4em 0; padding-left: 0.2em; }
+.article-body li::marker { color: var(--accent); }
+.article-body ul ul, .article-body ol ol,
+.article-body ul ol, .article-body ol ul { margin: 0.4em 0; }
+
+/* Checklist — <ul class="checklist"> with <li data-checked="true|false"> */
+.article-body ul.checklist { list-style: none; padding-left: 0.2em; }
+.article-body ul.checklist li { position: relative; padding-left: 1.9em; margin: 0.5em 0; }
+.article-body ul.checklist li::marker { content: none; }
+.article-body ul.checklist li::before {
+  content: '';
+  position: absolute; left: 0; top: 0.28em;
+  width: 1.05em; height: 1.05em;
+  border: 1.5px solid rgba(var(--ink), 0.3);
+  border-radius: 5px;
+  background: rgba(var(--ink), 0.03);
+}
+.article-body ul.checklist li[data-checked="true"] { color: rgba(var(--ink), 0.55); }
+.article-body ul.checklist li[data-checked="true"]::before {
+  background: var(--green);
+  border-color: var(--green);
+}
+.article-body ul.checklist li[data-checked="true"]::after {
+  content: '✓';
+  position: absolute; left: 0.2em; top: 0.16em;
+  font-size: 0.82em; font-weight: 700;
+  color: var(--black); font-family: var(--font-sans);
+}
+
+/* Blockquote */
+.article-body blockquote {
+  margin: 1.8em 0;
+  padding: 0.4em 0 0.4em 1.3em;
+  border-left: 3px solid var(--accent);
+  color: rgba(var(--ink), 0.82);
+  font-style: italic;
+}
+.article-body blockquote p:last-child { margin-bottom: 0; }
+.article-body blockquote cite {
+  display: block;
+  margin-top: 0.6em;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.72em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(var(--ink), 0.55);
+}
+
+/* Horizontal rule */
+.article-body hr {
+  border: none;
+  border-top: 1px solid rgba(var(--ink), 0.14);
+  margin: 2.6em auto;
+  width: 100%;
+}
+
+/* Images & figures with captions/credit */
+.article-body img { max-width: 100%; height: auto; border-radius: var(--radius-sm); display: block; }
+.article-body figure { margin: 2em 0; }
+.article-body figure img { width: 100%; }
+.article-body figcaption {
+  margin-top: 0.7em;
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  color: rgba(var(--ink), 0.6);
+  text-align: center;
+}
+.article-body figcaption .credit { opacity: 0.75; }
+.article-body figure.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.article-body figure.gallery img { margin: 0; height: 100%; object-fit: cover; }
+.article-body figure.gallery figcaption { grid-column: 1 / -1; }
+
+/* Tables */
+.article-body .table-wrap { overflow-x: auto; margin: 2em 0; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 0.9em;
+}
+.article-body th, .article-body td {
+  padding: 0.7em 1em;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.article-body thead th {
+  background: rgba(var(--ink), 0.03);
+  font-weight: 700;
+  color: var(--white);
+  font-size: 0.82em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.article-body tbody tr:last-child td { border-bottom: none; }
+.article-body tbody tr:hover { background: rgba(var(--ink), 0.02); }
+
+/* Code block */
+.article-body pre {
+  margin: 1.8em 0;
+  padding: 1.1em 1.3em;
+  background: var(--deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  line-height: 1.6;
+}
+.article-body pre code { background: none; border: none; padding: 0; font-size: inherit; color: var(--dim); }
+
+/* Callouts — <div class="callout callout-{info|warning|success|note}"> with an
+   optional <p class="callout-title">. Info=accent, warning=gold, success=green. */
+.article-body .callout {
+  margin: 1.8em 0;
+  padding: 1.1em 1.3em;
+  border: 1px solid rgba(var(--ink), 0.12);
+  border-left-width: 3px;
+  border-radius: var(--radius-sm);
+  background: rgba(var(--ink), 0.03);
+  font-size: 0.96em;
+}
+.article-body .callout > *:first-child { margin-top: 0; }
+.article-body .callout > *:last-child  { margin-bottom: 0; }
+.article-body .callout .callout-title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: var(--white);
+  margin: 0 0 0.4em;
+  display: flex; align-items: center; gap: 0.5em;
+}
+.article-body .callout-info    { border-left-color: var(--accent); background: rgba(var(--accent-rgb), 0.07); }
+.article-body .callout-warning { border-left-color: var(--gold);   background: rgba(var(--gold-rgb), 0.08); }
+.article-body .callout-success { border-left-color: var(--green);  background: rgba(var(--green-rgb), 0.08); }
+.article-body .callout-danger  { border-left-color: var(--red);    background: rgba(var(--red-rgb), 0.08); }
+.article-body .callout-info    .callout-title { color: var(--accent); }
+.article-body .callout-warning .callout-title { color: var(--gold); }
+.article-body .callout-success .callout-title { color: var(--green); }
+.article-body .callout-danger  .callout-title { color: var(--red); }
+
+/* Mission fact card — <aside class="fact-card"> */
+.article-body .fact-card {
+  margin: 1.8em 0;
+  padding: 1.2em 1.4em;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.article-body .fact-card .fact-label {
+  font-family: var(--font-mono);
+  font-size: 0.68em;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.5em;
+}
+.article-body .fact-card dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.45em 1.2em; }
+.article-body .fact-card dt { font-family: var(--font-mono); font-size: 0.8em; letter-spacing: 0.04em; color: rgba(var(--ink), 0.6); }
+.article-body .fact-card dd { margin: 0; color: var(--white); font-weight: 600; }
+
+/* FAQ — <details class="faq"><summary>Q</summary>…</details> */
+.article-body details.faq {
+  margin: 0.8em 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 1.1em;
+  background: rgba(var(--ink), 0.02);
+}
+.article-body details.faq summary {
+  cursor: pointer;
+  padding: 0.9em 0;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--white);
+  list-style: none;
+}
+.article-body details.faq summary::-webkit-details-marker { display: none; }
+.article-body details.faq summary::after { content: '+'; float: right; color: var(--accent); font-weight: 700; }
+.article-body details.faq[open] summary::after { content: '–'; }
+.article-body details.faq[open] summary { border-bottom: 1px solid var(--border); }
+.article-body details.faq > *:not(summary) { padding-bottom: 0.9em; padding-top: 0.9em; }
+
+/* Timeline — <ol class="timeline"><li><span class="t-when">…</span>…</li></ol> */
+.article-body ol.timeline { list-style: none; padding-left: 1.4em; margin: 1.8em 0; border-left: 2px solid var(--border); }
+.article-body ol.timeline li { position: relative; margin: 0 0 1.4em; padding-left: 0.6em; }
+.article-body ol.timeline li::before {
+  content: ''; position: absolute; left: calc(-1.4em - 5px); top: 0.4em;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--black);
+}
+.article-body ol.timeline .t-when {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.2em;
+}
+
+/* Embeds — responsive 16:9 iframe wrapper: <div class="embed embed-video"><iframe/></div> */
+.article-body .embed { margin: 2em 0; }
+.article-body .embed-video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--deep);
+  border: 1px solid var(--border);
+}
+.article-body .embed-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.article-body .embed blockquote { /* tweet/x fallback quote */ font-style: normal; }
+
+/* References / footnotes */
+.article-body .references { margin: 2.4em 0 0; padding-top: 1.2em; border-top: 1px solid rgba(var(--ink), 0.12); }
+.article-body .references .references-title,
+.article-body .footnotes-title {
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(var(--ink), 0.6);
+  margin: 0 0 0.8em;
+}
+.article-body .references ol, .article-body .footnotes ol { font-size: 0.86em; color: rgba(var(--ink), 0.7); }
+.article-body .footnote-ref { font-size: 0.72em; vertical-align: super; color: var(--accent); text-decoration: none; }
+
+/* Math — .math-block (display) / .math-inline. KaTeX CSS loads on the reader;
+   this is the graceful, theme-aware baseline (and the sandbox has no KaTeX CDN). */
+.article-body .math-block {
+  margin: 1.6em 0;
+  padding: 0.6em 0;
+  text-align: center;
+  overflow-x: auto;
+  font-size: 1.05em;
+}
+.article-body .math-inline { font-size: 1em; }
+
+@media (max-width: 640px) {
+  .article-body h2 { font-size: 1.45em; }
+  .article-body h3 { font-size: 1.22em; }
+}
 
 @media (max-width: 640px) {
   .section { padding-top: 2.5rem; padding-bottom: 2.5rem; }

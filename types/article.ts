@@ -23,6 +23,22 @@ export type ArticleCategory =
   | 'Missions'
   | 'Science'
 
+// Newsroom-grade metadata for the featured image. Stored in the additive
+// `articles.featured_image_meta` JSONB column (all fields optional; the whole
+// object is null on articles that predate the column).
+export interface FeaturedImageMeta {
+  alt?:          string
+  caption?:      string
+  credit?:       string
+  photographer?: string
+  organization?: string
+  sourceUrl?:    string
+  license?:      string
+  copyright?:    string
+  focalX?:       number   // 0–100, horizontal focal point for object-position
+  focalY?:       number   // 0–100, vertical focal point
+}
+
 export interface Author {
   id:          string
   slug:        string
@@ -40,6 +56,7 @@ export interface Article {
   excerpt:       string
   content:       string
   featuredImage: string | null
+  featuredImageMeta: FeaturedImageMeta | null
   author:        Author | null
   authorId:      string
   status:        ArticleStatus

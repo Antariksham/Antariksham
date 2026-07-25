@@ -1,6 +1,13 @@
 import { cache } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { Article, ArticleCard, ArticleCategory } from '@/types/article'
+import type { Article, ArticleCard, ArticleCategory, FeaturedImageMeta } from '@/types/article'
+
+// Detects "column articles.featured_image_meta does not exist" so the public
+// reader keeps working before the featured-image-meta migration is applied.
+function isMissingFeaturedMetaColumn(error: any): boolean {
+  const msg = (error?.message || '').toLowerCase()
+  return msg.includes('featured_image_meta') && (msg.includes('does not exist') || msg.includes('column') || error?.code === '42703')
+}
 import {
   DEFAULT_LANGUAGE, isLanguageCode, type LanguageCode,
 } from '@/lib/i18n'
@@ -26,7 +33,7 @@ const ARTICLE_CARD_SELECT_FILTERED = `
   article_categories!inner ( categories!inner ( name, slug, color ) )
 `
 
-const ARTICLE_FULL_SELECT = `
+const ARTICLE_FULL_SELECT_BASE = `
   id, title, slug, excerpt, content, featured_image,
   published_at, updated_at, reading_time, views, article_type, featured,
   authors ( id, slug, name, bio, avatar, social_links, featured ),
@@ -34,6 +41,7 @@ const ARTICLE_FULL_SELECT = `
   article_tags ( tags ( name, slug ) ),
   seo_metadata ( meta_title, meta_description, og_image, keywords, canonical_url )
 `
+const ARTICLE_FULL_SELECT = `${ARTICLE_FULL_SELECT_BASE}, featured_image_meta`
 
 // ── Translation lookups (tolerant) ────────────────────────────
 // Any failure here — table missing, RLS, network — resolves to "no
@@ -159,12 +167,22 @@ export const getArticleBySlug = cache(async (
   slug: string,
   lang: LanguageCode = DEFAULT_LANGUAGE,
 ): Promise<Article | null> => {
-  const { data, error } = await supabase
+  let { data, error }: { data: any; error: any } = await supabase
     .from('articles')
     .select(ARTICLE_FULL_SELECT)
     .eq('slug', slug)
     .eq('status', 'published')
     .single()
+
+  // Retry without the meta column if the migration hasn't been applied yet.
+  if (error && isMissingFeaturedMetaColumn(error)) {
+    ({ data, error } = await supabase
+      .from('articles')
+      .select(ARTICLE_FULL_SELECT_BASE)
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .single())
+  }
 
   if (error || !data) return null
 
@@ -249,6 +267,7 @@ function normalizeFullArticle(row: any, lang: LanguageCode, translations: FullTr
     excerpt:       (t?.excerpt ?? row.excerpt) || '',
     content:       (t?.content || row.content) || '',
     featuredImage: row.featured_image || null,
+    featuredImageMeta: (row.featured_image_meta as FeaturedImageMeta) || null,
     author:        row.authors || null,
     authorId:      row.authors?.id || '',
     status:        'published',

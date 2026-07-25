@@ -1,7 +1,14 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { enforceSingleFeatured } from './featuredExclusive'
 import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adminErrors'
-import type { Article, ArticleStatus, ArticleType, ArticleCategory } from '@/types/article'
+import type { Article, ArticleStatus, ArticleType, ArticleCategory, FeaturedImageMeta } from '@/types/article'
+
+// Detects "column articles.featured_image_meta does not exist" so the editor
+// keeps working before this migration has been applied.
+function isMissingFeaturedMetaColumn(error: any): boolean {
+  const msg = (error?.message || '').toLowerCase()
+  return msg.includes('featured_image_meta') && (msg.includes('does not exist') || msg.includes('column') || error?.code === '42703')
+}
 
 // ── List / search ─────────────────────────────────────────────
 
@@ -85,6 +92,7 @@ export interface AdminArticleFull {
   excerpt:       string
   content:       string
   featuredImage: string | null
+  featuredImageMeta: FeaturedImageMeta | null
   authorId:      string | null
   status:        ArticleStatus
   articleType:   ArticleType
@@ -99,17 +107,23 @@ export interface AdminArticleFull {
 export async function getAdminArticleById(id: string): Promise<AdminArticleFull | null> {
   const db = supabaseAdmin()
 
-  const { data, error } = await db
-    .from('articles')
-    .select(`
+  const baseCols = `
       id, title, slug, excerpt, content, featured_image,
       author_id, status, article_type, featured,
       published_at, reading_time, views,
       article_categories ( category_id ),
-      article_tags ( tag_id )
-    `)
+      article_tags ( tag_id )`
+
+  let { data, error }: { data: any; error: any } = await db
+    .from('articles')
+    .select(`${baseCols}, featured_image_meta`)
     .eq('id', id)
     .single()
+
+  // Retry without the meta column if the migration hasn't been applied yet.
+  if (error && isMissingFeaturedMetaColumn(error)) {
+    ({ data, error } = await db.from('articles').select(baseCols).eq('id', id).single())
+  }
 
   if (error || !data) return null
 
@@ -120,6 +134,7 @@ export async function getAdminArticleById(id: string): Promise<AdminArticleFull 
     excerpt:       data.excerpt || '',
     content:       data.content || '',
     featuredImage: data.featured_image || null,
+    featuredImageMeta: (data.featured_image_meta as FeaturedImageMeta) || null,
     authorId:      data.author_id || null,
     status:        data.status,
     articleType:   data.article_type,
@@ -140,6 +155,7 @@ export interface ArticlePayload {
   excerpt:       string
   content:       string
   featuredImage: string | null
+  featuredImageMeta?: FeaturedImageMeta | null
   authorId:      string | null
   status:        ArticleStatus
   articleType:   ArticleType
@@ -154,24 +170,29 @@ export async function createAdminArticle(payload: ArticlePayload): Promise<{ id:
 
   await assertSlugAvailable(db, 'articles', payload.slug)
 
-  const { data, error } = await db
-    .from('articles')
-    .insert({
-      title:          payload.title,
-      slug:           payload.slug,
-      excerpt:        payload.excerpt,
-      content:        payload.content,
-      featured_image: payload.featuredImage || null,
-      author_id:      payload.authorId || null,
-      status:         payload.status,
-      article_type:   payload.articleType,
-      featured:       payload.featured,
-      reading_time:   payload.readingTime,
-      published_at:   payload.status === 'published' ? new Date().toISOString() : null,
-      views:          0,
-    })
-    .select('id')
-    .single()
+  const row: Record<string, any> = {
+    title:          payload.title,
+    slug:           payload.slug,
+    excerpt:        payload.excerpt,
+    content:        payload.content,
+    featured_image: payload.featuredImage || null,
+    featured_image_meta: payload.featuredImageMeta || null,
+    author_id:      payload.authorId || null,
+    status:         payload.status,
+    article_type:   payload.articleType,
+    featured:       payload.featured,
+    reading_time:   payload.readingTime,
+    published_at:   payload.status === 'published' ? new Date().toISOString() : null,
+    views:          0,
+  }
+
+  let { data, error }: { data: any; error: any } = await db.from('articles').insert(row).select('id').single()
+
+  // Retry without the meta column if the migration hasn't been applied yet.
+  if (error && isMissingFeaturedMetaColumn(error)) {
+    const { featured_image_meta, ...rest } = row
+    ;({ data, error } = await db.from('articles').insert(rest).select('id').single())
+  }
 
   if (error || !data) {
     if (isUniqueViolation(error)) throw new SlugConflictError()
@@ -195,26 +216,32 @@ export async function updateAdminArticle(
 
   await assertSlugAvailable(db, 'articles', payload.slug, id)
 
-  const { error } = await db
-    .from('articles')
-    .update({
-      title:          payload.title,
-      slug:           payload.slug,
-      excerpt:        payload.excerpt,
-      content:        payload.content,
-      featured_image: payload.featuredImage || null,
-      author_id:      payload.authorId || null,
-      status:         payload.status,
-      article_type:   payload.articleType,
-      featured:       payload.featured,
-      reading_time:   payload.readingTime,
-      // Set published_at only when first publishing
-      published_at:
-        payload.status === 'published' && !existingPublishedAt
-          ? new Date().toISOString()
-          : existingPublishedAt,
-    })
-    .eq('id', id)
+  const row: Record<string, any> = {
+    title:          payload.title,
+    slug:           payload.slug,
+    excerpt:        payload.excerpt,
+    content:        payload.content,
+    featured_image: payload.featuredImage || null,
+    featured_image_meta: payload.featuredImageMeta || null,
+    author_id:      payload.authorId || null,
+    status:         payload.status,
+    article_type:   payload.articleType,
+    featured:       payload.featured,
+    reading_time:   payload.readingTime,
+    // Set published_at only when first publishing
+    published_at:
+      payload.status === 'published' && !existingPublishedAt
+        ? new Date().toISOString()
+        : existingPublishedAt,
+  }
+
+  let { error }: { error: any } = await db.from('articles').update(row).eq('id', id)
+
+  // Retry without the meta column if the migration hasn't been applied yet.
+  if (error && isMissingFeaturedMetaColumn(error)) {
+    const { featured_image_meta, ...rest } = row
+    ;({ error } = await db.from('articles').update(rest).eq('id', id))
+  }
 
   if (error) {
     if (isUniqueViolation(error)) throw new SlugConflictError()
