@@ -276,7 +276,36 @@ collection when Supabase env vars are absent — unrelated to app code).
      manager are deliberately NOT in the translation tab — those fields are shared
      from English by design.
 
-**Not yet done:** Phases 2–4 of the plan, and the polish items in §10.
+- ✅ **Automatic Table of Contents (Phase 2, Feature 1)** — every article now
+  gets a TOC generated automatically from its H2/H3/H4 headings; no manual
+  authoring, works for every article, updates live in the editor preview and on
+  publish. Branch `claude/antariksham-phase-2-upgrade-erz812`.
+  - **Pure, isomorphic core** (`modules/articles/services/toc.ts`): `buildToc`
+    injects a stable, de-duplicated, unicode-aware (Hindi-safe) slug `id` onto
+    every H2/H3/H4 and returns a nested `TocItem` tree. Deterministic → the ids
+    rendered during SSR match what the client computes (hydration-safe) and
+    authored ids are preserved. Zero-dependency unit tests (`toc.test.ts`, Node's
+    built-in `node:test`; run `node --test --experimental-strip-types …`).
+  - **`TableOfContents` component** (`modules/articles/components/TableOfContents.tsx`):
+    sticky sidebar rail on desktop, collapsible `<details>` panel on mobile;
+    scroll-spy current-section highlight, reading-progress meter, smooth
+    scrolling, deep-link anchors + copy-section-link, expand/collapse, full
+    keyboard/ARIA support, `prefers-reduced-motion`. **Iframe-safe**: resolves
+    `document`/`window` from the nav's `ownerDocument`/`defaultView`, so
+    scroll-spy is correct both on the real reader and inside the admin
+    live-preview iframe.
+  - **Integration**: `ArticleBody` injects the ids (so anchors work everywhere,
+    including the preview) and renders the inline TOC; `ArticleView` adds the
+    desktop rail inside a centred 3-track `.article-layout` grid (reading measure
+    stays centred, rail floats in the right gutter). New theme-aware
+    `.article-layout`/`.article-toc*` styles in `styles/globals.css` (tokens +
+    `rgba(var(--ink),a)`; light + dark). Backward compatible — only additive
+    `id`s change existing article HTML.
+
+**Not yet done:** Phase 2 Features 2–8 (Reader Experience, Advanced Article
+Components, Publishing Scheduler, Analytics Dashboard, Internal Linking, Citation
+Management, Advanced Search) — building one at a time on request. Phases 3–4 of
+the plan, and the polish items in §10.
 
 ---
 

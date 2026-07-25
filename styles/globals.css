@@ -493,6 +493,153 @@ a { color: inherit; text-decoration: none; }
 .article-body h3 { font-size: 1.32em; margin: 1.7em 0 0.5em; }
 .article-body h4 { font-size: 1.12em; margin: 1.5em 0 0.45em; }
 
+/* ══════════════════════════════════════════════════════════════
+   AUTOMATIC TABLE OF CONTENTS  (Phase 2, Feature 1)
+   Desktop (≥1180px): the reading column sits in the centred middle track of a
+   3-track grid and a sticky rail floats in the right gutter — the reading
+   measure stays perfectly centred. Below the breakpoint the grid collapses to
+   the original single centred column and the inline collapsible panel (rendered
+   inside ArticleBody) takes over. Fully theme-aware (tokens + rgba(var(--ink),a)).
+   ══════════════════════════════════════════════════════════════ */
+.article-layout { position: relative; }
+
+/* Variant visibility is breakpoint-driven: rail = desktop, inline = mobile. */
+.article-toc-rail        { display: none; }
+.article-toc--inline     { display: block; }
+
+@media (min-width: 1180px) {
+  .article-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 740px) minmax(0, 1fr);
+    column-gap: 32px;
+    max-width: 1280px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  .article-layout__main { grid-column: 2; }
+  .article-toc-rail {
+    display: block;
+    grid-column: 3;
+    justify-self: start;
+    width: 100%;
+    max-width: 264px;
+    margin-top: clamp(32px, 6vw, 64px);            /* line up with the article's top padding */
+    position: sticky;
+    top: calc(var(--nav-height) + 24px);
+  }
+  /* On desktop the inline panel duplicates the rail — hide it, unless a preview
+     forces it visible (the admin editor has no rail of its own). */
+  .article-toc--inline:not(.article-toc--force) { display: none; }
+}
+
+/* ── Shared ── */
+.article-toc { font-family: var(--font-sans); }
+
+.article-toc__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 0 0 10px; margin-bottom: 4px;
+}
+.article-toc__label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  font-weight: 600; color: rgba(var(--ink), 0.55);
+}
+.article-toc__toggle {
+  background: none; border: none; cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(var(--ink), 0.5);
+  padding: 3px 6px; border-radius: 5px;
+  transition: color 0.15s, background 0.15s;
+}
+.article-toc__toggle:hover { color: var(--accent); background: rgba(var(--accent-rgb), 0.08); }
+
+/* ── Rail (desktop) ── */
+.article-toc__scroll {
+  display: grid;
+  grid-template-columns: 3px 1fr;
+  max-height: calc(100vh - var(--nav-height) - 108px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.article-toc__progress {
+  position: relative; width: 3px;
+  border-radius: 3px; background: rgba(var(--ink), 0.09);
+}
+.article-toc__progress-fill {
+  position: absolute; top: 0; left: 0; width: 100%;
+  background: var(--accent); border-radius: 3px;
+  transition: height 0.1s linear;
+}
+
+/* ── List (shared) ── */
+.article-toc__list { list-style: none; margin: 0; padding: 0; }
+.article-toc__scroll .article-toc__list { padding-left: 12px; }
+.article-toc__list .article-toc__list { margin-left: 14px; }
+.article-toc__item { margin: 0; }
+
+.article-toc__row {
+  display: flex; align-items: center; gap: 2px;
+  border-left: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+.article-toc__row.is-active { border-left-color: var(--accent); }
+
+.article-toc__link {
+  flex: 1 1 auto; min-width: 0;
+  display: block; padding: 5px 4px 5px 12px;
+  font-size: 13px; line-height: 1.45;
+  color: rgba(var(--ink), 0.6);
+  text-decoration: none; overflow-wrap: anywhere;
+  transition: color 0.15s;
+}
+.article-toc__link:hover { color: rgba(var(--ink), 0.95); }
+.article-toc__row.is-active .article-toc__link { color: var(--accent); font-weight: 600; }
+.article-toc__item[data-level="3"] .article-toc__link { font-size: 12.5px; }
+.article-toc__item[data-level="4"] .article-toc__link { font-size: 12px; color: rgba(var(--ink), 0.5); }
+.article-toc__link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+.article-toc__copy {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border: none; background: none; cursor: pointer;
+  color: rgba(var(--ink), 0.4); border-radius: 5px;
+  opacity: 0; transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+.article-toc__row:hover .article-toc__copy,
+.article-toc__copy:focus-visible { opacity: 1; }
+.article-toc__copy:hover { color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
+.article-toc__copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ── Inline collapsible (mobile + admin preview) ── */
+.article-toc--inline {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: rgba(var(--ink), 0.02);
+  margin: 0 0 32px; overflow: hidden;
+}
+.article-toc__summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  cursor: pointer; user-select: none; list-style: none;
+  padding: 12px 14px; font-size: 13px; font-weight: 600;
+  color: rgba(var(--ink), 0.82);
+}
+.article-toc__summary::-webkit-details-marker { display: none; }
+.article-toc__summary > span { display: inline-flex; align-items: center; gap: 8px; }
+.article-toc__summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.article-toc__chevron { color: rgba(var(--ink), 0.5); transition: transform 0.2s; }
+.article-toc--inline[open] .article-toc__chevron { transform: rotate(180deg); }
+.article-toc__body { padding: 6px 14px 12px; border-top: 1px solid var(--border); }
+.article-toc__head--inline { justify-content: flex-end; padding: 4px 0 2px; margin: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .article-toc__progress-fill,
+  .article-toc__chevron,
+  .article-toc__row,
+  .article-toc__link,
+  .article-toc__toggle,
+  .article-toc__copy { transition: none; }
+}
+
 /* Inline formatting */
 .article-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
 .article-body a:hover { color: var(--accent-hover); }

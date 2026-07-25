@@ -1,6 +1,8 @@
 import { formatDate } from '@/lib/utils'
 import { articlesListHref, HI_SANS, HI_SERIF, type LanguageCode } from '@/lib/i18n'
 import type { ArticleType, FeaturedImageMeta } from '@/types/article'
+import { buildToc, tocCount } from '../services/toc'
+import { TableOfContents } from './TableOfContents'
 
 // ── Shared render model ───────────────────────────────────────
 // The single shape both the production reader and the admin live-preview feed
@@ -50,6 +52,12 @@ export function ArticleBody({
   const serifFont = isHi ? HI_SERIF : 'var(--font-serif)'
 
   const CatTag = preview ? 'span' : 'a'
+
+  // Automatic Table of Contents — deterministic id injection + heading tree,
+  // computed the same way on the server (production) and in the browser (admin
+  // live-preview), so anchors line up and the TOC needs no manual authoring.
+  const toc     = buildToc(model.content)
+  const showToc = tocCount(toc.items) >= 2
 
   return (
     <>
@@ -173,9 +181,19 @@ export function ArticleBody({
         )
       })()}
 
+      {/* Automatic Table of Contents (inline). On mobile it's a collapsible
+          panel above the article; on desktop it's hidden here because
+          ArticleView renders the sticky sidebar rail instead. In the admin
+          preview `forceVisible` keeps it shown at every width so editors watch
+          it rebuild live as they add/rename headings. */}
+      {showToc && (
+        <TableOfContents items={toc.items} variant="inline" lang={lang} forceVisible={preview} />
+      )}
+
       {/* Article body — .article-body carries the shared rich-content styling
           (headings, lists, quotes, callouts, tables, code, figures, …) so
-          preview and production render every block identically. */}
+          preview and production render every block identically. Headings now
+          carry stable `id` anchors injected by buildToc (deep-linkable). */}
       <div
         className="article-body"
         style={{
@@ -185,7 +203,7 @@ export function ArticleBody({
           color:       'rgba(var(--ink),0.9)',
           letterSpacing: '0.01em',
         }}
-        dangerouslySetInnerHTML={{ __html: model.content || (preview ? '<p style="opacity:.5">Start writing to see your article take shape…</p>' : '') }}
+        dangerouslySetInnerHTML={{ __html: toc.html || (preview ? '<p style="opacity:.5">Start writing to see your article take shape…</p>' : '') }}
       />
 
       {/* Tags */}
