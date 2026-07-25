@@ -302,10 +302,39 @@ collection when Supabase env vars are absent — unrelated to app code).
     `rgba(var(--ink),a)`; light + dark). Backward compatible — only additive
     `id`s change existing article HTML.
 
-**Not yet done:** Phase 2 Features 2–8 (Reader Experience, Advanced Article
-Components, Publishing Scheduler, Analytics Dashboard, Internal Linking, Citation
-Management, Advanced Search) — building one at a time on request. Phases 3–4 of
-the plan, and the polish items in §10.
+- ✅ **Professional Reader Experience (Phase 2, Feature 2)** — the article
+  reading page gained an enterprise-grade reading layer, all additive and
+  backward compatible. New `modules/articles/reader/` module.
+  - **Reading progress bar** (`ReadingProgressBar`) — thin accent bar pinned
+    under the nav, fills continuously via a GPU `scaleX` transform.
+  - **Share** — desktop **sticky share rail** in the article grid's LEFT gutter
+    (mirroring the TOC rail on the right): X, Facebook, LinkedIn, WhatsApp,
+    Telegram, Email, Copy Link, Bookmark. Mobile **action dock** (`ReaderDock`)
+    with a share FAB that uses the **native Web Share API** when present and a
+    fallback menu otherwise, plus a back-to-top FAB. URL builders are pure &
+    tested (`shareLinks.ts`).
+  - **Reading preferences** (`ReaderPreferencesPanel`) — modal to set **font
+    size / reading width / line height / theme**, persisted to localStorage and
+    applied as CSS custom properties (`--reader-font-scale`, `--reader-line`,
+    `--reader-measure`) the article body reads with fallbacks — so defaults and
+    the admin preview are byte-identical to before. Pure prefs model + mapping
+    tested (`readerPrefs.ts`).
+  - **Reading statistics** — word count, reading time, views, publish + updated
+    dates, and a live **“% complete · min left”** in the preferences panel.
+  - **Scroll behaviour** — smooth anchor scrolling (shared with the TOC),
+    back-to-top, and **remember/resume last position** per slug
+    (`ResumeReading`, offers a resume pill on reload).
+  - **Architecture**: a client `ReaderProvider` context holds prefs/bookmark/
+    share-meta/panel-open; scroll work is isolated in a small `useReadingProgress`
+    hook (no context re-renders on scroll). Wired into `ArticleView`; the body
+    honours the reader vars. Theme-aware `.reader-*` styles in `globals.css`
+    (light + dark, `prefers-reduced-motion`, full keyboard/ARIA). Zero-dependency
+    `node:test` unit tests (`modules/articles/reader/reader.test.ts`).
+
+**Not yet done:** Phase 2 Features 3–8 (Advanced Article Components, Publishing
+Scheduler, Analytics Dashboard, Internal Linking, Citation Management, Advanced
+Search) — building one at a time on request. Phases 3–4 of the plan, and the
+polish items in §10.
 
 ---
 

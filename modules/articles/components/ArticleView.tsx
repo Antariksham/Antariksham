@@ -1,9 +1,16 @@
 import { articleHref, articlesListHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
 import { LanguageToggle } from '@/components/LanguageToggle'
-import { ArticleBody, type ArticleRenderModel } from './ArticleBody'
+import { ArticleBody, countWords, type ArticleRenderModel } from './ArticleBody'
 import { TableOfContents } from './TableOfContents'
 import { buildToc, tocCount } from '../services/toc'
 import { buildArticleJsonLd } from '../services/articleMetadata'
+import { ReaderProvider, type ReaderMeta } from '../reader/ReaderContext'
+import { ReadingProgressBar } from '../reader/ReadingProgressBar'
+import { ShareRail } from '../reader/ShareRail'
+import { ReaderDock } from '../reader/ReaderDock'
+import { ReaderPreferencesPanel } from '../reader/ReaderPreferencesPanel'
+import { ResumeReading } from '../reader/ResumeReading'
+import { siteConfig } from '@/config/site'
 import type { Article, ArticleCard } from '@/types/article'
 
 const CAT_COLORS: Record<string, string> = {
@@ -54,8 +61,27 @@ export function ArticleView({
   const toc     = buildToc(article.content)
   const showToc = tocCount(toc.items) >= 2
 
+  // Metadata shared with the reader chrome (share rail, dock, preferences,
+  // resume). The canonical URL is a sensible SSR default; the client upgrades
+  // it to the live location for share/copy.
+  const meta: ReaderMeta = {
+    title:        article.title,
+    slug:         article.slug,
+    canonicalUrl: `${siteConfig.url}${articleHref(article.slug, lang)}`,
+    lang,
+    words:        countWords(article.content),
+    readingTime:  article.readingTime,
+    views:        article.views,
+    publishedAt:  article.publishedAt,
+    updatedAt:    article.updatedAt,
+  }
+
   return (
+    <ReaderProvider meta={meta}>
     <div style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
+
+      {/* Thin reading-progress bar pinned under the nav (Feature 2) */}
+      <ReadingProgressBar />
 
       {/* Structured data (Article/NewsArticle JSON-LD) for search engines */}
       <script
@@ -74,7 +100,7 @@ export function ArticleView({
           lang={lang}
           className="article-layout__main"
           style={{
-            maxWidth:  '740px',
+            maxWidth:  'var(--reader-measure, 740px)',
             margin:    '0 auto',
             padding:   'clamp(32px, 6vw, 64px) clamp(20px, 5vw, 40px)',
           }}
@@ -98,12 +124,17 @@ export function ArticleView({
           </div>
         </article>
 
-        {/* Desktop sticky Table of Contents */}
+        {/* Desktop sticky Table of Contents (right gutter) */}
         {showToc && (
           <aside className="article-toc-rail">
             <TableOfContents items={toc.items} variant="rail" lang={lang} />
           </aside>
         )}
+
+        {/* Desktop sticky share rail (left gutter) */}
+        <aside className="article-share-rail">
+          <ShareRail />
+        </aside>
       </div>
 
       {/* Related articles — full width section below article */}
@@ -139,6 +170,12 @@ export function ArticleView({
         </div>
       )}
 
+      {/* Reader chrome — mobile action dock, preferences panel, resume pill */}
+      <ReaderDock />
+      <ReaderPreferencesPanel />
+      <ResumeReading />
+
     </div>
+    </ReaderProvider>
   )
 }

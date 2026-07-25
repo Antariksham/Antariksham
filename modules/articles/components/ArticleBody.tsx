@@ -198,8 +198,12 @@ export function ArticleBody({
         className="article-body"
         style={{
           fontFamily:  serifFont,
-          fontSize:    'clamp(16px, 1.8vw, 18px)',
-          lineHeight:  1.9,
+          // Reading preferences (Feature 2) scale the body via CSS vars. The
+          // fallbacks reproduce the original rendering exactly, so readers who
+          // never touch the controls — and the admin preview, which sets no
+          // vars — are unaffected.
+          fontSize:    'calc(clamp(16px, 1.8vw, 18px) * var(--reader-font-scale, 1))',
+          lineHeight:  'var(--reader-line, 1.9)',
           color:       'rgba(var(--ink),0.9)',
           letterSpacing: '0.01em',
         }}
