@@ -410,9 +410,29 @@ collection when Supabase env vars are absent — unrelated to app code).
   - **Known follow-up**: for very large libraries, push the filters into the DB
     query (the pure core is written to be reused server-side) — MIGRATION §10.
 
-**Not yet done:** Phase 2 Features 4, 5, 6 (Publishing Scheduler, Analytics
-Dashboard, Internal Linking Assistant) — building one at a time on request.
-Phases 3–4 of the plan, and the polish items in §10.
+- ✅ **Internal Linking Assistant (Phase 2, Feature 6)** — an editor helper for
+  internal linking (better topical authority + crawlability, fewer orphans). New
+  `modules/admin/links/`.
+  - **Pure core** (`internalLinks.ts`): `suggestLinks` ranks internal pages by
+    title-token overlap with the draft text (+ shared category/tag), excluding
+    the current page and pages already linked (no duplicates); `searchTargets`
+    (manual search); `extractInternalHrefs` + `findBrokenLinks` (internal links
+    that don't resolve to a known page); `computeOrphans` (pages nothing links
+    to); `buildLinkHtml`. 9 zero-dep `node:test` cases (`internalLinks.test.ts`).
+  - **`LinkAssistant`** (editor modal, new toolbar button): fetches internal
+    pages from `app/api/admin/link-targets` (published **articles** with facets,
+    **missions**, **learn** pages, **authors** — real slug routes only, so a
+    suggestion never itself becomes a broken link), shows ranked suggestions
+    with colour-coded kind badges, a manual search, **one-click insert** (wraps
+    the current selection or inserts the page title), an "already-linked" marker,
+    and a **broken-internal-links** panel for the current draft.
+  - **Known follow-ups**: tags/categories/launches have no dedicated slug pages
+    yet (excluded to avoid broken links); a site-wide **orphan-pages dashboard**
+    (the pure `computeOrphans` is ready) needs a cheap server link-graph.
+
+**Not yet done:** Phase 2 Features 4, 5 (Publishing Scheduler, Analytics
+Dashboard) — building one at a time on request. Phases 3–4 of the plan, and the
+polish items in §10.
 
 ---
 
