@@ -5,6 +5,7 @@ import { Link2, Check, Bookmark, BookmarkCheck, Type } from 'lucide-react'
 import { useReader } from './ReaderContext'
 import { buildShareTargets } from './shareLinks'
 import { SHARE_ICONS } from './shareIcons'
+import { sendEvent } from '../analytics/beacon'
 
 /**
  * Sticky vertical share rail for desktop — Phase 2, Feature 2.
@@ -26,6 +27,7 @@ export function ShareRail() {
   const targets = buildShareTargets({ url, title: meta.title })
 
   const copy = () => {
+    sendEvent({ articleId: meta.id, type: 'share' })
     navigator.clipboard?.writeText(url).then(
       () => { setCopied(true); window.setTimeout(() => setCopied(false), 1600) },
       () => { /* clipboard blocked — ignore */ },
@@ -47,6 +49,7 @@ export function ShareRail() {
             className="reader-share__btn"
             aria-label={t.label}
             title={t.label}
+            onClick={() => sendEvent({ articleId: meta.id, type: 'share' })}
           >
             <Icon size={16} aria-hidden />
           </a>

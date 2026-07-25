@@ -6,6 +6,7 @@ import {
   DEFAULT_PREFS, PREFS_STORAGE_KEY, BOOKMARKS_STORAGE_KEY, READER_VAR_NAMES,
   normalizePrefs, prefsToVars, type ReaderPrefs,
 } from './readerPrefs'
+import { sendEvent } from '../analytics/beacon'
 
 /**
  * Reader experience context — Phase 2, Feature 2.
@@ -22,6 +23,7 @@ import {
  */
 
 export interface ReaderMeta {
+  id:          string
   title:       string
   slug:        string
   /** Canonical/site URL; overridden at click-time by the live location. */
@@ -99,8 +101,9 @@ export function ReaderProvider({ meta, children }: { meta: ReaderMeta; children:
       ? list.filter(b => b.slug !== meta.slug)
       : [{ slug: meta.slug, title: meta.title, savedAt: new Date().toISOString() }, ...list].slice(0, 500)
     try { localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(next)) } catch { /* ignore */ }
+    if (!exists) sendEvent({ articleId: meta.id, type: 'bookmark' }) // analytics (Feature 5)
     setBookmarked(!exists)
-  }, [meta.slug, meta.title])
+  }, [meta.id, meta.slug, meta.title])
 
   const value = useMemo<ReaderContextValue>(() => ({
     meta, prefs, setPref, resetPrefs, bookmarked, toggleBookmark, prefsOpen, setPrefsOpen,

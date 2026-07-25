@@ -6,6 +6,7 @@ import { useReader } from './ReaderContext'
 import { useReadingProgress } from './useReadingProgress'
 import { buildShareTargets } from './shareLinks'
 import { SHARE_ICONS } from './shareIcons'
+import { sendEvent } from '../analytics/beacon'
 
 /**
  * Floating action dock for touch / small screens — Phase 2, Feature 2.
@@ -31,13 +32,14 @@ export function ReaderDock() {
 
   const share = async () => {
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-      try { await navigator.share({ title: meta.title, url }) } catch { /* dismissed */ }
+      try { await navigator.share({ title: meta.title, url }); sendEvent({ articleId: meta.id, type: 'share' }) } catch { /* dismissed */ }
       return
     }
     setMenuOpen(o => !o) // no native share → fallback menu
   }
 
   const copy = () => {
+    sendEvent({ articleId: meta.id, type: 'share' })
     navigator.clipboard?.writeText(url).then(
       () => { setCopied(true); window.setTimeout(() => setCopied(false), 1600) },
       () => {},

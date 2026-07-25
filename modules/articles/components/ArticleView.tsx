@@ -6,6 +6,7 @@ import { buildToc, tocCount } from '../services/toc'
 import { buildArticleJsonLd } from '../services/articleMetadata'
 import { ReaderProvider, type ReaderMeta } from '../reader/ReaderContext'
 import { ArticleEnhancer } from '../blocks/ArticleEnhancer'
+import { AnalyticsBeacon } from '../analytics/AnalyticsBeacon'
 import { ReadingProgressBar } from '../reader/ReadingProgressBar'
 import { ShareRail } from '../reader/ShareRail'
 import { ReaderDock } from '../reader/ReaderDock'
@@ -66,6 +67,7 @@ export function ArticleView({
   // resume). The canonical URL is a sensible SSR default; the client upgrades
   // it to the live location for share/copy.
   const meta: ReaderMeta = {
+    id:           article.id,
     title:        article.title,
     slug:         article.slug,
     canonicalUrl: `${siteConfig.url}${articleHref(article.slug, lang)}`,
@@ -170,6 +172,9 @@ export function ArticleView({
           </div>
         </div>
       )}
+
+      {/* Analytics: record view + read (scroll depth / dwell) — Feature 5 */}
+      <AnalyticsBeacon articleId={article.id} path={articleHref(article.slug, lang)} />
 
       {/* Progressive enhancement for advanced article components (Feature 3):
           code highlight/copy, countdown, carousel, lightbox, sortable tables,

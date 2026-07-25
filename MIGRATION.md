@@ -458,8 +458,45 @@ collection when Supabase env vars are absent — unrelated to app code).
     (the endpoint currently just performs the transitions; a scheduled-run digest
     is the natural next step).
 
-**Not yet done:** Phase 2 Feature 5 (Analytics Dashboard) — building one at a
-time on request. Phases 3–4 of the plan, and the polish items in §10.
+- ✅ **Analytics Dashboard (Phase 2, Feature 5)** — a privacy-friendly audience &
+  engagement dashboard at **`/admin/analytics`**. New `modules/admin/analytics/`.
+  - **Pure core** (`analytics.ts`): DOM-free classifiers (`classifyReferrer`,
+    `deviceFromUA`), `aggregateMetrics` (views, unique/returning visitors, avg
+    read time, avg scroll depth, completion %, bounce %, shares, bookmarks),
+    `timeSeries` bucketing (day/week/month/year), dimension `breakdown`
+    (device/source/referrer/country), and `buildInsights` (best performing,
+    fastest growing, top categories/tags/authors). Chart geometry helpers
+    (`chartUtils.ts`: `niceMax`, `linePoints`, `toPath`, `toAreaPath`). 15
+    zero-dep `node:test` cases (`analytics.test.ts`, `chartUtils.test.ts`).
+  - **Privacy-friendly collection**: additive migration
+    **`20260726130000_article_events.sql`** (`article_events`, RLS on, no public
+    policies — service-role only; run it). No cookies, no PII: `visitor` is an
+    opaque localStorage token, `session` a sessionStorage token; referrer is
+    reduced to a host + coarse type, device to mobile/tablet/desktop, location to
+    an ISO-2 country from the edge geo header. A client beacon (`beacon.ts` +
+    `AnalyticsBeacon.tsx`, `navigator.sendBeacon`) records **view** on mount and
+    **read** (max scroll depth + dwell) on page-hide; **share** and **bookmark**
+    fire from the reader chrome. `app/api/analytics/collect` (public POST, always
+    200) derives device/referrer/country server-side and inserts the row.
+  - **Dashboard** (`AnalyticsDashboard.tsx`, client): a range selector (24h / 7d /
+    30d / 12mo + custom dates), KPI tiles, a **single-series views-over-time
+    line/area chart** with hover crosshair + tooltip, single-hue rounded
+    horizontal **breakdown bars** (device / sources / referrers / countries),
+    editorial **highlights** (best performing, fastest growing, top
+    categories/tags), and a **top-articles** list. Follows the dataviz method
+    (one accent hue, no legend — the title names the series; thin marks; recessive
+    grid) and is **theme-aware by construction** (charts read `--accent-rgb` +
+    `--ink`, so light + dark come for free). SSR fallback → client refresh from
+    the admin-authed `app/api/admin/analytics` proxy on range change.
+    `getAnalytics.ts` joins events with article metadata and **degrades gracefully**
+    (friendly empty state) if the migration hasn't been applied. New sidebar link.
+  - **Known follow-ups** (data populates as events accumulate): per-article deep
+    dives, a scroll-depth heatmap, and metrics not yet tracked (comments/likes,
+    city-level geo) are natural next steps; the collector + pure core are written
+    to extend into them.
+
+**Not yet done:** All 8 Phase 2 features are complete. Remaining: Phases 3–4 of
+the plan, and the polish items in §10.
 
 ---
 
