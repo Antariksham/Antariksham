@@ -520,14 +520,16 @@ a { color: inherit; text-decoration: none; }
   }
   /* All three tracks share row 1. Pinning grid-row is essential: the rails are
      declared AFTER the article in the DOM, and grid's sparse auto-placement
-     would otherwise bump the left (column-1) share rail down into a new row
-     — dropping it far below the article in an empty gutter (the reported bug). */
+     would otherwise bump a gutter rail into a new row — dropping it far below
+     the article in an empty gutter (the reported bug). Layout: TOC in the LEFT
+     gutter (column 1, docs-style nav), share rail in the RIGHT gutter (column
+     3). Each `justify-self` hugs the article edge. */
   .article-layout__main { grid-column: 2; grid-row: 1; }
   .article-toc-rail {
     display: block;
-    grid-column: 3;
+    grid-column: 1;
     grid-row: 1;
-    justify-self: start;
+    justify-self: end;                             /* sit against the article's left edge */
     width: 100%;
     max-width: 264px;
     margin-top: clamp(32px, 6vw, 64px);            /* line up with the article's top padding */
@@ -542,9 +544,9 @@ a { color: inherit; text-decoration: none; }
      `min(…, 100%)` keeps it from ever exceeding a short article's height. */
   .article-share-rail {
     display: block;
-    grid-column: 1;
+    grid-column: 3;
     grid-row: 1;
-    justify-self: end;
+    justify-self: start;                           /* sit against the article's right edge */
     align-self: stretch;
   }
   .article-share-rail .reader-share {
