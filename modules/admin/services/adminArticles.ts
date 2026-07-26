@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { enforceSingleFeatured } from './featuredExclusive'
 import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adminErrors'
 import type { Article, ArticleStatus, ArticleType, ArticleCategory, FeaturedImageMeta } from '@/types/article'
+import type { SortKey, SortDir } from '@/modules/admin/search/articleSearch'
 
 // Detects "column articles.featured_image_meta does not exist" so the editor
 // keeps working before this migration has been applied.
@@ -43,41 +44,96 @@ export interface AdminArticleRow {
   authorName:  string | null
 }
 
-export async function getAdminArticles({
-  page    = 1,
-  perPage = 20,
-  status,
-  search,
-}: {
-  page?:    number
-  perPage?: number
-  status?:  ArticleStatus | 'all'
-  search?:  string
-} = {}): Promise<{ rows: AdminArticleRow[]; total: number; totalPages: number }> {
-  const db   = supabaseAdmin()
-  const from = (page - 1) * perPage
-  const to   = from + perPage - 1
+/**
+ * Server-side query for the admin Articles browser (Phase 2, Feature 8 — scaled).
+ * ─────────────────────────────────────────────────────────────────
+ * Every filter, the sort, AND pagination run in the database, so the browser
+ * only ever transfers one page (≤ MAX_PER_PAGE rows) regardless of how many
+ * millions of articles exist — Supabase's per-request row ceiling is never in
+ * play. Category / tag / author are single-value filters (clean, join-safe,
+ * exact counts); text search matches title + slug.
+ */
+export interface AdminArticleQuery {
+  page?:       number
+  perPage?:    number
+  status?:     ArticleStatus | 'all'
+  type?:       ArticleType | 'all'
+  search?:     string
+  categoryId?: string | null
+  tagId?:      string | null
+  authorId?:   string | null
+  featuredOnly?: boolean
+  viewsMin?:   number | null
+  viewsMax?:   number | null
+  readingMin?: number | null
+  readingMax?: number | null
+  dateFrom?:   string | null   // YYYY-MM-DD (inclusive, against published_at)
+  dateTo?:     string | null
+  sort?:       SortKey
+  sortDir?:    SortDir
+}
+
+// Hard ceiling on rows per request — the browser can never ask for more, so a
+// pathological ?perPage=1000000 can't try to pull the whole table.
+export const MAX_PER_PAGE = 100
+const DEFAULT_PER_PAGE = 25
+
+const SORT_COLUMN: Record<SortKey, string> = {
+  updated: 'updated_at', published: 'published_at', title: 'title', views: 'views', reading: 'reading_time',
+}
+
+// Strip characters that would break a PostgREST `or=()` filter expression.
+const sanitize = (s: string) => s.replace(/[,()*%]/g, ' ').trim()
+
+export async function getAdminArticles(q: AdminArticleQuery = {}): Promise<{ rows: AdminArticleRow[]; total: number; totalPages: number; page: number; perPage: number }> {
+  const db      = supabaseAdmin()
+  const perPage = Math.min(Math.max(1, Math.floor(q.perPage ?? DEFAULT_PER_PAGE)), MAX_PER_PAGE)
+  const page    = Math.max(1, Math.floor(q.page ?? 1))
+  const from    = (page - 1) * perPage
+  const to      = from + perPage - 1
+
+  const catActive = !!q.categoryId
+  const tagActive = !!q.tagId
+
+  // `!inner` on a junction turns a category/tag filter into a join constraint
+  // (article must have that relation) instead of loading every relation.
+  const select =
+    `id, title, slug, status, article_type, featured, views, reading_time, published_at, updated_at,
+     authors ( name ),
+     article_categories${catActive ? '!inner' : ''} ( category_id, categories ( name ) ),
+     article_tags${tagActive ? '!inner' : ''} ( tag_id, tags ( name ) )`
+
+  const sortKey = q.sort && SORT_COLUMN[q.sort] ? q.sort : 'updated'
+  const ascending = q.sortDir === 'asc'
 
   let query = db
     .from('articles')
-    .select(
-      `id, title, slug, status, article_type, featured, views, reading_time, published_at, updated_at,
-       authors ( name ),
-       article_categories ( categories ( name ) ),
-       article_tags ( tags ( name ) )`,
-      { count: 'exact' }
-    )
-    .order('updated_at', { ascending: false })
+    .select(select, { count: 'exact' })
+    .order(SORT_COLUMN[sortKey], { ascending, nullsFirst: false })
     .range(from, to)
 
-  if (status && status !== 'all') query = query.eq('status', status)
-  if (search) query = query.ilike('title', `%${search}%`)
+  if (q.status && q.status !== 'all') query = query.eq('status', q.status)
+  if (q.type && q.type !== 'all')     query = query.eq('article_type', q.type)
+  if (q.authorId)                     query = query.eq('author_id', q.authorId)
+  if (q.featuredOnly)                 query = query.eq('featured', true)
+  if (catActive)                      query = query.eq('article_categories.category_id', q.categoryId)
+  if (tagActive)                      query = query.eq('article_tags.tag_id', q.tagId)
+
+  const search = q.search ? sanitize(q.search) : ''
+  if (search) query = query.or(`title.ilike.*${search}*,slug.ilike.*${search}*`)
+
+  if (q.viewsMin   != null) query = query.gte('views', q.viewsMin)
+  if (q.viewsMax   != null) query = query.lte('views', q.viewsMax)
+  if (q.readingMin != null) query = query.gte('reading_time', q.readingMin)
+  if (q.readingMax != null) query = query.lte('reading_time', q.readingMax)
+  if (q.dateFrom)  query = query.gte('published_at', q.dateFrom)
+  if (q.dateTo)    query = query.lte('published_at', `${q.dateTo}T23:59:59.999Z`)
 
   const { data, error, count } = await query
 
   if (error) {
     console.error('getAdminArticles error:', error)
-    return { rows: [], total: 0, totalPages: 0 }
+    return { rows: [], total: 0, totalPages: 0, page, perPage }
   }
 
   const rows: AdminArticleRow[] = (data || []).map((r: any) => ({
@@ -99,7 +155,9 @@ export async function getAdminArticles({
   return {
     rows,
     total:      count || 0,
-    totalPages: Math.ceil((count || 0) / perPage),
+    totalPages: Math.max(1, Math.ceil((count || 0) / perPage)),
+    page,
+    perPage,
   }
 }
 
@@ -404,10 +462,12 @@ export async function getFormOptions(): Promise<{
 }> {
   const db = supabaseAdmin()
 
+  // Reference tables are small, but cap them so a runaway tag list can never
+  // exceed Supabase's per-request row ceiling.
   const [catRes, tagRes, authRes] = await Promise.all([
-    db.from('categories').select('id, name, slug').order('name'),
-    db.from('tags').select('id, name, slug').order('name'),
-    db.from('authors').select('id, name').order('name'),
+    db.from('categories').select('id, name, slug').order('name').limit(500),
+    db.from('tags').select('id, name, slug').order('name').limit(1000),
+    db.from('authors').select('id, name').order('name').limit(500),
   ])
 
   return {

@@ -396,19 +396,31 @@ collection when Supabase env vars are absent — unrelated to app code).
     Plus `computeFacets` (distinct values + counts) and `toCsv`. 11 zero-dep
     `node:test` cases (`articleSearch.test.ts`).
   - **`ArticleBrowser`** (client): instant search, a faceted filter panel
-    (status/type/category/tag/author chips with counts, metric ranges, date
-    range, featured), **saved filter presets** (`savedFilters.ts`, localStorage),
-    a sortable table with per-row + select-all **multi-select**, client
-    pagination, and a **bulk action bar**: Publish / Draft / Archive / Delete /
-    Add category / Add tag / Assign author / **Export CSV**.
+    (status/type/category/tag/author chips, metric ranges, date range, featured),
+    **saved filter presets** (`savedFilters.ts`, localStorage), a sortable table
+    with per-row + select-all **multi-select**, and a **bulk action bar**:
+    Publish / Draft / Archive / Delete / Add category / Add tag / Assign author /
+    **Export CSV**.
   - **Bulk backend**: efficient set-based service fns (`bulkUpdateStatus`,
     `bulkDeleteArticles`, `bulkAssignAuthor`, `bulkAddCategory`, `bulkAddTag` —
     single `.in('id', …)` queries) behind `app/api/admin/articles/bulk` (cookie-
-    authed); the browser refreshes server data after each op. `getAdminArticles`
-    now also returns `readingTime` + `tags`. The admin page loads a generous
-    batch (500) and filters client-side.
-  - **Known follow-up**: for very large libraries, push the filters into the DB
-    query (the pure core is written to be reused server-side) — MIGRATION §10.
+    authed); the browser refreshes server data after each op.
+  - **Scales to millions (done)**: search / filter / sort / paging now run in the
+    **database** — `getAdminArticles(AdminArticleQuery)` builds the whole query
+    server-side and returns one capped batch (`MAX_PER_PAGE = 100`), behind the
+    admin-authed `app/api/admin/articles/list`. The page is **fully client-rendered**
+    (no SEO behind admin auth): a static shell, then `ArticleBrowser` fetches its
+    filter options (`app/api/admin/articles/options`) and first batch on mount and
+    **infinite-scrolls** the rest (`IntersectionObserver` → fetch + append the next
+    batch). A single API call never returns more than `perPage` rows regardless of
+    corpus size — Supabase's per-request row ceiling is never approached. Category /
+    tag / author are single-value DB filters (join-safe, exact counts); text search
+    matches title + slug. `getFormOptions` is capped too. Multi-select / bulk / CSV
+    operate on the loaded batches.
+  - **Known follow-ups**: bulk / CSV act on the rows loaded so far — a
+    "select-all-matching" that applies a bulk action by *filter* server-side (no
+    id list) is the next step; facet chips show options without live counts
+    (per-facet counts over millions are deliberately skipped).
 
 - ✅ **Internal Linking Assistant (Phase 2, Feature 6)** — an editor helper for
   internal linking (better topical authority + crawlability, fewer orphans). New
@@ -494,6 +506,15 @@ collection when Supabase env vars are absent — unrelated to app code).
     dives, a scroll-depth heatmap, and metrics not yet tracked (comments/likes,
     city-level geo) are natural next steps; the collector + pure core are written
     to extend into them.
+
+- ✅ **Collapsible admin sidebar** (`AdminShell.tsx`) — the admin chrome now
+  wraps the fixed, independently-scrolling sidebar + content in a client shell
+  that owns a collapse toggle. **Desktop**: a header button slides the sidebar
+  off-canvas and the content reclaims the full width (choice persisted in
+  localStorage); a floating button re-opens it. **Mobile (<900px)**: the sidebar
+  becomes an off-canvas drawer over a scrim — hamburger to open, nav-tap /
+  scrim-tap / Escape to close. `AdminSidebar` is now presentational (driven by
+  props). Theme-aware CSS, `prefers-reduced-motion` respected.
 
 **Not yet done:** All 8 Phase 2 features are complete. Remaining: Phases 3–4 of
 the plan, and the polish items in §10.

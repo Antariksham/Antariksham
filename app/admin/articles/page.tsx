@@ -1,22 +1,14 @@
-import Link                    from 'next/link'
-import { getAdminArticles, getFormOptions } from '@/modules/admin/services/adminArticles'
-import { ArticleBrowser }       from '@/modules/admin/search/ArticleBrowser'
-import { Plus }                 from 'lucide-react'
+import Link              from 'next/link'
+import { ArticleBrowser } from '@/modules/admin/search/ArticleBrowser'
+import { Plus }           from 'lucide-react'
 
-export const revalidate = 0
+// Client-rendered list: the page is just a static shell (no server data fetch,
+// no SEO to worry about behind admin auth). The Article Browser fetches its
+// first batch + filter options on mount and infinite-scrolls the rest, one
+// capped batch per API call — so this route stays fast at any corpus size.
+const PER_PAGE = 30
 
-// The Article Browser (Feature 8) does instant search, faceted filtering,
-// sorting, saved presets and bulk actions client-side over a loaded batch.
-// We load a generous batch here; pushing the filters into the DB query is the
-// documented follow-up for very large libraries (MIGRATION §10).
-const BROWSE_LIMIT = 500
-
-export default async function AdminArticlesPage() {
-  const [{ rows, total }, options] = await Promise.all([
-    getAdminArticles({ page: 1, perPage: BROWSE_LIMIT, status: 'all' }),
-    getFormOptions(),
-  ])
-
+export default function AdminArticlesPage() {
   return (
     <div style={{ maxWidth: '1080px' }}>
 
@@ -30,8 +22,7 @@ export default async function AdminArticlesPage() {
             Articles
           </h1>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.82)', margin: '4px 0 0', letterSpacing: '0.06em' }}>
-            {total} article{total !== 1 ? 's' : ''} total
-            {total > BROWSE_LIMIT && <span style={{ color: 'rgba(var(--ink),0.5)' }}> · browsing latest {BROWSE_LIMIT}</span>}
+            Search, filter &amp; manage your stories
           </p>
         </div>
 
@@ -51,12 +42,7 @@ export default async function AdminArticlesPage() {
         </Link>
       </div>
 
-      <ArticleBrowser
-        rows={rows}
-        categories={options.categories.map(c => ({ id: c.id, name: c.name }))}
-        tags={options.tags.map(t => ({ id: t.id, name: t.name }))}
-        authors={options.authors}
-      />
+      <ArticleBrowser perPage={PER_PAGE} />
     </div>
   )
 }

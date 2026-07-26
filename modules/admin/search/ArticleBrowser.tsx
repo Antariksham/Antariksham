@@ -1,21 +1,19 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Search, SlidersHorizontal, X, Star, ChevronLeft, ChevronRight, Download,
-  CheckCircle, Clock, Archive, Trash2, Bookmark, Save,
+  Search, SlidersHorizontal, X, Star, Download,
+  CheckCircle, Clock, Archive, Trash2, Bookmark, Save, Loader2,
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
-import {
-  searchArticles, computeFacets, emptyFilters, isFilterActive, toCsv,
-  type SearchableArticle, type SearchFilters, type SortKey,
-} from './articleSearch'
+import { toCsv, type SearchableArticle, type SortKey, type SortDir } from './articleSearch'
 import { loadSavedFilters, saveFilter, removeSavedFilter, type SavedFilter } from './savedFilters'
+import type { ArticleStatus, ArticleType } from '@/types/article'
 
 interface Opt { id: string; name: string }
-const PER_PAGE = 25
+
 const STATUS_COLOR: Record<string, string> = {
   published: 'var(--green)', draft: 'var(--gold)', archived: 'rgba(var(--ink),0.7)', scheduled: 'var(--purple)',
 }
@@ -23,50 +21,183 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: 'updated', label: 'Updated' }, { key: 'published', label: 'Published' },
   { key: 'title', label: 'Title' }, { key: 'views', label: 'Views' }, { key: 'reading', label: 'Read time' },
 ]
+const STATUS_OPTS: ArticleStatus[] = ['published', 'draft', 'scheduled', 'archived']
+const TYPE_OPTS: { value: ArticleType; label: string }[] = [
+  { value: 'breaking-news', label: 'Breaking' }, { value: 'analysis', label: 'Analysis' },
+  { value: 'editorial', label: 'Editorial' }, { value: 'mission-update', label: 'Mission update' },
+  { value: 'research-breakdown', label: 'Research' }, { value: 'explainer', label: 'Explainer' },
+  { value: 'guide', label: 'Guide' },
+]
+
+/** Server-side filter state (mirrors AdminArticleQuery, minus paging). */
+export interface BrowseFilters {
+  status:     ArticleStatus | 'all'
+  type:       ArticleType | 'all'
+  categoryId: string | null
+  tagId:      string | null
+  authorId:   string | null
+  featuredOnly: boolean
+  viewsMin:   number | null
+  viewsMax:   number | null
+  readingMin: number | null
+  readingMax: number | null
+  dateFrom:   string | null
+  dateTo:     string | null
+  sort:       SortKey
+  sortDir:    SortDir
+}
+
+const emptyFilters = (): BrowseFilters => ({
+  status: 'all', type: 'all', categoryId: null, tagId: null, authorId: null, featuredOnly: false,
+  viewsMin: null, viewsMax: null, readingMin: null, readingMax: null, dateFrom: null, dateTo: null,
+  sort: 'updated', sortDir: 'desc',
+})
+
+function isActive(f: BrowseFilters): boolean {
+  return f.status !== 'all' || f.type !== 'all' || !!f.categoryId || !!f.tagId || !!f.authorId ||
+    f.featuredOnly || f.viewsMin != null || f.viewsMax != null || f.readingMin != null ||
+    f.readingMax != null || !!f.dateFrom || !!f.dateTo
+}
 
 /**
- * Advanced Search & Content Discovery (Phase 2, Feature 8).
- * Client-side instant search / faceted filtering / sorting over the loaded
- * article rows, saved filter presets, multi-select and bulk actions (publish /
- * draft / archive / delete / add category / add tag / assign author / export).
- * Bulk mutations hit /api/admin/articles/bulk then refresh the server data.
+ * Advanced Search & Content Discovery (Phase 2, Feature 8 — scaled).
+ * ─────────────────────────────────────────────────────────────────
+ * Search / filter / sort all run in the DATABASE, and the list loads in capped
+ * batches (`perPage` rows per API call) via infinite scroll: the first batch is
+ * the server snapshot, and each time the admin nears the bottom the next batch
+ * is fetched and appended. So a single API call never returns more than one
+ * batch — the corpus can be millions of rows and the panel still stays light.
+ * Multi-select + bulk actions operate on the rows loaded so far.
  */
-export function ArticleBrowser({
-  rows, categories, tags, authors,
-}: {
-  rows: SearchableArticle[]
-  categories: Opt[]
-  tags: Opt[]
-  authors: Opt[]
-}) {
+export function ArticleBrowser({ perPage }: { perPage: number }) {
   const router = useRouter()
-  const [filters, setFilters] = useState<SearchFilters>(emptyFilters)
+  const [rows, setRows] = useState<SearchableArticle[]>([])
+  const [total, setTotal] = useState(0)
+  const [formOptions, setFormOptions] = useState<{ categories: Opt[]; tags: Opt[]; authors: Opt[] }>({ categories: [], tags: [], authors: [] })
+  const [filters, setFilters] = useState<BrowseFilters>(emptyFilters)
+  const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [page, setPage] = useState(1)
   const [showFilters, setShowFilters] = useState(false)
-  const [presets, setPresets] = useState<SavedFilter[]>([])
+  const [presets, setPresets] = useState<SavedFilter<BrowseFilters>[]>([])
+  const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
 
-  useEffect(() => { setPresets(loadSavedFilters()) }, [])
-  useEffect(() => { setPage(1) }, [filters])
+  // Refs the IntersectionObserver reads without re-subscribing on every render.
+  const pageRef    = useRef(1)          // highest batch (page) loaded
+  const loadingRef = useRef(false)
+  const rowsRef    = useRef<SearchableArticle[]>([])
+  const totalRef   = useRef(0)
+  const abortRef   = useRef<AbortController | null>(null)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => { rowsRef.current = rows }, [rows])
+  useEffect(() => { totalRef.current = total }, [total])
 
-  const facets = useMemo(() => computeFacets(rows), [rows])
-  const filtered = useMemo(() => searchArticles(rows, filters), [rows, filters])
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE))
-  const pageRows = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+  useEffect(() => { setPresets(loadSavedFilters<BrowseFilters>()) }, [])
 
-  const patch = (p: Partial<SearchFilters>) => setFilters(f => ({ ...f, ...p }))
-  const toggleIn = <T,>(arr: T[], v: T): T[] => (arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v])
+  // Filter options (categories / tags / authors) — fetched client-side once.
+  useEffect(() => {
+    fetch('/api/admin/articles/options')
+      .then(r => (r.ok ? r.json() : null))
+      .then((d: { categories?: Opt[]; tags?: Opt[]; authors?: Opt[] } | null) => {
+        if (!d) return
+        setFormOptions({
+          categories: (d.categories || []).map(c => ({ id: c.id, name: c.name })),
+          tags:       (d.tags || []).map(t => ({ id: t.id, name: t.name })),
+          authors:    (d.authors || []).map(a => ({ id: a.id, name: a.name })),
+        })
+      })
+      .catch(() => { /* non-fatal — filters just show fewer options */ })
+  }, [])
 
-  const allPageSelected = pageRows.length > 0 && pageRows.every(r => selected.has(r.id))
-  const toggleSelectPage = () => setSelected(s => {
+  // Debounce the free-text query.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 300)
+    return () => clearTimeout(t)
+  }, [query])
+
+  const buildQuery = useCallback((targetPage: number) => {
+    const p = new URLSearchParams()
+    p.set('page', String(targetPage)); p.set('perPage', String(perPage))
+    p.set('sort', filters.sort); p.set('sortDir', filters.sortDir)
+    if (debouncedQuery.trim()) p.set('search', debouncedQuery.trim())
+    if (filters.status !== 'all') p.set('status', filters.status)
+    if (filters.type !== 'all') p.set('type', filters.type)
+    if (filters.categoryId) p.set('categoryId', filters.categoryId)
+    if (filters.tagId) p.set('tagId', filters.tagId)
+    if (filters.authorId) p.set('authorId', filters.authorId)
+    if (filters.featuredOnly) p.set('featuredOnly', '1')
+    if (filters.viewsMin != null) p.set('viewsMin', String(filters.viewsMin))
+    if (filters.viewsMax != null) p.set('viewsMax', String(filters.viewsMax))
+    if (filters.readingMin != null) p.set('readingMin', String(filters.readingMin))
+    if (filters.readingMax != null) p.set('readingMax', String(filters.readingMax))
+    if (filters.dateFrom) p.set('dateFrom', filters.dateFrom)
+    if (filters.dateTo) p.set('dateTo', filters.dateTo)
+    return p.toString()
+  }, [perPage, filters, debouncedQuery])
+
+  // Fetch one batch. `replace` starts a fresh list (filter/search change);
+  // otherwise the batch is appended (infinite scroll).
+  const loadPage = useCallback((targetPage: number, replace: boolean) => {
+    abortRef.current?.abort()
+    const ctrl = new AbortController()
+    abortRef.current = ctrl
+    setLoading(true); loadingRef.current = true
+
+    fetch(`/api/admin/articles/list?${buildQuery(targetPage)}`, { signal: ctrl.signal })
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d: { rows: SearchableArticle[]; total: number }) => {
+        setTotal(d.total)
+        pageRef.current = targetPage
+        setRows(prev => {
+          if (replace) return d.rows
+          const have = new Set(prev.map(r => r.id))
+          return [...prev, ...d.rows.filter(r => !have.has(r.id))]
+        })
+      })
+      .catch(err => { if (err?.name !== 'AbortError') console.error(err) })
+      .finally(() => { if (!ctrl.signal.aborted) { setLoading(false); loadingRef.current = false } })
+  }, [buildQuery])
+
+  // Load the first batch on mount, and reset to it whenever the query or a
+  // filter changes (fully client-side — no SSR data).
+  useEffect(() => {
+    pageRef.current = 1
+    setSelected(new Set())
+    loadPage(1, true)
+  }, [filters, debouncedQuery, loadPage])
+
+  const hasMore = rows.length < total
+
+  // Infinite scroll: load the next batch when the sentinel nears the viewport.
+  // Re-subscribes when `hasMore` flips (the sentinel mounts/unmounts) or the
+  // active query changes (so appended batches use the current filters).
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el || !hasMore) return
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !loadingRef.current && rowsRef.current.length < totalRef.current) {
+        loadPage(pageRef.current + 1, false)
+      }
+    }, { rootMargin: '400px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [loadPage, hasMore])
+
+  const patch = (p: Partial<BrowseFilters>) => setFilters(f => ({ ...f, ...p }))
+  const single = <K extends keyof BrowseFilters>(key: K, value: BrowseFilters[K]) => {
+    const clear = (key === 'status' || key === 'type') ? ('all' as BrowseFilters[K]) : (null as BrowseFilters[K])
+    patch({ [key]: filters[key] === value ? clear : value } as Partial<BrowseFilters>)
+  }
+
+  const allLoadedSelected = rows.length > 0 && rows.every(r => selected.has(r.id))
+  const toggleSelectAll = () => setSelected(s => {
     const next = new Set(s)
-    if (allPageSelected) pageRows.forEach(r => next.delete(r.id))
-    else pageRows.forEach(r => next.add(r.id))
+    if (allLoadedSelected) rows.forEach(r => next.delete(r.id))
+    else rows.forEach(r => next.add(r.id))
     return next
   })
   const toggleRow = (id: string) => setSelected(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
-  const selectAllFiltered = () => setSelected(new Set(filtered.map(r => r.id)))
 
   async function runBulk(action: string, value?: string) {
     const ids = Array.from(selected)
@@ -79,13 +210,15 @@ export function ArticleBrowser({
         body: JSON.stringify({ action, ids, value }),
       })
       if (!res.ok) { const e = await res.json().catch(() => ({})); window.alert(e.error || 'Bulk action failed') }
-      else { setSelected(new Set()); router.refresh() }
+      else { setSelected(new Set()); pageRef.current = 1; loadPage(1, true); router.refresh() }
     } catch { window.alert('Network error') }
     setBusy(false)
   }
 
   function exportCsv() {
-    const chosen = selected.size ? filtered.filter(r => selected.has(r.id)) : filtered
+    // Export the rows loaded so far (or the current selection) — bounded by
+    // what's been fetched, never the whole corpus.
+    const chosen = selected.size ? rows.filter(r => selected.has(r.id)) : rows
     const blob = new Blob([toCsv(chosen)], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -93,11 +226,12 @@ export function ArticleBrowser({
     URL.revokeObjectURL(url)
   }
 
-  function applyPreset(p: SavedFilter) { setFilters(p.filters) }
+  function applyPreset(f: BrowseFilters) { setFilters(f) }
   function saveCurrent() {
     const name = window.prompt('Name this filter preset')
     if (name?.trim()) setPresets(saveFilter(name.trim(), filters))
   }
+  function clearAll() { setFilters(emptyFilters()); setQuery('') }
 
   return (
     <div>
@@ -106,12 +240,14 @@ export function ArticleBrowser({
         <div className="ab-search">
           <Search size={15} aria-hidden />
           <input
-            value={filters.query}
-            onChange={e => patch({ query: e.target.value })}
-            placeholder="Search title, slug, author, category, tag…"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search title or slug…"
             aria-label="Search articles"
           />
-          {filters.query && <button className="ab-x" onClick={() => patch({ query: '' })} aria-label="Clear search"><X size={13} /></button>}
+          {loading
+            ? <Loader2 size={14} className="ab-spin" aria-hidden />
+            : query && <button className="ab-x" onClick={() => setQuery('')} aria-label="Clear search"><X size={13} /></button>}
         </div>
         <div className="ab-sort">
           <select value={filters.sort} onChange={e => patch({ sort: e.target.value as SortKey })} aria-label="Sort by">
@@ -122,19 +258,19 @@ export function ArticleBrowser({
           </button>
         </div>
         <button className={`ab-btn${showFilters ? ' is-on' : ''}`} onClick={() => setShowFilters(s => !s)}>
-          <SlidersHorizontal size={14} /> Filters{isFilterActive(filters) ? ' •' : ''}
+          <SlidersHorizontal size={14} /> Filters{isActive(filters) ? ' •' : ''}
         </button>
-        <button className="ab-btn" onClick={exportCsv} title="Export current results to CSV"><Download size={14} /> Export</button>
+        <button className="ab-btn" onClick={exportCsv} title="Export the loaded rows to CSV"><Download size={14} /> Export</button>
       </div>
 
       {/* ── Filter panel ── */}
       {showFilters && (
         <div className="ab-filters">
-          <FacetRow label="Status" facets={facets.statuses} selected={filters.statuses} onToggle={v => patch({ statuses: toggleIn(filters.statuses, v as SearchFilters['statuses'][number]) })} />
-          <FacetRow label="Type" facets={facets.types} selected={filters.types} onToggle={v => patch({ types: toggleIn(filters.types, v as SearchFilters['types'][number]) })} />
-          <FacetRow label="Category" facets={facets.categories} selected={filters.categories} onToggle={v => patch({ categories: toggleIn(filters.categories, v) })} />
-          <FacetRow label="Tag" facets={facets.tags} selected={filters.tags} onToggle={v => patch({ tags: toggleIn(filters.tags, v) })} />
-          <FacetRow label="Author" facets={facets.authors.filter(a => a.value)} selected={filters.authors} onToggle={v => patch({ authors: toggleIn(filters.authors, v) })} />
+          <ChipRow label="Status" options={STATUS_OPTS.map(s => ({ value: s, label: s }))} selected={filters.status === 'all' ? null : filters.status} onPick={v => single('status', v as ArticleStatus)} />
+          <ChipRow label="Type" options={TYPE_OPTS} selected={filters.type === 'all' ? null : filters.type} onPick={v => single('type', v as ArticleType)} />
+          <ChipRow label="Category" options={formOptions.categories.map(c => ({ value: c.id, label: c.name }))} selected={filters.categoryId} onPick={v => single('categoryId', v)} />
+          <ChipRow label="Tag" options={formOptions.tags.map(t => ({ value: t.id, label: t.name }))} selected={filters.tagId} onPick={v => single('tagId', v)} />
+          <ChipRow label="Author" options={formOptions.authors.map(a => ({ value: a.id, label: a.name }))} selected={filters.authorId} onPick={v => single('authorId', v)} />
 
           <div className="ab-frow">
             <span className="ab-flabel">Metrics</span>
@@ -143,11 +279,11 @@ export function ArticleBrowser({
             <label className="ab-check"><input type="checkbox" checked={filters.featuredOnly} onChange={e => patch({ featuredOnly: e.target.checked })} /> Featured only</label>
           </div>
           <div className="ab-frow">
-            <span className="ab-flabel">Date</span>
+            <span className="ab-flabel">Published</span>
             <input className="ab-date" type="date" value={filters.dateFrom || ''} onChange={e => patch({ dateFrom: e.target.value || null })} aria-label="From date" />
             <span style={{ color: 'rgba(var(--ink),0.4)' }}>→</span>
             <input className="ab-date" type="date" value={filters.dateTo || ''} onChange={e => patch({ dateTo: e.target.value || null })} aria-label="To date" />
-            {isFilterActive(filters) && <button className="ab-clear" onClick={() => setFilters(emptyFilters())}>Clear all</button>}
+            {(isActive(filters) || query) && <button className="ab-clear" onClick={clearAll}>Clear all</button>}
           </div>
 
           {/* Saved presets */}
@@ -155,8 +291,8 @@ export function ArticleBrowser({
             <span className="ab-flabel"><Bookmark size={12} aria-hidden /> Presets</span>
             {presets.map(p => (
               <span key={p.id} className="ab-preset">
-                <button onClick={() => applyPreset(p)}>{p.name}</button>
-                <button className="ab-preset-x" onClick={() => setPresets(removeSavedFilter(p.id))} aria-label={`Delete preset ${p.name}`}><X size={11} /></button>
+                <button onClick={() => applyPreset(p.filters)}>{p.name}</button>
+                <button className="ab-preset-x" onClick={() => setPresets(removeSavedFilter<BrowseFilters>(p.id))} aria-label={`Delete preset ${p.name}`}><X size={11} /></button>
               </span>
             ))}
             <button className="ab-clear" onClick={saveCurrent}><Save size={12} /> Save current</button>
@@ -171,9 +307,9 @@ export function ArticleBrowser({
           <button onClick={() => runBulk('status', 'published')} disabled={busy}><CheckCircle size={13} /> Publish</button>
           <button onClick={() => runBulk('status', 'draft')} disabled={busy}><Clock size={13} /> Draft</button>
           <button onClick={() => runBulk('status', 'archived')} disabled={busy}><Archive size={13} /> Archive</button>
-          <BulkSelect label="Add category" options={categories} onPick={id => runBulk('addCategory', id)} disabled={busy} />
-          <BulkSelect label="Add tag" options={tags} onPick={id => runBulk('addTag', id)} disabled={busy} />
-          <BulkSelect label="Assign author" options={authors} onPick={id => runBulk('author', id)} disabled={busy} />
+          <BulkSelect label="Add category" options={formOptions.categories} onPick={id => runBulk('addCategory', id)} disabled={busy} />
+          <BulkSelect label="Add tag" options={formOptions.tags} onPick={id => runBulk('addTag', id)} disabled={busy} />
+          <BulkSelect label="Assign author" options={formOptions.authors} onPick={id => runBulk('author', id)} disabled={busy} />
           <button onClick={exportCsv}><Download size={13} /> Export</button>
           <button className="ab-danger" onClick={() => runBulk('delete')} disabled={busy}><Trash2 size={13} /> Delete</button>
           <button className="ab-clear" onClick={() => setSelected(new Set())}>Clear</button>
@@ -182,20 +318,22 @@ export function ArticleBrowser({
 
       {/* ── Results count ── */}
       <p className="ab-count">
-        {filtered.length} result{filtered.length !== 1 ? 's' : ''}
-        {filtered.length > 0 && <button className="ab-selectall" onClick={selectAllFiltered}>Select all {filtered.length}</button>}
+        {loading && rows.length === 0
+          ? 'Loading…'
+          : <>{total.toLocaleString()} result{total !== 1 ? 's' : ''}
+              <span className="ab-count-sub"> · {rows.length.toLocaleString()} loaded</span></>}
       </p>
 
       {/* ── Table ── */}
-      {filtered.length === 0 ? (
-        <div className="ab-empty">No articles match your search.</div>
+      {rows.length === 0 ? (
+        <div className="ab-empty">{loading ? 'Loading…' : 'No articles match your search.'}</div>
       ) : (
         <div className="ab-table">
           <div className="ab-thead">
-            <input type="checkbox" checked={allPageSelected} onChange={toggleSelectPage} aria-label="Select page" />
+            <input type="checkbox" checked={allLoadedSelected} onChange={toggleSelectAll} aria-label="Select all loaded" />
             <span>Article</span><span>Type</span><span>Status</span><span>Views</span><span></span>
           </div>
-          {pageRows.map(a => (
+          {rows.map(a => (
             <div key={a.id} className={`ab-row${selected.has(a.id) ? ' is-sel' : ''}`}>
               <input type="checkbox" checked={selected.has(a.id)} onChange={() => toggleRow(a.id)} aria-label={`Select ${a.title}`} />
               <div className="ab-titlecell">
@@ -219,28 +357,31 @@ export function ArticleBrowser({
         </div>
       )}
 
-      {/* ── Pagination ── */}
-      {totalPages > 1 && (
-        <div className="ab-pager">
-          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}><ChevronLeft size={14} /></button>
-          <span>{page} / {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}><ChevronRight size={14} /></button>
+      {/* ── Infinite-scroll sentinel + status ── */}
+      {hasMore && <div ref={sentinelRef} className="ab-sentinel" aria-hidden />}
+      {rows.length > 0 && (
+        <div className="ab-more">
+          {loading
+            ? <span className="ab-more-load"><Loader2 size={14} className="ab-spin" aria-hidden /> Loading more…</span>
+            : hasMore
+              ? <button className="ab-more-btn" onClick={() => loadPage(pageRef.current + 1, false)}>Load more</button>
+              : <span className="ab-more-end">All {total.toLocaleString()} loaded</span>}
         </div>
       )}
     </div>
   )
 }
 
-function FacetRow({ label, facets, selected, onToggle }: {
-  label: string; facets: { value: string; count: number }[]; selected: string[]; onToggle: (v: string) => void
+function ChipRow({ label, options, selected, onPick }: {
+  label: string; options: { value: string; label: string }[]; selected: string | null; onPick: (v: string) => void
 }) {
-  if (facets.length === 0) return null
+  if (options.length === 0) return null
   return (
     <div className="ab-frow">
       <span className="ab-flabel">{label}</span>
-      {facets.map(f => (
-        <button key={f.value} className={`ab-chip${selected.includes(f.value) ? ' is-on' : ''}`} onClick={() => onToggle(f.value)}>
-          {f.value || '—'} <span className="ab-chip-n">{f.count}</span>
+      {options.map(o => (
+        <button key={o.value} className={`ab-chip${selected === o.value ? ' is-on' : ''}`} onClick={() => onPick(o.value)}>
+          {o.label || '—'}
         </button>
       ))}
     </div>

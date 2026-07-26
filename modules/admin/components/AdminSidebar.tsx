@@ -10,12 +10,12 @@ import {
   Globe,
   Image,
   Search,
-  Settings,
   LogOut,
   ChevronRight,
   Users,
   GraduationCap,
   BarChart3,
+  PanelLeftClose,
 } from 'lucide-react'
 
 interface NavItem {
@@ -38,7 +38,14 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'SEO Center',       href: '/admin/seo',       icon: <Search          size={15} /> },
 ]
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  collapsed:   boolean
+  mobileOpen:  boolean
+  onToggle:    () => void   // collapse (desktop) / close drawer (mobile)
+  onNavigate:  () => void   // close the mobile drawer after tapping a link
+}
+
+export function AdminSidebar({ collapsed, mobileOpen, onToggle, onNavigate }: AdminSidebarProps) {
   const pathname = usePathname()
   const router   = useRouter()
 
@@ -55,29 +62,26 @@ export function AdminSidebar() {
   }
 
   return (
-    <aside style={{
-      position:   'fixed',
-      top:        0,
-      left:       0,
-      bottom:     0,
-      width:      '240px',
-      background: 'var(--black)',
-      borderRight:'1px solid var(--border)',
-      display:    'flex',
-      flexDirection: 'column',
-      zIndex:     100,
-      overflowY:  'auto',
-    }}>
+    <aside className="admin-sidebar" data-collapsed={collapsed} data-mobile-open={mobileOpen}>
 
-      {/* Brand */}
-      <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #232338, #0a0a0f)', border: '1px solid rgba(79,142,247,0.3)', flexShrink: 0 }} />
+      {/* Brand + collapse toggle */}
+      <div className="admin-sidebar__head">
+        <div className="admin-brand">
+          <div className="admin-brand__mark" aria-hidden />
           <div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: '15px', color: 'var(--white)', lineHeight: 1 }}>Antariksham</div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.78)', marginTop: '3px' }}>Mission Control</div>
+            <div className="admin-brand__name">Antariksham</div>
+            <div className="admin-brand__sub">Mission Control</div>
           </div>
         </div>
+        <button
+          type="button"
+          className="admin-iconbtn"
+          onClick={onToggle}
+          aria-label="Collapse navigation"
+          title="Collapse navigation"
+        >
+          <PanelLeftClose size={16} aria-hidden />
+        </button>
       </div>
 
       {/* Nav */}
@@ -88,6 +92,7 @@ export function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               style={{
                 display:        'flex',
                 alignItems:     'center',
@@ -95,7 +100,7 @@ export function AdminSidebar() {
                 padding:        '10px 20px',
                 margin:         '1px 8px',
                 borderRadius:   '6px',
-                background:     active ? 'rgba(79,142,247,0.1)' : 'transparent',
+                background:     active ? 'var(--accent-dim)' : 'transparent',
                 color:          active ? 'var(--accent)' : 'rgba(var(--ink),0.72)',
                 textDecoration: 'none',
                 transition:     'all 0.15s',
@@ -152,12 +157,12 @@ export function AdminSidebar() {
             textAlign:   'left',
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.background = 'rgba(231,76,60,0.08)'
-            e.currentTarget.style.color = '#e74c3c'
+            e.currentTarget.style.background = 'rgba(var(--red-rgb),0.08)'
+            e.currentTarget.style.color = 'var(--red)'
           }}
           onMouseLeave={e => {
             e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = 'rgba(var(--ink),0.58)'
+            e.currentTarget.style.color = 'rgba(var(--ink),0.78)'
           }}
         >
           <LogOut size={14} />
