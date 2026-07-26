@@ -2,15 +2,10 @@ import Link                                          from 'next/link'
 import { notFound }                                  from 'next/navigation'
 import { getAdminMissionById, getAgencyOptions }     from '@/modules/admin/services/adminMissions'
 import { MissionForm }                               from '@/modules/admin/components/MissionForm'
+import { statusMeta }                                from '@/modules/missions/services/missionClassification'
 import { ChevronLeft, Globe }                        from 'lucide-react'
 
 export const revalidate = 0
-
-const STATUS_COLOR: Record<string, string> = {
-  active: 'var(--green)', upcoming: 'var(--accent)',
-  'in-development': 'var(--gold)', completed: 'rgba(var(--ink),0.58)',
-  failed: 'var(--red)', cancelled: 'var(--red)',
-}
 
 export default async function EditMissionPage({ params }: { params: { id: string } }) {
   const [mission, agencies] = await Promise.all([
@@ -42,15 +37,17 @@ export default async function EditMissionPage({ params }: { params: { id: string
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+          {(() => { const m = statusMeta(mission.classification.status); return (
           <span style={{
             fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.15em', textTransform: 'uppercase',
             padding: '4px 10px', borderRadius: '4px',
-            color: STATUS_COLOR[mission.status] || 'rgba(var(--ink),0.62)',
-            border: `1px solid ${STATUS_COLOR[mission.status] || 'rgba(var(--ink),0.1)'}`,
+            color: m.color,
+            border: `1px solid ${m.color}`,
             background: 'rgba(var(--ink),0.03)',
           }}>
-            {mission.status.replace('-', ' ')}
+            {m.label}
           </span>
+          )})()}
           <a
             href={`/missions/${mission.slug}`}
             target="_blank"

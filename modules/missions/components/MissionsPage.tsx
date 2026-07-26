@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { MissionCard, MissionStatus } from '@/types/mission'
 import { formatDate } from '@/lib/utils'
+import { statusMeta, legacyStatusFor } from '@/modules/missions/services/missionClassification'
 
 const STATUSES: { value: MissionStatus | 'all'; label: string }[] = [
   { value: 'all',            label: 'All'           },
@@ -11,15 +12,6 @@ const STATUSES: { value: MissionStatus | 'all'; label: string }[] = [
   { value: 'in-development', label: 'In Development'},
   { value: 'completed',      label: 'Completed'     },
 ]
-
-const STATUS_COLOR: Record<string, string> = {
-  active:          '#2ecc71',
-  upcoming:        '#4f8ef7',
-  'in-development':'#f39c12',
-  completed:       'rgba(var(--ink),0.35)',
-  failed:          '#e74c3c',
-  cancelled:       '#e74c3c',
-}
 
 const PER_PAGE = 12
 
@@ -170,13 +162,16 @@ export function MissionsPage({ missions: initialMissions, total: initialTotal }:
 }
 
 // ── Status badge (shared) ─────────────────────────────────────
+// Renders any status value — legacy base-column values (on cards) or the
+// extended 15-stage lifecycle values (on the detail page) — via the shared
+// taxonomy, so labels + colors stay consistent everywhere.
 export function StatusBadge({ status }: { status: string }) {
-  const color = STATUS_COLOR[status] || 'rgba(var(--ink),0.35)'
-  const isPulse = status === 'active'
+  const { label, color } = statusMeta(status)
+  const isPulse = legacyStatusFor(status) === 'active'
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, display: 'inline-block', boxShadow: isPulse ? `0 0 8px ${color}` : 'none' }} />
-      {status.replace('-', ' ')}
+      {label}
     </span>
   )
 }

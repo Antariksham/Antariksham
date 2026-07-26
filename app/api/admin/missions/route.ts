@@ -14,6 +14,10 @@ import { normalizeIdentity } from '@/modules/missions/services/missionIdentity'
 import {
   validateMission, hasBlockingErrors, errorsOnly, warningsOnly, coerceUrl,
 } from '@/modules/missions/services/missionValidation'
+import {
+  normalizeClassification, effectiveClassification,
+} from '@/modules/missions/services/missionClassification'
+import type { MissionClassification } from '@/types/mission'
 
 const STATUSES: MissionStatus[] = [
   'active', 'upcoming', 'completed', 'failed', 'in-development', 'cancelled',
@@ -85,9 +89,7 @@ export async function DELETE(request: NextRequest) {
 // ── Helpers ───────────────────────────────────────────────────
 
 function buildPayload(body: any): MissionPayload {
-  const name   = String(body.name || '').trim()
-  const status = STATUSES.includes(body.status)      ? body.status      : 'upcoming'
-  const type   = TYPES.includes(body.missionType)    ? body.missionType : 'robotic'
+  const name = String(body.name || '').trim()
 
   const timeline: MissionTimeline[] = Array.isArray(body.timeline)
     ? body.timeline.map((e: any) => ({
@@ -111,15 +113,37 @@ function buildPayload(body: any): MissionPayload {
     slug:          String(body.slug || slugify(name)).trim(),
     description:   String(body.description || '').trim(),
     agencyId:      body.agencyId      ? String(body.agencyId).trim()      : null,
-    status,
-    missionType:   type,
-    destination:   String(body.destination || '').trim(),
     launchDate:    body.launchDate    ? String(body.launchDate).trim()    : null,
     featuredImage: body.featuredImage ? String(body.featuredImage).trim() : null,
     featured:      Boolean(body.featured),
     timeline,
     identity,
+    classification: buildClassification(body),
   }
+}
+
+// Rich classification (Feature 2). Prefer the structured `classification`
+// object from the editor; fall back to the flat status/missionType/destination
+// fields for legacy / API-direct callers (so old integrations keep working).
+function buildClassification(body: any): MissionClassification {
+  const raw = body.classification
+  if (raw && typeof raw === 'object') {
+    return normalizeClassification({
+      status:       String(raw.status || 'upcoming'),
+      types:        Array.isArray(raw.types) ? raw.types : [],
+      destinations: Array.isArray(raw.destinations) ? raw.destinations : [],
+      agencies: {
+        partners:     Array.isArray(raw.agencies?.partners) ? raw.agencies.partners : [],
+        commercial:   Array.isArray(raw.agencies?.commercial) ? raw.agencies.commercial : [],
+        institutions: Array.isArray(raw.agencies?.institutions) ? raw.agencies.institutions : [],
+      },
+    })
+  }
+  const status = STATUSES.includes(body.status)   ? body.status      : 'upcoming'
+  const type   = TYPES.includes(body.missionType) ? body.missionType : 'robotic'
+  return effectiveClassification(undefined, {
+    status, missionType: type, destination: String(body.destination || '').trim(),
+  })
 }
 
 /**

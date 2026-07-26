@@ -3,47 +3,27 @@
 import { useState, useMemo } from 'react'
 import { useRouter }  from 'next/navigation'
 import { slugify }    from '@/lib/utils'
-import type { MissionStatus, MissionType, MissionTimeline, MissionIdentity } from '@/types/mission'
+import type { MissionTimeline, MissionIdentity, MissionClassification } from '@/types/mission'
 import type { AdminMissionFull, AgencyOption } from '@/modules/admin/services/adminMissions'
 import { Save, Globe, ChevronDown, Plus, Trash2, AlertCircle, ChevronUp, Info } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { TranslationEditor } from '@/modules/admin/components/TranslationEditor'
+import { MissionClassificationFields, StatusSelect } from '@/modules/admin/components/MissionClassificationFields'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 import { emptyIdentity } from '@/modules/missions/services/missionIdentity'
+import { emptyClassification } from '@/modules/missions/services/missionClassification'
 import {
   validateMission, hasBlockingErrors, errorsOnly, issueForField, coerceUrl,
   MISSION_LIMITS, type FieldIssue,
 } from '@/modules/missions/services/missionValidation'
-
-const STATUSES: { value: MissionStatus; label: string; color: string }[] = [
-  { value: 'active',         label: 'Active',         color: 'var(--green)'  },
-  { value: 'upcoming',       label: 'Upcoming',       color: 'var(--accent)' },
-  { value: 'in-development', label: 'In Development', color: 'var(--gold)'   },
-  { value: 'completed',      label: 'Completed',      color: 'rgba(var(--ink),0.82)' },
-  { value: 'failed',         label: 'Failed',         color: 'var(--red)'    },
-  { value: 'cancelled',      label: 'Cancelled',      color: 'var(--red)'    },
-]
-
-const MISSION_TYPES: { value: MissionType; label: string }[] = [
-  { value: 'crewed',         label: 'Crewed'         },
-  { value: 'robotic',        label: 'Robotic'        },
-  { value: 'flyby',          label: 'Flyby'          },
-  { value: 'orbiter',        label: 'Orbiter'        },
-  { value: 'lander',         label: 'Lander'         },
-  { value: 'rover',          label: 'Rover'          },
-  { value: 'sample-return',  label: 'Sample Return'  },
-  { value: 'telescope',      label: 'Telescope'      },
-]
 
 interface FormState {
   name:             string
   slug:             string
   description:      string
   identity:         MissionIdentity
+  classification:   MissionClassification
   agencyId:         string
-  status:           MissionStatus
-  missionType:      MissionType
-  destination:      string
   launchDate:       string
   featuredImage:    string
   featured:         boolean
@@ -65,10 +45,8 @@ export function MissionForm({ mode, mission, agencies }: Props) {
     slug:             mission?.slug          || '',
     description:      mission?.description   || '',
     identity:         mission?.identity      || emptyIdentity(),
+    classification:   mission?.classification || emptyClassification(),
     agencyId:         mission?.agencyId      || '',
-    status:           mission?.status        || 'upcoming',
-    missionType:      mission?.missionType   || 'robotic',
-    destination:      mission?.destination   || '',
     launchDate:       mission?.launchDate    || '',
     featuredImage:    mission?.featuredImage || '',
     featured:         mission?.featured      || false,
@@ -201,8 +179,6 @@ export function MissionForm({ mode, mission, agencies }: Props) {
       setSaving(false)
     }
   }
-
-  const currentStatus = STATUSES.find(s => s.value === form.status)
 
   return (
     <div>
@@ -381,20 +357,21 @@ export function MissionForm({ mode, mission, agencies }: Props) {
           <FieldMsg issue={errFor('motto')} />
         </div>
 
-        <GroupHeading hint="Where the mission is going and how it looks.">
-          Destination &amp; Media
+        <GroupHeading hint="How the mission is categorised — type, destinations and the agencies behind it. (Status is set in the sidebar.)">
+          Mission Classification
         </GroupHeading>
 
-        {/* Destination */}
-        <div>
-          <FieldLabel hint="e.g. Moon, Mars, Europa, Low Earth Orbit">Destination</FieldLabel>
-          <input
-            value={form.destination}
-            onChange={e => set('destination', e.target.value)}
-            placeholder="Moon"
-            style={inputStyle({})}
-          />
-        </div>
+        <MissionClassificationFields
+          value={form.classification}
+          onChange={c => set('classification', c)}
+          primaryAgencyId={form.agencyId}
+          onPrimaryAgencyChange={id => set('agencyId', id)}
+          agencies={agencies}
+        />
+
+        <GroupHeading hint="Imagery for cards and the mission hero.">
+          Media
+        </GroupHeading>
 
         {/* Featured image */}
         <div>
@@ -640,64 +617,12 @@ export function MissionForm({ mode, mission, agencies }: Props) {
           </div>
         </SidePanel>
 
-        {/* Status */}
+        {/* Status — 15-stage lifecycle (base column stores the legacy projection) */}
         <SidePanel label="Status">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            {STATUSES.map(s => (
-              <button
-                key={s.value}
-                onClick={() => set('status', s.value)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '7px 10px', borderRadius: '5px', cursor: 'pointer',
-                  background: form.status === s.value ? 'rgba(var(--ink),0.05)' : 'transparent',
-                  border: `1px solid ${form.status === s.value ? 'rgba(var(--ink),0.12)' : 'transparent'}`,
-                  transition: 'all 0.15s',
-                }}
-              >
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: s.color, flexShrink: 0, boxShadow: form.status === s.value && s.value === 'active' ? `0 0 6px ${s.color}` : 'none' }} />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: form.status === s.value ? 'var(--white)' : 'rgba(var(--ink),0.65)' }}>
-                  {s.label}
-                </span>
-                {form.status === s.value && (
-                  <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: '13px', color: s.color }}>✓</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </SidePanel>
-
-        {/* Mission type */}
-        <SidePanel label="Mission Type">
-          <div style={{ position: 'relative' }}>
-            <select
-              value={form.missionType}
-              onChange={e => set('missionType', e.target.value as MissionType)}
-              style={{ ...inputStyle({}), paddingRight: '28px', appearance: 'none', cursor: 'pointer' }}
-            >
-              {MISSION_TYPES.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-            <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(var(--ink),0.82)', pointerEvents: 'none' }} />
-          </div>
-        </SidePanel>
-
-        {/* Agency */}
-        <SidePanel label="Space Agency">
-          <div style={{ position: 'relative' }}>
-            <select
-              value={form.agencyId}
-              onChange={e => set('agencyId', e.target.value)}
-              style={{ ...inputStyle({}), paddingRight: '28px', appearance: 'none', cursor: 'pointer' }}
-            >
-              <option value="">— No agency —</option>
-              {agencies.map(a => (
-                <option key={a.id} value={a.id}>{a.name} ({a.shortName})</option>
-              ))}
-            </select>
-            <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(var(--ink),0.82)', pointerEvents: 'none' }} />
-          </div>
+          <StatusSelect
+            value={form.classification.status}
+            onChange={v => set('classification', { ...form.classification, status: v })}
+          />
         </SidePanel>
 
         {/* Launch date */}

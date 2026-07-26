@@ -565,10 +565,52 @@ collection when Supabase env vars are absent — unrelated to app code).
     advanced timeline, launch info, media management, completeness/validation)
     are queued — built one at a time.
 
+- ✅ **Mission Management System — Rich Mission Classification (Phase 1, Feature 2)**
+  — replaces the single status / type / destination / agency with a professional
+  classification system. Additive + fully backward compatible. Branch
+  `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Safe "primary projection" model** (no schema change, no enum risk): the
+    base `status`, `mission_type`, `destination` and `agency_id` columns stay the
+    canonical primaries that power every existing filter, card and join — they
+    only ever receive a LEGACY value. The full richness lives in
+    `details.classification`. `missionClassification.ts` owns the taxonomy AND
+    the mapping (extended→legacy projection, legacy→extended fallback), so the
+    feature is safe whether those columns are Postgres enums or plain text. 14
+    zero-dep `node:test` cases.
+  - **Status** — 15-stage lifecycle (Concept → Planning → Testing → Awaiting
+    Launch → Launch Window Open → Upcoming → Active → Cruise → Orbiting →
+    Landing → Surface Operations → Extended Mission → Completed → Failed →
+    Cancelled), grouped Pre-Launch / In Flight / Concluded, each with a
+    theme-safe colored indicator. The base `status` column stores the legacy
+    rollup (e.g. *Cruise* → `active`), so the existing `/missions` status tabs
+    keep working and even get more accurate. Legacy `in-development` ↔ `planning`
+    round-trips.
+  - **Mission Type** — multi-select over ~21 tags (Human Spaceflight, Robotic,
+    Orbiter, Flyby, Lander, Rover, Helicopter, Space Telescope, Space Station,
+    Sample Return, CubeSat, Cargo, Crewed, Tech Demo, Planetary Science, Earth
+    Observation, Communications, Navigation, Astronomy, Deep Space, Experimental).
+    The first selected is the primary (→ `mission_type` column).
+  - **Destination** — searchable multi-select with 18 suggestions + free-form
+    custom entries; first is primary (→ `destination` column).
+  - **Space Agencies** — primary agency (→ `agency_id`) plus role-based
+    multi-select for **Partner Agencies / Commercial Partners / Scientific
+    Institutions** (arrays of `space_agencies` ids in `details.classification`).
+    The public page resolves + renders them grouped by role.
+  - **Editor**: new reusable `MissionClassificationFields` (type chips, a
+    searchable `TokenField` for destinations + agency roles) in a "Mission
+    Classification" group; the sidebar Status is now a grouped `StatusSelect`.
+    All controlled + keyboard accessible; matches the CMS design language.
+  - **Public + services**: `StatusBadge` now renders any status via the shared
+    taxonomy (legacy on cards, extended on detail). `getMissionBySlug` resolves
+    collaborator agencies; the mission detail page shows the extended status,
+    multiple types, multiple destinations and a Partners & Collaborators section.
+    `MissionPayload` now carries `classification`; the base columns are *derived*
+    from it (single source of truth). No new migration (reuses `details`).
+
 **Not yet done:** All 8 Phase 2 features are complete. The Mission Management
-System upgrade is in progress — Feature 1 (Enhanced Mission Identity) shipped;
-Features 2–8 remain (see §10). Also remaining: Phases 3–4 of the plan, and the
-polish items in §10.
+System upgrade is in progress — Features 1–2 (Enhanced Identity, Rich
+Classification) shipped; Features 3–8 remain (see §10). Also remaining: Phases
+3–4 of the plan, and the polish items in §10.
 
 ---
 
@@ -754,12 +796,10 @@ bad migration is a one-line revert.
 ## 10. Remaining work / roadmap
 
 **Mission Management System upgrade (Phase 1) — in progress, one feature at a
-time.** Feature 1 (Enhanced Mission Identity) shipped (see §2). The model is
-built to grow: each remaining feature adds its own namespaced key to the
-`missions.details` jsonb blob (no schema break) and its own section to
-`MissionForm`. Remaining, in order:
-- **2. Rich Classification** — multi mission-type, searchable multi-destination,
-  multi-agency roles (primary/partner/commercial/institution) + more statuses.
+time.** Features 1–2 (Enhanced Mission Identity, Rich Classification) shipped
+(see §2). The model is built to grow: each remaining feature adds its own
+namespaced key to the `missions.details` jsonb blob (no schema break) and its
+own section to `MissionForm`. Remaining, in order:
 - **3. Professional Specifications** — launch vehicle, spacecraft, masses,
   power, comms, payloads, orbit, program/family, instruments.
 - **4. Scientific Objectives** — structured primary/secondary objectives, tech

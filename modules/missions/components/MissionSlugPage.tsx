@@ -1,22 +1,19 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import type { Mission, MissionCard } from '@/types/mission'
+import type { Mission, MissionCard, CollaboratorRole } from '@/types/mission'
 import { StatusBadge } from './MissionsPage'
 import { formatDate } from '@/lib/utils'
+import { typeLabel } from '@/modules/missions/services/missionClassification'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { sectionHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
 
-const TYPE_LABEL: Record<string, string> = {
-  crewed:         'Crewed',
-  robotic:        'Robotic',
-  flyby:          'Flyby',
-  orbiter:        'Orbiter',
-  lander:         'Lander',
-  rover:          'Rover',
-  'sample-return':'Sample Return',
-  telescope:      'Telescope',
+const ROLE_LABEL: Record<CollaboratorRole, string> = {
+  partner:     'Partner Agencies',
+  commercial:  'Commercial Partners',
+  institution: 'Scientific Institutions',
 }
+const ROLE_ORDER: CollaboratorRole[] = ['partner', 'commercial', 'institution']
 
 interface Props {
   mission: Mission
@@ -26,7 +23,9 @@ interface Props {
 
 export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
   const isHi = lang === 'hi'
-  const id = mission.identity // enhanced identity (Feature 1); always present
+  const id  = mission.identity        // enhanced identity (Feature 1); always present
+  const cls = mission.classification  // rich classification (Feature 2); always present
+  const destinations = cls.destinations.length ? cls.destinations : (mission.destination ? [mission.destination] : [])
   return (
     <div lang={lang} style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
 
@@ -56,16 +55,11 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
           <span>{mission.name}</span>
         </div>
 
-        {/* Agency + type */}
+        {/* Agency + types + status */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '16px' }}>
           {mission.agency && (
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7' }}>
               {mission.agency.name}
-            </span>
-          )}
-          {mission.missionType && (
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', border: '1px solid rgba(var(--ink),0.1)', borderRadius: '3px', padding: '2px 8px' }}>
-              {TYPE_LABEL[mission.missionType] || mission.missionType}
             </span>
           )}
           {id?.acronym && (
@@ -73,7 +67,12 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
               {id.acronym}
             </span>
           )}
-          <StatusBadge status={mission.status} />
+          {cls.types.map(t => (
+            <span key={t} style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', border: '1px solid rgba(var(--ink),0.1)', borderRadius: '3px', padding: '2px 8px' }}>
+              {typeLabel(t)}
+            </span>
+          ))}
+          <StatusBadge status={cls.status} />
         </div>
 
         {/* Mission name */}
@@ -95,10 +94,10 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
           </p>
         )}
 
-        {/* Destination */}
-        {mission.destination && (
+        {/* Destinations */}
+        {destinations.length > 0 && (
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em', color: 'rgba(var(--ink),0.6)', margin: '0 0 24px' }}>
-            → {mission.destination}
+            → {destinations.join('  ·  ')}
           </p>
         )}
 
@@ -200,6 +199,43 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
                 Official Website →
               </a>
             )}
+          </div>
+        )}
+
+        {/* ── Partners & collaborators (by role) ────── */}
+        {mission.collaborators.length > 0 && (
+          <div style={{ marginBottom: '48px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '20px' }}>
+              Partners &amp; Collaborators
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {ROLE_ORDER.map(role => {
+                const inRole = mission.collaborators.filter(c => c.role === role)
+                if (inRole.length === 0) return null
+                return (
+                  <div key={role}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '10px' }}>
+                      {ROLE_LABEL[role]}
+                    </span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {inRole.map(({ agency }) => {
+                        const chip = (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 14px', borderRadius: '8px', background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.1)' }}>
+                            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--white)' }}>{agency.name}</span>
+                            {agency.country && (
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)', letterSpacing: '0.06em' }}>{agency.country}</span>
+                            )}
+                          </span>
+                        )
+                        return agency.websiteUrl
+                          ? <a key={agency.id} href={agency.websiteUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{chip}</a>
+                          : <span key={agency.id}>{chip}</span>
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
 

@@ -66,12 +66,60 @@ export interface MissionIdentity {
 }
 
 /**
+ * Rich Mission Classification (Phase 1, Feature 2).
+ *
+ * Stored in `missions.details.classification`. The canonical `status`,
+ * `mission_type`, `destination` and `agency_id` columns remain the
+ * backward-compatible *primary projections* (they still power every existing
+ * filter, card and join); this holds the full richness on top:
+ *   - `status`       — one of the 15 extended lifecycle stages (a superset of
+ *                      the legacy statuses). The base `status` column stores its
+ *                      legacy projection so old filters keep working.
+ *   - `types`        — multiple mission-type tags (index 0 is the primary, whose
+ *                      legacy projection is written to the `mission_type` column).
+ *   - `destinations` — multiple destinations (index 0 → the `destination` column).
+ *   - `agencies`     — partner / commercial / institution collaborators by role
+ *                      (arrays of `space_agencies` ids). The primary agency stays
+ *                      in the `agency_id` column.
+ */
+export interface MissionClassification {
+  status:       string
+  types:        string[]
+  destinations: string[]
+  agencies: {
+    partners:     string[]
+    commercial:   string[]
+    institutions: string[]
+  }
+}
+
+export type CollaboratorRole = 'partner' | 'commercial' | 'institution'
+
+/** A lightweight agency reference resolved for display on the public page. */
+export interface AgencyRef {
+  id:         string
+  name:       string
+  shortName:  string
+  slug:       string
+  country:    string
+  logoUrl:    string | null
+  websiteUrl: string | null
+}
+
+/** A non-primary agency attached to a mission, tagged with its role. */
+export interface MissionCollaborator {
+  role:   CollaboratorRole
+  agency: AgencyRef
+}
+
+/**
  * The full, extensible `missions.details` payload. Each Phase 1 feature owns
- * one namespaced key; only `identity` exists so far. Every key is optional so
- * the model can grow without a schema change or a backward-compat break.
+ * one namespaced key. Every key is optional so the model can grow without a
+ * schema change or a backward-compat break.
  */
 export interface MissionDetails {
-  identity?: MissionIdentity
+  identity?:       MissionIdentity
+  classification?: MissionClassification
 }
 
 export interface Mission {
@@ -91,6 +139,11 @@ export interface Mission {
   /** Enhanced identity attributes (Feature 1). Always present, defaults to
    *  empty strings for legacy missions with no `details.identity`. */
   identity:      MissionIdentity
+  /** Effective rich classification (Feature 2). Always present — falls back to
+   *  the base status/type/destination columns for legacy missions. */
+  classification: MissionClassification
+  /** Resolved non-primary agencies grouped by role (Feature 2). */
+  collaborators:  MissionCollaborator[]
   createdAt:     string
   updatedAt:     string
   // i18n — language actually served (falls back to 'en') + every language it

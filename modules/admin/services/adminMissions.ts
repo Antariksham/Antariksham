@@ -1,10 +1,17 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { enforceSingleFeatured } from './featuredExclusive'
 import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adminErrors'
-import type { MissionStatus, MissionType, MissionTimeline, MissionIdentity } from '@/types/mission'
+import type {
+  MissionStatus, MissionType, MissionTimeline, MissionIdentity,
+  MissionClassification, MissionDetails,
+} from '@/types/mission'
 import {
   emptyIdentity, identityFromDetails, buildMissionDetails,
 } from '@/modules/missions/services/missionIdentity'
+import {
+  emptyClassification, effectiveClassification, normalizeClassification,
+  classificationToBaseColumns,
+} from '@/modules/missions/services/missionClassification'
 
 // Detects "column missions.details does not exist" so the editor keeps working
 // before migration 20260726140000_mission_details.sql has been applied.
@@ -69,6 +76,8 @@ export interface AdminMissionFull {
   featured: boolean; timeline: MissionTimeline[]
   /** Enhanced identity (Feature 1). Always present; empty strings for legacy. */
   identity: MissionIdentity
+  /** Effective rich classification (Feature 2); falls back to base columns. */
+  classification: MissionClassification
 }
 
 export async function getAdminMissionById(id: string): Promise<AdminMissionFull | null> {
@@ -97,26 +106,47 @@ export async function getAdminMissionById(id: string): Promise<AdminMissionFull 
     featuredImage: data.featured_image || null, featured: data.featured || false,
     timeline: Array.isArray(data.timeline) ? data.timeline : [],
     identity: identityFromDetails(data.details),
+    classification: effectiveClassification(
+      (data.details as any)?.classification,
+      { status: data.status, missionType: data.mission_type, destination: data.destination || '' },
+    ),
   }
 }
 
 export interface MissionPayload {
   name: string; slug: string; description: string; agencyId: string | null
-  status: MissionStatus; missionType: MissionType; destination: string
   launchDate: string | null; featuredImage: string | null
   featured: boolean; timeline: MissionTimeline[]
   /** Enhanced identity (Feature 1). */
   identity: MissionIdentity
+  /** Rich classification (Feature 2). The base status/mission_type/destination
+   *  columns are derived from this (never sent independently). */
+  classification: MissionClassification
 }
 
-// Columns common to insert + update. `details` is appended separately so we can
-// retry without it when the migration hasn't been applied.
+// Columns common to insert + update. The base status/mission_type/destination
+// columns are the backward-compatible *primary projections* of the rich
+// classification (legacy values only). `details` is appended separately so we
+// can retry without it when the migration hasn't been applied.
 function baseMissionColumns(p: MissionPayload) {
+  const base = classificationToBaseColumns(p.classification || emptyClassification())
   return {
     name: p.name, slug: p.slug, description: p.description,
-    agency_id: p.agencyId || null, status: p.status, mission_type: p.missionType,
-    destination: p.destination || null, launch_date: p.launchDate || null,
+    agency_id: p.agencyId || null,
+    status: base.status, mission_type: base.missionType,
+    destination: base.destination || null, launch_date: p.launchDate || null,
     featured_image: p.featuredImage || null, featured: p.featured, timeline: p.timeline,
+  }
+}
+
+// The full `details` blob to persist: identity (Feature 1) + classification
+// (Feature 2). Classification is always stored so the rich model is the source
+// of truth on the next read (reads fall back to base columns only when absent).
+function buildDetails(p: MissionPayload): MissionDetails {
+  const withIdentity = buildMissionDetails(p.identity || emptyIdentity()) // { identity? } | null
+  return {
+    ...(withIdentity || {}),
+    classification: normalizeClassification(p.classification || emptyClassification()),
   }
 }
 
@@ -124,7 +154,7 @@ export async function createAdminMission(p: MissionPayload): Promise<{ id: strin
   const db = supabaseAdmin()
   await assertSlugAvailable(db, 'missions', p.slug)
 
-  const details = buildMissionDetails(p.identity || emptyIdentity())
+  const details = buildDetails(p)
   let { data, error }: { data: any; error: any } = await db.from('missions')
     .insert({ ...baseMissionColumns(p), details })
     .select('id').single()
@@ -147,7 +177,7 @@ export async function updateAdminMission(id: string, p: MissionPayload): Promise
   const db = supabaseAdmin()
   await assertSlugAvailable(db, 'missions', p.slug, id)
 
-  const details = buildMissionDetails(p.identity || emptyIdentity())
+  const details = buildDetails(p)
   let { error }: { error: any } = await db.from('missions')
     .update({ ...baseMissionColumns(p), details })
     .eq('id', id)
