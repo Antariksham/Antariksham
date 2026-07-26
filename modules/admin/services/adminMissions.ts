@@ -1,7 +1,17 @@
 import { supabaseAdmin } from '@/lib/supabase'
 import { enforceSingleFeatured } from './featuredExclusive'
 import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adminErrors'
-import type { MissionStatus, MissionType, MissionTimeline } from '@/types/mission'
+import type { MissionStatus, MissionType, MissionTimeline, MissionIdentity } from '@/types/mission'
+import {
+  emptyIdentity, identityFromDetails, buildMissionDetails,
+} from '@/modules/missions/services/missionIdentity'
+
+// Detects "column missions.details does not exist" so the editor keeps working
+// before migration 20260726140000_mission_details.sql has been applied.
+function isMissingDetailsColumn(error: any): boolean {
+  const msg = (error?.message || '').toLowerCase()
+  return msg.includes('details') && (msg.includes('does not exist') || msg.includes('column') || error?.code === '42703')
+}
 
 export interface AdminMissionRow {
   id:            string
@@ -57,17 +67,26 @@ export interface AdminMissionFull {
   agencyId: string; status: MissionStatus; missionType: MissionType
   destination: string; launchDate: string; featuredImage: string | null
   featured: boolean; timeline: MissionTimeline[]
+  /** Enhanced identity (Feature 1). Always present; empty strings for legacy. */
+  identity: MissionIdentity
 }
 
 export async function getAdminMissionById(id: string): Promise<AdminMissionFull | null> {
   const db = supabaseAdmin()
-  const { data, error } = await db
-    .from('missions')
-    .select(`id, name, slug, description, agency_id, status,
+  const baseCols = `id, name, slug, description, agency_id, status,
              mission_type, destination, launch_date,
-             featured_image, featured, timeline`)
+             featured_image, featured, timeline`
+
+  let { data, error }: { data: any; error: any } = await db
+    .from('missions')
+    .select(`${baseCols}, details`)
     .eq('id', id)
     .single()
+
+  // Degrade gracefully if the details migration hasn't been applied yet.
+  if (error && isMissingDetailsColumn(error)) {
+    ({ data, error } = await db.from('missions').select(baseCols).eq('id', id).single())
+  }
 
   if (error || !data) return null
   return {
@@ -77,6 +96,7 @@ export async function getAdminMissionById(id: string): Promise<AdminMissionFull 
     destination: data.destination || '', launchDate: data.launch_date || '',
     featuredImage: data.featured_image || null, featured: data.featured || false,
     timeline: Array.isArray(data.timeline) ? data.timeline : [],
+    identity: identityFromDetails(data.details),
   }
 }
 
@@ -85,17 +105,34 @@ export interface MissionPayload {
   status: MissionStatus; missionType: MissionType; destination: string
   launchDate: string | null; featuredImage: string | null
   featured: boolean; timeline: MissionTimeline[]
+  /** Enhanced identity (Feature 1). */
+  identity: MissionIdentity
+}
+
+// Columns common to insert + update. `details` is appended separately so we can
+// retry without it when the migration hasn't been applied.
+function baseMissionColumns(p: MissionPayload) {
+  return {
+    name: p.name, slug: p.slug, description: p.description,
+    agency_id: p.agencyId || null, status: p.status, mission_type: p.missionType,
+    destination: p.destination || null, launch_date: p.launchDate || null,
+    featured_image: p.featuredImage || null, featured: p.featured, timeline: p.timeline,
+  }
 }
 
 export async function createAdminMission(p: MissionPayload): Promise<{ id: string } | null> {
   const db = supabaseAdmin()
   await assertSlugAvailable(db, 'missions', p.slug)
-  const { data, error } = await db.from('missions').insert({
-    name: p.name, slug: p.slug, description: p.description,
-    agency_id: p.agencyId || null, status: p.status, mission_type: p.missionType,
-    destination: p.destination || null, launch_date: p.launchDate || null,
-    featured_image: p.featuredImage || null, featured: p.featured, timeline: p.timeline,
-  }).select('id').single()
+
+  const details = buildMissionDetails(p.identity || emptyIdentity())
+  let { data, error }: { data: any; error: any } = await db.from('missions')
+    .insert({ ...baseMissionColumns(p), details })
+    .select('id').single()
+
+  // Retry without `details` if the column isn't there yet (core mission still saves).
+  if (error && isMissingDetailsColumn(error)) {
+    ({ data, error } = await db.from('missions').insert(baseMissionColumns(p)).select('id').single())
+  }
 
   if (error || !data) {
     if (isUniqueViolation(error)) throw new SlugConflictError()
@@ -109,12 +146,16 @@ export async function createAdminMission(p: MissionPayload): Promise<{ id: strin
 export async function updateAdminMission(id: string, p: MissionPayload): Promise<boolean> {
   const db = supabaseAdmin()
   await assertSlugAvailable(db, 'missions', p.slug, id)
-  const { error } = await db.from('missions').update({
-    name: p.name, slug: p.slug, description: p.description,
-    agency_id: p.agencyId || null, status: p.status, mission_type: p.missionType,
-    destination: p.destination || null, launch_date: p.launchDate || null,
-    featured_image: p.featuredImage || null, featured: p.featured, timeline: p.timeline,
-  }).eq('id', id)
+
+  const details = buildMissionDetails(p.identity || emptyIdentity())
+  let { error }: { error: any } = await db.from('missions')
+    .update({ ...baseMissionColumns(p), details })
+    .eq('id', id)
+
+  if (error && isMissingDetailsColumn(error)) {
+    ({ error } = await db.from('missions').update(baseMissionColumns(p)).eq('id', id))
+  }
+
   if (error) {
     if (isUniqueViolation(error)) throw new SlugConflictError()
     console.error('updateAdminMission error:', error)
@@ -122,6 +163,22 @@ export async function updateAdminMission(id: string, p: MissionPayload): Promise
   }
   await enforceSingleFeatured(db, 'missions', id, p.featured)
   return true
+}
+
+/**
+ * Case-insensitive check for another mission that already uses this name.
+ * Non-blocking by design — duplicate names are only *warned* about (a mission
+ * name is not unique the way a slug is), so the API surfaces this as advice.
+ */
+export async function hasDuplicateMissionName(name: string, exceptId?: string): Promise<boolean> {
+  const trimmed = (name || '').trim()
+  if (!trimmed) return false
+  const db = supabaseAdmin()
+  let query = db.from('missions').select('id').ilike('name', trimmed).limit(1)
+  if (exceptId) query = query.neq('id', exceptId)
+  const { data, error } = await query
+  if (error) return false
+  return (data?.length || 0) > 0
 }
 
 export async function deleteAdminMission(id: string): Promise<boolean> {

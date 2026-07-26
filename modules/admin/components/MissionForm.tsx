@@ -1,14 +1,19 @@
 'use client'
 
-import { useState }   from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter }  from 'next/navigation'
 import { slugify }    from '@/lib/utils'
-import type { MissionStatus, MissionType, MissionTimeline } from '@/types/mission'
+import type { MissionStatus, MissionType, MissionTimeline, MissionIdentity } from '@/types/mission'
 import type { AdminMissionFull, AgencyOption } from '@/modules/admin/services/adminMissions'
-import { Save, Globe, ChevronDown, Plus, Trash2, AlertCircle, ChevronUp } from 'lucide-react'
+import { Save, Globe, ChevronDown, Plus, Trash2, AlertCircle, ChevronUp, Info } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { TranslationEditor } from '@/modules/admin/components/TranslationEditor'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
+import { emptyIdentity } from '@/modules/missions/services/missionIdentity'
+import {
+  validateMission, hasBlockingErrors, errorsOnly, issueForField, coerceUrl,
+  MISSION_LIMITS, type FieldIssue,
+} from '@/modules/missions/services/missionValidation'
 
 const STATUSES: { value: MissionStatus; label: string; color: string }[] = [
   { value: 'active',         label: 'Active',         color: 'var(--green)'  },
@@ -34,6 +39,7 @@ interface FormState {
   name:             string
   slug:             string
   description:      string
+  identity:         MissionIdentity
   agencyId:         string
   status:           MissionStatus
   missionType:      MissionType
@@ -58,6 +64,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
     name:             mission?.name          || '',
     slug:             mission?.slug          || '',
     description:      mission?.description   || '',
+    identity:         mission?.identity      || emptyIdentity(),
     agencyId:         mission?.agencyId      || '',
     status:           mission?.status        || 'upcoming',
     missionType:      mission?.missionType   || 'robotic',
@@ -72,16 +79,42 @@ export function MissionForm({ mode, mission, agencies }: Props) {
   const [saving,     setSaving]     = useState(false)
   const [error,      setError]      = useState('')
   const [success,    setSuccess]    = useState('')
+  const [warnings,   setWarnings]   = useState<string[]>([])
+  const [attempted,  setAttempted]  = useState(false)
   const [slugEdited, setSlugEdited] = useState(mode === 'edit')
   const [activeLang, setActiveLang] = useState<LanguageCode>('en')
 
+  // Live validation (shared with the API). Errors block save; warnings advise.
+  const issues = useMemo(
+    () => validateMission({ name: form.name, slug: form.slug, description: form.description, identity: form.identity }),
+    [form.name, form.slug, form.description, form.identity],
+  )
+  // Field-level errors are shown only after a save attempt (no nagging while
+  // typing); URL-format errors show live because they're immediately useful.
+  const errFor = (field: string): FieldIssue | undefined =>
+    attempted ? issueForField(errorsOnly(issues), field) : undefined
+  const urlIssue = (field: string): FieldIssue | undefined =>
+    issueForField(issues, field) // present only when a URL is non-empty and invalid
+
   function handleNameChange(val: string) {
     setForm(f => ({ ...f, name: val, slug: slugEdited ? f.slug : slugify(val) }))
+    setError('')
   }
 
   function set<K extends keyof FormState>(key: K, val: FormState[K]) {
     setForm(f => ({ ...f, [key]: val }))
     setError('')
+  }
+
+  // Update one enhanced-identity field.
+  function setId<K extends keyof MissionIdentity>(key: K, val: string) {
+    setForm(f => ({ ...f, identity: { ...f.identity, [key]: val } }))
+    setError('')
+  }
+
+  // On blur, normalise a URL field (bare domain → https://…).
+  function blurUrl(key: 'website' | 'wikipedia' | 'pressKit') {
+    setForm(f => ({ ...f, identity: { ...f.identity, [key]: coerceUrl(f.identity[key]) } }))
   }
 
   // ── Timeline helpers ──────────────────────────────────────
@@ -118,14 +151,25 @@ export function MissionForm({ mode, mission, agencies }: Props) {
   // ── Save ──────────────────────────────────────────────────
 
   async function handleSave() {
-    if (!form.name.trim())        { setError('Name is required.');        return }
-    if (!form.slug.trim())        { setError('Slug is required.');        return }
-    if (!form.description.trim()) { setError('Description is required.'); return }
+    setAttempted(true)
+    if (hasBlockingErrors(issues)) {
+      setError(errorsOnly(issues)[0].message)
+      return
+    }
 
-    setSaving(true); setError(''); setSuccess('')
+    setSaving(true); setError(''); setSuccess(''); setWarnings([])
+
+    // Normalise URL fields before sending (bare domain → https://…).
+    const identity: MissionIdentity = {
+      ...form.identity,
+      website:   coerceUrl(form.identity.website),
+      wikipedia: coerceUrl(form.identity.wikipedia),
+      pressKit:  coerceUrl(form.identity.pressKit),
+    }
 
     const payload = {
       ...form,
+      identity,
       featuredImage: form.featuredImage || null,
       agencyId:      form.agencyId      || null,
       launchDate:    form.launchDate     || null,
@@ -144,12 +188,12 @@ export function MissionForm({ mode, mission, agencies }: Props) {
 
       if (!res.ok) { setError(data.error || 'Failed to save.'); return }
 
+      if (Array.isArray(data.warnings)) setWarnings(data.warnings)
       setSuccess('Mission saved!')
       if (mode === 'new') {
         router.push(`/admin/missions/${data.id}`)
       } else {
         router.refresh()
-        setTimeout(() => setSuccess(''), 3000)
       }
     } catch {
       setError('Something went wrong. Try again.')
@@ -203,15 +247,20 @@ export function MissionForm({ mode, mission, agencies }: Props) {
       {/* ── Left column ───────────────────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
+        <GroupHeading hint="The mission's core identity — how it's named, labelled and referenced across the platform.">
+          Mission Identity
+        </GroupHeading>
+
         {/* Name */}
         <div>
-          <FieldLabel>Mission Name</FieldLabel>
+          <FieldLabel hint={<CharCount value={form.name} max={MISSION_LIMITS.name} />}>Mission Name</FieldLabel>
           <input
             value={form.name}
             onChange={e => handleNameChange(e.target.value)}
             placeholder="e.g. Artemis III"
             style={inputStyle({ large: true })}
           />
+          <FieldMsg issue={errFor('name')} />
         </div>
 
         {/* Slug */}
@@ -223,6 +272,88 @@ export function MissionForm({ mode, mission, agencies }: Props) {
             placeholder="url-friendly-slug"
             style={inputStyle({})}
           />
+          <FieldMsg issue={errFor('slug') || (attempted ? issueForField(issues, 'slug') : undefined)} />
+        </div>
+
+        {/* Short name + acronym */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div>
+            <FieldLabel hint={<CharCount value={form.identity.shortName} max={MISSION_LIMITS.shortName} />}>Short Name</FieldLabel>
+            <input
+              value={form.identity.shortName}
+              onChange={e => setId('shortName', e.target.value)}
+              placeholder="e.g. ISS"
+              style={inputStyle({})}
+            />
+          </div>
+          <div>
+            <FieldLabel hint={<CharCount value={form.identity.acronym} max={MISSION_LIMITS.acronym} />}>Acronym</FieldLabel>
+            <input
+              value={form.identity.acronym}
+              onChange={e => setId('acronym', e.target.value)}
+              placeholder="e.g. JWST"
+              style={inputStyle({})}
+            />
+            <FieldMsg issue={errFor('acronym')} />
+          </div>
+        </div>
+
+        {/* Subtitle */}
+        <div>
+          <FieldLabel hint={<CharCount value={form.identity.subtitle} max={MISSION_LIMITS.subtitle} />}>Subtitle</FieldLabel>
+          <input
+            value={form.identity.subtitle}
+            onChange={e => setId('subtitle', e.target.value)}
+            placeholder="A one-line tagline shown under the mission name"
+            style={inputStyle({})}
+          />
+          <FieldMsg issue={errFor('subtitle')} />
+        </div>
+
+        {/* Alias */}
+        <div>
+          <FieldLabel hint={<CharCount value={form.identity.alias} max={MISSION_LIMITS.alias} />}>Alias <Muted>· optional</Muted></FieldLabel>
+          <input
+            value={form.identity.alias}
+            onChange={e => setId('alias', e.target.value)}
+            placeholder="Alternative name or former designation"
+            style={inputStyle({})}
+          />
+          <FieldMsg issue={errFor('alias')} />
+        </div>
+
+        <GroupHeading hint="What the mission is and why it matters. Summary powers cards and the mission hero.">
+          Summary &amp; Objective
+        </GroupHeading>
+
+        {/* Summary */}
+        <div>
+          <FieldLabel hint={<CharCount value={form.identity.summary} max={MISSION_LIMITS.summary} />}>
+            Mission Summary <Muted>· recommended</Muted>
+          </FieldLabel>
+          <textarea
+            value={form.identity.summary}
+            onChange={e => setId('summary', e.target.value)}
+            placeholder="A concise summary of the mission (1–3 sentences)…"
+            rows={3}
+            style={{ ...inputStyle({}), resize: 'vertical', lineHeight: 1.7 }}
+          />
+          <FieldMsg issue={errFor('summary')} />
+        </div>
+
+        {/* Objective */}
+        <div>
+          <FieldLabel hint={<CharCount value={form.identity.objective} max={MISSION_LIMITS.objective} />}>
+            Mission Objective <Muted>· recommended</Muted>
+          </FieldLabel>
+          <textarea
+            value={form.identity.objective}
+            onChange={e => setId('objective', e.target.value)}
+            placeholder="The primary objective of the mission…"
+            rows={3}
+            style={{ ...inputStyle({}), resize: 'vertical', lineHeight: 1.7 }}
+          />
+          <FieldMsg issue={errFor('objective')} />
         </div>
 
         {/* Description */}
@@ -231,11 +362,28 @@ export function MissionForm({ mode, mission, agencies }: Props) {
           <textarea
             value={form.description}
             onChange={e => set('description', e.target.value)}
-            placeholder="Mission overview shown on the missions page and individual mission page…"
+            placeholder="Full mission overview shown on the individual mission page…"
             rows={5}
             style={{ ...inputStyle({}), resize: 'vertical', lineHeight: 1.7 }}
           />
+          <FieldMsg issue={errFor('description')} />
         </div>
+
+        {/* Motto */}
+        <div>
+          <FieldLabel hint={<CharCount value={form.identity.motto} max={MISSION_LIMITS.motto} />}>Mission Motto <Muted>· optional</Muted></FieldLabel>
+          <input
+            value={form.identity.motto}
+            onChange={e => setId('motto', e.target.value)}
+            placeholder={'e.g. "Dare Mighty Things"'}
+            style={inputStyle({})}
+          />
+          <FieldMsg issue={errFor('motto')} />
+        </div>
+
+        <GroupHeading hint="Where the mission is going and how it looks.">
+          Destination &amp; Media
+        </GroupHeading>
 
         {/* Destination */}
         <div>
@@ -309,6 +457,49 @@ export function MissionForm({ mode, mission, agencies }: Props) {
               />
             </div>
           )}
+        </div>
+
+        <GroupHeading hint="Official references. Bare domains are fine — we'll add https:// for you.">
+          Links &amp; References
+        </GroupHeading>
+
+        {/* Official website */}
+        <div>
+          <FieldLabel>Official Website <Muted>· optional</Muted></FieldLabel>
+          <input
+            value={form.identity.website}
+            onChange={e => setId('website', e.target.value)}
+            onBlur={() => blurUrl('website')}
+            placeholder="https://…"
+            style={inputStyle({})}
+          />
+          <FieldMsg issue={urlIssue('website')} />
+        </div>
+
+        {/* Wikipedia */}
+        <div>
+          <FieldLabel>Wikipedia URL <Muted>· optional</Muted></FieldLabel>
+          <input
+            value={form.identity.wikipedia}
+            onChange={e => setId('wikipedia', e.target.value)}
+            onBlur={() => blurUrl('wikipedia')}
+            placeholder="https://en.wikipedia.org/wiki/…"
+            style={inputStyle({})}
+          />
+          <FieldMsg issue={urlIssue('wikipedia')} />
+        </div>
+
+        {/* Press kit */}
+        <div>
+          <FieldLabel>Official Press Kit <Muted>· optional</Muted></FieldLabel>
+          <input
+            value={form.identity.pressKit}
+            onChange={e => setId('pressKit', e.target.value)}
+            onBlur={() => blurUrl('pressKit')}
+            placeholder="https://…"
+            style={inputStyle({})}
+          />
+          <FieldMsg issue={urlIssue('pressKit')} />
         </div>
 
         {/* ── Timeline builder ────────────────────── */}
@@ -413,6 +604,18 @@ export function MissionForm({ mode, mission, agencies }: Props) {
         {success && (
           <div style={{ padding: '10px 14px', background: 'rgba(46,204,113,0.08)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '7px', fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--green)' }}>
             ✓ {success}
+          </div>
+        )}
+        {warnings.length > 0 && (
+          <div style={{ padding: '12px 14px', background: 'rgba(243,156,18,0.06)', border: '1px solid rgba(243,156,18,0.25)', borderRadius: '7px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--gold)', display: 'block', marginBottom: '8px' }}>
+              Saved · {warnings.length} suggestion{warnings.length > 1 ? 's' : ''}
+            </span>
+            <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {warnings.map((w, i) => (
+                <li key={i} style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'rgba(var(--ink),0.85)', lineHeight: 1.5 }}>{w}</li>
+              ))}
+            </ul>
           </div>
         )}
 
@@ -562,13 +765,60 @@ function LangTab({ active, disabled, title, onClick, children }: { active: boole
   )
 }
 
-function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
+function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '6px' }}>
+    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '10px', marginBottom: '6px' }}>
       <label style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.85)' }}>
         {children}
       </label>
-      {hint && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.04em' }}>{hint}</span>}
+      {hint != null && hint !== '' && (
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.04em', flexShrink: 0, whiteSpace: 'nowrap' }}>{hint}</span>
+      )}
+    </div>
+  )
+}
+
+// Section heading inside the editor's left column — an accent eyebrow with an
+// optional one-line description, matching the CMS's label typography.
+function GroupHeading({ children, hint }: { children: React.ReactNode; hint?: string }) {
+  return (
+    <div style={{ marginTop: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--border)' }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)' }}>
+        {children}
+      </span>
+      {hint && (
+        <p style={{ margin: '6px 0 0', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'rgba(var(--ink),0.6)', lineHeight: 1.5 }}>{hint}</p>
+      )}
+    </div>
+  )
+}
+
+// Small "· optional" / "· recommended" annotation next to a field label.
+function Muted({ children }: { children: React.ReactNode }) {
+  return <span style={{ color: 'rgba(var(--ink),0.45)', letterSpacing: '0.08em' }}>{children}</span>
+}
+
+// Live character counter; ambers near the limit, reds when over.
+function CharCount({ value, max }: { value: string; max: number }) {
+  const len  = (value || '').trim().length
+  const over = len > max
+  const near = len > max * 0.9
+  return (
+    <span style={{ color: over ? 'var(--red)' : near ? 'var(--gold)' : 'rgba(var(--ink),0.5)' }}>
+      {len}/{max}
+    </span>
+  )
+}
+
+// Inline field-level validation message (error = red, warning = gold).
+function FieldMsg({ issue }: { issue?: FieldIssue }) {
+  if (!issue) return null
+  const color = issue.level === 'error' ? 'var(--red)' : 'var(--gold)'
+  const Icon  = issue.level === 'error' ? AlertCircle : Info
+  return (
+    <div role="alert" style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginTop: '6px' }}>
+      <Icon size={12} style={{ color, flexShrink: 0, marginTop: '2px' }} />
+      <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color, lineHeight: 1.5 }}>{issue.message}</span>
     </div>
   )
 }

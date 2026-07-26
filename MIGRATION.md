@@ -516,8 +516,59 @@ collection when Supabase env vars are absent — unrelated to app code).
   scrim-tap / Escape to close. `AdminSidebar` is now presentational (driven by
   props). Theme-aware CSS, `prefers-reduced-motion` respected.
 
-**Not yet done:** All 8 Phase 2 features are complete. Remaining: Phases 3–4 of
-the plan, and the polish items in §10.
+- ✅ **Mission Management System — Enhanced Mission Identity (Phase 1, Feature 1)**
+  — the first step of turning the Mission module from a basic form into a
+  professional mission-management data model. Additive + fully backward
+  compatible (legacy missions untouched). Branch `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Extensible data model**: one additive, nullable **`missions.details` jsonb**
+    column (migration `20260726140000_mission_details.sql`, + `jsonb_path_ops`
+    GIN index) namespaced by feature — `details.identity` for now, with room for
+    `classification`/`specifications`/`objectives`/`launch`/`media`. Every
+    existing top-level column (name, slug, status, mission_type, destination,
+    launch_date, agency_id, featured, featured_image, timeline, description) is
+    left alone. All read paths (`getMissionBySlug`, `getAdminMissionById`) and
+    write paths (create/update) **degrade gracefully** — they re-select / retry
+    without `details` if the migration hasn't been applied, so the core mission
+    still saves and renders (same idiom as `articles.featured_image_meta`).
+  - **New identity fields** (`MissionIdentity` in `types/mission.ts`, stored in
+    `details.identity`): short name, acronym, subtitle, summary, objective,
+    motto, official website, Wikipedia URL, press-kit URL, alias. Canonical
+    name/slug/description stay top-level columns.
+  - **Pure, tested core** (`modules/missions/services/`): `missionIdentity.ts`
+    (normalize / defaults / `buildMissionDetails` merge that preserves future
+    namespaces) and `missionValidation.ts` (URL validation + `coerceUrl`
+    bare-domain→https, character limits, required vs. recommended rules).
+    Severity model follows the spec — **errors block save, warnings allow it** —
+    and is deliberately backward compatible: only name/slug/description (which
+    every legacy mission has) and format errors (which legacy rows can't hit)
+    block; missing summary/objective are **warnings**. 20 zero-dependency
+    `node:test` cases (`missionIdentity.test.ts`, `missionValidation.test.ts`).
+  - **Editor** (`MissionForm`): the mission info section is now a grouped
+    **identity panel** (Mission Identity · Summary & Objective · Destination &
+    Media · Links & References) with live character counters, inline field
+    validation (errors after a save attempt; URL errors live), auto-`https://`
+    on blur, and a post-save **suggestions** panel that surfaces the API's
+    warnings — including a **duplicate-mission-name** check
+    (`hasDuplicateMissionName`, non-blocking; slug stays hard-unique). Auto-slug
+    from name + manual edit are preserved. Matches the existing CMS design
+    language (tokens, font-mono labels, both themes).
+  - **API** (`/api/admin/missions`): shared `validateMission` gates POST/PATCH
+    (400 on blocking errors), coerces URL fields, and returns non-blocking
+    `warnings[]`.
+  - **Public mission page** (`MissionSlugPage`): additively renders acronym chip,
+    subtitle, motto, a **summary lead** paragraph, a primary-objective callout,
+    and official website / Wikipedia / press-kit links — all conditional, so
+    legacy missions look exactly as before. Mission metadata now prefers the
+    concise **summary** for the meta/OG description (falls back to description).
+  - **Run migration `20260726140000_mission_details.sql`.** Remaining Phase 1
+    features (2–8: classification, specifications, scientific objectives,
+    advanced timeline, launch info, media management, completeness/validation)
+    are queued — built one at a time.
+
+**Not yet done:** All 8 Phase 2 features are complete. The Mission Management
+System upgrade is in progress — Feature 1 (Enhanced Mission Identity) shipped;
+Features 2–8 remain (see §10). Also remaining: Phases 3–4 of the plan, and the
+polish items in §10.
 
 ---
 
@@ -701,6 +752,28 @@ bad migration is a one-line revert.
 ---
 
 ## 10. Remaining work / roadmap
+
+**Mission Management System upgrade (Phase 1) — in progress, one feature at a
+time.** Feature 1 (Enhanced Mission Identity) shipped (see §2). The model is
+built to grow: each remaining feature adds its own namespaced key to the
+`missions.details` jsonb blob (no schema break) and its own section to
+`MissionForm`. Remaining, in order:
+- **2. Rich Classification** — multi mission-type, searchable multi-destination,
+  multi-agency roles (primary/partner/commercial/institution) + more statuses.
+- **3. Professional Specifications** — launch vehicle, spacecraft, masses,
+  power, comms, payloads, orbit, program/family, instruments.
+- **4. Scientific Objectives** — structured primary/secondary objectives, tech
+  demos, questions, significance (add + drag-reorder).
+- **5. Advanced Timeline** — richer per-event fields, drag-reorder,
+  expand/collapse, duplicate, colour-coded types, date validation (the current
+  `timeline` jsonb shape is extended additively).
+- **6. Launch Information** — dedicated launch section with window/pad/provider
+  and logical date-order validation.
+- **7. Media Management** — hero/patch/logo/gallery/banner + per-image metadata
+  (alt/caption/credit/license) and optimisation.
+- **8. Completeness & Validation** — live completeness score + checklist; this
+  is where the stricter save-gating policy is formalised (the `missionValidation`
+  severity model is its foundation).
 
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into

@@ -1,7 +1,15 @@
 import { cache } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Mission, MissionCard, MissionStatus, MissionType } from '@/types/mission'
+import { identityFromDetails } from './missionIdentity'
 import { DEFAULT_LANGUAGE, isLanguageCode, type LanguageCode } from '@/lib/i18n'
+
+// Detects "column missions.details does not exist" so the public mission page
+// keeps rendering before migration 20260726140000_mission_details.sql is applied.
+function isMissingDetailsColumn(error: any): boolean {
+  const msg = (error?.message || '').toLowerCase()
+  return msg.includes('details') && (msg.includes('does not exist') || msg.includes('column') || error?.code === '42703')
+}
 
 interface MissionTranslation { language_code: string; name: string; description: string | null }
 
@@ -24,12 +32,13 @@ const MISSION_CARD_SELECT = `
   space_agencies ( name, short_name )
 `
 
-const MISSION_FULL_SELECT = `
+const MISSION_FULL_SELECT_BASE = `
   id, name, slug, description, status, launch_date,
   mission_type, featured_image, destination, featured,
   timeline, created_at, updated_at, agency_id,
   space_agencies ( id, name, slug, short_name, country, logo_url, description, website_url )
 `
+const MISSION_FULL_SELECT = `${MISSION_FULL_SELECT_BASE}, details`
 
 export async function getMissions({
   page    = 1,
@@ -118,11 +127,16 @@ export const getMissionBySlug = cache(async (
   slug: string,
   lang: LanguageCode = DEFAULT_LANGUAGE,
 ): Promise<Mission | null> => {
-  const { data, error } = await supabase
+  let { data, error }: { data: any; error: any } = await supabase
     .from('missions')
     .select(MISSION_FULL_SELECT)
     .eq('slug', slug)
     .single()
+
+  // Degrade gracefully if the details migration hasn't been applied yet.
+  if (error && isMissingDetailsColumn(error)) {
+    ({ data, error } = await supabase.from('missions').select(MISSION_FULL_SELECT_BASE).eq('slug', slug).single())
+  }
 
   if (error || !data) return null
 
@@ -206,6 +220,7 @@ function normalizeFull(row: any, lang: LanguageCode = DEFAULT_LANGUAGE, translat
     destination:   row.destination || null,
     featured:      row.featured || false,
     timeline:      Array.isArray(row.timeline) ? row.timeline : [],
+    identity:      identityFromDetails(row.details),
     createdAt:     row.created_at || '',
     updatedAt:     row.updated_at || '',
     agency:        ag ? {

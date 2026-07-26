@@ -3,12 +3,17 @@ import {
   createAdminMission,
   updateAdminMission,
   deleteAdminMission,
+  hasDuplicateMissionName,
 } from '@/modules/admin/services/adminMissions'
 import { slugify } from '@/lib/utils'
 import type { MissionPayload } from '@/modules/admin/services/adminMissions'
 import type { MissionStatus, MissionType, MissionTimeline } from '@/types/mission'
 import { SlugConflictError } from '@/modules/admin/services/adminErrors'
 import { getAdminUser } from '@/modules/admin/services/getAdminUser'
+import { normalizeIdentity } from '@/modules/missions/services/missionIdentity'
+import {
+  validateMission, hasBlockingErrors, errorsOnly, warningsOnly, coerceUrl,
+} from '@/modules/missions/services/missionValidation'
 
 const STATUSES: MissionStatus[] = [
   'active', 'upcoming', 'completed', 'failed', 'in-development', 'cancelled',
@@ -22,13 +27,15 @@ export async function POST(request: NextRequest) {
   if (!(await getAdminUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const payload = buildPayload(await request.json())
-    if (!payload.name)        return NextResponse.json({ error: 'Name is required' }, { status: 400 })
-    if (!payload.slug)        return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
-    if (!payload.description) return NextResponse.json({ error: 'Description is required' }, { status: 400 })
+    const issues  = validateMission(payload)
+    if (hasBlockingErrors(issues))
+      return NextResponse.json({ error: errorsOnly(issues)[0].message, issues }, { status: 400 })
 
     const result = await createAdminMission(payload)
     if (!result) return NextResponse.json({ error: 'Failed to create mission' }, { status: 500 })
-    return NextResponse.json({ id: result.id }, { status: 201 })
+
+    const warnings = await collectWarnings(payload, issues, undefined)
+    return NextResponse.json({ id: result.id, warnings }, { status: 201 })
   } catch (err) {
     if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
@@ -43,11 +50,15 @@ export async function PATCH(request: NextRequest) {
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
   try {
     const payload = buildPayload(await request.json())
-    if (!payload.name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    const issues  = validateMission(payload)
+    if (hasBlockingErrors(issues))
+      return NextResponse.json({ error: errorsOnly(issues)[0].message, issues }, { status: 400 })
 
     const ok = await updateAdminMission(id, payload)
     if (!ok) return NextResponse.json({ error: 'Failed to update mission' }, { status: 500 })
-    return NextResponse.json({ success: true })
+
+    const warnings = await collectWarnings(payload, issues, id)
+    return NextResponse.json({ success: true, warnings })
   } catch (err) {
     if (err instanceof SlugConflictError) return NextResponse.json({ error: err.message }, { status: 409 })
     console.error(err)
@@ -71,7 +82,7 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-// ── Helper ────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────
 
 function buildPayload(body: any): MissionPayload {
   const name   = String(body.name || '').trim()
@@ -87,6 +98,14 @@ function buildPayload(body: any): MissionPayload {
       }))
     : []
 
+  // Enhanced identity (Feature 1) — tolerant of a missing `identity` (legacy /
+  // API-direct callers). URL fields are coerced (bare domain → https://…) so a
+  // friendly "nasa.gov" is stored as a valid URL.
+  const identity = normalizeIdentity(body.identity)
+  identity.website   = coerceUrl(identity.website)
+  identity.wikipedia = coerceUrl(identity.wikipedia)
+  identity.pressKit  = coerceUrl(identity.pressKit)
+
   return {
     name,
     slug:          String(body.slug || slugify(name)).trim(),
@@ -99,5 +118,24 @@ function buildPayload(body: any): MissionPayload {
     featuredImage: body.featuredImage ? String(body.featuredImage).trim() : null,
     featured:      Boolean(body.featured),
     timeline,
+    identity,
   }
+}
+
+/**
+ * Non-blocking advisories returned alongside a successful save: the validation
+ * warnings (missing summary/objective, slug hint) plus a case-insensitive
+ * duplicate-mission-name check (a name isn't unique the way a slug is, so it's
+ * only a warning).
+ */
+async function collectWarnings(
+  payload: MissionPayload,
+  issues: ReturnType<typeof validateMission>,
+  exceptId?: string,
+): Promise<string[]> {
+  const warnings = warningsOnly(issues).map(i => i.message)
+  if (await hasDuplicateMissionName(payload.name, exceptId)) {
+    warnings.push(`Another mission is already named "${payload.name}". Names don't have to be unique, but double-check this isn't a duplicate.`)
+  }
+  return warnings
 }

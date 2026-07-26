@@ -38,6 +38,18 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260726140000_mission_details.sql`
+
+Adds an additive, nullable `details jsonb` column to `missions` — the extensible,
+namespaced home for the Phase 1 Mission Management upgrade (`details.identity`
+for Enhanced Mission Identity, with room for classification / specifications /
+objectives / launch / media in later features). Fully backward compatible:
+existing rows get `details = NULL`, every existing column is untouched, and both
+the admin editor and the public mission page degrade gracefully (re-select
+without `details`) if this hasn't been applied yet. Includes a `jsonb_path_ops`
+GIN index for future containment queries. Run it before relying on the enhanced
+mission fields.
+
 ### `20260720170000_authors_slug.sql`
 
 Adds a `slug` column to `authors` (unique, backfilled from the name) so each

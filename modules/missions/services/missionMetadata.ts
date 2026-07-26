@@ -8,14 +8,17 @@ export function buildMissionMetadata(mission: Mission, lang: LanguageCode): Meta
   const { isFallback, canonical, languages } = localizedAlternates(
     'missions', mission.slug, mission.availableLanguages, mission.language, lang,
   )
+  // Prefer the concise mission summary for the meta/OG description (Feature 1);
+  // fall back to the full description for missions that predate it.
+  const description = mission.identity?.summary?.trim() || mission.description
   return {
     title:       mission.name,
-    description: mission.description,
+    description,
     alternates:  { canonical, languages },
     ...(isFallback ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title:       mission.name,
-      description: mission.description,
+      description,
       images:      mission.featuredImage ? [mission.featuredImage] : [],
       locale:      lang === 'hi' ? 'hi_IN' : 'en_US',
     },

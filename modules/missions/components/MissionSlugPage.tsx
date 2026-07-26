@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import type { Mission, MissionCard } from '@/types/mission'
 import { StatusBadge } from './MissionsPage'
 import { formatDate } from '@/lib/utils'
@@ -25,6 +26,7 @@ interface Props {
 
 export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
   const isHi = lang === 'hi'
+  const id = mission.identity // enhanced identity (Feature 1); always present
   return (
     <div lang={lang} style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
 
@@ -66,6 +68,11 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
               {TYPE_LABEL[mission.missionType] || mission.missionType}
             </span>
           )}
+          {id?.acronym && (
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#4f8ef7', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '3px', padding: '2px 8px' }}>
+              {id.acronym}
+            </span>
+          )}
           <StatusBadge status={mission.status} />
         </div>
 
@@ -73,6 +80,20 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         <h1 style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: 'clamp(32px,5vw,56px)', fontWeight: 400, color: 'var(--white)', lineHeight: 1.1, margin: '0 0 16px', letterSpacing: '-0.01em' }}>
           {mission.name}
         </h1>
+
+        {/* Subtitle */}
+        {id?.subtitle && (
+          <p style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: 'clamp(17px,2.2vw,22px)', fontWeight: 400, color: 'rgba(var(--ink),0.7)', lineHeight: 1.4, margin: '0 0 16px' }}>
+            {id.subtitle}
+          </p>
+        )}
+
+        {/* Motto */}
+        {id?.motto && (
+          <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '16px', color: 'rgba(var(--ink),0.6)', margin: '0 0 20px' }}>
+            &ldquo;{id.motto}&rdquo;
+          </p>
+        )}
 
         {/* Destination */}
         {mission.destination && (
@@ -91,10 +112,38 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
           )}
         </div>
 
+        {/* Summary (lead) */}
+        {id?.summary && (
+          <p style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: 'clamp(18px,2vw,21px)', lineHeight: 1.7, color: 'var(--white)', margin: '0 0 24px', letterSpacing: '0.005em' }}>
+            {id.summary}
+          </p>
+        )}
+
         {/* Description */}
-        <p style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: 'clamp(16px,1.8vw,18px)', lineHeight: 1.9, color: 'rgba(var(--ink),0.9)', margin: '0 0 48px', letterSpacing: '0.01em' }}>
+        <p style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: 'clamp(16px,1.8vw,18px)', lineHeight: 1.9, color: 'rgba(var(--ink),0.9)', margin: '0 0 32px', letterSpacing: '0.01em' }}>
           {mission.description}
         </p>
+
+        {/* Primary objective */}
+        {id?.objective && (
+          <div style={{ borderLeft: '2px solid rgba(79,142,247,0.5)', paddingLeft: '18px', margin: '0 0 32px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '8px' }}>
+              Mission Objective
+            </span>
+            <p style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: '16px', lineHeight: 1.75, color: 'rgba(var(--ink),0.9)', margin: 0 }}>
+              {id.objective}
+            </p>
+          </div>
+        )}
+
+        {/* Official links */}
+        {(id?.website || id?.wikipedia || id?.pressKit) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', margin: '0 0 48px' }}>
+            {id?.website && <MissionLink href={id.website}>Official Website ↗</MissionLink>}
+            {id?.wikipedia && <MissionLink href={id.wikipedia}>Wikipedia ↗</MissionLink>}
+            {id?.pressKit && <MissionLink href={id.pressKit}>Press Kit ↗</MissionLink>}
+          </div>
+        )}
 
         {/* ── Timeline ─────────────────────────────── */}
         {mission.timeline && mission.timeline.length > 0 && (
@@ -194,5 +243,19 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
       )}
 
     </div>
+  )
+}
+
+// External reference link (official website / Wikipedia / press kit).
+function MissionLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}
+    >
+      {children}
+    </a>
   )
 }
