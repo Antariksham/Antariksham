@@ -5,17 +5,18 @@ import { Plus }                 from 'lucide-react'
 
 export const revalidate = 0
 
-// The Article Browser (Feature 8) does instant search, faceted filtering,
-// sorting, saved presets and bulk actions client-side over a loaded batch.
-// We load a generous batch here; pushing the filters into the DB query is the
-// documented follow-up for very large libraries (MIGRATION §10).
-const BROWSE_LIMIT = 500
+// The Article Browser (Feature 8) runs search / filter / sort / pagination in
+// the database, so we only load the first page here (SSR snapshot); the browser
+// refetches a single page at a time from /api/admin/articles/list. This keeps
+// the page fast no matter how large the library grows.
+const PER_PAGE = 25
 
 export default async function AdminArticlesPage() {
-  const [{ rows, total }, options] = await Promise.all([
-    getAdminArticles({ page: 1, perPage: BROWSE_LIMIT, status: 'all' }),
+  const [first, options] = await Promise.all([
+    getAdminArticles({ page: 1, perPage: PER_PAGE, status: 'all' }),
     getFormOptions(),
   ])
+  const { rows, total } = first
 
   return (
     <div style={{ maxWidth: '1080px' }}>
@@ -30,8 +31,7 @@ export default async function AdminArticlesPage() {
             Articles
           </h1>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.82)', margin: '4px 0 0', letterSpacing: '0.06em' }}>
-            {total} article{total !== 1 ? 's' : ''} total
-            {total > BROWSE_LIMIT && <span style={{ color: 'rgba(var(--ink),0.5)' }}> · browsing latest {BROWSE_LIMIT}</span>}
+            {total.toLocaleString()} article{total !== 1 ? 's' : ''} total
           </p>
         </div>
 
@@ -52,7 +52,9 @@ export default async function AdminArticlesPage() {
       </div>
 
       <ArticleBrowser
-        rows={rows}
+        initialRows={rows}
+        initialTotal={total}
+        perPage={PER_PAGE}
         categories={options.categories.map(c => ({ id: c.id, name: c.name }))}
         tags={options.tags.map(t => ({ id: t.id, name: t.name }))}
         authors={options.authors}
