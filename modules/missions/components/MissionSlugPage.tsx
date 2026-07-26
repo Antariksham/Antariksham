@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import type { Mission, MissionCard, CollaboratorRole } from '@/types/mission'
+import type { Mission, MissionCard, CollaboratorRole, MissionSpecifications } from '@/types/mission'
 import { StatusBadge } from './MissionsPage'
 import { formatDate } from '@/lib/utils'
 import { typeLabel } from '@/modules/missions/services/missionClassification'
@@ -15,6 +15,19 @@ const ROLE_LABEL: Record<CollaboratorRole, string> = {
 }
 const ROLE_ORDER: CollaboratorRole[] = ['partner', 'commercial', 'institution']
 
+// Specification rows shown on the public page, in order (blank fields skipped).
+const SPEC_ROWS: [keyof MissionSpecifications, string][] = [
+  ['spacecraftName', 'Spacecraft'], ['manufacturer', 'Manufacturer'],
+  ['program', 'Program'], ['missionFamily', 'Mission Family'],
+  ['launchVehicle', 'Launch Vehicle'], ['orbitType', 'Orbit'],
+  ['launchMass', 'Launch Mass'], ['dryMass', 'Dry Mass'], ['payloadMass', 'Payload Mass'],
+  ['missionDuration', 'Mission Duration'], ['expectedLifetime', 'Expected Lifetime'],
+  ['powerSource', 'Power Source'], ['powerOutput', 'Power Output'],
+  ['communicationSystem', 'Communications'],
+  ['primaryPayload', 'Primary Payload'], ['secondaryPayload', 'Secondary Payload'],
+  ['budget', 'Budget'],
+]
+
 interface Props {
   mission: Mission
   related: MissionCard[]
@@ -23,9 +36,12 @@ interface Props {
 
 export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
   const isHi = lang === 'hi'
-  const id  = mission.identity        // enhanced identity (Feature 1); always present
-  const cls = mission.classification  // rich classification (Feature 2); always present
+  const id   = mission.identity        // enhanced identity (Feature 1); always present
+  const cls  = mission.classification  // rich classification (Feature 2); always present
+  const spec = mission.specifications  // specifications (Feature 3); always present
   const destinations = cls.destinations.length ? cls.destinations : (mission.destination ? [mission.destination] : [])
+  const specRows = SPEC_ROWS.filter(([k]) => (spec[k] as string).trim())
+  const hasSpecs = specRows.length > 0 || spec.instruments.length > 0
   return (
     <div lang={lang} style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
 
@@ -141,6 +157,43 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
             {id?.website && <MissionLink href={id.website}>Official Website ↗</MissionLink>}
             {id?.wikipedia && <MissionLink href={id.wikipedia}>Wikipedia ↗</MissionLink>}
             {id?.pressKit && <MissionLink href={id.pressKit}>Press Kit ↗</MissionLink>}
+          </div>
+        )}
+
+        {/* ── Specifications ───────────────────────── */}
+        {hasSpecs && (
+          <div style={{ marginBottom: '56px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '24px' }}>
+              Mission Specifications
+            </span>
+            {specRows.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1px', background: 'rgba(var(--ink),0.08)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '10px', overflow: 'hidden' }}>
+                {specRows.map(([key, label]) => (
+                  <div key={key} style={{ background: 'var(--panel)', padding: '14px 18px' }}>
+                    <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', marginBottom: '5px' }}>
+                      {label}
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'var(--white)', lineHeight: 1.4 }}>
+                      {spec[key] as string}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {spec.instruments.length > 0 && (
+              <div style={{ marginTop: '20px' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '10px' }}>
+                  Scientific Instruments
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {spec.instruments.map(inst => (
+                    <span key={inst} style={{ padding: '6px 12px', borderRadius: '6px', background: 'rgba(var(--ink),0.04)', border: '1px solid rgba(var(--ink),0.1)', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'rgba(var(--ink),0.9)' }}>
+                      {inst}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

@@ -3,7 +3,7 @@ import { enforceSingleFeatured } from './featuredExclusive'
 import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adminErrors'
 import type {
   MissionStatus, MissionType, MissionTimeline, MissionIdentity,
-  MissionClassification, MissionDetails,
+  MissionClassification, MissionDetails, MissionSpecifications,
 } from '@/types/mission'
 import {
   emptyIdentity, identityFromDetails, buildMissionDetails,
@@ -12,6 +12,10 @@ import {
   emptyClassification, effectiveClassification, normalizeClassification,
   classificationToBaseColumns,
 } from '@/modules/missions/services/missionClassification'
+import {
+  emptySpecifications, specificationsFromDetails, normalizeSpecifications,
+  isSpecificationsEmpty,
+} from '@/modules/missions/services/missionSpecifications'
 
 // Detects "column missions.details does not exist" so the editor keeps working
 // before migration 20260726140000_mission_details.sql has been applied.
@@ -78,6 +82,8 @@ export interface AdminMissionFull {
   identity: MissionIdentity
   /** Effective rich classification (Feature 2); falls back to base columns. */
   classification: MissionClassification
+  /** Professional specifications (Feature 3); empty for legacy. */
+  specifications: MissionSpecifications
 }
 
 export async function getAdminMissionById(id: string): Promise<AdminMissionFull | null> {
@@ -110,6 +116,7 @@ export async function getAdminMissionById(id: string): Promise<AdminMissionFull 
       (data.details as any)?.classification,
       { status: data.status, missionType: data.mission_type, destination: data.destination || '' },
     ),
+    specifications: specificationsFromDetails(data.details),
   }
 }
 
@@ -122,6 +129,8 @@ export interface MissionPayload {
   /** Rich classification (Feature 2). The base status/mission_type/destination
    *  columns are derived from this (never sent independently). */
   classification: MissionClassification
+  /** Professional specifications (Feature 3). */
+  specifications: MissionSpecifications
 }
 
 // Columns common to insert + update. The base status/mission_type/destination
@@ -144,10 +153,14 @@ function baseMissionColumns(p: MissionPayload) {
 // of truth on the next read (reads fall back to base columns only when absent).
 function buildDetails(p: MissionPayload): MissionDetails {
   const withIdentity = buildMissionDetails(p.identity || emptyIdentity()) // { identity? } | null
-  return {
+  const details: MissionDetails = {
     ...(withIdentity || {}),
     classification: normalizeClassification(p.classification || emptyClassification()),
   }
+  // Only store specifications when something is set (keeps legacy rows clean).
+  const specs = normalizeSpecifications(p.specifications || emptySpecifications())
+  if (!isSpecificationsEmpty(specs)) details.specifications = specs
+  return details
 }
 
 export async function createAdminMission(p: MissionPayload): Promise<{ id: string } | null> {

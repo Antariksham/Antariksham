@@ -17,7 +17,16 @@ import {
 import {
   normalizeClassification, effectiveClassification,
 } from '@/modules/missions/services/missionClassification'
+import {
+  normalizeSpecifications, validateSpecifications,
+} from '@/modules/missions/services/missionSpecifications'
 import type { MissionClassification } from '@/types/mission'
+
+// Full validation for a mission payload: core + identity (Feature 1) +
+// specifications (Feature 3). Classification is derived, always valid.
+function validateAll(payload: MissionPayload) {
+  return [...validateMission(payload), ...validateSpecifications(payload.specifications)]
+}
 
 const STATUSES: MissionStatus[] = [
   'active', 'upcoming', 'completed', 'failed', 'in-development', 'cancelled',
@@ -31,7 +40,7 @@ export async function POST(request: NextRequest) {
   if (!(await getAdminUser())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const payload = buildPayload(await request.json())
-    const issues  = validateMission(payload)
+    const issues  = validateAll(payload)
     if (hasBlockingErrors(issues))
       return NextResponse.json({ error: errorsOnly(issues)[0].message, issues }, { status: 400 })
 
@@ -54,7 +63,7 @@ export async function PATCH(request: NextRequest) {
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
   try {
     const payload = buildPayload(await request.json())
-    const issues  = validateMission(payload)
+    const issues  = validateAll(payload)
     if (hasBlockingErrors(issues))
       return NextResponse.json({ error: errorsOnly(issues)[0].message, issues }, { status: 400 })
 
@@ -119,6 +128,7 @@ function buildPayload(body: any): MissionPayload {
     timeline,
     identity,
     classification: buildClassification(body),
+    specifications: normalizeSpecifications(body.specifications),
   }
 }
 

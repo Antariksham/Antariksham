@@ -205,7 +205,7 @@ interface TokenFieldProps {
   resolveLabel?: (value: string) => string
 }
 
-function TokenField({
+export function TokenField({
   label, hint, placeholder, selected, options, onAdd, onRemove,
   allowCustom, firstIsPrimary, compact, resolveLabel,
 }: TokenFieldProps) {
@@ -329,7 +329,7 @@ function DropdownRow({ onClick, children }: { onClick: () => void; children: Rea
 
 // ── Shared bits ──────────────────────────────────────────────────────
 
-function SubLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
+export function SubLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (
     <div style={{ marginBottom: '8px' }}>
       <label style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.85)' }}>

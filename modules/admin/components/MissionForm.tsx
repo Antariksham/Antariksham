@@ -3,15 +3,17 @@
 import { useState, useMemo } from 'react'
 import { useRouter }  from 'next/navigation'
 import { slugify }    from '@/lib/utils'
-import type { MissionTimeline, MissionIdentity, MissionClassification } from '@/types/mission'
+import type { MissionTimeline, MissionIdentity, MissionClassification, MissionSpecifications } from '@/types/mission'
 import type { AdminMissionFull, AgencyOption } from '@/modules/admin/services/adminMissions'
 import { Save, Globe, ChevronDown, Plus, Trash2, AlertCircle, ChevronUp, Info } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { TranslationEditor } from '@/modules/admin/components/TranslationEditor'
 import { MissionClassificationFields, StatusSelect } from '@/modules/admin/components/MissionClassificationFields'
+import { MissionSpecificationsFields } from '@/modules/admin/components/MissionSpecificationsFields'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 import { emptyIdentity } from '@/modules/missions/services/missionIdentity'
 import { emptyClassification } from '@/modules/missions/services/missionClassification'
+import { emptySpecifications, validateSpecifications } from '@/modules/missions/services/missionSpecifications'
 import {
   validateMission, hasBlockingErrors, errorsOnly, issueForField, coerceUrl,
   MISSION_LIMITS, type FieldIssue,
@@ -23,6 +25,7 @@ interface FormState {
   description:      string
   identity:         MissionIdentity
   classification:   MissionClassification
+  specifications:   MissionSpecifications
   agencyId:         string
   launchDate:       string
   featuredImage:    string
@@ -46,6 +49,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
     description:      mission?.description   || '',
     identity:         mission?.identity      || emptyIdentity(),
     classification:   mission?.classification || emptyClassification(),
+    specifications:   mission?.specifications || emptySpecifications(),
     agencyId:         mission?.agencyId      || '',
     launchDate:       mission?.launchDate    || '',
     featuredImage:    mission?.featuredImage || '',
@@ -64,8 +68,11 @@ export function MissionForm({ mode, mission, agencies }: Props) {
 
   // Live validation (shared with the API). Errors block save; warnings advise.
   const issues = useMemo(
-    () => validateMission({ name: form.name, slug: form.slug, description: form.description, identity: form.identity }),
-    [form.name, form.slug, form.description, form.identity],
+    () => [
+      ...validateMission({ name: form.name, slug: form.slug, description: form.description, identity: form.identity }),
+      ...validateSpecifications(form.specifications),
+    ],
+    [form.name, form.slug, form.description, form.identity, form.specifications],
   )
   // Field-level errors are shown only after a save attempt (no nagging while
   // typing); URL-format errors show live because they're immediately useful.
@@ -367,6 +374,16 @@ export function MissionForm({ mode, mission, agencies }: Props) {
           primaryAgencyId={form.agencyId}
           onPrimaryAgencyChange={id => set('agencyId', id)}
           agencies={agencies}
+        />
+
+        <GroupHeading hint="Engineering & programme facts about the spacecraft and mission. All optional.">
+          Mission Specifications
+        </GroupHeading>
+
+        <MissionSpecificationsFields
+          value={form.specifications}
+          onChange={s => set('specifications', s)}
+          destinations={form.classification.destinations}
         />
 
         <GroupHeading hint="Imagery for cards and the mission hero.">

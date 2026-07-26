@@ -113,6 +113,40 @@ export interface MissionCollaborator {
 }
 
 /**
+ * Professional Mission Specifications (Phase 1, Feature 3).
+ *
+ * Stored in `missions.details.specifications`. Engineering + programmatic facts
+ * about the spacecraft and mission. All fields optional strings (defaulting to
+ * `''`) except `instruments`, a list of scientific-instrument names. Masses,
+ * power, duration etc. are free strings so editors can include units
+ * ("2,600 kg", "2.5 kW") — light validation checks they read like measurements.
+ *
+ * Note: primary / secondary DESTINATION are NOT stored here — they are derived
+ * from `classification.destinations` (single source of truth) and only surfaced
+ * read-only in the specifications UI.
+ */
+export interface MissionSpecifications {
+  launchVehicle:       string
+  spacecraftName:      string
+  manufacturer:        string
+  launchMass:          string
+  dryMass:             string
+  payloadMass:         string
+  missionDuration:     string
+  expectedLifetime:    string
+  powerSource:         string
+  powerOutput:         string
+  communicationSystem: string
+  primaryPayload:      string
+  secondaryPayload:    string
+  budget:              string
+  orbitType:           string
+  instruments:         string[]
+  missionFamily:       string
+  program:             string
+}
+
+/**
  * The full, extensible `missions.details` payload. Each Phase 1 feature owns
  * one namespaced key. Every key is optional so the model can grow without a
  * schema change or a backward-compat break.
@@ -120,6 +154,7 @@ export interface MissionCollaborator {
 export interface MissionDetails {
   identity?:       MissionIdentity
   classification?: MissionClassification
+  specifications?: MissionSpecifications
 }
 
 export interface Mission {
@@ -144,6 +179,8 @@ export interface Mission {
   classification: MissionClassification
   /** Resolved non-primary agencies grouped by role (Feature 2). */
   collaborators:  MissionCollaborator[]
+  /** Professional specifications (Feature 3). Always present; empty for legacy. */
+  specifications: MissionSpecifications
   createdAt:     string
   updatedAt:     string
   // i18n — language actually served (falls back to 'en') + every language it

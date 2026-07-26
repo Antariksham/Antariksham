@@ -607,10 +607,38 @@ collection when Supabase env vars are absent — unrelated to app code).
     `MissionPayload` now carries `classification`; the base columns are *derived*
     from it (single source of truth). No new migration (reuses `details`).
 
+- ✅ **Mission Management System — Professional Mission Specifications (Phase 1,
+  Feature 3)** — a dedicated engineering + programmatic spec sheet. Additive +
+  backward compatible. Branch `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model + validation** (`missionSpecifications.ts`, pure/tested): ~18 fields
+    stored in `details.specifications` — launch vehicle, spacecraft name +
+    manufacturer, launch/dry/payload mass, mission duration + expected lifetime,
+    power source + output, comms, primary/secondary payload, budget, orbit type,
+    scientific instruments (a list), mission family, program. Masses/power are
+    free strings so editors can include units; `validateSpecifications` checks
+    measurement fields read like a number (blocking), warns when dry/payload mass
+    exceeds launch mass, and enforces character limits. Only stored when
+    non-empty, so legacy rows stay clean. 11 zero-dep `node:test` cases (45
+    total across the mission modules). Validation is **co-located** in the specs
+    module (only the `FieldIssue` type crosses module lines) so the pure modules
+    never import each other at runtime — keeping the TS-stripping test runner
+    happy.
+  - **Editor** (`MissionSpecificationsFields`): a grouped "Mission
+    Specifications" section (spacecraft/programme, launch & orbit, a 3-up mass
+    row, duration & power, payload & comms, an instruments token list, budget)
+    that **reuses** the shared `SubLabel` + `TokenField` from the classification
+    component. Primary/secondary **destination are shown read-only**, derived
+    from the classification (single source of truth). Live validation feeds the
+    same save gate.
+  - **Public** (`MissionSlugPage`): a professional **spec-sheet grid** (blank
+    fields skipped) plus scientific-instrument chips. `getMissionBySlug` /
+    `getAdminMissionById` surface `specifications`; `MissionPayload` carries it;
+    the API validates it. No new migration (reuses `details`).
+
 **Not yet done:** All 8 Phase 2 features are complete. The Mission Management
-System upgrade is in progress — Features 1–2 (Enhanced Identity, Rich
-Classification) shipped; Features 3–8 remain (see §10). Also remaining: Phases
-3–4 of the plan, and the polish items in §10.
+System upgrade is in progress — Features 1–3 (Enhanced Identity, Rich
+Classification, Professional Specifications) shipped; Features 4–8 remain (see
+§10). Also remaining: Phases 3–4 of the plan, and the polish items in §10.
 
 ---
 
@@ -796,12 +824,10 @@ bad migration is a one-line revert.
 ## 10. Remaining work / roadmap
 
 **Mission Management System upgrade (Phase 1) — in progress, one feature at a
-time.** Features 1–2 (Enhanced Mission Identity, Rich Classification) shipped
-(see §2). The model is built to grow: each remaining feature adds its own
-namespaced key to the `missions.details` jsonb blob (no schema break) and its
-own section to `MissionForm`. Remaining, in order:
-- **3. Professional Specifications** — launch vehicle, spacecraft, masses,
-  power, comms, payloads, orbit, program/family, instruments.
+time.** Features 1–3 (Enhanced Mission Identity, Rich Classification,
+Professional Specifications) shipped (see §2). The model is built to grow: each
+remaining feature adds its own namespaced key to the `missions.details` jsonb
+blob (no schema break) and its own section to `MissionForm`. Remaining, in order:
 - **4. Scientific Objectives** — structured primary/secondary objectives, tech
   demos, questions, significance (add + drag-reorder).
 - **5. Advanced Timeline** — richer per-event fields, drag-reorder,
