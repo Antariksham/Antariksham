@@ -495,6 +495,15 @@ collection when Supabase env vars are absent — unrelated to app code).
     city-level geo) are natural next steps; the collector + pure core are written
     to extend into them.
 
+- ✅ **Collapsible admin sidebar** (`AdminShell.tsx`) — the admin chrome now
+  wraps the fixed, independently-scrolling sidebar + content in a client shell
+  that owns a collapse toggle. **Desktop**: a header button slides the sidebar
+  off-canvas and the content reclaims the full width (choice persisted in
+  localStorage); a floating button re-opens it. **Mobile (<900px)**: the sidebar
+  becomes an off-canvas drawer over a scrim — hamburger to open, nav-tap /
+  scrim-tap / Escape to close. `AdminSidebar` is now presentational (driven by
+  props). Theme-aware CSS, `prefers-reduced-motion` respected.
+
 **Not yet done:** All 8 Phase 2 features are complete. Remaining: Phases 3–4 of
 the plan, and the polish items in §10.
 
