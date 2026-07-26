@@ -3,7 +3,7 @@ import { enforceSingleFeatured } from './featuredExclusive'
 import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adminErrors'
 import type {
   MissionStatus, MissionType, MissionTimeline, MissionIdentity,
-  MissionClassification, MissionDetails, MissionSpecifications,
+  MissionClassification, MissionDetails, MissionSpecifications, MissionObjectives,
 } from '@/types/mission'
 import {
   emptyIdentity, identityFromDetails, buildMissionDetails,
@@ -16,6 +16,9 @@ import {
   emptySpecifications, specificationsFromDetails, normalizeSpecifications,
   isSpecificationsEmpty,
 } from '@/modules/missions/services/missionSpecifications'
+import {
+  emptyObjectives, objectivesFromDetails, normalizeObjectives, isObjectivesEmpty,
+} from '@/modules/missions/services/missionObjectives'
 
 // Detects "column missions.details does not exist" so the editor keeps working
 // before migration 20260726140000_mission_details.sql has been applied.
@@ -84,6 +87,8 @@ export interface AdminMissionFull {
   classification: MissionClassification
   /** Professional specifications (Feature 3); empty for legacy. */
   specifications: MissionSpecifications
+  /** Structured scientific objectives (Feature 4); empty for legacy. */
+  objectives: MissionObjectives
 }
 
 export async function getAdminMissionById(id: string): Promise<AdminMissionFull | null> {
@@ -117,6 +122,7 @@ export async function getAdminMissionById(id: string): Promise<AdminMissionFull 
       { status: data.status, missionType: data.mission_type, destination: data.destination || '' },
     ),
     specifications: specificationsFromDetails(data.details),
+    objectives: objectivesFromDetails(data.details),
   }
 }
 
@@ -131,6 +137,8 @@ export interface MissionPayload {
   classification: MissionClassification
   /** Professional specifications (Feature 3). */
   specifications: MissionSpecifications
+  /** Structured scientific objectives (Feature 4). */
+  objectives: MissionObjectives
 }
 
 // Columns common to insert + update. The base status/mission_type/destination
@@ -160,6 +168,9 @@ function buildDetails(p: MissionPayload): MissionDetails {
   // Only store specifications when something is set (keeps legacy rows clean).
   const specs = normalizeSpecifications(p.specifications || emptySpecifications())
   if (!isSpecificationsEmpty(specs)) details.specifications = specs
+  // Same for scientific objectives (Feature 4).
+  const objectives = normalizeObjectives(p.objectives || emptyObjectives())
+  if (!isObjectivesEmpty(objectives)) details.objectives = objectives
   return details
 }
 

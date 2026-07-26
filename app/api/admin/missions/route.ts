@@ -20,12 +20,20 @@ import {
 import {
   normalizeSpecifications, validateSpecifications,
 } from '@/modules/missions/services/missionSpecifications'
+import {
+  normalizeObjectives, validateObjectives,
+} from '@/modules/missions/services/missionObjectives'
 import type { MissionClassification } from '@/types/mission'
 
 // Full validation for a mission payload: core + identity (Feature 1) +
-// specifications (Feature 3). Classification is derived, always valid.
+// specifications (Feature 3) + objectives (Feature 4). Classification is
+// derived, always valid.
 function validateAll(payload: MissionPayload) {
-  return [...validateMission(payload), ...validateSpecifications(payload.specifications)]
+  return [
+    ...validateMission(payload),
+    ...validateSpecifications(payload.specifications),
+    ...validateObjectives(payload.objectives),
+  ]
 }
 
 const STATUSES: MissionStatus[] = [
@@ -129,6 +137,7 @@ function buildPayload(body: any): MissionPayload {
     identity,
     classification: buildClassification(body),
     specifications: normalizeSpecifications(body.specifications),
+    objectives:     normalizeObjectives(body.objectives),
   }
 }
 

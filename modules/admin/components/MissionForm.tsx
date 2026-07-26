@@ -3,17 +3,19 @@
 import { useState, useMemo } from 'react'
 import { useRouter }  from 'next/navigation'
 import { slugify }    from '@/lib/utils'
-import type { MissionTimeline, MissionIdentity, MissionClassification, MissionSpecifications } from '@/types/mission'
+import type { MissionTimeline, MissionIdentity, MissionClassification, MissionSpecifications, MissionObjectives } from '@/types/mission'
 import type { AdminMissionFull, AgencyOption } from '@/modules/admin/services/adminMissions'
 import { Save, Globe, ChevronDown, Plus, Trash2, AlertCircle, ChevronUp, Info } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { TranslationEditor } from '@/modules/admin/components/TranslationEditor'
 import { MissionClassificationFields, StatusSelect } from '@/modules/admin/components/MissionClassificationFields'
 import { MissionSpecificationsFields } from '@/modules/admin/components/MissionSpecificationsFields'
+import { MissionObjectivesFields } from '@/modules/admin/components/MissionObjectivesFields'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 import { emptyIdentity } from '@/modules/missions/services/missionIdentity'
 import { emptyClassification } from '@/modules/missions/services/missionClassification'
 import { emptySpecifications, validateSpecifications } from '@/modules/missions/services/missionSpecifications'
+import { emptyObjectives, validateObjectives } from '@/modules/missions/services/missionObjectives'
 import {
   validateMission, hasBlockingErrors, errorsOnly, issueForField, coerceUrl,
   MISSION_LIMITS, type FieldIssue,
@@ -26,6 +28,7 @@ interface FormState {
   identity:         MissionIdentity
   classification:   MissionClassification
   specifications:   MissionSpecifications
+  objectives:       MissionObjectives
   agencyId:         string
   launchDate:       string
   featuredImage:    string
@@ -50,6 +53,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
     identity:         mission?.identity      || emptyIdentity(),
     classification:   mission?.classification || emptyClassification(),
     specifications:   mission?.specifications || emptySpecifications(),
+    objectives:       mission?.objectives    || emptyObjectives(),
     agencyId:         mission?.agencyId      || '',
     launchDate:       mission?.launchDate    || '',
     featuredImage:    mission?.featuredImage || '',
@@ -71,8 +75,9 @@ export function MissionForm({ mode, mission, agencies }: Props) {
     () => [
       ...validateMission({ name: form.name, slug: form.slug, description: form.description, identity: form.identity }),
       ...validateSpecifications(form.specifications),
+      ...validateObjectives(form.objectives),
     ],
-    [form.name, form.slug, form.description, form.identity, form.specifications],
+    [form.name, form.slug, form.description, form.identity, form.specifications, form.objectives],
   )
   // Field-level errors are shown only after a save attempt (no nagging while
   // typing); URL-format errors show live because they're immediately useful.
@@ -384,6 +389,16 @@ export function MissionForm({ mode, mission, agencies }: Props) {
           value={form.specifications}
           onChange={s => set('specifications', s)}
           destinations={form.classification.destinations}
+        />
+
+        <GroupHeading hint="The mission's science goals, beyond the primary objective. Drag list items to reorder.">
+          Scientific Objectives
+        </GroupHeading>
+
+        <MissionObjectivesFields
+          value={form.objectives}
+          onChange={o => set('objectives', o)}
+          primaryObjective={form.identity.objective}
         />
 
         <GroupHeading hint="Imagery for cards and the mission hero.">

@@ -39,9 +39,17 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
   const id   = mission.identity        // enhanced identity (Feature 1); always present
   const cls  = mission.classification  // rich classification (Feature 2); always present
   const spec = mission.specifications  // specifications (Feature 3); always present
+  const obj  = mission.objectives      // scientific objectives (Feature 4); always present
   const destinations = cls.destinations.length ? cls.destinations : (mission.destination ? [mission.destination] : [])
   const specRows = SPEC_ROWS.filter(([k]) => (spec[k] as string).trim())
   const hasSpecs = specRows.length > 0 || spec.instruments.length > 0
+  const objGroups: [string, string[]][] = [
+    ['Secondary Objectives', obj.secondary],
+    ['Technology Demonstrations', obj.technologyDemos],
+    ['Scientific Questions', obj.scientificQuestions],
+    ['Expected Discoveries', obj.expectedDiscoveries],
+  ].filter(([, items]) => (items as string[]).length > 0) as [string, string[]][]
+  const hasObjectives = objGroups.length > 0 || !!obj.significance.trim()
   return (
     <div lang={lang} style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
 
@@ -148,6 +156,41 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
             <p style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: '16px', lineHeight: 1.75, color: 'rgba(var(--ink),0.9)', margin: 0 }}>
               {id.objective}
             </p>
+          </div>
+        )}
+
+        {/* ── Scientific objectives ────────────────── */}
+        {hasObjectives && (
+          <div style={{ marginBottom: '48px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '24px' }}>
+              Scientific Objectives
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+              {objGroups.map(([label, items]) => (
+                <div key={label}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '12px' }}>
+                    {label}
+                  </span>
+                  <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {items.map((item, i) => (
+                      <li key={i} style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: '15px', color: 'rgba(var(--ink),0.9)', lineHeight: 1.65 }}>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              {obj.significance.trim() && (
+                <div>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '12px' }}>
+                    Mission Significance
+                  </span>
+                  <p style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: '15px', color: 'rgba(var(--ink),0.9)', lineHeight: 1.8, margin: 0 }}>
+                    {obj.significance}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

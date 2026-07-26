@@ -635,10 +635,35 @@ collection when Supabase env vars are absent — unrelated to app code).
     `getAdminMissionById` surface `specifications`; `MissionPayload` carries it;
     the API validates it. No new migration (reuses `details`).
 
+- ✅ **Mission Management System — Scientific Objectives (Phase 1, Feature 4)** —
+  expands the single objective field into a structured set. Additive + backward
+  compatible. Branch `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model** (`missionObjectives.ts`, pure/tested): `details.objectives` holds
+    ordered lists of **secondary objectives, technology demonstrations,
+    scientific questions, expected discoveries** plus a **mission significance**
+    text. The single **primary objective stays in `identity.objective`**
+    (Feature 1 — one source of truth); the objectives editor shows it read-only
+    for context. Co-located `validateObjectives` enforces item + significance
+    length limits (blocking; legacy rows have none). Only stored when non-empty.
+    9 zero-dep `node:test` cases (54 total across the mission modules).
+  - **Reusable `ReorderableTextList`** — a controlled string-list with **both**
+    drag-and-drop (grip handle; HTML5 DnD, textarea stays selectable) **and**
+    keyboard up/down reordering (accessible), add/remove. Feeds all four lists
+    and is ready for Feature 5's timeline.
+  - **Editor** (`MissionObjectivesFields`): a "Scientific Objectives" section
+    (primary read-only reference + four reorderable lists + significance),
+    reusing `SubLabel`. Live validation feeds the same save gate.
+  - **Public** (`MissionSlugPage`): a Scientific Objectives section renders each
+    non-empty list (bulleted) + the significance paragraph, below the primary
+    objective callout. `getMissionBySlug` / `getAdminMissionById` surface
+    `objectives`; `MissionPayload` carries it; the API validates it. No new
+    migration (reuses `details`).
+
 **Not yet done:** All 8 Phase 2 features are complete. The Mission Management
-System upgrade is in progress — Features 1–3 (Enhanced Identity, Rich
-Classification, Professional Specifications) shipped; Features 4–8 remain (see
-§10). Also remaining: Phases 3–4 of the plan, and the polish items in §10.
+System upgrade is in progress — Features 1–4 (Enhanced Identity, Rich
+Classification, Professional Specifications, Scientific Objectives) shipped;
+Features 5–8 remain (see §10). Also remaining: Phases 3–4 of the plan, and the
+polish items in §10.
 
 ---
 
@@ -824,12 +849,11 @@ bad migration is a one-line revert.
 ## 10. Remaining work / roadmap
 
 **Mission Management System upgrade (Phase 1) — in progress, one feature at a
-time.** Features 1–3 (Enhanced Mission Identity, Rich Classification,
-Professional Specifications) shipped (see §2). The model is built to grow: each
-remaining feature adds its own namespaced key to the `missions.details` jsonb
-blob (no schema break) and its own section to `MissionForm`. Remaining, in order:
-- **4. Scientific Objectives** — structured primary/secondary objectives, tech
-  demos, questions, significance (add + drag-reorder).
+time.** Features 1–4 (Enhanced Mission Identity, Rich Classification,
+Professional Specifications, Scientific Objectives) shipped (see §2). The model
+is built to grow: each remaining feature adds its own namespaced key to the
+`missions.details` jsonb blob (no schema break) and its own section to
+`MissionForm`. Remaining, in order:
 - **5. Advanced Timeline** — richer per-event fields, drag-reorder,
   expand/collapse, duplicate, colour-coded types, date validation (the current
   `timeline` jsonb shape is extended additively).

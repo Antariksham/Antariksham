@@ -147,6 +147,22 @@ export interface MissionSpecifications {
 }
 
 /**
+ * Scientific Objectives (Phase 1, Feature 4).
+ *
+ * Stored in `missions.details.objectives` — the structured expansion of a
+ * mission's science goals. The single PRIMARY objective stays in
+ * `identity.objective` (Feature 1, the single source of truth); this holds the
+ * structured extras. Each list is ordered (editors reorder via drag-and-drop).
+ */
+export interface MissionObjectives {
+  secondary:           string[]
+  technologyDemos:     string[]
+  scientificQuestions: string[]
+  expectedDiscoveries: string[]
+  significance:        string
+}
+
+/**
  * The full, extensible `missions.details` payload. Each Phase 1 feature owns
  * one namespaced key. Every key is optional so the model can grow without a
  * schema change or a backward-compat break.
@@ -155,6 +171,7 @@ export interface MissionDetails {
   identity?:       MissionIdentity
   classification?: MissionClassification
   specifications?: MissionSpecifications
+  objectives?:     MissionObjectives
 }
 
 export interface Mission {
@@ -181,6 +198,8 @@ export interface Mission {
   collaborators:  MissionCollaborator[]
   /** Professional specifications (Feature 3). Always present; empty for legacy. */
   specifications: MissionSpecifications
+  /** Structured scientific objectives (Feature 4). Always present; empty for legacy. */
+  objectives:     MissionObjectives
   createdAt:     string
   updatedAt:     string
   // i18n — language actually served (falls back to 'en') + every language it
