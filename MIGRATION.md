@@ -408,13 +408,15 @@ collection when Supabase env vars are absent — unrelated to app code).
   - **Scales to millions (done)**: search / filter / sort / paging now run in the
     **database** — `getAdminArticles(AdminArticleQuery)` builds the whole query
     server-side and returns one capped batch (`MAX_PER_PAGE = 100`), behind the
-    admin-authed `app/api/admin/articles/list`. The browser loads the first batch
-    (SSR snapshot) and **infinite-scrolls** the rest (`IntersectionObserver` →
-    fetch + append the next batch), so a single API call never returns more than
-    `perPage` rows regardless of corpus size — Supabase's per-request row ceiling
-    is never approached. Category / tag / author are single-value DB filters
-    (join-safe, exact counts); text search matches title + slug. `getFormOptions`
-    is capped too. Multi-select / bulk / CSV operate on the loaded batches.
+    admin-authed `app/api/admin/articles/list`. The page is **fully client-rendered**
+    (no SEO behind admin auth): a static shell, then `ArticleBrowser` fetches its
+    filter options (`app/api/admin/articles/options`) and first batch on mount and
+    **infinite-scrolls** the rest (`IntersectionObserver` → fetch + append the next
+    batch). A single API call never returns more than `perPage` rows regardless of
+    corpus size — Supabase's per-request row ceiling is never approached. Category /
+    tag / author are single-value DB filters (join-safe, exact counts); text search
+    matches title + slug. `getFormOptions` is capped too. Multi-select / bulk / CSV
+    operate on the loaded batches.
   - **Known follow-ups**: bulk / CSV act on the rows loaded so far — a
     "select-all-matching" that applies a bulk action by *filter* server-side (no
     id list) is the next step; facet chips show options without live counts

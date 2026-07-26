@@ -69,39 +69,46 @@ function isActive(f: BrowseFilters): boolean {
  * batch — the corpus can be millions of rows and the panel still stays light.
  * Multi-select + bulk actions operate on the rows loaded so far.
  */
-export function ArticleBrowser({
-  initialRows, initialTotal, perPage, categories, tags, authors,
-}: {
-  initialRows:  SearchableArticle[]
-  initialTotal: number
-  perPage:      number
-  categories:   Opt[]
-  tags:         Opt[]
-  authors:      Opt[]
-}) {
+export function ArticleBrowser({ perPage }: { perPage: number }) {
   const router = useRouter()
-  const [rows, setRows] = useState<SearchableArticle[]>(initialRows)
-  const [total, setTotal] = useState(initialTotal)
+  const [rows, setRows] = useState<SearchableArticle[]>([])
+  const [total, setTotal] = useState(0)
+  const [formOptions, setFormOptions] = useState<{ categories: Opt[]; tags: Opt[]; authors: Opt[] }>({ categories: [], tags: [], authors: [] })
   const [filters, setFilters] = useState<BrowseFilters>(emptyFilters)
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [showFilters, setShowFilters] = useState(false)
   const [presets, setPresets] = useState<SavedFilter<BrowseFilters>[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
 
   // Refs the IntersectionObserver reads without re-subscribing on every render.
   const pageRef    = useRef(1)          // highest batch (page) loaded
   const loadingRef = useRef(false)
-  const rowsRef    = useRef(initialRows)
-  const totalRef   = useRef(initialTotal)
+  const rowsRef    = useRef<SearchableArticle[]>([])
+  const totalRef   = useRef(0)
   const abortRef   = useRef<AbortController | null>(null)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => { rowsRef.current = rows }, [rows])
   useEffect(() => { totalRef.current = total }, [total])
 
   useEffect(() => { setPresets(loadSavedFilters<BrowseFilters>()) }, [])
+
+  // Filter options (categories / tags / authors) — fetched client-side once.
+  useEffect(() => {
+    fetch('/api/admin/articles/options')
+      .then(r => (r.ok ? r.json() : null))
+      .then((d: { categories?: Opt[]; tags?: Opt[]; authors?: Opt[] } | null) => {
+        if (!d) return
+        setFormOptions({
+          categories: (d.categories || []).map(c => ({ id: c.id, name: c.name })),
+          tags:       (d.tags || []).map(t => ({ id: t.id, name: t.name })),
+          authors:    (d.authors || []).map(a => ({ id: a.id, name: a.name })),
+        })
+      })
+      .catch(() => { /* non-fatal — filters just show fewer options */ })
+  }, [])
 
   // Debounce the free-text query.
   useEffect(() => {
@@ -152,11 +159,9 @@ export function ArticleBrowser({
       .finally(() => { if (!ctrl.signal.aborted) { setLoading(false); loadingRef.current = false } })
   }, [buildQuery])
 
-  // Reset to the first batch whenever the query or a filter changes (not on the
-  // initial mount — the server already provided batch 1).
-  const firstRun = useRef(true)
+  // Load the first batch on mount, and reset to it whenever the query or a
+  // filter changes (fully client-side — no SSR data).
   useEffect(() => {
-    if (firstRun.current) { firstRun.current = false; return }
     pageRef.current = 1
     setSelected(new Set())
     loadPage(1, true)
@@ -263,9 +268,9 @@ export function ArticleBrowser({
         <div className="ab-filters">
           <ChipRow label="Status" options={STATUS_OPTS.map(s => ({ value: s, label: s }))} selected={filters.status === 'all' ? null : filters.status} onPick={v => single('status', v as ArticleStatus)} />
           <ChipRow label="Type" options={TYPE_OPTS} selected={filters.type === 'all' ? null : filters.type} onPick={v => single('type', v as ArticleType)} />
-          <ChipRow label="Category" options={categories.map(c => ({ value: c.id, label: c.name }))} selected={filters.categoryId} onPick={v => single('categoryId', v)} />
-          <ChipRow label="Tag" options={tags.map(t => ({ value: t.id, label: t.name }))} selected={filters.tagId} onPick={v => single('tagId', v)} />
-          <ChipRow label="Author" options={authors.map(a => ({ value: a.id, label: a.name }))} selected={filters.authorId} onPick={v => single('authorId', v)} />
+          <ChipRow label="Category" options={formOptions.categories.map(c => ({ value: c.id, label: c.name }))} selected={filters.categoryId} onPick={v => single('categoryId', v)} />
+          <ChipRow label="Tag" options={formOptions.tags.map(t => ({ value: t.id, label: t.name }))} selected={filters.tagId} onPick={v => single('tagId', v)} />
+          <ChipRow label="Author" options={formOptions.authors.map(a => ({ value: a.id, label: a.name }))} selected={filters.authorId} onPick={v => single('authorId', v)} />
 
           <div className="ab-frow">
             <span className="ab-flabel">Metrics</span>
@@ -302,9 +307,9 @@ export function ArticleBrowser({
           <button onClick={() => runBulk('status', 'published')} disabled={busy}><CheckCircle size={13} /> Publish</button>
           <button onClick={() => runBulk('status', 'draft')} disabled={busy}><Clock size={13} /> Draft</button>
           <button onClick={() => runBulk('status', 'archived')} disabled={busy}><Archive size={13} /> Archive</button>
-          <BulkSelect label="Add category" options={categories} onPick={id => runBulk('addCategory', id)} disabled={busy} />
-          <BulkSelect label="Add tag" options={tags} onPick={id => runBulk('addTag', id)} disabled={busy} />
-          <BulkSelect label="Assign author" options={authors} onPick={id => runBulk('author', id)} disabled={busy} />
+          <BulkSelect label="Add category" options={formOptions.categories} onPick={id => runBulk('addCategory', id)} disabled={busy} />
+          <BulkSelect label="Add tag" options={formOptions.tags} onPick={id => runBulk('addTag', id)} disabled={busy} />
+          <BulkSelect label="Assign author" options={formOptions.authors} onPick={id => runBulk('author', id)} disabled={busy} />
           <button onClick={exportCsv}><Download size={13} /> Export</button>
           <button className="ab-danger" onClick={() => runBulk('delete')} disabled={busy}><Trash2 size={13} /> Delete</button>
           <button className="ab-clear" onClick={() => setSelected(new Set())}>Clear</button>
@@ -313,8 +318,10 @@ export function ArticleBrowser({
 
       {/* ── Results count ── */}
       <p className="ab-count">
-        {total.toLocaleString()} result{total !== 1 ? 's' : ''}
-        <span className="ab-count-sub"> · {rows.length.toLocaleString()} loaded</span>
+        {loading && rows.length === 0
+          ? 'Loading…'
+          : <>{total.toLocaleString()} result{total !== 1 ? 's' : ''}
+              <span className="ab-count-sub"> · {rows.length.toLocaleString()} loaded</span></>}
       </p>
 
       {/* ── Table ── */}

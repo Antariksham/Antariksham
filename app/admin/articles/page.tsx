@@ -1,23 +1,14 @@
-import Link                    from 'next/link'
-import { getAdminArticles, getFormOptions } from '@/modules/admin/services/adminArticles'
-import { ArticleBrowser }       from '@/modules/admin/search/ArticleBrowser'
-import { Plus }                 from 'lucide-react'
+import Link              from 'next/link'
+import { ArticleBrowser } from '@/modules/admin/search/ArticleBrowser'
+import { Plus }           from 'lucide-react'
 
-export const revalidate = 0
+// Client-rendered list: the page is just a static shell (no server data fetch,
+// no SEO to worry about behind admin auth). The Article Browser fetches its
+// first batch + filter options on mount and infinite-scrolls the rest, one
+// capped batch per API call — so this route stays fast at any corpus size.
+const PER_PAGE = 30
 
-// The Article Browser (Feature 8) runs search / filter / sort / pagination in
-// the database, so we only load the first page here (SSR snapshot); the browser
-// refetches a single page at a time from /api/admin/articles/list. This keeps
-// the page fast no matter how large the library grows.
-const PER_PAGE = 25
-
-export default async function AdminArticlesPage() {
-  const [first, options] = await Promise.all([
-    getAdminArticles({ page: 1, perPage: PER_PAGE, status: 'all' }),
-    getFormOptions(),
-  ])
-  const { rows, total } = first
-
+export default function AdminArticlesPage() {
   return (
     <div style={{ maxWidth: '1080px' }}>
 
@@ -31,7 +22,7 @@ export default async function AdminArticlesPage() {
             Articles
           </h1>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'rgba(var(--ink),0.82)', margin: '4px 0 0', letterSpacing: '0.06em' }}>
-            {total.toLocaleString()} article{total !== 1 ? 's' : ''} total
+            Search, filter &amp; manage your stories
           </p>
         </div>
 
@@ -51,14 +42,7 @@ export default async function AdminArticlesPage() {
         </Link>
       </div>
 
-      <ArticleBrowser
-        initialRows={rows}
-        initialTotal={total}
-        perPage={PER_PAGE}
-        categories={options.categories.map(c => ({ id: c.id, name: c.name }))}
-        tags={options.tags.map(t => ({ id: t.id, name: t.name }))}
-        authors={options.authors}
-      />
+      <ArticleBrowser perPage={PER_PAGE} />
     </div>
   )
 }
