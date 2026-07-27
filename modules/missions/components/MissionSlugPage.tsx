@@ -71,6 +71,11 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
     : ''
   const launchTarget = launchTargetTimestamp(mission.launchDate || '', launch)
   const showCountdown = launch.countdown && launchTarget != null
+
+  // Media (Feature 7)
+  const media = mission.media
+  const galleryImages = [...media.gallery, ...media.infographics, ...media.animations]
+  const hasMediaSection = !!media.banner.url || galleryImages.length > 0 || media.videos.length > 0 || media.documents.length > 0
   return (
     <div lang={lang} style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
 
@@ -79,7 +84,8 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         <div style={{ width: '100%', height: 'clamp(240px,40vw,480px)', overflow: 'hidden', position: 'relative' }}>
           <img
             src={mission.featuredImage}
-            alt={mission.name}
+            alt={media.hero.alt || mission.name}
+            loading="eager"
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
           {/* Gradient fade to black at bottom */}
@@ -89,6 +95,19 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
 
       {/* ── Main content column ─────────────────────── */}
       <article style={{ maxWidth: '800px', margin: '0 auto', padding: 'clamp(32px,6vw,64px) clamp(20px,5vw,40px)' }}>
+
+        {/* Mission patch — floats top-right, text wraps around it */}
+        {media.patch.url && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={media.patch.url}
+            alt={media.patch.alt || `${mission.name} mission patch`}
+            loading="lazy"
+            decoding="async"
+            style={{ float: 'right', width: 'clamp(72px,14vw,112px)', height: 'auto', marginLeft: '20px', marginBottom: '12px' }}
+            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        )}
 
         {/* Language switch — only shows when a translation exists */}
         <LanguageToggle current={mission.language} available={mission.availableLanguages} hrefFor={c => sectionHref('missions', mission.slug, c)} />
@@ -297,6 +316,57 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
           </div>
         )}
 
+        {/* ── Mission media ────────────────────────── */}
+        {hasMediaSection && (
+          <div style={{ marginBottom: '56px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '24px' }}>
+              Mission Media
+            </span>
+
+            {media.banner.url && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={media.banner.url} alt={media.banner.alt || `${mission.name} banner`} loading="lazy" decoding="async" style={{ width: '100%', borderRadius: '10px', marginBottom: '20px', display: 'block' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            )}
+
+            {galleryImages.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: media.videos.length || media.documents.length ? '24px' : 0 }}>
+                {galleryImages.map((img, i) => (
+                  <figure key={i} style={{ margin: 0 }}>
+                    <a href={img.sourceUrl || img.url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', borderRadius: '8px', overflow: 'hidden', background: 'var(--surface)', border: '1px solid rgba(var(--ink),0.08)', aspectRatio: '4/3' }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img.url} alt={img.alt || img.caption || `${mission.name} image ${i + 1}`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { (e.target as HTMLImageElement).style.visibility = 'hidden' }} />
+                    </a>
+                    {(img.caption || img.credit) && (
+                      <figcaption style={{ marginTop: '6px', fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', lineHeight: 1.4 }}>
+                        {img.caption}{img.caption && img.credit ? ' · ' : ''}
+                        {img.credit && <span style={{ color: 'rgba(var(--ink),0.45)' }}>{img.credit}</span>}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            )}
+
+            {media.videos.length > 0 && (
+              <div style={{ marginBottom: media.documents.length ? '16px' : 0 }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '10px' }}>Videos</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {media.videos.map((v, i) => <MissionLink key={i} href={v.url}>▶ {v.caption || 'Watch video'} ↗</MissionLink>)}
+                </div>
+              </div>
+            )}
+
+            {media.documents.length > 0 && (
+              <div>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '10px' }}>Documents</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {media.documents.map((d, i) => <MissionLink key={i} href={d.url}>▤ {d.caption || 'Document'} ↧</MissionLink>)}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── Timeline ─────────────────────────────── */}
         {mission.timeline && mission.timeline.length > 0 && (
           <div style={{ marginBottom: '56px' }}>
@@ -377,6 +447,10 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', display: 'block', marginBottom: '12px' }}>
               Mission Agency
             </span>
+            {media.agencyLogo.url && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={media.agencyLogo.url} alt={media.agencyLogo.alt || `${mission.agency.name} logo`} loading="lazy" style={{ height: '40px', width: 'auto', marginBottom: '12px', display: 'block' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            )}
             <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '22px', fontWeight: 400, color: 'var(--white)', margin: '0 0 8px' }}>
               {mission.agency.name}
             </h3>

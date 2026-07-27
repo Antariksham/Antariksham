@@ -3,22 +3,23 @@
 import { useState, useMemo } from 'react'
 import { useRouter }  from 'next/navigation'
 import { slugify }    from '@/lib/utils'
-import type { MissionTimeline, MissionIdentity, MissionClassification, MissionSpecifications, MissionObjectives, MissionLaunch } from '@/types/mission'
+import type { MissionTimeline, MissionIdentity, MissionClassification, MissionSpecifications, MissionObjectives, MissionLaunch, MissionMedia } from '@/types/mission'
 import type { AdminMissionFull, AgencyOption } from '@/modules/admin/services/adminMissions'
 import { Save, Globe, AlertCircle, Info } from 'lucide-react'
-import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { TranslationEditor } from '@/modules/admin/components/TranslationEditor'
 import { MissionClassificationFields, StatusSelect } from '@/modules/admin/components/MissionClassificationFields'
 import { MissionSpecificationsFields } from '@/modules/admin/components/MissionSpecificationsFields'
 import { MissionObjectivesFields } from '@/modules/admin/components/MissionObjectivesFields'
 import { MissionTimelineBuilder } from '@/modules/admin/components/MissionTimelineBuilder'
 import { MissionLaunchFields } from '@/modules/admin/components/MissionLaunchFields'
+import { MissionMediaFields } from '@/modules/admin/components/MissionMediaFields'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 import { emptyIdentity } from '@/modules/missions/services/missionIdentity'
 import { emptyClassification } from '@/modules/missions/services/missionClassification'
 import { emptySpecifications, validateSpecifications } from '@/modules/missions/services/missionSpecifications'
 import { emptyObjectives, validateObjectives } from '@/modules/missions/services/missionObjectives'
 import { emptyLaunch, validateLaunch } from '@/modules/missions/services/missionLaunch'
+import { emptyMedia, validateMedia } from '@/modules/missions/services/missionMedia'
 import {
   validateMission, hasBlockingErrors, errorsOnly, issueForField, coerceUrl,
   MISSION_LIMITS, type FieldIssue,
@@ -33,12 +34,11 @@ interface FormState {
   specifications:   MissionSpecifications
   objectives:       MissionObjectives
   launch:           MissionLaunch
+  media:            MissionMedia
   agencyId:         string
   launchDate:       string
-  featuredImage:    string
   featured:         boolean
   timeline:         MissionTimeline[]
-  _showMediaPicker: boolean
 }
 
 interface Props {
@@ -59,12 +59,11 @@ export function MissionForm({ mode, mission, agencies }: Props) {
     specifications:   mission?.specifications || emptySpecifications(),
     objectives:       mission?.objectives    || emptyObjectives(),
     launch:           mission?.launch        || emptyLaunch(),
+    media:            mission?.media         || emptyMedia(),
     agencyId:         mission?.agencyId      || '',
     launchDate:       mission?.launchDate    || '',
-    featuredImage:    mission?.featuredImage || '',
     featured:         mission?.featured      || false,
     timeline:         mission?.timeline      || [],
-    _showMediaPicker: false,
   })
 
   const [saving,     setSaving]     = useState(false)
@@ -82,8 +81,9 @@ export function MissionForm({ mode, mission, agencies }: Props) {
       ...validateSpecifications(form.specifications),
       ...validateObjectives(form.objectives),
       ...validateLaunch(form.launch, form.launchDate),
+      ...validateMedia(form.media),
     ],
-    [form.name, form.slug, form.description, form.identity, form.specifications, form.objectives, form.launch, form.launchDate],
+    [form.name, form.slug, form.description, form.identity, form.specifications, form.objectives, form.launch, form.launchDate, form.media],
   )
   // Field-level errors are shown only after a save attempt (no nagging while
   // typing); URL-format errors show live because they're immediately useful.
@@ -136,7 +136,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
     const payload = {
       ...form,
       identity,
-      featuredImage: form.featuredImage || null,
+      featuredImage: form.media.hero.url || null, // hero image is the featured image (Feature 7)
       agencyId:      form.agencyId      || null,
       launchDate:    form.launchDate     || null,
     }
@@ -389,72 +389,11 @@ export function MissionForm({ mode, mission, agencies }: Props) {
           primaryObjective={form.identity.objective}
         />
 
-        <GroupHeading hint="Imagery for cards and the mission hero.">
-          Media
+        <GroupHeading hint="Hero, patch, logos, gallery, videos and documents — each with alt text, caption, credit and licensing.">
+          Mission Media
         </GroupHeading>
 
-        {/* Featured image */}
-        <div>
-          <FieldLabel hint="Upload via Media Library or paste a URL directly">Featured Image</FieldLabel>
-
-          {/* URL input + Media Library picker toggle */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
-            <input
-              value={form.featuredImage}
-              onChange={e => set('featuredImage', e.target.value)}
-              placeholder="https://… or pick from Media Library →"
-              style={{ ...inputStyle({}), flex: 1 }}
-            />
-            <button
-              type="button"
-              onClick={() => set('_showMediaPicker', !form._showMediaPicker)}
-              style={{
-                flexShrink:    0,
-                padding:       '0 14px',
-                background:    form._showMediaPicker ? 'var(--accent)' : 'rgba(var(--ink),0.05)',
-                border:        '1px solid',
-                borderColor:   form._showMediaPicker ? 'var(--accent)' : 'rgba(var(--ink),0.12)',
-                borderRadius:  '6px',
-                color:         form._showMediaPicker ? 'var(--black)' : 'rgba(var(--ink),0.9)',
-                fontFamily:    'var(--font-mono)',
-                fontSize: '13px',
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                cursor:        'pointer',
-                whiteSpace:    'nowrap',
-                transition:    'all 0.15s',
-              }}
-            >
-              {form._showMediaPicker ? '✕ Close' : '📁 Browse'}
-            </button>
-          </div>
-
-          {/* Inline media picker */}
-          {form._showMediaPicker && (
-            <div style={{ marginTop: '12px', padding: '20px', background: 'rgba(var(--ink),0.02)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-              <MediaLibrary
-                pickerMode
-                defaultBucket="mission-images"
-                onPick={url => {
-                  set('featuredImage', url)
-                  set('_showMediaPicker', false)
-                }}
-              />
-            </div>
-          )}
-
-          {/* Image preview */}
-          {form.featuredImage && !form._showMediaPicker && (
-            <div style={{ marginTop: '10px', borderRadius: '8px', overflow: 'hidden', aspectRatio: '16/5', background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <img
-                src={form.featuredImage}
-                alt="preview"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-              />
-            </div>
-          )}
-        </div>
+        <MissionMediaFields value={form.media} onChange={m => set('media', m)} />
 
         <GroupHeading hint="Official references. Bare domains are fine — we'll add https:// for you.">
           Links &amp; References

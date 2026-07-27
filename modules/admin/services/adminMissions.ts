@@ -4,7 +4,7 @@ import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adm
 import type {
   MissionStatus, MissionType, MissionTimeline, MissionIdentity,
   MissionClassification, MissionDetails, MissionSpecifications, MissionObjectives,
-  MissionLaunch,
+  MissionLaunch, MissionMedia,
 } from '@/types/mission'
 import {
   emptyIdentity, identityFromDetails, buildMissionDetails,
@@ -24,6 +24,9 @@ import { normalizeTimeline } from '@/modules/missions/services/missionTimeline'
 import {
   emptyLaunch, launchFromDetails, normalizeLaunch, isLaunchEmpty,
 } from '@/modules/missions/services/missionLaunch'
+import {
+  emptyMedia, effectiveMedia, normalizeMedia, isMediaEmpty,
+} from '@/modules/missions/services/missionMedia'
 
 // Detects "column missions.details does not exist" so the editor keeps working
 // before migration 20260726140000_mission_details.sql has been applied.
@@ -96,6 +99,8 @@ export interface AdminMissionFull {
   objectives: MissionObjectives
   /** Launch information (Feature 6); empty for legacy. */
   launch: MissionLaunch
+  /** Enhanced media (Feature 7); hero seeded from featured_image. */
+  media: MissionMedia
 }
 
 export async function getAdminMissionById(id: string): Promise<AdminMissionFull | null> {
@@ -131,6 +136,7 @@ export async function getAdminMissionById(id: string): Promise<AdminMissionFull 
     specifications: specificationsFromDetails(data.details),
     objectives: objectivesFromDetails(data.details),
     launch: launchFromDetails(data.details),
+    media: effectiveMedia(data.details, data.featured_image || null),
   }
 }
 
@@ -149,6 +155,8 @@ export interface MissionPayload {
   objectives: MissionObjectives
   /** Launch information (Feature 6). */
   launch: MissionLaunch
+  /** Enhanced media (Feature 7). */
+  media: MissionMedia
 }
 
 // Columns common to insert + update. The base status/mission_type/destination
@@ -157,12 +165,15 @@ export interface MissionPayload {
 // can retry without it when the migration hasn't been applied.
 function baseMissionColumns(p: MissionPayload) {
   const base = classificationToBaseColumns(p.classification || emptyClassification())
+  // The base `featured_image` mirrors the hero image (Feature 7) — single source
+  // of truth for cards + the hero — falling back to any legacy featuredImage.
+  const heroUrl = normalizeMedia(p.media || emptyMedia()).hero.url
   return {
     name: p.name, slug: p.slug, description: p.description,
     agency_id: p.agencyId || null,
     status: base.status, mission_type: base.missionType,
     destination: base.destination || null, launch_date: p.launchDate || null,
-    featured_image: p.featuredImage || null, featured: p.featured,
+    featured_image: (heroUrl || p.featuredImage) || null, featured: p.featured,
     timeline: normalizeTimeline(p.timeline),
   }
 }
@@ -185,6 +196,9 @@ function buildDetails(p: MissionPayload): MissionDetails {
   // Launch information (Feature 6).
   const launch = normalizeLaunch(p.launch || emptyLaunch())
   if (!isLaunchEmpty(launch)) details.launch = launch
+  // Enhanced media (Feature 7).
+  const media = normalizeMedia(p.media || emptyMedia())
+  if (!isMediaEmpty(media)) details.media = media
   return details
 }
 

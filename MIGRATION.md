@@ -712,11 +712,43 @@ collection when Supabase env vars are absent — unrelated to app code).
     the API (which validates it). No new migration (reuses `details` +
     `launch_date`).
 
+- ✅ **Mission Management System — Enhanced Media Management (Phase 1,
+  Feature 7)** — media beyond a single featured image, each asset with
+  newsroom-grade metadata. Additive + backward compatible. Branch
+  `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model + validation** (`missionMedia.ts`, pure/tested): `details.media`
+    holds single slots (**hero, patch, logo, agency logo, banner**) and list
+    slots (**gallery, infographics, animations, videos, documents**). Every
+    asset is a `MediaItem` (url + **alt, caption, credit, photographer, agency,
+    source URL, copyright, license**). The **hero mirrors the base
+    `featured_image` column** (single source of truth for cards + hero):
+    `effectiveMedia` seeds the hero URL from `featured_image` on read, and
+    `baseMissionColumns` writes `featured_image` back from `media.hero.url`.
+    URL-less list items are dropped; co-located `validateMedia` blocks invalid
+    asset/source URLs. Only stored when non-empty. 10 zero-dep `node:test` cases
+    (88 total across the mission modules).
+  - **Editor** (`MissionMediaFields`): replaces the single featured-image field
+    with a full media section — single slots and add/reorder/remove list slots,
+    each with a Media Library picker + a collapsible **Details & credits** panel
+    (the 8 metadata fields). Images preview inline.
+  - **Public** (`MissionSlugPage`): the **mission patch** floats by the title,
+    the **agency logo** shows in the agency card, and a **Mission Media** section
+    renders the banner, a responsive **gallery grid** (gallery + infographics +
+    animations, with captions/credits, linking to the source), and **video** +
+    **document** links. All images use `loading="lazy"` + `decoding="async"`.
+  - **Optimisation**: automatic compression / responsive / **WebP + AVIF**
+    delivery is provided by the existing **Cloudinary** media provider (the
+    Media Library's Cloudinary tab) rather than reimplemented here; this feature
+    adds lazy-loading, URL validation, and graceful `onError` hiding. Build-time
+    blur placeholders would need `next/image` or a loader (a documented
+    follow-up). No new migration (reuses `details` + `featured_image`).
+
 **Not yet done:** All 8 Phase 2 features are complete. The Mission Management
-System upgrade is in progress — Features 1–6 (Enhanced Identity, Rich
+System upgrade is in progress — Features 1–7 (Enhanced Identity, Rich
 Classification, Professional Specifications, Scientific Objectives, Advanced
-Timeline, Improved Launch Information) shipped; Features 7–8 remain (see §10).
-Also remaining: Phases 3–4 of the plan, and the polish items in §10.
+Timeline, Improved Launch Information, Enhanced Media) shipped; **Feature 8
+(Completeness & Validation) remains** (see §10). Also remaining: Phases 3–4 of
+the plan, and the polish items in §10.
 
 ---
 
@@ -902,16 +934,14 @@ bad migration is a one-line revert.
 ## 10. Remaining work / roadmap
 
 **Mission Management System upgrade (Phase 1) — in progress, one feature at a
-time.** Features 1–6 (Enhanced Mission Identity, Rich Classification,
+time.** Features 1–7 (Enhanced Mission Identity, Rich Classification,
 Professional Specifications, Scientific Objectives, Advanced Timeline, Improved
-Launch Information) shipped (see §2). The model is built to grow: each remaining
-feature adds its own namespaced key to the `missions.details` jsonb blob (no
-schema break) and its own section to `MissionForm`. Remaining, in order:
-- **7. Media Management** — hero/patch/logo/gallery/banner + per-image metadata
-  (alt/caption/credit/license) and optimisation.
+Launch Information, Enhanced Media) shipped (see §2). The model is built to grow:
+each remaining feature adds its own namespaced key to the `missions.details`
+jsonb blob (no schema break) and its own section to `MissionForm`. Remaining:
 - **8. Completeness & Validation** — live completeness score + checklist; this
   is where the stricter save-gating policy is formalised (the `missionValidation`
-  severity model is its foundation).
+  severity model + the per-feature `validate*` functions are its foundation).
 
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into

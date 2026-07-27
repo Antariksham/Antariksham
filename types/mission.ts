@@ -190,6 +190,44 @@ export interface MissionLaunch {
 }
 
 /**
+ * A single media asset with newsroom-grade metadata (Phase 1, Feature 7).
+ * `url` is the asset; the rest is optional attribution/licensing.
+ */
+export interface MediaItem {
+  url:          string
+  alt:          string
+  caption:      string
+  credit:       string
+  photographer: string
+  agency:       string
+  sourceUrl:    string
+  copyright:    string
+  license:      string
+}
+
+/**
+ * Enhanced Media Management (Phase 1, Feature 7).
+ *
+ * Stored in `missions.details.media`. The HERO image mirrors the base
+ * `featured_image` column (single source of truth for cards + the hero), so
+ * `media.hero.url` and `featured_image` stay in sync. Single slots are one
+ * `MediaItem`; list slots are arrays. `videos`/`documents` reuse `MediaItem`
+ * (the `url` points at the video/document; `caption` is its title).
+ */
+export interface MissionMedia {
+  hero:         MediaItem
+  patch:        MediaItem
+  logo:         MediaItem
+  agencyLogo:   MediaItem
+  banner:       MediaItem
+  gallery:      MediaItem[]
+  infographics: MediaItem[]
+  animations:   MediaItem[]
+  videos:       MediaItem[]
+  documents:    MediaItem[]
+}
+
+/**
  * The full, extensible `missions.details` payload. Each Phase 1 feature owns
  * one namespaced key. Every key is optional so the model can grow without a
  * schema change or a backward-compat break.
@@ -200,6 +238,7 @@ export interface MissionDetails {
   specifications?: MissionSpecifications
   objectives?:     MissionObjectives
   launch?:         MissionLaunch
+  media?:          MissionMedia
 }
 
 export interface Mission {
@@ -230,6 +269,8 @@ export interface Mission {
   objectives:     MissionObjectives
   /** Launch information (Feature 6). Always present; empty for legacy. */
   launch:         MissionLaunch
+  /** Enhanced media (Feature 7). Always present; hero mirrors featuredImage. */
+  media:          MissionMedia
   createdAt:     string
   updatedAt:     string
   // i18n — language actually served (falls back to 'en') + every language it

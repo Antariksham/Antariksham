@@ -29,11 +29,14 @@ import {
 import {
   normalizeLaunch, validateLaunch,
 } from '@/modules/missions/services/missionLaunch'
+import {
+  normalizeMedia, validateMedia,
+} from '@/modules/missions/services/missionMedia'
 import type { MissionClassification } from '@/types/mission'
 
 // Full validation for a mission payload: core + identity (Feature 1) +
 // specifications (Feature 3) + objectives (Feature 4) + timeline (Feature 5) +
-// launch (Feature 6). Classification is derived, always valid.
+// launch (Feature 6) + media (Feature 7). Classification is derived, always valid.
 function validateAll(payload: MissionPayload) {
   return [
     ...validateMission(payload),
@@ -41,6 +44,7 @@ function validateAll(payload: MissionPayload) {
     ...validateObjectives(payload.objectives),
     ...validateTimeline(payload.timeline),
     ...validateLaunch(payload.launch, payload.launchDate || ''),
+    ...validateMedia(payload.media),
   ]
 }
 
@@ -143,6 +147,7 @@ function buildPayload(body: any): MissionPayload {
     specifications: normalizeSpecifications(body.specifications),
     objectives:     normalizeObjectives(body.objectives),
     launch:         normalizeLaunch(body.launch),
+    media:          normalizeMedia(body.media),
   }
 }
 
