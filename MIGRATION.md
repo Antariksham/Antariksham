@@ -516,7 +516,271 @@ collection when Supabase env vars are absent — unrelated to app code).
   scrim-tap / Escape to close. `AdminSidebar` is now presentational (driven by
   props). Theme-aware CSS, `prefers-reduced-motion` respected.
 
-**Not yet done:** All 8 Phase 2 features are complete. Remaining: Phases 3–4 of
+- ✅ **Mission Management System — Enhanced Mission Identity (Phase 1, Feature 1)**
+  — the first step of turning the Mission module from a basic form into a
+  professional mission-management data model. Additive + fully backward
+  compatible (legacy missions untouched). Branch `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Extensible data model**: one additive, nullable **`missions.details` jsonb**
+    column (migration `20260726140000_mission_details.sql`, + `jsonb_path_ops`
+    GIN index) namespaced by feature — `details.identity` for now, with room for
+    `classification`/`specifications`/`objectives`/`launch`/`media`. Every
+    existing top-level column (name, slug, status, mission_type, destination,
+    launch_date, agency_id, featured, featured_image, timeline, description) is
+    left alone. All read paths (`getMissionBySlug`, `getAdminMissionById`) and
+    write paths (create/update) **degrade gracefully** — they re-select / retry
+    without `details` if the migration hasn't been applied, so the core mission
+    still saves and renders (same idiom as `articles.featured_image_meta`).
+  - **New identity fields** (`MissionIdentity` in `types/mission.ts`, stored in
+    `details.identity`): short name, acronym, subtitle, summary, objective,
+    motto, official website, Wikipedia URL, press-kit URL, alias. Canonical
+    name/slug/description stay top-level columns.
+  - **Pure, tested core** (`modules/missions/services/`): `missionIdentity.ts`
+    (normalize / defaults / `buildMissionDetails` merge that preserves future
+    namespaces) and `missionValidation.ts` (URL validation + `coerceUrl`
+    bare-domain→https, character limits, required vs. recommended rules).
+    Severity model follows the spec — **errors block save, warnings allow it** —
+    and is deliberately backward compatible: only name/slug/description (which
+    every legacy mission has) and format errors (which legacy rows can't hit)
+    block; missing summary/objective are **warnings**. 20 zero-dependency
+    `node:test` cases (`missionIdentity.test.ts`, `missionValidation.test.ts`).
+  - **Editor** (`MissionForm`): the mission info section is now a grouped
+    **identity panel** (Mission Identity · Summary & Objective · Destination &
+    Media · Links & References) with live character counters, inline field
+    validation (errors after a save attempt; URL errors live), auto-`https://`
+    on blur, and a post-save **suggestions** panel that surfaces the API's
+    warnings — including a **duplicate-mission-name** check
+    (`hasDuplicateMissionName`, non-blocking; slug stays hard-unique). Auto-slug
+    from name + manual edit are preserved. Matches the existing CMS design
+    language (tokens, font-mono labels, both themes).
+  - **API** (`/api/admin/missions`): shared `validateMission` gates POST/PATCH
+    (400 on blocking errors), coerces URL fields, and returns non-blocking
+    `warnings[]`.
+  - **Public mission page** (`MissionSlugPage`): additively renders acronym chip,
+    subtitle, motto, a **summary lead** paragraph, a primary-objective callout,
+    and official website / Wikipedia / press-kit links — all conditional, so
+    legacy missions look exactly as before. Mission metadata now prefers the
+    concise **summary** for the meta/OG description (falls back to description).
+  - **Run migration `20260726140000_mission_details.sql`.** Remaining Phase 1
+    features (2–8: classification, specifications, scientific objectives,
+    advanced timeline, launch info, media management, completeness/validation)
+    are queued — built one at a time.
+
+- ✅ **Mission Management System — Rich Mission Classification (Phase 1, Feature 2)**
+  — replaces the single status / type / destination / agency with a professional
+  classification system. Additive + fully backward compatible. Branch
+  `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Safe "primary projection" model** (no schema change, no enum risk): the
+    base `status`, `mission_type`, `destination` and `agency_id` columns stay the
+    canonical primaries that power every existing filter, card and join — they
+    only ever receive a LEGACY value. The full richness lives in
+    `details.classification`. `missionClassification.ts` owns the taxonomy AND
+    the mapping (extended→legacy projection, legacy→extended fallback), so the
+    feature is safe whether those columns are Postgres enums or plain text. 14
+    zero-dep `node:test` cases.
+  - **Status** — 15-stage lifecycle (Concept → Planning → Testing → Awaiting
+    Launch → Launch Window Open → Upcoming → Active → Cruise → Orbiting →
+    Landing → Surface Operations → Extended Mission → Completed → Failed →
+    Cancelled), grouped Pre-Launch / In Flight / Concluded, each with a
+    theme-safe colored indicator. The base `status` column stores the legacy
+    rollup (e.g. *Cruise* → `active`), so the existing `/missions` status tabs
+    keep working and even get more accurate. Legacy `in-development` ↔ `planning`
+    round-trips.
+  - **Mission Type** — multi-select over ~21 tags (Human Spaceflight, Robotic,
+    Orbiter, Flyby, Lander, Rover, Helicopter, Space Telescope, Space Station,
+    Sample Return, CubeSat, Cargo, Crewed, Tech Demo, Planetary Science, Earth
+    Observation, Communications, Navigation, Astronomy, Deep Space, Experimental).
+    The first selected is the primary (→ `mission_type` column).
+  - **Destination** — searchable multi-select with 18 suggestions + free-form
+    custom entries; first is primary (→ `destination` column).
+  - **Space Agencies** — primary agency (→ `agency_id`) plus role-based
+    multi-select for **Partner Agencies / Commercial Partners / Scientific
+    Institutions** (arrays of `space_agencies` ids in `details.classification`).
+    The public page resolves + renders them grouped by role.
+  - **Editor**: new reusable `MissionClassificationFields` (type chips, a
+    searchable `TokenField` for destinations + agency roles) in a "Mission
+    Classification" group; the sidebar Status is now a grouped `StatusSelect`.
+    All controlled + keyboard accessible; matches the CMS design language.
+  - **Public + services**: `StatusBadge` now renders any status via the shared
+    taxonomy (legacy on cards, extended on detail). `getMissionBySlug` resolves
+    collaborator agencies; the mission detail page shows the extended status,
+    multiple types, multiple destinations and a Partners & Collaborators section.
+    `MissionPayload` now carries `classification`; the base columns are *derived*
+    from it (single source of truth). No new migration (reuses `details`).
+
+- ✅ **Mission Management System — Professional Mission Specifications (Phase 1,
+  Feature 3)** — a dedicated engineering + programmatic spec sheet. Additive +
+  backward compatible. Branch `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model + validation** (`missionSpecifications.ts`, pure/tested): ~18 fields
+    stored in `details.specifications` — launch vehicle, spacecraft name +
+    manufacturer, launch/dry/payload mass, mission duration + expected lifetime,
+    power source + output, comms, primary/secondary payload, budget, orbit type,
+    scientific instruments (a list), mission family, program. Masses/power are
+    free strings so editors can include units; `validateSpecifications` checks
+    measurement fields read like a number (blocking), warns when dry/payload mass
+    exceeds launch mass, and enforces character limits. Only stored when
+    non-empty, so legacy rows stay clean. 11 zero-dep `node:test` cases (45
+    total across the mission modules). Validation is **co-located** in the specs
+    module (only the `FieldIssue` type crosses module lines) so the pure modules
+    never import each other at runtime — keeping the TS-stripping test runner
+    happy.
+  - **Editor** (`MissionSpecificationsFields`): a grouped "Mission
+    Specifications" section (spacecraft/programme, launch & orbit, a 3-up mass
+    row, duration & power, payload & comms, an instruments token list, budget)
+    that **reuses** the shared `SubLabel` + `TokenField` from the classification
+    component. Primary/secondary **destination are shown read-only**, derived
+    from the classification (single source of truth). Live validation feeds the
+    same save gate.
+  - **Public** (`MissionSlugPage`): a professional **spec-sheet grid** (blank
+    fields skipped) plus scientific-instrument chips. `getMissionBySlug` /
+    `getAdminMissionById` surface `specifications`; `MissionPayload` carries it;
+    the API validates it. No new migration (reuses `details`).
+
+- ✅ **Mission Management System — Scientific Objectives (Phase 1, Feature 4)** —
+  expands the single objective field into a structured set. Additive + backward
+  compatible. Branch `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model** (`missionObjectives.ts`, pure/tested): `details.objectives` holds
+    ordered lists of **secondary objectives, technology demonstrations,
+    scientific questions, expected discoveries** plus a **mission significance**
+    text. The single **primary objective stays in `identity.objective`**
+    (Feature 1 — one source of truth); the objectives editor shows it read-only
+    for context. Co-located `validateObjectives` enforces item + significance
+    length limits (blocking; legacy rows have none). Only stored when non-empty.
+    9 zero-dep `node:test` cases (54 total across the mission modules).
+  - **Reusable `ReorderableTextList`** — a controlled string-list with **both**
+    drag-and-drop (grip handle; HTML5 DnD, textarea stays selectable) **and**
+    keyboard up/down reordering (accessible), add/remove. Feeds all four lists
+    and is ready for Feature 5's timeline.
+  - **Editor** (`MissionObjectivesFields`): a "Scientific Objectives" section
+    (primary read-only reference + four reorderable lists + significance),
+    reusing `SubLabel`. Live validation feeds the same save gate.
+  - **Public** (`MissionSlugPage`): a Scientific Objectives section renders each
+    non-empty list (bulleted) + the significance paragraph, below the primary
+    objective callout. `getMissionBySlug` / `getAdminMissionById` surface
+    `objectives`; `MissionPayload` carries it; the API validates it. No new
+    migration (reuses `details`).
+
+- ✅ **Mission Management System — Advanced Timeline Management (Phase 1,
+  Feature 5)** — upgrades the simple timeline into a professional milestone
+  system. Additive + backward compatible (old `{date,title,description,
+  completed}` events normalise on load). Branch `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model + logic** (`missionTimeline.ts`, pure/tested): `MissionTimeline` is
+    extended with optional fields — detailed description, time, timezone,
+    **status** (5 stages, color-coded), location, **importance** (4 levels),
+    **event type** (17 suggested + custom), source/image/video URLs, notes, and
+    a stable `id`. `completed` is kept in sync with `status === 'completed'` so
+    old consumers still work. Includes `parseEventDate` (tolerant),
+    `sortTimelineByDate`, `duplicateDateIndexes/Values`, and co-located
+    `validateTimeline` (duplicate dates → warning; bad URLs + over-limits →
+    error). 13 zero-dep `node:test` cases (67 total across the mission modules).
+  - **Editor** (`MissionTimelineBuilder`): drag-and-drop reordering (grip
+    handle; keyboard up/down too), expand/collapse per event, duplicate + delete,
+    a one-click **Sort by date**, color-coded status + importance, a
+    **duplicate-date** warning, an event-type `datalist`, and all the rich
+    fields. Replaced the old inline builder in `MissionForm`. (Drag-reorder and
+    auto-sort are both offered — stored order is WYSIWYG on the public page.)
+  - **Public** (`MissionSlugPage`): the timeline rail now shows status-colored
+    dots, date · time · timezone, event-type + importance badges, short + detailed
+    descriptions, location, an image, and source/video links (notes stay private).
+    Timelines are normalised in both read paths (`getMissionBySlug`,
+    `getAdminMissionById`) and the API; the API validates them. No new migration
+    (`timeline` stays its own jsonb column, now with richer objects).
+
+- ✅ **Mission Management System — Improved Launch Information (Phase 1,
+  Feature 6)** — a dedicated launch section with a live countdown. Additive +
+  backward compatible. Branch `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model + validation** (`missionLaunch.ts`, pure/tested): `details.launch`
+    holds launch time, window start/end (`datetime-local`), site, pad, provider,
+    rocket, country, mission number, **launch success** (unknown/success/partial/
+    failure), livestream URL and a **countdown** flag. The launch **date reuses
+    the base `launch_date` column** (single source of truth — moved into this
+    section from the sidebar); the **press kit is shared from `identity.pressKit`**
+    (shown read-only). Co-located `validateLaunch` enforces **logical date
+    ordering** — window end ≥ start (error), launch date within the window
+    (warning) — via lexicographic `datetime-local` comparison (no fragile Date
+    maths), plus livestream-URL validation. Only stored when non-empty. 11
+    zero-dep `node:test` cases (78 total across the mission modules).
+  - **Editor** (`MissionLaunchFields`): the Launch Date + all launch fields in
+    one "Launch Information" section (native date / datetime-local pickers, a
+    success select, a countdown toggle, a read-only press-kit reference). The
+    sidebar Launch Date panel was removed (it lives here now).
+  - **Public** (`MissionSlugPage`): a Launch Information block — a success badge,
+    a **hydration-safe live `LaunchCountdown`** (renders a placeholder until
+    mount, then ticks to the window start / launch date+time), a key-value grid
+    (date, time, site, pad, provider, rocket, country, mission number), the
+    launch window, and a livestream link. `launchTargetTimestamp` picks the
+    countdown target. Wired through `getMissionBySlug` / `getAdminMissionById` /
+    the API (which validates it). No new migration (reuses `details` +
+    `launch_date`).
+
+- ✅ **Mission Management System — Enhanced Media Management (Phase 1,
+  Feature 7)** — media beyond a single featured image, each asset with
+  newsroom-grade metadata. Additive + backward compatible. Branch
+  `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model + validation** (`missionMedia.ts`, pure/tested): `details.media`
+    holds single slots (**hero, patch, logo, agency logo, banner**) and list
+    slots (**gallery, infographics, animations, videos, documents**). Every
+    asset is a `MediaItem` (url + **alt, caption, credit, photographer, agency,
+    source URL, copyright, license**). The **hero mirrors the base
+    `featured_image` column** (single source of truth for cards + hero):
+    `effectiveMedia` seeds the hero URL from `featured_image` on read, and
+    `baseMissionColumns` writes `featured_image` back from `media.hero.url`.
+    URL-less list items are dropped; co-located `validateMedia` blocks invalid
+    asset/source URLs. Only stored when non-empty. 10 zero-dep `node:test` cases
+    (88 total across the mission modules).
+  - **Editor** (`MissionMediaFields`): replaces the single featured-image field
+    with a full media section — single slots and add/reorder/remove list slots,
+    each with a Media Library picker + a collapsible **Details & credits** panel
+    (the 8 metadata fields). Images preview inline.
+  - **Public** (`MissionSlugPage`): the **mission patch** floats by the title,
+    the **agency logo** shows in the agency card, and a **Mission Media** section
+    renders the banner, a responsive **gallery grid** (gallery + infographics +
+    animations, with captions/credits, linking to the source), and **video** +
+    **document** links. All images use `loading="lazy"` + `decoding="async"`.
+  - **Optimisation**: automatic compression / responsive / **WebP + AVIF**
+    delivery is provided by the existing **Cloudinary** media provider (the
+    Media Library's Cloudinary tab) rather than reimplemented here; this feature
+    adds lazy-loading, URL validation, and graceful `onError` hiding. Build-time
+    blur placeholders would need `next/image` or a loader (a documented
+    follow-up). No new migration (reuses `details` + `featured_image`).
+
+- ✅ **Mission Management System — Mission Completeness & Validation (Phase 1,
+  Feature 8)** — the capstone: a live completeness score + a professional
+  checklist that pulls the whole system together. Branch
+  `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model** (`missionCompleteness.ts`, pure/tested): a `MissionSnapshot`
+    (mirrors the form) is evaluated against a **checklist of 13 required + 9
+    recommended** items across every feature; `evaluateCompleteness` returns each
+    item's status (✓ done / ⚠ recommended-missing / ✕ required-missing) and a
+    **weighted 0–100 score** (required fields weigh double). Checks read fields
+    inline (no runtime cross-imports). 6 zero-dep `node:test` cases (**94 total**
+    across the mission modules).
+  - **Editor** (`MissionCompletenessPanel`, in the sidebar): a big live **score**
+    + colored progress bar + "required / recommended complete" counts + the
+    **to-do checklist** (outstanding items first, "Show all" reveals the ✓ ones),
+    updating on every keystroke.
+  - **Save-gating policy — the deliberate reconciliation.** Per the master
+    prompt's "warnings allow saving; critical errors do not" **and** the hard
+    backward-compatibility requirement: the save gate blocks only on **invalid
+    data** — bad URLs, over-limit strings, illogical launch dates, missing
+    name/slug/description — via the per-feature `validate*` functions
+    (`validateAll` in the API + the form's live `issues`). **Incomplete** required
+    fields (summary, hero, timeline, launch vehicle, objective, destination,
+    primary agency, …) surface as ✕ in the checklist and lower the score but do
+    **not** block saving, so every legacy mission stays editable. (Flipping any
+    required item to hard-blocking is a one-line change in the checklist/gate if
+    a stricter policy is ever wanted.) No new migration.
+
+**Mission Management System upgrade (Phase 1) — COMPLETE.** All 8 features
+shipped (Enhanced Identity, Rich Classification, Professional Specifications,
+Scientific Objectives, Advanced Timeline, Improved Launch Information, Enhanced
+Media, Completeness & Validation) — see §2. The Mission module is now a
+structured, extensible, professional mission-management data model on a single
+additive `missions.details` jsonb column (+ the base columns it keeps in sync),
+94 zero-dependency unit tests, and a fully backward-compatible editor + public
+experience.
+
+**Not yet done:** All 8 Phase 2 features are complete. The Phase 1 Mission
+Management System upgrade is complete (all 8 features). Remaining: Phases 3–4 of
 the plan, and the polish items in §10.
 
 ---
@@ -701,6 +965,21 @@ bad migration is a one-line revert.
 ---
 
 ## 10. Remaining work / roadmap
+
+**Mission Management System upgrade (Phase 1) — COMPLETE (all 8 features, see
+§2).** The Mission module is now a professional, extensible data model. Natural
+follow-ups (not required, but where the foundation is ready):
+- **Completeness in the admin list** — show each mission's completeness % in
+  `/admin/missions` (needs the list query to fetch `details`; the pure
+  `evaluateCompleteness` is ready).
+- **Media blur placeholders / build-time optimisation** — today optimisation is
+  delegated to the Cloudinary provider + lazy-loading; true blur placeholders
+  need `next/image` or a loader.
+- **Translate the new structured fields** — mission translations still cover
+  name + description only; identity/objectives/timeline text could be added to
+  the `mission_translations` model without a schema change.
+- **Public API / analytics / launches-integration** — the structured model is
+  now ready to power those (the original goal of Phase 1).
 
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into

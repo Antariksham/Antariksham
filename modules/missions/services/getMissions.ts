@@ -1,7 +1,24 @@
 import { cache } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { Mission, MissionCard, MissionStatus, MissionType } from '@/types/mission'
+import type {
+  Mission, MissionCard, MissionStatus, MissionType,
+  MissionCollaborator, CollaboratorRole, AgencyRef,
+} from '@/types/mission'
+import { identityFromDetails } from './missionIdentity'
+import { effectiveClassification } from './missionClassification'
+import { specificationsFromDetails } from './missionSpecifications'
+import { objectivesFromDetails } from './missionObjectives'
+import { normalizeTimeline } from './missionTimeline'
+import { launchFromDetails } from './missionLaunch'
+import { effectiveMedia } from './missionMedia'
 import { DEFAULT_LANGUAGE, isLanguageCode, type LanguageCode } from '@/lib/i18n'
+
+// Detects "column missions.details does not exist" so the public mission page
+// keeps rendering before migration 20260726140000_mission_details.sql is applied.
+function isMissingDetailsColumn(error: any): boolean {
+  const msg = (error?.message || '').toLowerCase()
+  return msg.includes('details') && (msg.includes('does not exist') || msg.includes('column') || error?.code === '42703')
+}
 
 interface MissionTranslation { language_code: string; name: string; description: string | null }
 
@@ -24,12 +41,13 @@ const MISSION_CARD_SELECT = `
   space_agencies ( name, short_name )
 `
 
-const MISSION_FULL_SELECT = `
+const MISSION_FULL_SELECT_BASE = `
   id, name, slug, description, status, launch_date,
   mission_type, featured_image, destination, featured,
   timeline, created_at, updated_at, agency_id,
   space_agencies ( id, name, slug, short_name, country, logo_url, description, website_url )
 `
+const MISSION_FULL_SELECT = `${MISSION_FULL_SELECT_BASE}, details`
 
 export async function getMissions({
   page    = 1,
@@ -118,17 +136,64 @@ export const getMissionBySlug = cache(async (
   slug: string,
   lang: LanguageCode = DEFAULT_LANGUAGE,
 ): Promise<Mission | null> => {
-  const { data, error } = await supabase
+  let { data, error }: { data: any; error: any } = await supabase
     .from('missions')
     .select(MISSION_FULL_SELECT)
     .eq('slug', slug)
     .single()
 
+  // Degrade gracefully if the details migration hasn't been applied yet.
+  if (error && isMissingDetailsColumn(error)) {
+    ({ data, error } = await supabase.from('missions').select(MISSION_FULL_SELECT_BASE).eq('slug', slug).single())
+  }
+
   if (error || !data) return null
 
-  const translations = await fetchMissionTranslations(data.id)
-  return normalizeFull(data, lang, translations)
+  const [translations, collaborators] = await Promise.all([
+    fetchMissionTranslations(data.id),
+    fetchCollaborators((data as any).details?.classification),
+  ])
+  return normalizeFull(data, lang, translations, collaborators)
 })
+
+// Resolve the partner / commercial / institution agency ids stored in a
+// mission's classification into display refs, preserving role + order and
+// dropping ids that don't resolve. Tolerant: returns [] on any failure.
+async function fetchCollaborators(classification: any): Promise<MissionCollaborator[]> {
+  if (!classification || typeof classification !== 'object') return []
+  const roles: [CollaboratorRole, unknown][] = [
+    ['partner',     classification.agencies?.partners],
+    ['commercial',  classification.agencies?.commercial],
+    ['institution', classification.agencies?.institutions],
+  ]
+  const ids = Array.from(new Set(
+    roles.flatMap(([, arr]) => (Array.isArray(arr) ? arr : []))
+         .filter((x): x is string => typeof x === 'string' && x.length > 0),
+  ))
+  if (!ids.length) return []
+
+  const { data, error } = await supabase
+    .from('space_agencies')
+    .select('id, name, slug, short_name, country, logo_url, website_url')
+    .in('id', ids)
+  if (error || !data) return []
+
+  const byId = new Map<string, AgencyRef>(
+    data.map((a: any) => [a.id, {
+      id: a.id, name: a.name, shortName: a.short_name, slug: a.slug,
+      country: a.country, logoUrl: a.logo_url || null, websiteUrl: a.website_url || null,
+    }]),
+  )
+
+  const out: MissionCollaborator[] = []
+  for (const [role, arr] of roles) {
+    for (const id of (Array.isArray(arr) ? arr : [])) {
+      const agency = typeof id === 'string' ? byId.get(id) : undefined
+      if (agency) out.push({ role, agency })
+    }
+  }
+  return out
+}
 
 export async function getAllMissionSlugs(): Promise<string[]> {
   const { data, error } = await supabase
@@ -186,7 +251,12 @@ function normalizeCards(rows: any[]): MissionCard[] {
   }))
 }
 
-function normalizeFull(row: any, lang: LanguageCode = DEFAULT_LANGUAGE, translations: MissionTranslation[] = []): Mission {
+function normalizeFull(
+  row: any,
+  lang: LanguageCode = DEFAULT_LANGUAGE,
+  translations: MissionTranslation[] = [],
+  collaborators: MissionCollaborator[] = [],
+): Mission {
   const ag = row.space_agencies
   const t = lang !== DEFAULT_LANGUAGE ? translations.find(x => x.language_code === lang) || null : null
   const served: LanguageCode = t ? lang : DEFAULT_LANGUAGE
@@ -205,7 +275,17 @@ function normalizeFull(row: any, lang: LanguageCode = DEFAULT_LANGUAGE, translat
     featuredImage: row.featured_image || null,
     destination:   row.destination || null,
     featured:      row.featured || false,
-    timeline:      Array.isArray(row.timeline) ? row.timeline : [],
+    timeline:      normalizeTimeline(row.timeline),
+    identity:      identityFromDetails(row.details),
+    classification: effectiveClassification(
+      row.details?.classification,
+      { status: row.status, missionType: row.mission_type, destination: row.destination || '' },
+    ),
+    collaborators,
+    specifications: specificationsFromDetails(row.details),
+    objectives:     objectivesFromDetails(row.details),
+    launch:         launchFromDetails(row.details),
+    media:          effectiveMedia(row.details, row.featured_image || null),
     createdAt:     row.created_at || '',
     updatedAt:     row.updated_at || '',
     agency:        ag ? {
