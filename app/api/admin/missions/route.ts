@@ -7,7 +7,7 @@ import {
 } from '@/modules/admin/services/adminMissions'
 import { slugify } from '@/lib/utils'
 import type { MissionPayload } from '@/modules/admin/services/adminMissions'
-import type { MissionStatus, MissionType, MissionTimeline } from '@/types/mission'
+import type { MissionStatus, MissionType } from '@/types/mission'
 import { SlugConflictError } from '@/modules/admin/services/adminErrors'
 import { getAdminUser } from '@/modules/admin/services/getAdminUser'
 import { normalizeIdentity } from '@/modules/missions/services/missionIdentity'
@@ -23,16 +23,20 @@ import {
 import {
   normalizeObjectives, validateObjectives,
 } from '@/modules/missions/services/missionObjectives'
+import {
+  normalizeTimeline, validateTimeline,
+} from '@/modules/missions/services/missionTimeline'
 import type { MissionClassification } from '@/types/mission'
 
 // Full validation for a mission payload: core + identity (Feature 1) +
-// specifications (Feature 3) + objectives (Feature 4). Classification is
-// derived, always valid.
+// specifications (Feature 3) + objectives (Feature 4) + timeline (Feature 5).
+// Classification is derived, always valid.
 function validateAll(payload: MissionPayload) {
   return [
     ...validateMission(payload),
     ...validateSpecifications(payload.specifications),
     ...validateObjectives(payload.objectives),
+    ...validateTimeline(payload.timeline),
   ]
 }
 
@@ -108,14 +112,10 @@ export async function DELETE(request: NextRequest) {
 function buildPayload(body: any): MissionPayload {
   const name = String(body.name || '').trim()
 
-  const timeline: MissionTimeline[] = Array.isArray(body.timeline)
-    ? body.timeline.map((e: any) => ({
-        date:        String(e?.date  || '').trim(),
-        title:       String(e?.title || '').trim(),
-        description: String(e?.description || '').trim(),
-        completed:   Boolean(e?.completed),
-      }))
-    : []
+  // Advanced timeline (Feature 5) — normalise each event (adds ids, syncs
+  // completed↔status, coerces the rich fields). Backward compatible with the
+  // old {date,title,description,completed} shape.
+  const timeline = normalizeTimeline(body.timeline)
 
   // Enhanced identity (Feature 1) — tolerant of a missing `identity` (legacy /
   // API-direct callers). URL fields are coerced (bare domain → https://…) so a

@@ -5,12 +5,13 @@ import { useRouter }  from 'next/navigation'
 import { slugify }    from '@/lib/utils'
 import type { MissionTimeline, MissionIdentity, MissionClassification, MissionSpecifications, MissionObjectives } from '@/types/mission'
 import type { AdminMissionFull, AgencyOption } from '@/modules/admin/services/adminMissions'
-import { Save, Globe, ChevronDown, Plus, Trash2, AlertCircle, ChevronUp, Info } from 'lucide-react'
+import { Save, Globe, AlertCircle, Info } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { TranslationEditor } from '@/modules/admin/components/TranslationEditor'
 import { MissionClassificationFields, StatusSelect } from '@/modules/admin/components/MissionClassificationFields'
 import { MissionSpecificationsFields } from '@/modules/admin/components/MissionSpecificationsFields'
 import { MissionObjectivesFields } from '@/modules/admin/components/MissionObjectivesFields'
+import { MissionTimelineBuilder } from '@/modules/admin/components/MissionTimelineBuilder'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 import { emptyIdentity } from '@/modules/missions/services/missionIdentity'
 import { emptyClassification } from '@/modules/missions/services/missionClassification'
@@ -107,36 +108,6 @@ export function MissionForm({ mode, mission, agencies }: Props) {
     setForm(f => ({ ...f, identity: { ...f.identity, [key]: coerceUrl(f.identity[key]) } }))
   }
 
-  // ── Timeline helpers ──────────────────────────────────────
-
-  function addTimelineEvent() {
-    setForm(f => ({
-      ...f,
-      timeline: [...f.timeline, { date: '', title: '', description: '', completed: false }],
-    }))
-  }
-
-  function updateTimelineEvent(index: number, field: keyof MissionTimeline, value: any) {
-    setForm(f => {
-      const tl = [...f.timeline]
-      tl[index] = { ...tl[index], [field]: value }
-      return { ...f, timeline: tl }
-    })
-  }
-
-  function removeTimelineEvent(index: number) {
-    setForm(f => ({ ...f, timeline: f.timeline.filter((_, i) => i !== index) }))
-  }
-
-  function moveTimeline(index: number, dir: -1 | 1) {
-    setForm(f => {
-      const tl  = [...f.timeline]
-      const to  = index + dir
-      if (to < 0 || to >= tl.length) return f
-      ;[tl[index], tl[to]] = [tl[to], tl[index]]
-      return { ...f, timeline: tl }
-    })
-  }
 
   // ── Save ──────────────────────────────────────────────────
 
@@ -513,89 +484,10 @@ export function MissionForm({ mode, mission, agencies }: Props) {
 
         {/* ── Timeline builder ────────────────────── */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div style={{ marginBottom: '12px' }}>
             <FieldLabel>Mission Timeline</FieldLabel>
-            <button
-              onClick={addTimelineEvent}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '5px',
-                padding: '5px 12px', borderRadius: '5px', cursor: 'pointer',
-                background: 'var(--surface)', border: '1px solid var(--border)',
-                color: 'rgba(var(--ink),0.82)', fontFamily: 'var(--font-mono)',
-                fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase',
-              }}
-            >
-              <Plus size={10} /> Add Event
-            </button>
           </div>
-
-          {form.timeline.length === 0 ? (
-            <div style={{ padding: '24px', background: 'var(--surface)', border: '1px dashed var(--border)', borderRadius: '8px', textAlign: 'center' }}>
-              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)', letterSpacing: '0.12em', textTransform: 'uppercase', margin: 0 }}>
-                No timeline events — click Add Event to start
-              </p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {form.timeline.map((event, i) => (
-                <div
-                  key={i}
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px', position: 'relative' }}
-                >
-                  {/* Event header */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                    {/* Completed toggle */}
-                    <div
-                      onClick={() => updateTimelineEvent(i, 'completed', !event.completed)}
-                      style={{
-                        width: '14px', height: '14px', borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
-                        background: event.completed ? 'var(--green)' : 'transparent',
-                        border: `2px solid ${event.completed ? 'var(--green)' : 'rgba(var(--ink),0.2)'}`,
-                        boxShadow: event.completed ? '0 0 6px rgba(46,204,113,0.4)' : 'none',
-                        transition: 'all 0.15s',
-                      }}
-                      title={event.completed ? 'Mark incomplete' : 'Mark completed'}
-                    />
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.15em', textTransform: 'uppercase', color: event.completed ? 'var(--green)' : 'rgba(var(--ink),0.55)', flex: 1 }}>
-                      Event {i + 1} {event.completed ? '· Completed' : '· Upcoming'}
-                    </span>
-                    {/* Move up/down */}
-                    <button onClick={() => moveTimeline(i, -1)} disabled={i === 0} style={iconBtnStyle}>
-                      <ChevronUp size={11} />
-                    </button>
-                    <button onClick={() => moveTimeline(i, 1)} disabled={i === form.timeline.length - 1} style={iconBtnStyle}>
-                      <ChevronDown size={11} />
-                    </button>
-                    <button onClick={() => removeTimelineEvent(i)} style={{ ...iconBtnStyle, color: 'rgba(231,76,60,0.6)' }}>
-                      <Trash2 size={11} />
-                    </button>
-                  </div>
-
-                  {/* Fields */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '8px', marginBottom: '8px' }}>
-                    <input
-                      value={event.date}
-                      onChange={e => updateTimelineEvent(i, 'date', e.target.value)}
-                      placeholder="e.g. Nov 2024"
-                      style={{ ...inputStyle({}), fontSize: '14px' }}
-                    />
-                    <input
-                      value={event.title}
-                      onChange={e => updateTimelineEvent(i, 'title', e.target.value)}
-                      placeholder="Event title"
-                      style={{ ...inputStyle({}), fontSize: '14px' }}
-                    />
-                  </div>
-                  <input
-                    value={event.description}
-                    onChange={e => updateTimelineEvent(i, 'description', e.target.value)}
-                    placeholder="Brief description (optional)"
-                    style={{ ...inputStyle({}), fontSize: '14px' }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <MissionTimelineBuilder value={form.timeline} onChange={t => set('timeline', t)} />
         </div>
 
       </div>
@@ -789,13 +681,6 @@ function SidePanel({ label, children }: { label: string; children: React.ReactNo
       <div style={{ padding: '12px 14px' }}>{children}</div>
     </div>
   )
-}
-
-const iconBtnStyle: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-  width: '22px', height: '22px', borderRadius: '4px',
-  border: 'none', background: 'transparent',
-  color: 'rgba(var(--ink),0.82)', cursor: 'pointer',
 }
 
 function inputStyle({ large }: { large?: boolean }): React.CSSProperties {

@@ -208,11 +208,35 @@ export interface Mission {
   availableLanguages: LanguageCode[]
 }
 
+export type TimelineStatus = 'completed' | 'in-progress' | 'upcoming' | 'delayed' | 'cancelled'
+export type TimelineImportance = 'critical' | 'major' | 'normal' | 'minor'
+
+/**
+ * A mission timeline milestone. The original four fields (date, title,
+ * description, completed) are unchanged and always present, so existing
+ * timelines keep working; every Feature-5 field is optional and additive.
+ * `completed` is kept in sync with `status === 'completed'` for backward compat.
+ * `description` is the SHORT description; `detailedDescription` is the long form.
+ */
 export interface MissionTimeline {
   date:        string
   title:       string
   description: string
   completed:   boolean
+  // ── Advanced timeline (Feature 5) — all optional/additive ──
+  /** Stable id for reorder keys + duplicate (generated if absent). */
+  id?:                  string
+  detailedDescription?: string
+  time?:                string   // HH:MM
+  timezone?:            string   // e.g. "UTC", "UTC-5"
+  status?:              TimelineStatus
+  location?:            string
+  importance?:          TimelineImportance
+  eventType?:           string   // a suggested type or a custom value
+  sourceUrl?:           string
+  image?:               string
+  videoUrl?:            string
+  notes?:               string
 }
 
 export interface MissionCard {

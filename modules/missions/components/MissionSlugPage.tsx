@@ -5,6 +5,7 @@ import type { Mission, MissionCard, CollaboratorRole, MissionSpecifications } fr
 import { StatusBadge } from './MissionsPage'
 import { formatDate } from '@/lib/utils'
 import { typeLabel } from '@/modules/missions/services/missionClassification'
+import { timelineStatusMeta, timelineImportanceMeta } from '@/modules/missions/services/missionTimeline'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { sectionHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
 
@@ -247,26 +248,69 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
               Mission Timeline
             </span>
             <div style={{ position: 'relative', paddingLeft: '24px', borderLeft: '1px solid rgba(var(--ink),0.1)' }}>
-              {mission.timeline.map((event, i) => (
-                <div key={i} style={{ position: 'relative', marginBottom: '32px' }}>
-                  {/* Dot */}
-                  <div style={{ position: 'absolute', left: '-29px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: event.completed ? '#2ecc71' : 'rgba(var(--ink),0.15)', border: `2px solid ${event.completed ? '#2ecc71' : 'rgba(var(--ink),0.2)'}`, boxShadow: event.completed ? '0 0 8px rgba(46,204,113,0.4)' : 'none' }} />
-                  {/* Date */}
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.12em', color: event.completed ? '#2ecc71' : 'rgba(var(--ink),0.35)', display: 'block', marginBottom: '6px' }}>
-                    {event.date}
-                  </span>
-                  {/* Title */}
-                  <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 400, color: event.completed ? 'var(--white)' : 'rgba(var(--ink),0.55)', margin: '0 0 6px', lineHeight: 1.3 }}>
-                    {event.title}
-                  </h4>
-                  {/* Description */}
-                  {event.description && (
-                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(var(--ink),0.9)', lineHeight: 1.75, margin: 0 }}>
-                      {event.description}
-                    </p>
-                  )}
-                </div>
-              ))}
+              {mission.timeline.map((event, i) => {
+                const effStatus = event.status || (event.completed ? 'completed' : 'upcoming')
+                const st = timelineStatusMeta(effStatus)
+                const done = effStatus === 'completed'
+                const showImportance = event.importance === 'critical' || event.importance === 'major'
+                const dateLine = [event.date, event.time, event.timezone].filter(Boolean).join(' · ')
+                return (
+                  <div key={event.id || i} style={{ position: 'relative', marginBottom: '32px' }}>
+                    {/* Dot */}
+                    <div style={{ position: 'absolute', left: '-29px', top: '4px', width: '10px', height: '10px', borderRadius: '50%', background: st.color, border: `2px solid ${st.color}`, boxShadow: done ? `0 0 8px ${st.color}` : 'none' }} />
+                    {/* Date + time + timezone */}
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.12em', color: st.color, display: 'block', marginBottom: '6px' }}>
+                      {dateLine || '—'}
+                    </span>
+                    {/* Badges */}
+                    {(event.eventType || showImportance) && (
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                        {event.eventType && (
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', border: '1px solid rgba(var(--ink),0.14)', borderRadius: '3px', padding: '2px 7px' }}>
+                            {event.eventType}
+                          </span>
+                        )}
+                        {showImportance && (
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', color: timelineImportanceMeta(event.importance!).color }}>
+                            {timelineImportanceMeta(event.importance!).label}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {/* Title */}
+                    <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 400, color: done ? 'var(--white)' : 'rgba(var(--ink),0.75)', margin: '0 0 6px', lineHeight: 1.3 }}>
+                      {event.title}
+                    </h4>
+                    {/* Short description */}
+                    {event.description && (
+                      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(var(--ink),0.9)', lineHeight: 1.75, margin: '0 0 8px' }}>
+                        {event.description}
+                      </p>
+                    )}
+                    {/* Detailed description */}
+                    {event.detailedDescription && (
+                      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(var(--ink),0.7)', lineHeight: 1.75, margin: '0 0 8px' }}>
+                        {event.detailedDescription}
+                      </p>
+                    )}
+                    {/* Image */}
+                    {event.image && (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={event.image} alt={event.title} loading="lazy" style={{ maxWidth: '100%', borderRadius: '8px', margin: '4px 0 8px', display: 'block' }} />
+                    )}
+                    {/* Location + links */}
+                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      {event.location && (
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.06em', color: 'rgba(var(--ink),0.55)' }}>
+                          ↳ {event.location}
+                        </span>
+                      )}
+                      {event.sourceUrl && <MissionLink href={event.sourceUrl}>Source ↗</MissionLink>}
+                      {event.videoUrl && <MissionLink href={event.videoUrl}>Video ↗</MissionLink>}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

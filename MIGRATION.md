@@ -659,11 +659,37 @@ collection when Supabase env vars are absent — unrelated to app code).
     `objectives`; `MissionPayload` carries it; the API validates it. No new
     migration (reuses `details`).
 
+- ✅ **Mission Management System — Advanced Timeline Management (Phase 1,
+  Feature 5)** — upgrades the simple timeline into a professional milestone
+  system. Additive + backward compatible (old `{date,title,description,
+  completed}` events normalise on load). Branch `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model + logic** (`missionTimeline.ts`, pure/tested): `MissionTimeline` is
+    extended with optional fields — detailed description, time, timezone,
+    **status** (5 stages, color-coded), location, **importance** (4 levels),
+    **event type** (17 suggested + custom), source/image/video URLs, notes, and
+    a stable `id`. `completed` is kept in sync with `status === 'completed'` so
+    old consumers still work. Includes `parseEventDate` (tolerant),
+    `sortTimelineByDate`, `duplicateDateIndexes/Values`, and co-located
+    `validateTimeline` (duplicate dates → warning; bad URLs + over-limits →
+    error). 13 zero-dep `node:test` cases (67 total across the mission modules).
+  - **Editor** (`MissionTimelineBuilder`): drag-and-drop reordering (grip
+    handle; keyboard up/down too), expand/collapse per event, duplicate + delete,
+    a one-click **Sort by date**, color-coded status + importance, a
+    **duplicate-date** warning, an event-type `datalist`, and all the rich
+    fields. Replaced the old inline builder in `MissionForm`. (Drag-reorder and
+    auto-sort are both offered — stored order is WYSIWYG on the public page.)
+  - **Public** (`MissionSlugPage`): the timeline rail now shows status-colored
+    dots, date · time · timezone, event-type + importance badges, short + detailed
+    descriptions, location, an image, and source/video links (notes stay private).
+    Timelines are normalised in both read paths (`getMissionBySlug`,
+    `getAdminMissionById`) and the API; the API validates them. No new migration
+    (`timeline` stays its own jsonb column, now with richer objects).
+
 **Not yet done:** All 8 Phase 2 features are complete. The Mission Management
-System upgrade is in progress — Features 1–4 (Enhanced Identity, Rich
-Classification, Professional Specifications, Scientific Objectives) shipped;
-Features 5–8 remain (see §10). Also remaining: Phases 3–4 of the plan, and the
-polish items in §10.
+System upgrade is in progress — Features 1–5 (Enhanced Identity, Rich
+Classification, Professional Specifications, Scientific Objectives, Advanced
+Timeline) shipped; Features 6–8 remain (see §10). Also remaining: Phases 3–4 of
+the plan, and the polish items in §10.
 
 ---
 
@@ -849,14 +875,11 @@ bad migration is a one-line revert.
 ## 10. Remaining work / roadmap
 
 **Mission Management System upgrade (Phase 1) — in progress, one feature at a
-time.** Features 1–4 (Enhanced Mission Identity, Rich Classification,
-Professional Specifications, Scientific Objectives) shipped (see §2). The model
-is built to grow: each remaining feature adds its own namespaced key to the
-`missions.details` jsonb blob (no schema break) and its own section to
-`MissionForm`. Remaining, in order:
-- **5. Advanced Timeline** — richer per-event fields, drag-reorder,
-  expand/collapse, duplicate, colour-coded types, date validation (the current
-  `timeline` jsonb shape is extended additively).
+time.** Features 1–5 (Enhanced Mission Identity, Rich Classification,
+Professional Specifications, Scientific Objectives, Advanced Timeline) shipped
+(see §2). The model is built to grow: each remaining feature adds its own
+namespaced key to the `missions.details` jsonb blob (no schema break) and its
+own section to `MissionForm`. Remaining, in order:
 - **6. Launch Information** — dedicated launch section with window/pad/provider
   and logical date-order validation.
 - **7. Media Management** — hero/patch/logo/gallery/banner + per-image metadata

@@ -19,6 +19,7 @@ import {
 import {
   emptyObjectives, objectivesFromDetails, normalizeObjectives, isObjectivesEmpty,
 } from '@/modules/missions/services/missionObjectives'
+import { normalizeTimeline } from '@/modules/missions/services/missionTimeline'
 
 // Detects "column missions.details does not exist" so the editor keeps working
 // before migration 20260726140000_mission_details.sql has been applied.
@@ -115,7 +116,7 @@ export async function getAdminMissionById(id: string): Promise<AdminMissionFull 
     status: data.status, missionType: data.mission_type,
     destination: data.destination || '', launchDate: data.launch_date || '',
     featuredImage: data.featured_image || null, featured: data.featured || false,
-    timeline: Array.isArray(data.timeline) ? data.timeline : [],
+    timeline: normalizeTimeline(data.timeline),
     identity: identityFromDetails(data.details),
     classification: effectiveClassification(
       (data.details as any)?.classification,
@@ -152,7 +153,8 @@ function baseMissionColumns(p: MissionPayload) {
     agency_id: p.agencyId || null,
     status: base.status, mission_type: base.missionType,
     destination: base.destination || null, launch_date: p.launchDate || null,
-    featured_image: p.featuredImage || null, featured: p.featured, timeline: p.timeline,
+    featured_image: p.featuredImage || null, featured: p.featured,
+    timeline: normalizeTimeline(p.timeline),
   }
 }
 

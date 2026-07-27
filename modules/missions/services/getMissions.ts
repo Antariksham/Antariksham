@@ -8,6 +8,7 @@ import { identityFromDetails } from './missionIdentity'
 import { effectiveClassification } from './missionClassification'
 import { specificationsFromDetails } from './missionSpecifications'
 import { objectivesFromDetails } from './missionObjectives'
+import { normalizeTimeline } from './missionTimeline'
 import { DEFAULT_LANGUAGE, isLanguageCode, type LanguageCode } from '@/lib/i18n'
 
 // Detects "column missions.details does not exist" so the public mission page
@@ -272,7 +273,7 @@ function normalizeFull(
     featuredImage: row.featured_image || null,
     destination:   row.destination || null,
     featured:      row.featured || false,
-    timeline:      Array.isArray(row.timeline) ? row.timeline : [],
+    timeline:      normalizeTimeline(row.timeline),
     identity:      identityFromDetails(row.details),
     classification: effectiveClassification(
       row.details?.classification,
