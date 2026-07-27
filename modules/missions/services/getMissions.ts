@@ -9,6 +9,7 @@ import { effectiveClassification } from './missionClassification'
 import { specificationsFromDetails } from './missionSpecifications'
 import { objectivesFromDetails } from './missionObjectives'
 import { normalizeTimeline } from './missionTimeline'
+import { launchFromDetails } from './missionLaunch'
 import { DEFAULT_LANGUAGE, isLanguageCode, type LanguageCode } from '@/lib/i18n'
 
 // Detects "column missions.details does not exist" so the public mission page
@@ -282,6 +283,7 @@ function normalizeFull(
     collaborators,
     specifications: specificationsFromDetails(row.details),
     objectives:     objectivesFromDetails(row.details),
+    launch:         launchFromDetails(row.details),
     createdAt:     row.created_at || '',
     updatedAt:     row.updated_at || '',
     agency:        ag ? {

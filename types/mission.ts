@@ -162,6 +162,33 @@ export interface MissionObjectives {
   significance:        string
 }
 
+export type LaunchSuccess = 'unknown' | 'success' | 'partial' | 'failure'
+
+/**
+ * Improved Launch Information (Phase 1, Feature 6).
+ *
+ * Stored in `missions.details.launch`. The launch DATE reuses the base
+ * `missions.launch_date` column (single source of truth — it powers card
+ * sorting and the meta row), so it is NOT stored here. `windowStart`/`windowEnd`
+ * are `datetime-local` strings ("YYYY-MM-DDTHH:MM"), which sort lexicographically
+ * — used for the logical date-ordering validation. Press kit is shared from
+ * `identity.pressKit`.
+ */
+export interface MissionLaunch {
+  time:          string   // launch time, free text (may include a zone)
+  windowStart:   string   // datetime-local
+  windowEnd:     string   // datetime-local
+  site:          string
+  pad:           string
+  provider:      string
+  rocket:        string
+  country:       string
+  missionNumber: string
+  success:       LaunchSuccess
+  livestreamUrl: string
+  countdown:     boolean   // show a live countdown on the public page
+}
+
 /**
  * The full, extensible `missions.details` payload. Each Phase 1 feature owns
  * one namespaced key. Every key is optional so the model can grow without a
@@ -172,6 +199,7 @@ export interface MissionDetails {
   classification?: MissionClassification
   specifications?: MissionSpecifications
   objectives?:     MissionObjectives
+  launch?:         MissionLaunch
 }
 
 export interface Mission {
@@ -200,6 +228,8 @@ export interface Mission {
   specifications: MissionSpecifications
   /** Structured scientific objectives (Feature 4). Always present; empty for legacy. */
   objectives:     MissionObjectives
+  /** Launch information (Feature 6). Always present; empty for legacy. */
+  launch:         MissionLaunch
   createdAt:     string
   updatedAt:     string
   // i18n — language actually served (falls back to 'en') + every language it

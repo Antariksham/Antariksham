@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter }  from 'next/navigation'
 import { slugify }    from '@/lib/utils'
-import type { MissionTimeline, MissionIdentity, MissionClassification, MissionSpecifications, MissionObjectives } from '@/types/mission'
+import type { MissionTimeline, MissionIdentity, MissionClassification, MissionSpecifications, MissionObjectives, MissionLaunch } from '@/types/mission'
 import type { AdminMissionFull, AgencyOption } from '@/modules/admin/services/adminMissions'
 import { Save, Globe, AlertCircle, Info } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
@@ -12,11 +12,13 @@ import { MissionClassificationFields, StatusSelect } from '@/modules/admin/compo
 import { MissionSpecificationsFields } from '@/modules/admin/components/MissionSpecificationsFields'
 import { MissionObjectivesFields } from '@/modules/admin/components/MissionObjectivesFields'
 import { MissionTimelineBuilder } from '@/modules/admin/components/MissionTimelineBuilder'
+import { MissionLaunchFields } from '@/modules/admin/components/MissionLaunchFields'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
 import { emptyIdentity } from '@/modules/missions/services/missionIdentity'
 import { emptyClassification } from '@/modules/missions/services/missionClassification'
 import { emptySpecifications, validateSpecifications } from '@/modules/missions/services/missionSpecifications'
 import { emptyObjectives, validateObjectives } from '@/modules/missions/services/missionObjectives'
+import { emptyLaunch, validateLaunch } from '@/modules/missions/services/missionLaunch'
 import {
   validateMission, hasBlockingErrors, errorsOnly, issueForField, coerceUrl,
   MISSION_LIMITS, type FieldIssue,
@@ -30,6 +32,7 @@ interface FormState {
   classification:   MissionClassification
   specifications:   MissionSpecifications
   objectives:       MissionObjectives
+  launch:           MissionLaunch
   agencyId:         string
   launchDate:       string
   featuredImage:    string
@@ -55,6 +58,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
     classification:   mission?.classification || emptyClassification(),
     specifications:   mission?.specifications || emptySpecifications(),
     objectives:       mission?.objectives    || emptyObjectives(),
+    launch:           mission?.launch        || emptyLaunch(),
     agencyId:         mission?.agencyId      || '',
     launchDate:       mission?.launchDate    || '',
     featuredImage:    mission?.featuredImage || '',
@@ -77,8 +81,9 @@ export function MissionForm({ mode, mission, agencies }: Props) {
       ...validateMission({ name: form.name, slug: form.slug, description: form.description, identity: form.identity }),
       ...validateSpecifications(form.specifications),
       ...validateObjectives(form.objectives),
+      ...validateLaunch(form.launch, form.launchDate),
     ],
-    [form.name, form.slug, form.description, form.identity, form.specifications, form.objectives],
+    [form.name, form.slug, form.description, form.identity, form.specifications, form.objectives, form.launch, form.launchDate],
   )
   // Field-level errors are shown only after a save attempt (no nagging while
   // typing); URL-format errors show live because they're immediately useful.
@@ -362,6 +367,18 @@ export function MissionForm({ mode, mission, agencies }: Props) {
           destinations={form.classification.destinations}
         />
 
+        <GroupHeading hint="Launch date, window, site, vehicle and provider. Countdown shows a live timer publicly.">
+          Launch Information
+        </GroupHeading>
+
+        <MissionLaunchFields
+          value={form.launch}
+          onChange={l => set('launch', l)}
+          launchDate={form.launchDate}
+          onLaunchDateChange={d => set('launchDate', d)}
+          pressKit={form.identity.pressKit}
+        />
+
         <GroupHeading hint="The mission's science goals, beyond the primary objective. Drag list items to reorder.">
           Scientific Objectives
         </GroupHeading>
@@ -546,16 +563,6 @@ export function MissionForm({ mode, mission, agencies }: Props) {
           <StatusSelect
             value={form.classification.status}
             onChange={v => set('classification', { ...form.classification, status: v })}
-          />
-        </SidePanel>
-
-        {/* Launch date */}
-        <SidePanel label="Launch Date">
-          <input
-            type="date"
-            value={form.launchDate}
-            onChange={e => set('launchDate', e.target.value)}
-            style={{ ...inputStyle({}), colorScheme: 'dark' }}
           />
         </SidePanel>
 

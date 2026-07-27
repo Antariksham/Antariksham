@@ -1,11 +1,12 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import type { Mission, MissionCard, CollaboratorRole, MissionSpecifications } from '@/types/mission'
 import { StatusBadge } from './MissionsPage'
 import { formatDate } from '@/lib/utils'
 import { typeLabel } from '@/modules/missions/services/missionClassification'
 import { timelineStatusMeta, timelineImportanceMeta } from '@/modules/missions/services/missionTimeline'
+import { launchTargetTimestamp, launchSuccessMeta, isLaunchEmpty } from '@/modules/missions/services/missionLaunch'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { sectionHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
 
@@ -51,6 +52,25 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
     ['Expected Discoveries', obj.expectedDiscoveries],
   ].filter(([, items]) => (items as string[]).length > 0) as [string, string[]][]
   const hasObjectives = objGroups.length > 0 || !!obj.significance.trim()
+
+  // Launch information (Feature 6)
+  const launch = mission.launch
+  const hasLaunch = !isLaunchEmpty(launch) || !!mission.launchDate
+  const launchRows: [string, string][] = ([
+    ['Launch Date', mission.launchDate ? formatDate(mission.launchDate) : ''],
+    ['Launch Time', launch.time],
+    ['Launch Site', launch.site],
+    ['Launch Pad', launch.pad],
+    ['Provider', launch.provider],
+    ['Rocket', launch.rocket],
+    ['Country', launch.country],
+    ['Mission Number', launch.missionNumber],
+  ] as [string, string][]).filter(([, v]) => v.trim())
+  const launchWindow = (launch.windowStart || launch.windowEnd)
+    ? `${launch.windowStart.replace('T', ' ') || '…'} → ${launch.windowEnd.replace('T', ' ') || '…'}`
+    : ''
+  const launchTarget = launchTargetTimestamp(mission.launchDate || '', launch)
+  const showCountdown = launch.countdown && launchTarget != null
   return (
     <div lang={lang} style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
 
@@ -201,6 +221,42 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
             {id?.website && <MissionLink href={id.website}>Official Website ↗</MissionLink>}
             {id?.wikipedia && <MissionLink href={id.wikipedia}>Wikipedia ↗</MissionLink>}
             {id?.pressKit && <MissionLink href={id.pressKit}>Press Kit ↗</MissionLink>}
+          </div>
+        )}
+
+        {/* ── Launch information ───────────────────── */}
+        {hasLaunch && (
+          <div style={{ marginBottom: '48px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '20px' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7' }}>
+                Launch Information
+              </span>
+              {launch.success !== 'unknown' && (
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color: launchSuccessMeta(launch.success).color }}>
+                  · {launchSuccessMeta(launch.success).label}
+                </span>
+              )}
+            </div>
+
+            {showCountdown && <LaunchCountdown target={launchTarget!} />}
+
+            {launchRows.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1px', background: 'rgba(var(--ink),0.08)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '10px', overflow: 'hidden', marginBottom: launchWindow || launch.livestreamUrl ? '16px' : 0 }}>
+                {launchRows.map(([label, value]) => (
+                  <div key={label} style={{ background: 'var(--panel)', padding: '14px 18px' }}>
+                    <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', marginBottom: '5px' }}>{label}</span>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'var(--white)' }}>{value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {launchWindow && (
+              <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.06em', color: 'rgba(var(--ink),0.6)', margin: '0 0 12px' }}>
+                Window: {launchWindow}
+              </p>
+            )}
+            {launch.livestreamUrl && <MissionLink href={launch.livestreamUrl}>Watch Livestream ↗</MissionLink>}
           </div>
         )}
 
@@ -418,6 +474,58 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         </div>
       )}
 
+    </div>
+  )
+}
+
+// Live launch countdown. Hydration-safe: renders a placeholder until mounted
+// (server + first client render agree), then ticks every second after mount.
+function LaunchCountdown({ target }: { target: number }) {
+  const [now, setNow] = useState<number | null>(null)
+  useEffect(() => {
+    setNow(Date.now())
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  let units: { n: number; label: string }[] | null = null
+  let caption = 'To launch'
+  if (now !== null) {
+    const diff = target - now
+    if (diff <= 0) { caption = 'Status'; units = null }
+    else {
+      units = [
+        { n: Math.floor(diff / 86400000),        label: 'Days' },
+        { n: Math.floor((diff % 86400000) / 3600000), label: 'Hrs' },
+        { n: Math.floor((diff % 3600000) / 60000),    label: 'Min' },
+        { n: Math.floor((diff % 60000) / 1000),       label: 'Sec' },
+      ]
+    }
+  }
+
+  return (
+    <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '8px', padding: '16px 20px', marginBottom: '20px', background: 'var(--panel)', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '12px' }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7' }}>
+        {caption}
+      </span>
+      {now === null ? (
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '20px', color: 'rgba(var(--ink),0.5)' }}>—</span>
+      ) : units === null ? (
+        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', color: 'var(--green)' }}>Launched</span>
+      ) : (
+        <div style={{ display: 'flex', gap: '16px' }}>
+          {units.map(u => (
+            <div key={u.label} style={{ textAlign: 'center', minWidth: '44px' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '26px', fontWeight: 600, color: 'var(--white)', lineHeight: 1 }}>
+                {String(u.n).padStart(2, '0')}
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', marginTop: '5px' }}>
+                {u.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

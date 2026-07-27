@@ -685,11 +685,38 @@ collection when Supabase env vars are absent — unrelated to app code).
     `getAdminMissionById`) and the API; the API validates them. No new migration
     (`timeline` stays its own jsonb column, now with richer objects).
 
+- ✅ **Mission Management System — Improved Launch Information (Phase 1,
+  Feature 6)** — a dedicated launch section with a live countdown. Additive +
+  backward compatible. Branch `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model + validation** (`missionLaunch.ts`, pure/tested): `details.launch`
+    holds launch time, window start/end (`datetime-local`), site, pad, provider,
+    rocket, country, mission number, **launch success** (unknown/success/partial/
+    failure), livestream URL and a **countdown** flag. The launch **date reuses
+    the base `launch_date` column** (single source of truth — moved into this
+    section from the sidebar); the **press kit is shared from `identity.pressKit`**
+    (shown read-only). Co-located `validateLaunch` enforces **logical date
+    ordering** — window end ≥ start (error), launch date within the window
+    (warning) — via lexicographic `datetime-local` comparison (no fragile Date
+    maths), plus livestream-URL validation. Only stored when non-empty. 11
+    zero-dep `node:test` cases (78 total across the mission modules).
+  - **Editor** (`MissionLaunchFields`): the Launch Date + all launch fields in
+    one "Launch Information" section (native date / datetime-local pickers, a
+    success select, a countdown toggle, a read-only press-kit reference). The
+    sidebar Launch Date panel was removed (it lives here now).
+  - **Public** (`MissionSlugPage`): a Launch Information block — a success badge,
+    a **hydration-safe live `LaunchCountdown`** (renders a placeholder until
+    mount, then ticks to the window start / launch date+time), a key-value grid
+    (date, time, site, pad, provider, rocket, country, mission number), the
+    launch window, and a livestream link. `launchTargetTimestamp` picks the
+    countdown target. Wired through `getMissionBySlug` / `getAdminMissionById` /
+    the API (which validates it). No new migration (reuses `details` +
+    `launch_date`).
+
 **Not yet done:** All 8 Phase 2 features are complete. The Mission Management
-System upgrade is in progress — Features 1–5 (Enhanced Identity, Rich
+System upgrade is in progress — Features 1–6 (Enhanced Identity, Rich
 Classification, Professional Specifications, Scientific Objectives, Advanced
-Timeline) shipped; Features 6–8 remain (see §10). Also remaining: Phases 3–4 of
-the plan, and the polish items in §10.
+Timeline, Improved Launch Information) shipped; Features 7–8 remain (see §10).
+Also remaining: Phases 3–4 of the plan, and the polish items in §10.
 
 ---
 
@@ -875,13 +902,11 @@ bad migration is a one-line revert.
 ## 10. Remaining work / roadmap
 
 **Mission Management System upgrade (Phase 1) — in progress, one feature at a
-time.** Features 1–5 (Enhanced Mission Identity, Rich Classification,
-Professional Specifications, Scientific Objectives, Advanced Timeline) shipped
-(see §2). The model is built to grow: each remaining feature adds its own
-namespaced key to the `missions.details` jsonb blob (no schema break) and its
-own section to `MissionForm`. Remaining, in order:
-- **6. Launch Information** — dedicated launch section with window/pad/provider
-  and logical date-order validation.
+time.** Features 1–6 (Enhanced Mission Identity, Rich Classification,
+Professional Specifications, Scientific Objectives, Advanced Timeline, Improved
+Launch Information) shipped (see §2). The model is built to grow: each remaining
+feature adds its own namespaced key to the `missions.details` jsonb blob (no
+schema break) and its own section to `MissionForm`. Remaining, in order:
 - **7. Media Management** — hero/patch/logo/gallery/banner + per-image metadata
   (alt/caption/credit/license) and optimisation.
 - **8. Completeness & Validation** — live completeness score + checklist; this

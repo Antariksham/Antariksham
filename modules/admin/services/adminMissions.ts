@@ -4,6 +4,7 @@ import { assertSlugAvailable, isUniqueViolation, SlugConflictError } from './adm
 import type {
   MissionStatus, MissionType, MissionTimeline, MissionIdentity,
   MissionClassification, MissionDetails, MissionSpecifications, MissionObjectives,
+  MissionLaunch,
 } from '@/types/mission'
 import {
   emptyIdentity, identityFromDetails, buildMissionDetails,
@@ -20,6 +21,9 @@ import {
   emptyObjectives, objectivesFromDetails, normalizeObjectives, isObjectivesEmpty,
 } from '@/modules/missions/services/missionObjectives'
 import { normalizeTimeline } from '@/modules/missions/services/missionTimeline'
+import {
+  emptyLaunch, launchFromDetails, normalizeLaunch, isLaunchEmpty,
+} from '@/modules/missions/services/missionLaunch'
 
 // Detects "column missions.details does not exist" so the editor keeps working
 // before migration 20260726140000_mission_details.sql has been applied.
@@ -90,6 +94,8 @@ export interface AdminMissionFull {
   specifications: MissionSpecifications
   /** Structured scientific objectives (Feature 4); empty for legacy. */
   objectives: MissionObjectives
+  /** Launch information (Feature 6); empty for legacy. */
+  launch: MissionLaunch
 }
 
 export async function getAdminMissionById(id: string): Promise<AdminMissionFull | null> {
@@ -124,6 +130,7 @@ export async function getAdminMissionById(id: string): Promise<AdminMissionFull 
     ),
     specifications: specificationsFromDetails(data.details),
     objectives: objectivesFromDetails(data.details),
+    launch: launchFromDetails(data.details),
   }
 }
 
@@ -140,6 +147,8 @@ export interface MissionPayload {
   specifications: MissionSpecifications
   /** Structured scientific objectives (Feature 4). */
   objectives: MissionObjectives
+  /** Launch information (Feature 6). */
+  launch: MissionLaunch
 }
 
 // Columns common to insert + update. The base status/mission_type/destination
@@ -173,6 +182,9 @@ function buildDetails(p: MissionPayload): MissionDetails {
   // Same for scientific objectives (Feature 4).
   const objectives = normalizeObjectives(p.objectives || emptyObjectives())
   if (!isObjectivesEmpty(objectives)) details.objectives = objectives
+  // Launch information (Feature 6).
+  const launch = normalizeLaunch(p.launch || emptyLaunch())
+  if (!isLaunchEmpty(launch)) details.launch = launch
   return details
 }
 
