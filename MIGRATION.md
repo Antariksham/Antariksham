@@ -743,11 +743,44 @@ collection when Supabase env vars are absent — unrelated to app code).
     blur placeholders would need `next/image` or a loader (a documented
     follow-up). No new migration (reuses `details` + `featured_image`).
 
-**Not yet done:** All 8 Phase 2 features are complete. The Mission Management
-System upgrade is in progress — Features 1–7 (Enhanced Identity, Rich
-Classification, Professional Specifications, Scientific Objectives, Advanced
-Timeline, Improved Launch Information, Enhanced Media) shipped; **Feature 8
-(Completeness & Validation) remains** (see §10). Also remaining: Phases 3–4 of
+- ✅ **Mission Management System — Mission Completeness & Validation (Phase 1,
+  Feature 8)** — the capstone: a live completeness score + a professional
+  checklist that pulls the whole system together. Branch
+  `claude/antariksham-mission-upgrade-4zos7u`.
+  - **Model** (`missionCompleteness.ts`, pure/tested): a `MissionSnapshot`
+    (mirrors the form) is evaluated against a **checklist of 13 required + 9
+    recommended** items across every feature; `evaluateCompleteness` returns each
+    item's status (✓ done / ⚠ recommended-missing / ✕ required-missing) and a
+    **weighted 0–100 score** (required fields weigh double). Checks read fields
+    inline (no runtime cross-imports). 6 zero-dep `node:test` cases (**94 total**
+    across the mission modules).
+  - **Editor** (`MissionCompletenessPanel`, in the sidebar): a big live **score**
+    + colored progress bar + "required / recommended complete" counts + the
+    **to-do checklist** (outstanding items first, "Show all" reveals the ✓ ones),
+    updating on every keystroke.
+  - **Save-gating policy — the deliberate reconciliation.** Per the master
+    prompt's "warnings allow saving; critical errors do not" **and** the hard
+    backward-compatibility requirement: the save gate blocks only on **invalid
+    data** — bad URLs, over-limit strings, illogical launch dates, missing
+    name/slug/description — via the per-feature `validate*` functions
+    (`validateAll` in the API + the form's live `issues`). **Incomplete** required
+    fields (summary, hero, timeline, launch vehicle, objective, destination,
+    primary agency, …) surface as ✕ in the checklist and lower the score but do
+    **not** block saving, so every legacy mission stays editable. (Flipping any
+    required item to hard-blocking is a one-line change in the checklist/gate if
+    a stricter policy is ever wanted.) No new migration.
+
+**Mission Management System upgrade (Phase 1) — COMPLETE.** All 8 features
+shipped (Enhanced Identity, Rich Classification, Professional Specifications,
+Scientific Objectives, Advanced Timeline, Improved Launch Information, Enhanced
+Media, Completeness & Validation) — see §2. The Mission module is now a
+structured, extensible, professional mission-management data model on a single
+additive `missions.details` jsonb column (+ the base columns it keeps in sync),
+94 zero-dependency unit tests, and a fully backward-compatible editor + public
+experience.
+
+**Not yet done:** All 8 Phase 2 features are complete. The Phase 1 Mission
+Management System upgrade is complete (all 8 features). Remaining: Phases 3–4 of
 the plan, and the polish items in §10.
 
 ---
@@ -933,15 +966,20 @@ bad migration is a one-line revert.
 
 ## 10. Remaining work / roadmap
 
-**Mission Management System upgrade (Phase 1) — in progress, one feature at a
-time.** Features 1–7 (Enhanced Mission Identity, Rich Classification,
-Professional Specifications, Scientific Objectives, Advanced Timeline, Improved
-Launch Information, Enhanced Media) shipped (see §2). The model is built to grow:
-each remaining feature adds its own namespaced key to the `missions.details`
-jsonb blob (no schema break) and its own section to `MissionForm`. Remaining:
-- **8. Completeness & Validation** — live completeness score + checklist; this
-  is where the stricter save-gating policy is formalised (the `missionValidation`
-  severity model + the per-feature `validate*` functions are its foundation).
+**Mission Management System upgrade (Phase 1) — COMPLETE (all 8 features, see
+§2).** The Mission module is now a professional, extensible data model. Natural
+follow-ups (not required, but where the foundation is ready):
+- **Completeness in the admin list** — show each mission's completeness % in
+  `/admin/missions` (needs the list query to fetch `details`; the pure
+  `evaluateCompleteness` is ready).
+- **Media blur placeholders / build-time optimisation** — today optimisation is
+  delegated to the Cloudinary provider + lazy-loading; true blur placeholders
+  need `next/image` or a loader.
+- **Translate the new structured fields** — mission translations still cover
+  name + description only; identity/objectives/timeline text could be added to
+  the `mission_translations` model without a schema change.
+- **Public API / analytics / launches-integration** — the structured model is
+  now ready to power those (the original goal of Phase 1).
 
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into

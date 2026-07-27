@@ -13,7 +13,9 @@ import { MissionObjectivesFields } from '@/modules/admin/components/MissionObjec
 import { MissionTimelineBuilder } from '@/modules/admin/components/MissionTimelineBuilder'
 import { MissionLaunchFields } from '@/modules/admin/components/MissionLaunchFields'
 import { MissionMediaFields } from '@/modules/admin/components/MissionMediaFields'
+import { MissionCompletenessPanel } from '@/modules/admin/components/MissionCompletenessPanel'
 import { TRANSLATION_LANGUAGES, type LanguageCode } from '@/lib/i18n'
+import { evaluateCompleteness } from '@/modules/missions/services/missionCompleteness'
 import { emptyIdentity } from '@/modules/missions/services/missionIdentity'
 import { emptyClassification } from '@/modules/missions/services/missionClassification'
 import { emptySpecifications, validateSpecifications } from '@/modules/missions/services/missionSpecifications'
@@ -85,6 +87,20 @@ export function MissionForm({ mode, mission, agencies }: Props) {
     ],
     [form.name, form.slug, form.description, form.identity, form.specifications, form.objectives, form.launch, form.launchDate, form.media],
   )
+  // Live completeness score + checklist (Feature 8) — informational; it does not
+  // gate saving (that stays with the blocking errors above), so legacy/partial
+  // missions remain editable.
+  const completeness = useMemo(
+    () => evaluateCompleteness({
+      name: form.name, slug: form.slug, description: form.description,
+      launchDate: form.launchDate, agencyId: form.agencyId,
+      identity: form.identity, classification: form.classification,
+      specifications: form.specifications, objectives: form.objectives,
+      launch: form.launch, media: form.media, timeline: form.timeline,
+    }),
+    [form],
+  )
+
   // Field-level errors are shown only after a save attempt (no nagging while
   // typing); URL-format errors show live because they're immediately useful.
   const errFor = (field: string): FieldIssue | undefined =>
@@ -475,6 +491,9 @@ export function MissionForm({ mode, mission, agencies }: Props) {
             </ul>
           </div>
         )}
+
+        {/* Completeness (Feature 8) */}
+        <MissionCompletenessPanel result={completeness} />
 
         {/* Save */}
         <SidePanel label="Actions">
