@@ -70,7 +70,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 function ArticleCard({ result }: { result: SearchArticleResult }) {
   const [hovered, setHovered] = useState(false)
   return (
-    <Link href={`/articles/${result.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+    <Link href={`/article/${result.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

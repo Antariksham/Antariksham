@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { localizedAlternates, type LanguageCode } from '@/lib/i18n'
+import { ARTICLE_SECTION, localizedAlternates, type LanguageCode } from '@/lib/i18n'
 import { siteConfig } from '@/config/site'
 import type { Article } from '@/types/article'
 
@@ -9,7 +9,7 @@ import type { Article } from '@/types/article'
 // noindex so Google never indexes a duplicate-content language page.
 export function buildArticleMetadata(article: Article, lang: LanguageCode): Metadata {
   const { isFallback, canonical, languages } = localizedAlternates(
-    'articles', article.slug, article.availableLanguages, article.language, lang,
+    ARTICLE_SECTION, article.slug, article.availableLanguages, article.language, lang,
   )
 
   return {
@@ -32,7 +32,7 @@ export function buildArticleMetadata(article: Article, lang: LanguageCode): Meta
 // data was previously absent). JSON.stringify drops the `undefined` fields.
 export function buildArticleJsonLd(article: Article): Record<string, unknown> {
   const isNews = article.articleType === 'breaking-news' || article.articleType === 'mission-update'
-  const url = `${siteConfig.url}/articles/${article.slug}`
+  const url = `${siteConfig.url}/article/${article.slug}`
   return {
     '@context': 'https://schema.org',
     '@type':    isNews ? 'NewsArticle' : 'Article',

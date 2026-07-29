@@ -69,7 +69,7 @@ export default async function EditArticlePage({
           {/* View live */}
           {article.status === 'published' && (
             <a
-              href={`/articles/${article.slug}`}
+              href={`/article/${article.slug}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{

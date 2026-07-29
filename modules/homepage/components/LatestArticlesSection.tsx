@@ -32,7 +32,7 @@ export function LatestArticlesSection({ articles }: Props) {
       ) : (
         <div className="grid-3">
           {items.map(a => (
-            <Link key={a.id} href={`/articles/${a.slug}`} className="card">
+            <Link key={a.id} href={`/article/${a.slug}`} className="card">
               {a.featuredImage
                 ? /* eslint-disable-next-line @next/next/no-img-element */
                   <img className="card-image" src={a.featuredImage} alt={a.title} loading="lazy" />

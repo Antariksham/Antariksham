@@ -25,7 +25,7 @@ export async function GET() {
         .eq('status', 'published')
         .limit(2000)
       ;(data || []).forEach((r: any) => targets.push({
-        kind: 'article', title: r.title, slug: r.slug, href: `/articles/${r.slug}`,
+        kind: 'article', title: r.title, slug: r.slug, href: `/article/${r.slug}`,
         categories: (r.article_categories || []).map((ac: any) => ac.categories?.name).filter(Boolean),
         tags: (r.article_tags || []).map((at: any) => at.tags?.name).filter(Boolean),
       }))

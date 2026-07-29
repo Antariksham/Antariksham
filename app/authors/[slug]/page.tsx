@@ -90,7 +90,7 @@ export default async function AuthorProfilePage(
         ) : (
           <div className="grid-3">
             {articles.map(article => (
-              <a key={article.id} href={`/articles/${article.slug}`} className="card">
+              <a key={article.id} href={`/article/${article.slug}`} className="card">
                 {article.featuredImage
                   ? /* eslint-disable-next-line @next/next/no-img-element */
                     <img className="card-image" src={article.featuredImage} alt={article.title} loading="lazy" />

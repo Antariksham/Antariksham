@@ -77,7 +77,7 @@ export function TopicHub({ topic, content }: Props) {
           </div>
           <div className="grid-3">
             {articles.map(a => (
-              <Link key={a.id} href={`/articles/${a.slug}`} className="card">
+              <Link key={a.id} href={`/article/${a.slug}`} className="card">
                 {a.featuredImage
                   ? /* eslint-disable-next-line @next/next/no-img-element */
                     <img className="card-image" src={a.featuredImage} alt={a.title} loading="lazy" decoding="async" />

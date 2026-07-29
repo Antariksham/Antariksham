@@ -172,7 +172,7 @@ export function ArticlesPage({ articles: initialArticles, total: initialTotal, l
 // ── Grid card ─────────────────────────────────────────────────
 function GridCard({ article, base, lang }: { article: ArticleCard; base: string; lang: LanguageCode }) {
   return (
-    <a href={`${base}/articles/${article.slug}`} className="card">
+    <a href={`${base}/article/${article.slug}`} className="card">
       {article.featuredImage
         ? /* eslint-disable-next-line @next/next/no-img-element */
           <img className="card-image" src={article.featuredImage} alt={article.title} loading="lazy" />

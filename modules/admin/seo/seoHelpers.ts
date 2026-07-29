@@ -7,7 +7,7 @@ export function textFromHtml(html: string): string {
 
 /** The canonical public URL for an article slug. */
 export function canonicalFor(slug: string): string {
-  return `${siteConfig.url}/articles/${slug || ''}`
+  return `${siteConfig.url}/article/${slug || ''}`
 }
 
 /** Apply the site title template, keeping the whole thing within ~60 chars. */

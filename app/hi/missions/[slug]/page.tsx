@@ -7,7 +7,7 @@ import type { Metadata } from 'next'
 const LANG = 'hi' as const
 
 // Dynamic: which Hindi slugs exist depends on which translations are published,
-// and the root layout reads headers() (see /articles/[slug] for the full note).
+// and the root layout reads headers() (see /article/[slug] for the full note).
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(

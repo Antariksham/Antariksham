@@ -29,7 +29,7 @@ export async function HeroSection() {
   const articleSlug = hero?.articleSlug || featuredArticle?.slug         || ''
   const imageUrl    = hero?.imageUrl    || featuredArticle?.featured_image || ''
 
-  const primaryHref = articleSlug ? `/articles/${articleSlug}` : '/articles'
+  const primaryHref = articleSlug ? `/article/${articleSlug}` : '/articles'
 
   return (
     <section

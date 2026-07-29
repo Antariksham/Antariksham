@@ -5,9 +5,14 @@
 // article (same slug, same shared view counter). Add a language here + write
 // its translations in the admin — no schema change required.
 //
-// URL model: English is unprefixed (`/articles/:slug`); every other language is
-// path-prefixed by its code (`/hi/articles/:slug`). `pathPrefix` centralises
+// URL model: English is unprefixed (`/article/:slug`); every other language is
+// path-prefixed by its code (`/hi/article/:slug`). `pathPrefix` centralises
 // that so links and routes stay consistent.
+//
+// Note the singular/plural split for articles: a single article reads at
+// `/article/:slug` (matching the URLs cosmosdaily.space already has indexed —
+// see MIGRATION.md §9), while the browse-all listing is `/articles`. Missions
+// and Learn use the same segment for both, so only articles need the split.
 
 export type LanguageCode = 'en' | 'hi'
 
@@ -47,7 +52,7 @@ export function langPrefix(code: string): string {
   return getLanguage(code).pathPrefix
 }
 
-/** Build a detail URL for any section: `/articles/x`, `/hi/learn/x`, … */
+/** Build a detail URL for any section: `/article/x`, `/hi/learn/x`, … */
 export function sectionHref(section: string, slug: string, code: string): string {
   return `${langPrefix(code)}/${section}/${slug}`
 }
@@ -57,9 +62,12 @@ export function sectionListHref(section: string, code: string): string {
   return `${langPrefix(code)}/${section}`
 }
 
-/** Build an article URL for a given language: `/articles/x` or `/hi/articles/x`. */
+/** The URL segment a single article reads at — singular, unlike the listing. */
+export const ARTICLE_SECTION = 'article'
+
+/** Build an article URL for a given language: `/article/x` or `/hi/article/x`. */
 export function articleHref(slug: string, code: string): string {
-  return sectionHref('articles', slug, code)
+  return sectionHref(ARTICLE_SECTION, slug, code)
 }
 
 /** Build the articles listing URL for a given language. */
