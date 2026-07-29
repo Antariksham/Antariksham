@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import type { GalleryImage, GallerySearchResult } from '../services/nasaImages'
 import { FALLBACK_IMAGES } from '../services/fallbackImages'
 import { Lightbox } from './Lightbox'
@@ -101,6 +102,16 @@ export function GalleryPage() {
         />
         <button type="submit" className="btn btn-primary press">Search</button>
       </form>
+
+      <Link href="/gallery/apod" className="apod-promo press">
+        <span>
+          <span className="apod-promo-title">🌌 Astronomy Picture of the Day archive</span>
+          <span className="apod-promo-sub">
+            Three decades of daily images and videos, each with an astronomer’s explanation.
+          </span>
+        </span>
+        <span className="apod-promo-cta">Browse the archive →</span>
+      </Link>
 
       <div className="orrery-rail" role="tablist" aria-label="Gallery topics">
         {TOPICS.map(t => (

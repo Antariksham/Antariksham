@@ -21,6 +21,13 @@ export interface GalleryImage {
   center:      string
   credit:      string
   description: string
+  /**
+   * "View original" target for the lightbox. Defaults to the item's
+   * images.nasa.gov details page; other sources (the APOD archive) point at
+   * their own permalink instead.
+   */
+  sourceUrl?:   string
+  sourceLabel?: string
 }
 
 export interface GallerySearchResult {

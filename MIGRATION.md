@@ -910,6 +910,47 @@ collection when Supabase env vars are absent — unrelated to app code).
     `bodyId` resolves in the Solar System registry (a stale one would render
     a dead deep link).
 
+- ✅ **APOD Archive (`/gallery/apod`)** — three decades of NASA's Astronomy
+  Picture of the Day, browsable and deep-linkable. Branch
+  `claude/explore-section-ideas-uuv5wo`.
+  - **Date-window paging** (`modules/nasa/services/apodArchive.ts`, pure):
+    all date maths is plain ISO strings in UTC — APOD is keyed by calendar
+    date, never an instant, so parsing into local `Date`s would shift entries
+    across midnight for some readers and break hydration parity.
+    `latestWindow` / `olderWindow` / `windowEndingAt` produce contiguous,
+    non-overlapping 24-day pages clamped to the **1995-06-16 epoch** (after
+    which "Load earlier" reports the beginning rather than paging into the
+    void).
+  - **The open-end rule**: NASA 400s on any `end_date` past its most recent
+    entry (its "today" follows US Eastern, which can lag UTC), so the newest
+    window deliberately sends **no** `end_date` and lets the API decide where
+    the archive ends. Verified against the live API. Backward pages always
+    have two past bounds, so they send both.
+  - **`/api/apod` proxy**: validates the ISO range (rejects junk, pre-epoch,
+    inverted, and >60-day spans — all four verified), caches past windows for
+    24 h and the open "latest" window for 1 h (entries are immutable once
+    published), 8 s timeout, `NASA_API_KEY` stays server-side.
+  - **SSR-first**: the route server-renders the newest 24 entries via
+    `getApodWindow`, so the archive ships **indexable content** (plus
+    ImageGallery JSON-LD describing exactly those server-rendered items) and
+    the client only pages backwards from there. No key / outage → a friendly
+    unavailable state, never a 500.
+  - **UI**: masonry grid reusing the gallery's classes, per-tile date chip and
+    ▶ Video badge (video days have no still — `thumbs=true` supplies
+    `thumbnail_url`), **jump-to-date** picker bounded to the epoch…latest,
+    Latest reset, `?date=YYYY-MM-DD` deep link (post-mount `location.search`
+    read, so the route stays statically renderable), and the shared
+    **Lightbox** showing the full astronomer's explanation.
+    `GalleryImage` gained optional `sourceUrl`/`sourceLabel` so one lightbox
+    serves both sources — APOD entries link to their `apod.nasa.gov/apod/apYYMMDD.html`
+    permalink instead of images.nasa.gov. NASA's `copyright` field arrives
+    with embedded newlines, so it is collapsed to one line.
+  - 14 new zero-dep `node:test` cases (**62 total**) covering leap-year/
+    year-boundary date shifts, window contiguity, epoch clamping, permalink
+    formatting, credit cleaning, and defensive slimming (junk payloads, a
+    single object, entries with no usable still). An entry point sits on
+    `/gallery`; sitemap entry added.
+
 **Mission Management System upgrade (Phase 1) — COMPLETE.** All 8 features
 shipped (Enhanced Identity, Rich Classification, Professional Specifications,
 Scientific Objectives, Advanced Timeline, Improved Launch Information, Enhanced
@@ -1165,11 +1206,15 @@ follow-ups (not required, but where the foundation is ready):
   circular), dwarf planets (Ceres, Eris), and eventually the Phase-4 Three.js
   3-D upgrade (keep it `next/dynamic({ssr:false})`-scoped like `/lunar-sim`).
 - ~~`/gallery` in the nav 404s~~ **shipped** (see §2) — NASA Image Library
-  browser with curated Featured tab, topic chips, search + lightbox. Polish
-  ideas: an APOD strip (link exists at `/live/apod`), surfacing mission-media
-  galleries from `missions.details.media`, and higher-res lightbox assets via
-  the library's `/asset/{id}` manifest. Note: the community-maintained NASA
-  Mars Rover Photos API is retired — do not build against it.
+  browser with curated Featured tab, topic chips, search + lightbox, plus the
+  **APOD Archive** at `/gallery/apod` (see §2). Polish ideas: surfacing
+  mission-media galleries from `missions.details.media`, higher-res lightbox
+  assets via the library's `/asset/{id}` manifest, and per-day APOD permalink
+  routes (`/gallery/apod/[date]`) if individual days should rank on their own.
+  Note: the community-maintained NASA Mars Rover Photos API is retired — do
+  not build against it. APOD needs `NASA_API_KEY` set in the environment
+  (already used by `/live/apod`); without it the archive degrades to a
+  friendly unavailable state.
 
 **Admin auth follow-ups:**
 - Team-management UI (`/admin/team`) to invite/deactivate members and set roles

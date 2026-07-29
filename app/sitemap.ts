@@ -27,6 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/explore/topics',       priority: 0.7, freq: 'weekly' },
     ...TOPICS.map(t => ({ path: `/explore/topics/${t.slug}`, priority: 0.6, freq: 'weekly' as const })),
     { path: '/gallery',              priority: 0.7, freq: 'weekly' },
+    { path: '/gallery/apod',         priority: 0.6, freq: 'daily'  },
     { path: '/lunar-sim',        priority: 0.6, freq: 'monthly' },
     { path: '/about',            priority: 0.5, freq: 'monthly' },
     { path: '/contact',          priority: 0.4, freq: 'yearly'  },

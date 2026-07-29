@@ -61,8 +61,8 @@ export function Lightbox({ images, index, onClose, onMove }: Props) {
           <p className="gallery-lb-meta">
             {[img.date, img.credit].filter(Boolean).join(' · ')}
             {' · '}
-            <a href={nasaDetailsUrl(img.id)} target="_blank" rel="noopener noreferrer" className="body-link">
-              View on images.nasa.gov ↗
+            <a href={img.sourceUrl ?? nasaDetailsUrl(img.id)} target="_blank" rel="noopener noreferrer" className="body-link">
+              {img.sourceLabel ?? 'View on images.nasa.gov'} ↗
             </a>
           </p>
           {img.description && <p className="gallery-lb-desc">{img.description}</p>}
