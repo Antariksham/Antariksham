@@ -166,6 +166,39 @@ collection when Supabase env vars are absent — unrelated to app code).
   `modules/admin/services/getAdminUser.ts`. Bootstrap steps are in
   `supabase/migrations/README.md`.
 
+- ✅ **Media Library — upload-time metadata (Phase 4)** — the step that makes
+  the index worth having. Phases 1+2 made the whole library searchable, but
+  could only index words that already existed, and `IMG_4471.jpg` has none.
+  Files are now **staged, not uploaded**: `MediaUploadDialog` opens between
+  picking and uploading and asks for a title (prefilled from the filename), alt
+  text and tags.
+  - **Findability**: tags apply to the whole batch with per-image extras, and
+    autocomplete over existing tags (`media_tag_suggestions`, added in
+    `supabase/migrations/20260730120000_media_tag_suggestions.sql`) keeps the
+    vocabulary converging — `normalizeTags` enforces one spelling regardless.
+  - **Accessibility**: alt text is required, with a *Decorative* checkbox that
+    writes an explicitly empty alt — the correct signal, and a different thing
+    from a missing one.
+  - **Dedupe**: every file is SHA-256'd in the browser and checked against the
+    library in one batched `POST /api/admin/media/precheck` before any bytes
+    move; duplicates are shown in the dialog and skipped. The server recomputes
+    the checksum itself and re-checks, so the client hint is an optimisation,
+    never a gate.
+  - **Content-hash keys**: `<yyyy>-<mm>-<slug>--<sha256[0..8]>.<ext>`, so
+    uploads are idempotent and the objects can be served immutable for a year.
+    Kept flat rather than `yyyy/mm/` folders because Supabase Storage's `list()`
+    is non-recursive and folders would break the resumable sync walk. **Existing
+    keys are never touched** — published articles store absolute URLs.
+  - **Thumbnails**: a 400×250 WebP derivative generated in a canvas in the
+    browser (the image is already decoded there), stored under a `thumbs/`
+    prefix and deleted with its asset. Avoids both a native image dependency in
+    the serverless bundle and the paid Storage render transform; degrades to the
+    original if the browser cannot encode WebP.
+  - Verified with 23 unit tests on the naming/hashing/tag helpers and 10 SQL
+    cases covering tag suggestions, prefix and provider scoping, LIKE-escaping,
+    soft-delete exclusion, and that the unique checksum index actually rejects a
+    second live copy while freeing the checksum after a soft delete.
+
 - ✅ **Media Library at scale (Phases 1+2)** — `media_assets` is now the
   searchable **index of record** for both providers, and the library no longer
   lists Storage. Previously the Supabase tab read the bucket directly with a
@@ -1194,25 +1227,24 @@ follow-ups (not required, but where the foundation is ready):
 - **Public API / analytics / launches-integration** — the structured model is
   now ready to power those (the original goal of Phase 1).
 
-**Media Library at scale — Phases 1+2 shipped, 3–5 open.** See
+**Media Library at scale — Phases 1, 2 and 4 shipped; 3 and 5 open.** See
 [`docs/MEDIA_LIBRARY_ARCHITECTURE.md`](./docs/MEDIA_LIBRARY_ARCHITECTURE.md) for
-the full design, the measured numbers and the remaining phases. Still to do:
+the full design and the measured numbers. Still to do:
 
 - **Phase 3 — backfill + usage graph.** `media_usages` (which article/mission
-  uses which asset) for safe deletes and an "unused" filter, checksums,
-  dimensions, blurhash, and harvesting `articles.featured_image_meta` /
-  `missions.details.media` onto the asset rows. The resumable **Sync from
-  Storage** action already indexes existing objects; this is the rest.
-- **Phase 4 — the one that matters next.** An upload dialog capturing title,
-  alt text and 2–4 tags, plus SHA-256 dedupe precheck and the content-hash key
-  scheme. Search can only find words that exist: Phases 1+2 index a title
-  derived from the filename, so `IMG_4471.jpg` is still unfindable. Every image
-  uploaded before this lands needs a manual pass later.
+  uses which asset) for safe deletes and an "unused" filter, plus checksums,
+  dimensions and blurhash for rows that predate Phase 4, and harvesting
+  `articles.featured_image_meta` / `missions.details.media` onto the asset rows.
+  That harvest is also the cheapest way to give pre-Phase-4 images real
+  descriptions in bulk. Until it runs, dedupe only protects images uploaded from
+  Phase 4 onward, since older rows have no checksum.
 - **Phase 5 — the browsing experience.** Filter rail with tag facets,
-  virtualised grid, per-asset detail drawer, bulk tag/move/delete, `⌘K`
-  quick-pick in the editor, and Supabase Storage thumbnails (the grid still
-  loads full-size originals for that provider; Cloudinary already derives one).
-  `sort`, orientation/date/unused filters and facet counts land here too.
+  virtualised grid, per-asset detail drawer (edit title/alt/tags after the
+  fact), bulk tag/move/delete, and `⌘K` quick-pick in the editor. `sort`,
+  orientation/date/unused filters and facet counts land here too.
+- **Context pre-fill on upload** — seeding tags from the article's own
+  categories when the Media Library is opened from an editor needs a
+  `defaultTags` prop threaded through the callers.
 
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into

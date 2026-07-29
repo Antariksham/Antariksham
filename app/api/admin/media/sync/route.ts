@@ -57,8 +57,12 @@ export async function POST(req: NextRequest) {
 
     if (listError) throw listError
 
-    const batch = (objects || []).filter(o => o.name !== '.emptyFolderPlaceholder')
-    const done  = (objects?.length ?? 0) < PAGE
+    // Folders come back with a null id and no metadata. Skipping them keeps the
+    // `thumbs/` prefix (preview derivatives, not assets) out of the index.
+    const batch = (objects || []).filter(
+      o => o.name !== '.emptyFolderPlaceholder' && o.id !== null,
+    )
+    const done = (objects?.length ?? 0) < PAGE
 
     if (batch.length === 0) {
       return NextResponse.json({ scanned: 0, imported: 0, nextOffset: offset, done })

@@ -1,8 +1,8 @@
 # Media Library — scale architecture (search, grouping, filtering at 10k+ assets)
 
-**Status:** **Phases 1 and 2 are implemented** (§9) — the index, the search
-functions, a row per upload, server-side search and keyset pagination. Phases
-3–5 are still design.
+**Status:** **Phases 1, 2 and 4 are implemented** (§9) — the index, the search
+functions, server-side search with keyset pagination, and upload-time metadata
+with dedupe, content-hash keys and thumbnails. Phases 3 and 5 are still design.
 **Problem:** uploads are stored as `1753612345678-img-4471.jpg`. At a few hundred
 images that is ugly; at a few thousand it makes the library unusable — you cannot
 search, group, filter, or find anything.
@@ -59,19 +59,26 @@ asset and it becomes the search index for free.
 ## 2. Storage key scheme (for new uploads)
 
 ```
-<bucket>/<yyyy>/<mm>/<slug>--<sha256[0..8]>.<ext>
+<yyyy>-<mm>-<slug>--<sha256[0..8]>.<ext>
 ```
 
 ```
-article-images/2026/07/chandrayaan-3-vikram-lander-touchdown--a3f19c2b.webp
-mission-images/2026/07/artemis-ii-crew-portrait--7e01d4f9.jpg
+2026-07-chandrayaan-3-vikram-lander-touchdown--a3f19c2b.webp
+2026-07-artemis-ii-crew-portrait--7e01d4f9.jpg
 ```
 
 **`slug`** — kebab-case of the title the editor types at upload (falls back to
 the sanitised original filename), capped at 60 chars.
 **`--<hash8>`** — first 8 hex of the SHA-256 of the file bytes.
-**`yyyy/mm`** — keeps any single storage prefix small and gives a natural
-archival boundary; it is for ops, *not* for lookups.
+**`yyyy-mm`** — keeps the bucket browsable in chronological order; it is for
+ops, *not* for lookups.
+
+> **Changed during implementation:** this was specified as real `yyyy/mm/`
+> folders. It ships flat, because Supabase Storage's `list()` is per-prefix and
+> non-recursive — folders would turn the resumable sync walk into a tree walk
+> with a cursor per prefix, in exchange for a browsing nicety the database index
+> already provides. A `thumbs/` prefix is the one real folder, and sync skips it
+> by ignoring entries with a null id.
 
 Why a content hash rather than `Date.now()`:
 
@@ -354,36 +361,57 @@ stay unchanged, so `ContentEditorField`, `FeaturedImageManager`, `LearnForm`,
 
 ---
 
-## 7. Upload pipeline
+## 7. Upload pipeline — implemented
+
+Files picked or dropped are **staged, not uploaded**. `MediaUploadDialog` opens
+between the two.
 
 ```
-1. Client   hash file with crypto.subtle.digest('SHA-256')
-2. Client → POST /api/admin/media/precheck { sha256 }
-             ↳ hit  → "Already in your library" + link to it. Zero bytes uploaded.
-             ↳ miss → continue
-3. Editor   fills Title + Alt + Tags in the upload dialog  ← the real fix
-4. Server   sniff true mime (magic bytes, not the client's Content-Type)
-            read dimensions, compute blurhash + dominant colour
-            build key: <yyyy>/<mm>/<slug>--<hash8>.<ext>
-            write original + 400px thumb
-5. Server   insert media_assets row (checksum, dims, thumb_url, tags, alt…)
+1. Browser   SHA-256 each file (crypto.subtle), read dimensions, build preview
+2. Browser → POST /api/admin/media/precheck { checksums[] }
+               one batched lookup; matches are marked "already in the library"
+               and skipped — no bytes uploaded
+3. Editor    fills Title (prefilled from the filename) + Alt + tags   ← the point
+4. Browser   400x250 WebP thumbnail via canvas
+5. Server    re-computes the checksum itself (never trusts the client),
+             re-checks for duplicates, builds the key, uploads original + thumb,
+             inserts the row — rolling the objects back if indexing fails
 ```
 
-**Step 3 is the actual solution to the user-facing problem.** Metadata entered
-"later" is never entered. Two fields at upload time — title and 2-4 tags — is
-what makes 10,000 assets searchable. Make `alt_text` required for anything
-destined for an article body (it is an accessibility and SEO requirement
-anyway, and `FeaturedImageManager.tsx:62` already warns about it).
+**Step 3 is the whole reason this phase exists.** Everything in §3 and §4 can
+only find words that already exist; `IMG_4471.jpg` has none. Metadata entered
+"later" is never entered.
 
-Cheap accelerators so it never feels like data entry:
+What keeps it from feeling like data entry:
 
-- Pre-fill tags from context — uploading from the Chandrayaan-3 article editor
-  seeds the article's categories/tags.
-- Pre-fill title from the original filename, de-slugified and title-cased.
-- Suggest existing tags as you type (autocomplete off the facet list) so the
-  vocabulary stays clean instead of drifting into `isro`/`ISRO`/`Isro`.
+- **Title is prefilled** from the filename, de-slugified and sentence-cased —
+  usually just needs a glance.
+- **Tags apply to the whole batch** by default, with per-image extras. Uploading
+  twelve Chandrayaan photos is one tag entry, not twelve.
+- **Autocomplete over existing tags** (`media_tag_suggestions`, most-used
+  first), so the vocabulary converges instead of drifting into
+  `isro`/`ISRO`/`Isro` as three separate filters. `normalizeTags` enforces one
+  spelling regardless.
+- **Duplicates are shown before you commit**, not discovered afterwards.
 
----
+**Alt text is required**, with a *Decorative — no alt text needed* checkbox that
+writes an explicitly empty alt. That is the accessibility-correct escape hatch:
+a decorative image genuinely should have `alt=""`, which is a different thing
+from a missing one. Title is required too, since it is the search anchor.
+
+**Thumbnails are generated in the browser**, in a canvas. The browser has
+already decoded the image, so it costs nothing extra, and it avoids both a
+native image dependency in the serverless bundle and the paid Supabase Storage
+render transform. They live under a `thumbs/` prefix and are deleted with their
+asset. Every step degrades to null rather than throwing — a browser that cannot
+encode WebP costs the upload its thumbnail, not the upload.
+
+### Still open here
+
+Context pre-fill — seeding tags from the article's own categories when the
+picker is opened from an editor — needs a `defaultTags` prop threaded through
+the callers, and is not wired up.
+
 
 ## 8. Backfilling what already exists
 
@@ -423,7 +451,7 @@ reads `title`. New uploads get the §2 scheme.
 | **1** | Schema + indexes + search functions; write a `media_assets` row on **every** upload (Supabase path included) | the whole rest | ✅ **done** |
 | **2** | `GET /api/admin/media` reads the functions; keyset pagination; both provider panels read it | **the 200-file ceiling and the client-side search both disappear** | ✅ **done** |
 | **3** | Backfill script + `media_usages` + metadata harvest | safe deletes, "unused" filter | ~1 day |
-| **4** | Upload dialog (title/alt/tags), dedupe precheck, new key scheme, thumbnails | new uploads stop being the problem | ~1 day |
+| **4** | Upload dialog (title/alt/tags), dedupe precheck, new key scheme, thumbnails | new uploads stop being the problem | ✅ **done** |
 | **5** | Filter rail, virtualised grid, detail drawer, bulk ops, `⌘K` quick-pick | the "one second" experience | ~2 days |
 
 Phases 1+2 fixed the two things that actually break at scale: the 200-file cap
@@ -434,12 +462,18 @@ the index rather than the bucket. It is the minimum slice of Phase 3 needed to
 make Phase 2 non-destructive; checksums, dimensions, blurhash, the usage graph
 and the `featured_image_meta` harvest are still Phase 3.
 
-**Phase 4 is the one that matters next.** Phases 1+2 make the whole library
-searchable and instant, but they can only index words that already exist — a
-title derived from the filename. `IMG_4471.jpg` still has nothing in it to find.
-The upload dialog asking for a title, alt text and 2–4 tags is what actually
-puts words in the index, and every image uploaded before it lands is one that
-needs a manual pass later.
+**Phase 4 closed the loop.** Phases 1+2 made the library searchable and
+instant, but could only index words that already existed — a title derived from
+the filename. The upload dialog now asks for a title, alt text and tags at the
+moment of upload, so new images arrive findable.
+
+**What is left is about the images already there.** Anything uploaded before
+Phase 4 still has only a filename-derived title. Phase 3's metadata harvest
+(pulling alt/caption/credit off `articles.featured_image_meta` and
+`missions.details.media` onto the assets that use them) is the cheapest way to
+fix that in bulk; the rest needs the Phase 5 detail drawer and bulk tagging. The
+backfill also cannot compute checksums for existing rows, so dedupe only
+protects images uploaded from Phase 4 onward until it runs.
 
 ---
 

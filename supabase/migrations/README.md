@@ -38,6 +38,17 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260730120000_media_tag_suggestions.sql`
+
+Adds `media_tag_suggestions(prefix, provider, limit)` — existing media tags
+matching a prefix, most-used first. Powers the tag autocomplete in the Media
+Library upload dialog, which is what keeps the tag vocabulary converging on one
+spelling per subject instead of drifting into `isro` / `ISRO` / `Isro`.
+
+PostgREST cannot express `unnest` + `group by` through its select syntax, hence
+a function. Read-only and idempotent; nothing depends on it existing, so the
+dialog degrades to a plain tag input if it has not been applied.
+
 ### `20260729120000_media_library_index.sql`
 
 Makes `media_assets` the **searchable index of record** for the admin Media

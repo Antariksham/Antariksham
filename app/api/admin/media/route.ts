@@ -4,7 +4,8 @@ import { supabaseAdmin }             from '@/lib/supabase'
 import { getAdminUser } from '@/modules/admin/services/getAdminUser'
 import {
   slugify, titleFromFilename, displayName,
-  encodeCursor, decodeCursor, parseTags,
+  encodeCursor, decodeCursor, parseTags, normalizeTags,
+  sha256Hex, buildStorageKey, thumbKeyFor, extForMime,
 } from '@/modules/admin/media/mediaNaming'
 
 export const dynamic = 'force-dynamic'
@@ -157,10 +158,17 @@ export async function GET(req: NextRequest) {
 }
 
 // ── POST /api/admin/media?bucket=article-images ───────────────
-// Upload a file — expects multipart/form-data with field "file".
+// Upload a file. multipart/form-data:
+//   file    (required)  the image
+//   thumb   (optional)  400x250 WebP preview generated in the browser
+//   title / altText / caption / credit / tags / width / height   (optional)
+//
 // Writes the object to Storage AND a row to media_assets; the row is what the
 // library reads, so an upload that cannot be indexed is rolled back rather than
 // left invisible.
+//
+// Uploading bytes that are already in the library returns the existing asset
+// untouched instead of storing a second copy.
 export async function POST(req: NextRequest) {
   const admin = await getAdminUser()
   if (!admin) {
@@ -174,7 +182,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const formData = await req.formData()
-    const file     = formData.get('file') as File | null
+    const file     = formData.get('file')  as File | null
+    const thumb    = formData.get('thumb') as File | null
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -192,59 +201,115 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'File too large — max 5MB' }, { status: 400 })
     }
 
-    // Build a unique filename: timestamp-originalname (sanitised). The
-    // content-hash key scheme lands in Phase 4; changing it is orthogonal to
-    // making the library searchable, and every published URL depends on it.
-    const ext      = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-    const baseName = file.name
-      .replace(/\.[^.]+$/, '')           // strip extension
-      .replace(/[^a-z0-9]/gi, '-')       // sanitise
-      .toLowerCase()
-      .slice(0, 40)
-    const fileName = `${Date.now()}-${baseName}.${ext}`
-
     const arrayBuffer = await file.arrayBuffer()
     const buffer      = new Uint8Array(arrayBuffer)
 
+    // Computed here, not trusted from the client: this is what dedupe and the
+    // storage key both hang off.
+    const checksum = await sha256Hex(arrayBuffer)
+
     const db = supabaseAdmin()
+
+    // Already have these exact bytes? Hand back what we have. Re-uploading a
+    // photo is then free and non-destructive rather than a second copy with a
+    // second URL to keep straight.
+    const { data: existing } = await db
+      .from('media_assets')
+      .select('id, file_url, title')
+      .eq('checksum_sha256', checksum)
+      .is('deleted_at', null)
+      .maybeSingle()
+
+    if (existing) {
+      return NextResponse.json({
+        success:   true,
+        duplicate: true,
+        id:        existing.id,
+        url:       existing.file_url,
+        title:     existing.title,
+        bucket,
+      })
+    }
+
+    // Metadata from the upload dialog. Title falls back to the filename so a
+    // caller that posts only a file still lands something searchable.
+    const field = (name: string) => {
+      const value = formData.get(name)
+      return typeof value === 'string' && value.trim() ? value.trim() : null
+    }
+    const numberField = (name: string) => {
+      const value = Number(formData.get(name))
+      return Number.isFinite(value) && value > 0 ? Math.trunc(value) : null
+    }
+
+    const title = field('title') || titleFromFilename(file.name)
+    const tags  = normalizeTags((field('tags') || '').split(','))
+
+    const storageKey = buildStorageKey({
+      title,
+      hash: checksum,
+      ext:  extForMime(file.type, file.name.split('.').pop()?.toLowerCase() || 'jpg'),
+    })
+
     const { error: uploadError } = await db.storage
       .from(bucket)
-      .upload(fileName, buffer, {
-        contentType:  file.type,
-        cacheControl: '3600',
+      .upload(storageKey, buffer, {
+        contentType: file.type,
+        // The key contains a content hash, so the URL changes if and only if
+        // the bytes do — these can be cached hard and forever.
+        cacheControl: '31536000',
         upsert:       false,
       })
 
     if (uploadError) throw uploadError
 
-    const { data: urlData } = db.storage
-      .from(bucket)
-      .getPublicUrl(fileName)
+    const { data: urlData } = db.storage.from(bucket).getPublicUrl(storageKey)
 
-    // Index it. Title is derived from the original filename, which is the only
-    // human-meaningful text available at this stage — Phase 4 asks the editor
-    // for a real title, alt text and tags at upload time.
-    const title = titleFromFilename(file.name)
+    // Preview derivative, generated in the browser. Optional by design: without
+    // it the grid falls back to the original, which is exactly today's
+    // behaviour rather than a broken card.
+    let thumbUrl: string | null = null
+    const thumbKey = thumbKeyFor(storageKey)
+    if (thumb && thumb.size > 0 && thumb.type === 'image/webp') {
+      const { error: thumbError } = await db.storage
+        .from(bucket)
+        .upload(thumbKey, new Uint8Array(await thumb.arrayBuffer()), {
+          contentType:  'image/webp',
+          cacheControl: '31536000',
+          upsert:       true,
+        })
+      if (thumbError) console.error('thumbnail upload failed:', thumbError)
+      else thumbUrl = db.storage.from(bucket).getPublicUrl(thumbKey).data.publicUrl
+    }
+
     const { data: row, error: indexError } = await db
       .from('media_assets')
       .insert({
-        provider:    'supabase',
-        storage_key: fileName,
+        provider:        'supabase',
+        storage_key:     storageKey,
         bucket,
-        folder:      bucket,
-        file_url:    urlData.publicUrl,
-        file_type:   file.type,
-        file_size:   file.size,
+        folder:          bucket,
+        file_url:        urlData.publicUrl,
+        thumb_url:       thumbUrl,
+        file_type:       file.type,
+        file_size:       file.size,
+        checksum_sha256: checksum,
         title,
-        slug:        slugify(title),
-        uploaded_by: admin.id,
+        slug:            slugify(title),
+        alt_text:        field('altText'),
+        caption:         field('caption'),
+        credit:          field('credit'),
+        tags,
+        width:           numberField('width'),
+        height:          numberField('height'),
+        uploaded_by:     admin.id,
       })
       .select('id')
       .single()
 
     if (indexError) {
       // Do not leave an object in Storage that the library cannot see.
-      await db.storage.from(bucket).remove([fileName])
+      await db.storage.from(bucket).remove([storageKey, thumbKey])
       throw indexError
     }
 
@@ -252,7 +317,7 @@ export async function POST(req: NextRequest) {
       success: true,
       id:      row.id,
       url:     urlData.publicUrl,
-      name:    fileName,
+      name:    storageKey,
       title,
       bucket,
     }, { status: 201 })
@@ -304,7 +369,11 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Missing file name' }, { status: 400 })
     }
 
-    const { error } = await db.storage.from(bucket).remove([storageKey])
+    // The preview derivative goes with it. `remove` ignores keys that are not
+    // there, so assets uploaded before thumbnails existed delete cleanly too.
+    const { error } = await db.storage
+      .from(bucket)
+      .remove([storageKey, thumbKeyFor(storageKey)])
     if (error) throw error
 
     // The bytes are gone, so the row is removed outright rather than soft
