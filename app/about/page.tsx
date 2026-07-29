@@ -4,7 +4,7 @@ import { siteConfig } from '@/config/site'
 
 export const metadata: Metadata = {
   title:       `About — ${siteConfig.name}`,
-  description: 'Antariksham is an independent space intelligence and knowledge platform combining scientific journalism, live mission tracking, and deep educational content.',
+  description: 'CosmosDaily is an independent space intelligence and knowledge platform combining scientific journalism, live mission tracking, and deep educational content.',
 }
 
 const LINKS = [
@@ -20,7 +20,7 @@ export default function AboutPage() {
 
       <header className="page-header">
         <div className="container">
-          <span className="hero-badge">About Antariksham</span>
+          <span className="hero-badge">About CosmosDaily</span>
           <h1 className="page-title">An Independent Space Intelligence Platform</h1>
           <p className="page-lede">
             Serious, credible, accessible coverage of space exploration — not clickbait headlines or sensational news cycles.
@@ -31,13 +31,13 @@ export default function AboutPage() {
       <main className="container section">
         <div className="prose">
           <p className="lead">
-            Antariksham is built on a simple belief: space exploration is one of the most important endeavours
+            CosmosDaily is built on a simple belief: space exploration is one of the most important endeavours
             in human history, and it deserves serious, credible, and accessible coverage.
           </p>
 
           <h2>What We Are</h2>
           <p>
-            Antariksham is an independent space intelligence and knowledge platform. We combine original
+            CosmosDaily is an independent space intelligence and knowledge platform. We combine original
             scientific journalism, live mission tracking systems, deep-space telemetry, launch intelligence, and
             an educational knowledge engine — all in one place.
           </p>
@@ -50,7 +50,7 @@ export default function AboutPage() {
           <h2>What We Are Not</h2>
           <p>
             We are not a news aggregator. We do not copy or republish content from other outlets. Every article on
-            Antariksham is original, written to a clear editorial standard, and sourced from primary scientific and
+            CosmosDaily is original, written to a clear editorial standard, and sourced from primary scientific and
             agency sources.
           </p>
           <p>
@@ -74,7 +74,7 @@ export default function AboutPage() {
 
           <h2>Who Builds This</h2>
           <p>
-            Antariksham is currently built and maintained by a solo founder with a vision to create a platform that
+            CosmosDaily is currently built and maintained by a solo founder with a vision to create a platform that
             treats its audience as intelligent, curious people — not pageview statistics.
           </p>
           <p>

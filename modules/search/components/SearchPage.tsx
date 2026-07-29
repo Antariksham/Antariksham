@@ -486,7 +486,7 @@ export function SearchPage() {
             marginBottom: '32px',
             lineHeight:   1.1,
           }}>
-            Search Antariksham
+            Search CosmosDaily
           </h1>
 
           {/* Input */}

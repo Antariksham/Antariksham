@@ -4,7 +4,7 @@ import { siteConfig } from '@/config/site'
 
 export const metadata: Metadata = {
   title:       `Editorial Policy — ${siteConfig.name}`,
-  description: 'Antariksham\'s editorial standards, sourcing policy, correction process, and publishing guidelines.',
+  description: 'CosmosDaily\'s editorial standards, sourcing policy, correction process, and publishing guidelines.',
 }
 
 const prose: React.CSSProperties = {
@@ -53,7 +53,7 @@ export default function EditorialPolicyPage() {
         </h1>
 
         <p style={{ ...prose, fontSize: '19px', color: 'rgba(var(--ink),0.85)', marginBottom: '36px' }}>
-          Antariksham is committed to accurate, independent, and transparent scientific journalism. This page describes the standards every piece of content on this platform must meet.
+          CosmosDaily is committed to accurate, independent, and transparent scientific journalism. This page describes the standards every piece of content on this platform must meet.
         </p>
 
         <hr style={divider} />
@@ -68,7 +68,7 @@ export default function EditorialPolicyPage() {
 
         <h2 style={h2}>Article Types</h2>
         <p style={prose}>
-          Every article on Antariksham is labelled with its type so readers understand what they are reading:
+          Every article on CosmosDaily is labelled with its type so readers understand what they are reading:
         </p>
 
         {[
@@ -95,7 +95,7 @@ export default function EditorialPolicyPage() {
           We do not publish unverified rumours, speculative leaks, or anonymous claims about upcoming missions or launches unless they have been officially confirmed. We do not republish or paraphrase content from other outlets without independent verification of the underlying facts. We do not publish AI-generated content without human editorial review, fact-checking, and attribution.
         </p>
         <p style={prose}>
-          We do not accept sponsored content, advertiser influence, or paid placements of any kind. No organisation can pay to appear on Antariksham or to receive favourable coverage.
+          We do not accept sponsored content, advertiser influence, or paid placements of any kind. No organisation can pay to appear on CosmosDaily or to receive favourable coverage.
         </p>
 
         <hr style={divider} />
@@ -116,14 +116,14 @@ export default function EditorialPolicyPage() {
 
         <h2 style={h2}>Images & Media</h2>
         <p style={prose}>
-          All images used on Antariksham are either in the public domain, licensed under Creative Commons, provided under NASA&apos;s open media policy, or used with explicit permission. Every image includes a source credit and copyright information where applicable. We do not use AI-generated imagery as documentary or editorial illustration.
+          All images used on CosmosDaily are either in the public domain, licensed under Creative Commons, provided under NASA&apos;s open media policy, or used with explicit permission. Every image includes a source credit and copyright information where applicable. We do not use AI-generated imagery as documentary or editorial illustration.
         </p>
 
         <hr style={divider} />
 
         <h2 style={h2}>Independence</h2>
         <p style={prose}>
-          Antariksham has no financial relationships with any space agency, aerospace company, or technology organisation. We receive no funding, grants, or sponsorship that could influence our editorial decisions. Our coverage is determined solely by editorial merit and public interest.
+          CosmosDaily has no financial relationships with any space agency, aerospace company, or technology organisation. We receive no funding, grants, or sponsorship that could influence our editorial decisions. Our coverage is determined solely by editorial merit and public interest.
         </p>
 
         <hr style={divider} />

@@ -7,7 +7,7 @@ const DESCRIPTION =
   'A window on the cosmos — browse and search hundreds of thousands of images from the NASA Image and Video Library: nebulae, galaxies, Mars, the Moon, launches, astronauts and more.'
 
 export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
+  // Plain name — the root layout's titleTemplate appends "| CosmosDaily".
   title: 'Gallery',
   description: DESCRIPTION,
   alternates: { canonical: '/gallery' },

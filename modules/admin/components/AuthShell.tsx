@@ -23,7 +23,7 @@ export function AuthShell({
         {/* Brand mark */}
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, #232338, #0a0a0f)', border: '1px solid rgba(79,142,247,0.3)', margin: '0 auto 14px' }} />
-          <div style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', color: 'var(--white)', lineHeight: 1.1 }}>Antariksham</div>
+          <div style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', color: 'var(--white)', lineHeight: 1.1 }}>CosmosDaily</div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.7)' }}>
             Mission Control
           </span>

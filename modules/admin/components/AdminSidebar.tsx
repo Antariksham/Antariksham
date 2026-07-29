@@ -69,7 +69,7 @@ export function AdminSidebar({ collapsed, mobileOpen, onToggle, onNavigate }: Ad
         <div className="admin-brand">
           <div className="admin-brand__mark" aria-hidden />
           <div>
-            <div className="admin-brand__name">Antariksham</div>
+            <div className="admin-brand__name">CosmosDaily</div>
             <div className="admin-brand__sub">Mission Control</div>
           </div>
         </div>

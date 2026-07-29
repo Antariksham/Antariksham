@@ -4,7 +4,7 @@ import { siteConfig } from '@/config/site'
 
 export const metadata: Metadata = {
   title:       `Terms & Conditions — ${siteConfig.name}`,
-  description: 'The terms and conditions governing your use of Antariksham.org.',
+  description: 'The terms and conditions governing your use of CosmosDaily.',
 }
 
 const prose: React.CSSProperties = {
@@ -50,14 +50,14 @@ export default function TermsPage() {
         </p>
 
         <p style={{ ...prose, fontSize: '19px', color: 'rgba(var(--ink),0.85)', marginBottom: '36px' }}>
-          By accessing or using Antariksham.org, you agree to be bound by these terms. Please read them carefully. If you do not agree, please do not use the platform.
+          By accessing or using CosmosDaily, you agree to be bound by these terms. Please read them carefully. If you do not agree, please do not use the platform.
         </p>
 
         <hr style={divider} />
 
         <h2 style={{ ...h2, marginTop: 0 }}>Use of the Platform</h2>
         <p style={prose}>
-          Antariksham.org is an independent space intelligence and knowledge platform. You may access and read content on this platform for personal, non-commercial, and educational purposes. You may share links to our articles and pages freely.
+          CosmosDaily is an independent space intelligence and knowledge platform. You may access and read content on this platform for personal, non-commercial, and educational purposes. You may share links to our articles and pages freely.
         </p>
         <p style={prose}>
           You may not copy, reproduce, republish, scrape, or redistribute our original editorial content — including articles, explainers, mission analyses, and educational material — without prior written permission. This applies regardless of whether attribution is provided.
@@ -67,13 +67,13 @@ export default function TermsPage() {
 
         <h2 style={h2}>Intellectual Property</h2>
         <p style={prose}>
-          All original content on Antariksham — including articles, educational content, mission analyses, platform design, and written copy — is the intellectual property of Antariksham and its contributors. All rights are reserved unless explicitly stated otherwise.
+          All original content on CosmosDaily — including articles, educational content, mission analyses, platform design, and written copy — is the intellectual property of CosmosDaily and its contributors. All rights are reserved unless explicitly stated otherwise.
         </p>
         <p style={prose}>
           Space imagery, photographs, and scientific data displayed on this platform may originate from third-party sources including NASA, ISRO, ESA, and other agencies. These are used in accordance with their respective open media and licensing policies. Credit and attribution are provided where required.
         </p>
         <p style={prose}>
-          Live data displayed on the platform — including ISS position, launch schedules, deep space telemetry, and NASA APOD — is sourced from official public APIs. This data belongs to its respective providers and is not proprietary to Antariksham.
+          Live data displayed on the platform — including ISS position, launch schedules, deep space telemetry, and NASA APOD — is sourced from official public APIs. This data belongs to its respective providers and is not proprietary to CosmosDaily.
         </p>
 
         <hr style={divider} />
@@ -83,31 +83,31 @@ export default function TermsPage() {
           We make every effort to ensure the accuracy of information published on this platform. However, space missions, launch schedules, and scientific data can change rapidly. Information on this platform may not always reflect the latest developments.
         </p>
         <p style={prose}>
-          Live data systems — including the ISS tracker, deep space telemetry, and launch countdowns — display data fetched from third-party APIs. Antariksham is not responsible for inaccuracies originating from these external data sources.
+          Live data systems — including the ISS tracker, deep space telemetry, and launch countdowns — display data fetched from third-party APIs. CosmosDaily is not responsible for inaccuracies originating from these external data sources.
         </p>
         <p style={prose}>
-          Content on Antariksham is intended for informational and educational purposes only. It should not be relied upon for critical decisions, professional use, or applications where accuracy is essential.
+          Content on CosmosDaily is intended for informational and educational purposes only. It should not be relied upon for critical decisions, professional use, or applications where accuracy is essential.
         </p>
 
         <hr style={divider} />
 
         <h2 style={h2}>No Advertising or Sponsored Content</h2>
         <p style={prose}>
-          Antariksham does not display advertising, accept sponsored content, or take payments to influence editorial coverage. All content is produced independently and represents our genuine editorial judgment.
+          CosmosDaily does not display advertising, accept sponsored content, or take payments to influence editorial coverage. All content is produced independently and represents our genuine editorial judgment.
         </p>
 
         <hr style={divider} />
 
         <h2 style={h2}>External Links</h2>
         <p style={prose}>
-          This platform may contain links to external websites including space agency pages, scientific papers, and data providers. These links are provided for reference and convenience. Antariksham is not responsible for the content, accuracy, or privacy practices of any external website.
+          This platform may contain links to external websites including space agency pages, scientific papers, and data providers. These links are provided for reference and convenience. CosmosDaily is not responsible for the content, accuracy, or privacy practices of any external website.
         </p>
 
         <hr style={divider} />
 
         <h2 style={h2}>Limitation of Liability</h2>
         <p style={prose}>
-          Antariksham is provided on an &quot;as is&quot; basis. We make no warranties, express or implied, regarding the availability, accuracy, or completeness of the platform or its content. We are not liable for any loss or damage arising from your use of or reliance on the platform.
+          CosmosDaily is provided on an &quot;as is&quot; basis. We make no warranties, express or implied, regarding the availability, accuracy, or completeness of the platform or its content. We are not liable for any loss or damage arising from your use of or reliance on the platform.
         </p>
 
         <hr style={divider} />
@@ -122,7 +122,7 @@ export default function TermsPage() {
             'Reproduce or republish our original editorial content on any other platform',
             'Attempt to gain unauthorised access to any part of the platform',
             'Use the platform in any way that violates applicable laws or regulations',
-            'Impersonate Antariksham or misrepresent an affiliation with this platform',
+            'Impersonate CosmosDaily or misrepresent an affiliation with this platform',
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(var(--ink),0.05)' }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--accent)', flexShrink: 0, marginTop: '3px' }}>

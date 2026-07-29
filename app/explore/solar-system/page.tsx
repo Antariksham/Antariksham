@@ -15,7 +15,7 @@ const DESCRIPTION =
   'An interactive map of the Solar System: true planet positions for any date computed from JPL orbital elements, time travel through the orbits, and every world linked to its missions, facts and coverage.'
 
 export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
+  // Plain name — the root layout's titleTemplate appends "| CosmosDaily".
   title: 'Solar System Explorer',
   description: DESCRIPTION,
   alternates: { canonical: '/explore/solar-system' },

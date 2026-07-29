@@ -4,7 +4,7 @@ import { siteConfig } from '@/config/site'
 
 export const metadata: Metadata = {
   title:       `Contact — ${siteConfig.name}`,
-  description: 'Get in touch with the Antariksham team — for corrections, tips, collaborations, or general enquiries.',
+  description: 'Get in touch with the CosmosDaily team — for corrections, tips, collaborations, or general enquiries.',
 }
 
 const prose: React.CSSProperties = {

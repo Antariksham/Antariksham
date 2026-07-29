@@ -20,7 +20,7 @@ export default async function AdminDashboard() {
       {/* Page header */}
       <div style={{ marginBottom: '40px', paddingBottom: '28px', borderBottom: '1px solid var(--border)' }}>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '10px' }}>
-          Antariksham.org
+          CosmosDaily
         </span>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '36px', fontWeight: 300, color: 'var(--white)', margin: '0 0 6px', letterSpacing: '-0.01em' }}>
           Mission Control

@@ -119,7 +119,7 @@ export default function AdminLoginPage() {
     <AuthShell
       title="Welcome back"
       subtitle={subtitle}
-      footer={<>Restricted access · Antariksham CMS</>}
+      footer={<>Restricted access · CosmosDaily CMS</>}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 

@@ -4,7 +4,7 @@ import { SearchPage } from '@/modules/search/components/SearchPage'
 
 export const metadata: Metadata = {
   title:       'Search',
-  description: 'Search articles, missions, and space science topics on Antariksham.',
+  description: 'Search articles, missions, and space science topics on CosmosDaily.',
 }
 
 // SearchPage uses useSearchParams — must be wrapped in Suspense

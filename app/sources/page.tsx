@@ -4,7 +4,7 @@ import { siteConfig } from '@/config/site'
 
 export const metadata: Metadata = {
   title:       `Sources — ${siteConfig.name}`,
-  description: 'The primary sources, APIs, and data providers that power Antariksham\'s journalism, live data, and educational content.',
+  description: 'The primary sources, APIs, and data providers that power CosmosDaily\'s journalism, live data, and educational content.',
 }
 
 const prose: React.CSSProperties = {
@@ -159,7 +159,7 @@ export default function SourcesPage() {
         </h1>
 
         <p style={{ ...prose, fontSize: '19px', color: 'rgba(var(--ink),0.85)', marginBottom: '36px' }}>
-          Every fact on Antariksham traces back to a primary source. This page lists the agencies, APIs, and scientific institutions we rely on for our journalism, live data systems, and educational content.
+          Every fact on CosmosDaily traces back to a primary source. This page lists the agencies, APIs, and scientific institutions we rely on for our journalism, live data systems, and educational content.
         </p>
 
         <hr style={divider} />

@@ -54,9 +54,9 @@ function formatDate(iso: string) {
 // ── Google SERP Preview ───────────────────────────────────────
 
 function SerpPreview({ title, description, url }: { title: string; description: string; url: string }) {
-  const displayTitle = title       || 'Page Title — Antariksham'
+  const displayTitle = title       || 'Page Title — CosmosDaily'
   const displayDesc  = description || 'Page description will appear here. Keep it between 120–160 characters for best results.'
-  const displayUrl   = url         || 'antariksham.org/page'
+  const displayUrl   = url         || 'cosmosdaily.space/page'
 
   return (
     <div style={{ background: '#fff', borderRadius: '8px', padding: '16px 20px', maxWidth: '600px' }}>
@@ -414,7 +414,7 @@ export function SEOCenter() {
                       <SerpPreview
                         title={row.meta_title}
                         description={row.meta_description || ''}
-                        url={row.canonical_url || 'antariksham.org'}
+                        url={row.canonical_url || 'cosmosdaily.space'}
                       />
                     </div>
                   </div>
@@ -463,15 +463,15 @@ export function SEOCenter() {
               )}
 
               <FieldGroup label="Meta Title" hint="Appears in browser tab and search results. 50–60 characters ideal." required counter={<CharCounter value={form.metaTitle} max={60} warn={50} />}>
-                <input value={form.metaTitle} onChange={e => setField('metaTitle', e.target.value)} placeholder="e.g. Orbital Mechanics Explained | Antariksham" style={inputStyle} />
+                <input value={form.metaTitle} onChange={e => setField('metaTitle', e.target.value)} placeholder="e.g. Orbital Mechanics Explained | CosmosDaily" style={inputStyle} />
               </FieldGroup>
 
               <FieldGroup label="Meta Description" hint="Shown in search snippets. 120–160 characters ideal." counter={<CharCounter value={form.metaDescription} max={160} warn={120} />}>
                 <textarea value={form.metaDescription} onChange={e => setField('metaDescription', e.target.value)} placeholder="A clear description of what this page covers…" rows={3} style={{ ...inputStyle, resize: 'vertical', lineHeight: '1.6' }} />
               </FieldGroup>
 
-              <FieldGroup label="Canonical URL" hint="Full URL of the canonical page, e.g. https://antariksham.org/learn/orbital-mechanics">
-                <input value={form.canonicalUrl} onChange={e => setField('canonicalUrl', e.target.value)} placeholder="https://antariksham.org/…" style={inputStyle} />
+              <FieldGroup label="Canonical URL" hint="Full URL of the canonical page, e.g. https://cosmosdaily.space/learn/orbital-mechanics">
+                <input value={form.canonicalUrl} onChange={e => setField('canonicalUrl', e.target.value)} placeholder="https://cosmosdaily.space/…" style={inputStyle} />
               </FieldGroup>
 
               <FieldGroup label="OG Image URL" hint="Image shown when shared on social media. 1200×630px recommended.">

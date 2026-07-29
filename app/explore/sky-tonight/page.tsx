@@ -11,7 +11,7 @@ const DESCRIPTION =
   'What is above you right now — tonight’s Moon phase, which planets are visible in the evening or morning sky, and upcoming ISS passes computed for your location, in your browser.'
 
 export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
+  // Plain name — the root layout's titleTemplate appends "| CosmosDaily".
   title: 'Sky Tonight',
   description: DESCRIPTION,
   alternates: { canonical: '/explore/sky-tonight' },

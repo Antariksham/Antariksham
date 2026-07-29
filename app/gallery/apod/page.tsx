@@ -13,7 +13,7 @@ const DESCRIPTION =
   'Browse NASA’s Astronomy Picture of the Day archive — every image and video since 16 June 1995, with the original explanation, credits and a link to each day’s page.'
 
 export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
+  // Plain name — the root layout's titleTemplate appends "| CosmosDaily".
   title: 'APOD Archive',
   description: DESCRIPTION,
   alternates: { canonical: '/gallery/apod' },

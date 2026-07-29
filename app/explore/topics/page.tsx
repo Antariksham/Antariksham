@@ -8,7 +8,7 @@ const DESCRIPTION =
   'Curated gateways to the subjects that matter most in spaceflight and astronomy — Mars, the Moon, black holes, exoplanets and more, each gathering every article, mission, guide and live tool on the topic in one place.'
 
 export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
+  // Plain name — the root layout's titleTemplate appends "| CosmosDaily".
   title: 'Topic Hubs',
   description: DESCRIPTION,
   alternates: { canonical: '/explore/topics' },

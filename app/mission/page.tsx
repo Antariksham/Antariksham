@@ -4,7 +4,7 @@ import { siteConfig } from '@/config/site'
 
 export const metadata: Metadata = {
   title:       `Our Mission — ${siteConfig.name}`,
-  description: 'The philosophy and long-term vision behind Antariksham — why we built it, what we stand for, and where we are going.',
+  description: 'The philosophy and long-term vision behind CosmosDaily — why we built it, what we stand for, and where we are going.',
 }
 
 const prose: React.CSSProperties = {
@@ -58,12 +58,12 @@ export default function MissionPage() {
 
         <hr style={divider} />
 
-        <h2 style={h2}>Why Antariksham Exists</h2>
+        <h2 style={h2}>Why CosmosDaily Exists</h2>
         <p style={prose}>
           Most space coverage today falls into two categories: sensational headlines optimised for clicks, or dense technical papers written for specialists. Neither serves the curious general reader who wants depth without confusion, accuracy without jargon, and genuine insight without entertainment packaging.
         </p>
         <p style={prose}>
-          Antariksham exists to fill that gap. We believe there is a large audience — students, engineers, enthusiasts, educators — who want space coverage that respects their intelligence and rewards their curiosity.
+          CosmosDaily exists to fill that gap. We believe there is a large audience — students, engineers, enthusiasts, educators — who want space coverage that respects their intelligence and rewards their curiosity.
         </p>
 
         <hr style={divider} />
@@ -77,7 +77,7 @@ export default function MissionPage() {
             },
             {
               title: 'Editorial Independence',
-              body:  'Antariksham has no advertising relationships, no agency affiliations, and no commercial incentives that could compromise our coverage. Our only obligation is to our readers.',
+              body:  'CosmosDaily has no advertising relationships, no agency affiliations, and no commercial incentives that could compromise our coverage. Our only obligation is to our readers.',
             },
             {
               title: 'Depth Over Volume',
@@ -107,7 +107,7 @@ export default function MissionPage() {
 
         <h2 style={h2}>Where We Are Going</h2>
         <p style={prose}>
-          Antariksham is built to grow. Our roadmap includes a full public launches page, a deep explore section covering missions, agencies, astronauts, and rockets, a gallery of properly licensed space imagery, and eventually a contributor system that brings more expert voices to the platform.
+          CosmosDaily is built to grow. Our roadmap includes a full public launches page, a deep explore section covering missions, agencies, astronauts, and rockets, a gallery of properly licensed space imagery, and eventually a contributor system that brings more expert voices to the platform.
         </p>
         <p style={prose}>
           We are also building towards multilingual coverage — starting with Hindi — to make space knowledge accessible to the hundreds of millions of Indian readers who follow ISRO and the broader space programme in their own language.

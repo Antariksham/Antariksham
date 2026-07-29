@@ -7,7 +7,7 @@ import { getAdminUser }   from '@/modules/admin/services/getAdminUser'
 export const metadata: Metadata = {
   title: {
     default:  'Mission Control',
-    template: '%s — Antariksham Admin',
+    template: '%s — CosmosDaily Admin',
   },
   robots: { index: false, follow: false },
 }

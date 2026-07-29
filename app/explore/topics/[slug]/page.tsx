@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const url = `/explore/topics/${topic.slug}`
 
   return {
-    // Plain name — the root layout's titleTemplate appends "| Antariksham".
+    // Plain name — the root layout's titleTemplate appends "| CosmosDaily".
     title,
     description,
     alternates: { canonical: url },

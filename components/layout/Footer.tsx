@@ -12,7 +12,7 @@ export function Footer() {
         {/* BRAND */}
         <div style={{ marginBottom: '40px', paddingBottom: '40px', borderBottom: '1px solid rgba(var(--ink),0.08)' }}>
           <div style={{ fontFamily: 'var(--font-sans)', fontSize: '26px', fontWeight: 700, color: 'var(--white)', marginBottom: '6px' }}>
-            {siteConfig.name}<span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#4f8ef7', marginLeft: '2px' }}>{siteConfig.tld}</span>
+            {siteConfig.wordmark.lead}<span style={{ color: 'var(--accent)' }}>{siteConfig.wordmark.accent}</span>
           </div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', opacity: 0.8, marginBottom: '16px' }}>
             {siteConfig.positioning}
@@ -51,7 +51,7 @@ export function Footer() {
         {/* BOTTOM */}
         <div style={{ paddingTop: '24px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>
           <div style={{ fontSize: '13px', color: 'rgba(var(--ink),0.55)', fontFamily: 'var(--font-mono)', letterSpacing: '0.05em', marginBottom: '12px' }}>
-            © {year} {siteConfig.domain} — Independent Space Intelligence Organization
+            © {year} {siteConfig.domain} — {siteConfig.positioning}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
             {[

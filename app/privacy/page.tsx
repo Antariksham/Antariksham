@@ -4,7 +4,7 @@ import { siteConfig } from '@/config/site'
 
 export const metadata: Metadata = {
   title:       `Privacy Policy — ${siteConfig.name}`,
-  description: 'Antariksham\'s privacy policy — what data we collect, how we use it, and your rights.',
+  description: 'CosmosDaily\'s privacy policy — what data we collect, how we use it, and your rights.',
 }
 
 const prose: React.CSSProperties = {
@@ -48,14 +48,14 @@ export default function PrivacyPage() {
         </p>
 
         <p style={{ ...prose, fontSize: '19px', color: 'rgba(var(--ink),0.85)', marginBottom: '36px' }}>
-          Antariksham is built to inform, not to surveil. We collect the minimum data necessary to operate the platform and we do not sell, share, or monetise your personal information.
+          CosmosDaily is built to inform, not to surveil. We collect the minimum data necessary to operate the platform and we do not sell, share, or monetise your personal information.
         </p>
 
         <hr style={divider} />
 
         <h2 style={{ ...h2, marginTop: 0 }}>What We Collect</h2>
         <p style={prose}>
-          <strong style={{ color: 'rgba(var(--ink),0.9)', fontWeight: 600 }}>Usage data.</strong> When you visit Antariksham, standard server logs are automatically generated including your IP address, browser type, pages visited, and time of visit. This data is used solely for performance monitoring and security. It is not linked to any personal profile.
+          <strong style={{ color: 'rgba(var(--ink),0.9)', fontWeight: 600 }}>Usage data.</strong> When you visit CosmosDaily, standard server logs are automatically generated including your IP address, browser type, pages visited, and time of visit. This data is used solely for performance monitoring and security. It is not linked to any personal profile.
         </p>
         <p style={prose}>
           <strong style={{ color: 'rgba(var(--ink),0.9)', fontWeight: 600 }}>Article view counts.</strong> We count page views per article to understand which content is most useful. This count is anonymous — we do not track which individual visited which article.
@@ -76,7 +76,7 @@ export default function PrivacyPage() {
 
         <h2 style={h2}>Third-Party Services</h2>
         <p style={prose}>
-          To operate the platform, Antariksham uses a small number of third-party services for infrastructure, live space data, and typography. These services may process limited technical data such as IP addresses as part of standard internet operations. We do not share any personal visitor information with these providers beyond what is technically necessary to serve the platform.
+          To operate the platform, CosmosDaily uses a small number of third-party services for infrastructure, live space data, and typography. These services may process limited technical data such as IP addresses as part of standard internet operations. We do not share any personal visitor information with these providers beyond what is technically necessary to serve the platform.
         </p>
         <p style={prose}>
           We do not use advertising networks, social media tracking pixels, or behavioural analytics platforms of any kind.

@@ -8,7 +8,7 @@ const DESCRIPTION =
   'Interactive gateways to the cosmos — an explorable Solar System map with live planet positions, mission cross-links and more discovery tools on the way.'
 
 export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
+  // Plain name — the root layout's titleTemplate appends "| CosmosDaily".
   title: 'Explore',
   description: DESCRIPTION,
   alternates: { canonical: '/explore' },

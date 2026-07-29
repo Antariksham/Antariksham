@@ -37,6 +37,26 @@ Work happens on branch **`claude/understand-target-codebase-ecpqrw`** → PR **#
 build error is a pre-existing `supabaseUrl is required` during page-data
 collection when Supabase env vars are absent — unrelated to app code).
 
+**Phase 3 (URL & metadata parity) — started:**
+- ✅ **Article URLs now match production exactly.** A single article reads at
+  **`/article/:slug`** (singular), the shape `cosmosdaily.space` already has
+  indexed; `/articles` stays the browse-all listing. Because the data migration
+  preserves slugs, the cutover changes **no live article URL** — no redirect
+  hop, no re-crawl, no ranking wobble. The engine's own shape moved instead
+  (it has never been public, so it had no equity to lose). `articleHref()`
+  builds it via `ARTICLE_SECTION` in `lib/i18n.ts`; canonical, hreflang,
+  JSON-LD, sitemap and every internal link follow. 301s cover `/articles/:slug`,
+  `/hi/articles/:slug`, `/news/:slug` and CosmosDaily's `/article.html?slug=`.
+- ✅ **Site identity switched to CosmosDaily.** `config/site.ts` now carries
+  CosmosDaily's name, domain, URL and title templates, with **Antariksham's
+  editorial voice kept** (tagline, positioning, philosophy) per the owner's
+  call. The nav/footer wordmark renders `wordmark.lead` + an accent-coloured
+  `wordmark.accent` — *Cosmos**Daily***, matching `space-website`'s `.nav-logo`.
+  The dormant Antariksham identity is documented in the same file so the future
+  antariksham.org rename is a one-file edit plus 301s. Admin-only localStorage
+  keys keep their `antariksham:` prefix on purpose — renaming them would discard
+  editors' saved drafts and sidebar prefs.
+
 **Phase 1 (Reskin) — essentially complete:**
 - ✅ **Design tokens & full color migration** to CosmosDaily's palette. Antariksham's
   CSS variable *names* were kept; only *values* were swapped, and every hardcoded
@@ -1172,7 +1192,25 @@ follow-ups (not required, but where the foundation is ready):
   `scripts/README.md` for the field mapping, gap decisions, and the required
   `/article/:slug → /articles/:slug` 301s.
 - **Phase 3 — URL & metadata parity, then staged cutover** via `vercel.json`
-  (see §9), honoring §6.5.
+  (see §9), honoring §6.5. *Article URLs + site identity done (see §2).* Still
+  open:
+  - **301s for the static `.html` pages** — the remaining indexed URLs, all in
+    `cosmosdaily-nextjs`'s sitemap: `/articles.html → /articles`,
+    `/gallery.html`, `/missions.html`, `/about.html`, `/contact.html`,
+    `/privacy.html`, `/terms.html` → their extensionless routes, and
+    `/deep-space.html → /live/deep-space`. Add as each page cuts over, not
+    before — a 301 on a page still served by `space-website` would break it.
+  - **Cut articles over first**: `space-website/vercel.json` already proxies
+    `/article/:slug` to `cosmosdaily-nextjs.vercel.app`. Repointing that one
+    destination at this engine is the whole article cutover, and a one-line
+    revert. Do the same for `/api/sitemap.xml`.
+  - **Publishing must move with it.** The old and new Supabase projects are
+    separate. The moment `/article/:slug` points here, anything published
+    through `space-website/admin` writes to a database nothing serves. Freeze
+    the old admin at cutover and publish from `/admin`.
+  - **Confirm the contact address.** `siteConfig.email` is
+    `contact@cosmosdaily.space`; it is a live `mailto:` on /contact, /terms,
+    /privacy and /editorial-policy, so it needs to be a real inbox.
 - **Phase 4 — Advanced features** (only after cutover): 3D planet rendering
   (Three.js / R3F via `next/dynamic({ssr:false})`, scoped so the WebGL bundle
   never loads on other routes), satellite data control center (extend the
