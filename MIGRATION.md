@@ -1162,6 +1162,19 @@ follow-ups (not required, but where the foundation is ready):
 - **Public API / analytics / launches-integration** — the structured model is
   now ready to power those (the original goal of Phase 1).
 
+**Media Library at scale — design done, not implemented.** See
+[`docs/MEDIA_LIBRARY_ARCHITECTURE.md`](./docs/MEDIA_LIBRARY_ARCHITECTURE.md).
+Today the Supabase tab lists Storage directly with a hard `limit: 200`
+(`app/api/admin/media/route.ts:32`) and searches client-side on the filename
+only, so the library stops working somewhere past a few hundred images. The doc
+proposes making `media_assets` the index of record for **both** providers
+(tsvector + `pg_trgm` + tag/collection GIN indexes behind a
+`search_media_assets` RPC), keyset pagination, a content-hash key scheme
+(`<yyyy>/<mm>/<slug>--<sha256[0..8]>.<ext>`) that gives dedupe and immutable
+caching, a `media_usages` graph for safe deletes, and a title/alt/tags step at
+upload. Phased so 1+2 alone remove the 200-file ceiling. Its §3 `blurhash` +
+`dominant_color` columns also close the *"Media blur placeholders"* item above.
+
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into
   Antariksham's relational `categories`/`tags` join tables (one-time script).
