@@ -166,6 +166,38 @@ collection when Supabase env vars are absent — unrelated to app code).
   `modules/admin/services/getAdminUser.ts`. Bootstrap steps are in
   `supabase/migrations/README.md`.
 
+- ✅ **Media Library at scale (Phases 1+2)** — `media_assets` is now the
+  searchable **index of record** for both providers, and the library no longer
+  lists Storage. Previously the Supabase tab read the bucket directly with a
+  hard `limit: 200` and filtered filenames in the browser, so image 201 was
+  invisible and "mars" could only match a filename.
+  - **Migration** (`supabase/migrations/20260729120000_media_library_index.sql`):
+    per-asset descriptive columns (`alt_text`, `caption`, `credit`,
+    `photographer`, `tags`, `collection_id`, `checksum_sha256`, `blurhash`,
+    `deleted_at`, …), a one-level `media_collections` table, a weighted
+    generated `search_vector`, GIN indexes (full text, tags, `pg_trgm` on
+    `title` + `storage_key`), a partial btree for keyset pagination, and the
+    `search_media_assets` / `count_media_assets` functions. Additive and
+    idempotent.
+  - **API** (`app/api/admin/media/route.ts`): `GET` searches the index with
+    filters + an opaque keyset cursor and returns `{ items, nextCursor, total }`
+    (total on the first page only, fetched in parallel); `POST` writes a row on
+    every upload and rolls the object back if indexing fails; `DELETE` resolves
+    by asset id. `POST /api/admin/media/sync` is a resumable importer for files
+    uploaded before the index existed.
+  - **UI**: shared `useMediaSearch` hook (debounced, race-safe) + `MediaSearchBar`
+    + "Load more" in `MediaGrid`. **Both** panels use it, so the Cloudinary tab
+    gains the search and pagination it never had.
+  - **Measured at 50,003 rows**: first page 0.6 ms, deep keyset page 0.5 ms,
+    selective search 0.7 ms, common search 1.1 ms. Four planner traps found by
+    reading EXPLAIN rather than by inspection — a CTE in the function body cost
+    ~300× by blocking inlining, a `count(*) over ()` window made every page scan
+    the whole match set, a scalar count function planned blind at 190 ms, and an
+    unindexed `OR` branch collapsed the whole `BitmapOr`. All four are written
+    up in the doc and the migration comments.
+  - Remaining phases (upload-time metadata, usage graph, filter rail) are in
+    §10 and [`docs/MEDIA_LIBRARY_ARCHITECTURE.md`](./docs/MEDIA_LIBRARY_ARCHITECTURE.md).
+
 - ✅ **Multi-provider Media Library (Supabase + Cloudinary)**: refactored the
   admin Media Library into a tabbed, provider-adapter architecture under
   `modules/admin/media/` (thin `MediaLibrary` shell + shared `MediaGrid` +
@@ -1162,18 +1194,25 @@ follow-ups (not required, but where the foundation is ready):
 - **Public API / analytics / launches-integration** — the structured model is
   now ready to power those (the original goal of Phase 1).
 
-**Media Library at scale — design done, not implemented.** See
-[`docs/MEDIA_LIBRARY_ARCHITECTURE.md`](./docs/MEDIA_LIBRARY_ARCHITECTURE.md).
-Today the Supabase tab lists Storage directly with a hard `limit: 200`
-(`app/api/admin/media/route.ts:32`) and searches client-side on the filename
-only, so the library stops working somewhere past a few hundred images. The doc
-proposes making `media_assets` the index of record for **both** providers
-(tsvector + `pg_trgm` + tag/collection GIN indexes behind a
-`search_media_assets` RPC), keyset pagination, a content-hash key scheme
-(`<yyyy>/<mm>/<slug>--<sha256[0..8]>.<ext>`) that gives dedupe and immutable
-caching, a `media_usages` graph for safe deletes, and a title/alt/tags step at
-upload. Phased so 1+2 alone remove the 200-file ceiling. Its §3 `blurhash` +
-`dominant_color` columns also close the *"Media blur placeholders"* item above.
+**Media Library at scale — Phases 1+2 shipped, 3–5 open.** See
+[`docs/MEDIA_LIBRARY_ARCHITECTURE.md`](./docs/MEDIA_LIBRARY_ARCHITECTURE.md) for
+the full design, the measured numbers and the remaining phases. Still to do:
+
+- **Phase 3 — backfill + usage graph.** `media_usages` (which article/mission
+  uses which asset) for safe deletes and an "unused" filter, checksums,
+  dimensions, blurhash, and harvesting `articles.featured_image_meta` /
+  `missions.details.media` onto the asset rows. The resumable **Sync from
+  Storage** action already indexes existing objects; this is the rest.
+- **Phase 4 — the one that matters next.** An upload dialog capturing title,
+  alt text and 2–4 tags, plus SHA-256 dedupe precheck and the content-hash key
+  scheme. Search can only find words that exist: Phases 1+2 index a title
+  derived from the filename, so `IMG_4471.jpg` is still unfindable. Every image
+  uploaded before this lands needs a manual pass later.
+- **Phase 5 — the browsing experience.** Filter rail with tag facets,
+  virtualised grid, per-asset detail drawer, bulk tag/move/delete, `⌘K`
+  quick-pick in the editor, and Supabase Storage thumbnails (the grid still
+  loads full-size originals for that provider; Cloudinary already derives one).
+  `sort`, orientation/date/unused filters and facet counts land here too.
 
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into

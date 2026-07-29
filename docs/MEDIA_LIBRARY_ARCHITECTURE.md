@@ -1,6 +1,8 @@
 # Media Library — scale architecture (search, grouping, filtering at 10k+ assets)
 
-**Status:** proposal / design doc. Nothing here is implemented yet.
+**Status:** **Phases 1 and 2 are implemented** (§9) — the index, the search
+functions, a row per upload, server-side search and keyset pagination. Phases
+3–5 are still design.
 **Problem:** uploads are stored as `1753612345678-img-4471.jpg`. At a few hundred
 images that is ugly; at a few thousand it makes the library unusable — you cannot
 search, group, filter, or find anything.
@@ -200,71 +202,69 @@ argument by the third. Tags carry the load; one level of collections is enough.
 
 ---
 
-## 4. The query — a single RPC, one round trip
+## 4. The query — two inlinable functions
 
-Mirrors the existing `20260720140000_article_views_rpc.sql` pattern.
+Implemented in `supabase/migrations/20260729120000_media_library_index.sql`,
+mirroring the existing `20260720140000_article_views_rpc.sql` pattern.
 
 ```sql
-create or replace function public.search_media_assets(
-  p_query      text default null,
-  p_tags       text[] default null,
-  p_collection uuid default null,
-  p_provider   text default null,
-  p_orientation text default null,          -- 'landscape' | 'portrait' | 'square'
-  p_unused_only boolean default false,
-  p_from       timestamptz default null,
-  p_to         timestamptz default null,
-  p_sort       text default 'recent',       -- recent | name | size | usage | relevance
-  p_cursor_ts  timestamptz default null,    -- keyset pagination, never OFFSET
-  p_cursor_id  uuid default null,
-  p_limit      int default 48
-)
-returns table (...) language sql stable as $$
-  with q as (select case when coalesce(p_query,'') = '' then null
-                    else websearch_to_tsquery('simple', p_query) end as tsq)
-  select a.*, count(*) over () as total_count
-  from public.media_assets a, q
-  where a.deleted_at is null
-    and (q.tsq is null or a.search_vector @@ q.tsq
-         or a.title % p_query)                              -- trigram fallback: typos
-    and (p_tags is null       or a.tags @> p_tags)
-    and (p_collection is null or a.collection_id = p_collection)
-    and (p_provider is null   or a.provider::text = p_provider)
-    and (p_from is null       or a.created_at >= p_from)
-    and (p_to is null         or a.created_at <= p_to)
-    and (not p_unused_only    or a.usage_count = 0)
-    and (p_orientation is null or case p_orientation
-           when 'landscape' then a.width > a.height
-           when 'portrait'  then a.height > a.width
-           else a.width = a.height end)
-    and (p_cursor_ts is null or (a.created_at, a.id) < (p_cursor_ts, p_cursor_id))
-  order by
-    case when p_sort = 'relevance' and q.tsq is not null
-         then ts_rank_cd(a.search_vector, q.tsq) end desc nulls last,
-    case when p_sort = 'usage' then a.usage_count end desc nulls last,
-    case when p_sort = 'size'  then a.file_size  end desc nulls last,
-    a.created_at desc, a.id desc
-  limit p_limit;
-$$;
+-- One page. Keyset cursor, never OFFSET.
+search_media_assets(p_query, p_provider, p_bucket, p_tags, p_collection,
+                    p_cursor_ts, p_cursor_id, p_limit)  -> returns table (...)
+
+-- Row total for the same filters. First page only.
+count_media_assets(p_query, p_provider, p_bucket, p_tags, p_collection)
+                                                       -> returns table (total bigint)
 ```
 
-Notes that matter:
+The predicate is full-text first —
+`search_vector @@ websearch_to_tsquery('english', q)`, which stems (`rovers`
+finds `rover`) and supports `mars -curiosity` and `"quoted phrases"` — OR an
+ILIKE fallback on `title` and `storage_key` so partial words and raw filenames
+still match.
 
-- **`websearch_to_tsquery`** gives editors real query syntax for free:
-  `mars rover -curiosity`, `"solar eclipse"`.
-- **Trigram fallback** (`a.title % p_query`, `pg_trgm` similarity) catches the
-  misspellings that FTS misses. Two indexes, one query.
-- **Keyset pagination** (`(created_at, id) < (cursor)`) stays O(limit) at page
-  500. `OFFSET 20000` does not.
-- **`count(*) over ()`** returns the total in the same round trip — no second
-  count query.
-- Facet counts (tag → count) come from one extra grouped query, cached 60s.
+### Four things that EXPLAIN, not intuition, decided
 
-Realistic timing at 100k rows on Supabase's smallest paid instance: GIN lookup
-**1–4 ms**, whole RPC **< 15 ms**. The one-second budget is then spent entirely
-on network and thumbnail decode — which §6 handles.
+Each of these was written the obvious way first and measured at 50k rows.
 
----
+1. **The body must be one flat SELECT.** A `with q as (...)` holding the parsed
+   tsquery reads much better, but it stops Postgres inlining the function, so
+   the planner never sees the search term as a constant and cannot turn it into
+   an index condition. Selective search went from a 50,000-row sequential scan
+   to a three-way `BitmapOr`: **88 ms → 0.7 ms**.
+
+2. **The row total needs its own function.** `count(*) over ()` beside the rows
+   is one round trip and reads well, but a window count must visit every
+   matching row *on every page* — it turned a 48-row page into a 37,500-row scan
+   and cancelled out the keyset index entirely.
+
+3. **That count function must be set-returning.** As a scalar
+   `returns bigint` it is never inlined and plans blind to its arguments:
+   **190 ms**. Declared `returns table (total bigint)` and called from the FROM
+   clause it inlines like the search does: **0.7 ms**.
+
+4. **Every OR branch needs an index.** One unindexed branch forces a sequential
+   scan no matter how good the other indexes are, so `storage_key` gets a
+   trigram index alongside `title` — otherwise the whole `BitmapOr` collapses.
+
+Two more that are easy to get wrong:
+
+- `array_to_string(tags, ' ')` is only STABLE, so a generated column rejects it.
+  It goes through an immutable `media_tags_text` wrapper — and it must keep the
+  `english` stemming, or a `mars` tag never matches a search for `mars`, which
+  the stemmer reduces to `mar`.
+- The provider filter casts the **parameter** to the enum
+  (`a.provider = p_provider::media_provider`), not the column. Casting the
+  column makes it unindexable and throws away the scope index.
+
+### Not yet wired
+
+`p_sort`, orientation, date-range and unused-only filters, and facet counts are
+deferred to Phase 5 with the filter rail that would expose them. Ordering is
+newest-first throughout, which keeps the keyset cursor provably correct;
+relevance ranking needs a cursor that encodes rank, and is not worth it before
+there is a UI to sort from.
+
 
 ## 5. API contract
 
@@ -418,28 +418,55 @@ reads `title`. New uploads get the §2 scheme.
 
 ## 9. Phasing
 
-| Phase | Scope | Unblocks | Rough effort |
+| Phase | Scope | Unblocks | Status |
 |---|---|---|---|
-| **1** | Schema + indexes + RPC migration; write a `media_assets` row on **every** upload (Supabase path included) | the whole rest | ~0.5 day |
-| **2** | `GET /api/admin/media` reads the RPC; keyset pagination; grid reads it | **the 200-file ceiling and the client-side search both disappear** | ~1 day |
-| **3** | Backfill script + `media_usages` + metadata harvest | existing library becomes searchable | ~1 day |
+| **1** | Schema + indexes + search functions; write a `media_assets` row on **every** upload (Supabase path included) | the whole rest | ✅ **done** |
+| **2** | `GET /api/admin/media` reads the functions; keyset pagination; both provider panels read it | **the 200-file ceiling and the client-side search both disappear** | ✅ **done** |
+| **3** | Backfill script + `media_usages` + metadata harvest | safe deletes, "unused" filter | ~1 day |
 | **4** | Upload dialog (title/alt/tags), dedupe precheck, new key scheme, thumbnails | new uploads stop being the problem | ~1 day |
 | **5** | Filter rail, virtualised grid, detail drawer, bulk ops, `⌘K` quick-pick | the "one second" experience | ~2 days |
 
-Phase 1+2 alone fixes the two things that actually break at scale (the 200 cap
-and filename-only client-side search). Ship those first; 3–5 are progressive
-enhancement and each is independently useful.
+Phases 1+2 fixed the two things that actually break at scale: the 200-file cap
+and filename-only client-side search. A **Sync from Storage** action
+(`POST /api/admin/media/sync`, resumable) ships with them — without it, files
+uploaded before the index existed would vanish from a library that now reads
+the index rather than the bucket. It is the minimum slice of Phase 3 needed to
+make Phase 2 non-destructive; checksums, dimensions, blurhash, the usage graph
+and the `featured_image_meta` harvest are still Phase 3.
+
+**Phase 4 is the one that matters next.** Phases 1+2 make the whole library
+searchable and instant, but they can only index words that already exist — a
+title derived from the filename. `IMG_4471.jpg` still has nothing in it to find.
+The upload dialog asking for a title, alt text and 2–4 tags is what actually
+puts words in the index, and every image uploaded before it lands is one that
+needs a manual pass later.
 
 ---
 
 ## 10. Budget at scale
 
-| Assets | RPC (GIN) | Payload / page (48 items) | Notes |
-|---|---|---|---|
-| 1k | ~1 ms | ~40 KB JSON + 48 thumbs | — |
-| 10k | ~2 ms | same | keyset pagination now mandatory |
-| 100k | ~4 ms | same | consider `pg_partman` on `created_at` only if writes get heavy |
-| 1M | ~10 ms | same | still Postgres; no external search engine needed |
+Measured on Postgres 16 against **50,003 rows**, after `VACUUM ANALYZE`, with
+the shipped functions:
+
+| Operation | Plan | Time |
+|---|---|---|
+| Panel opening (first page, no query) | index scan on `scope_recent_idx` | **0.6 ms** |
+| Deep keyset page (~page 500) | same index, cursor as index cond | **0.5 ms** |
+| Selective search (3 of 50,003) | `BitmapOr` across FTS + both trigram indexes | **0.7 ms** |
+| Common search (10k of 50,003) | ordered index scan, early exit | **1.1 ms** |
+| Row total, selective | inlined count | **0.7 ms** |
+| Row total, common (10k matches) | inlined count | **16 ms** |
+| Row total, unfiltered (37.5k matches) | inlined count | **5.9 ms** |
+
+Deep pages cost the same as the first page, which is the whole point of the
+keyset cursor. The remaining budget goes to network and thumbnail decode — which
+is why Phase 5's thumbnails and virtualised grid matter more from here than any
+further query tuning.
+
+**One caveat worth knowing:** immediately after a bulk insert, before statistics
+catch up, the planner misjudges the selective search and falls back to a
+sequential scan (~88 ms). `VACUUM ANALYZE` fixes it. Run it after the initial
+Sync from Storage.
 
 **No Elasticsearch / Algolia / Typesense.** At the scale of a space-news
 newsroom, Postgres GIN + trigram is faster than the network hop to an external

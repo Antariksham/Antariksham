@@ -1,12 +1,15 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { MediaGrid } from './MediaGrid'
+import { MediaSearchBar } from './MediaSearchBar'
+import { useMediaSearch } from './useMediaSearch'
 import { SUPABASE_BUCKETS, type SupabaseBucket, type MediaItem } from './types'
 
-// Supabase Storage tab — same behaviour as the original Media Library (lists a
-// bucket directly from Storage via /api/admin/media), now rendered through the
-// shared MediaGrid. Buckets: Article Images / Mission Images.
+// Supabase Storage tab. Listing no longer walks the bucket — it queries the
+// media_assets index through /api/admin/media, so search runs in Postgres over
+// the whole library instead of over the 200 filenames that happened to be
+// loaded. Buckets: Article Images / Mission Images.
 
 interface Props {
   pickerMode?:   boolean
@@ -14,43 +17,25 @@ interface Props {
   defaultBucket?: SupabaseBucket
 }
 
-interface RawFile {
-  name: string
-  url:  string
-  size: number
-}
-
-function formatName(name: string) {
-  return name.replace(/^\d{13}-/, '')
+interface SyncState {
+  running:  boolean
+  imported: number
+  message:  string | null
 }
 
 export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'article-images' }: Props) {
-  const [bucket,     setBucket]     = useState<SupabaseBucket>(defaultBucket)
-  const [files,      setFiles]      = useState<RawFile[]>([])
-  const [loading,    setLoading]    = useState(false)
-  const [uploading,  setUploading]  = useState(false)
-  const [error,      setError]      = useState<string | null>(null)
-  const [uploadError,setUploadError]= useState<string | null>(null)
-  const [deleting,   setDeleting]   = useState<string | null>(null)
-  const [dragOver,   setDragOver]   = useState(false)
-  const [search,     setSearch]     = useState('')
+  const [bucket,      setBucket]      = useState<SupabaseBucket>(defaultBucket)
+  const [uploading,   setUploading]   = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [deleting,    setDeleting]    = useState<string | null>(null)
+  const [dragOver,    setDragOver]    = useState(false)
+  const [sync,        setSync]        = useState<SyncState>({ running: false, imported: 0, message: null })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const fetchFiles = useCallback(async (b: SupabaseBucket) => {
-    setLoading(true); setError(null)
-    try {
-      const res  = await fetch(`/api/admin/media?bucket=${b}`)
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to load')
-      setFiles(data.files || [])
-    } catch (e: any) {
-      setError(e.message)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { fetchFiles(bucket) }, [bucket, fetchFiles])
+  const {
+    items, total, loading, loadingMore, error, setError,
+    hasMore, search, setSearch, isSearching, refresh, loadMore, removeItem,
+  } = useMediaSearch({ provider: 'supabase', bucket })
 
   const handleUpload = useCallback(async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return
@@ -68,15 +53,15 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
       }
     }
     setUploading(false)
-    if (!anyError) fetchFiles(bucket)
-  }, [bucket, fetchFiles])
+    if (!anyError) refresh()
+  }, [bucket, refresh])
 
   async function handleDelete(item: MediaItem) {
     if (!confirm(`Delete "${item.name}"? This cannot be undone.`)) return
     setDeleting(item.id)
     try {
-      const res = await fetch(`/api/admin/media?bucket=${bucket}&name=${encodeURIComponent(item.id)}`, { method: 'DELETE' })
-      if (res.ok) setFiles(prev => prev.filter(f => f.name !== item.id))
+      const res = await fetch(`/api/admin/media?bucket=${bucket}&id=${encodeURIComponent(item.id)}`, { method: 'DELETE' })
+      if (res.ok) removeItem(item.id)
       else {
         const data = await res.json()
         setError(data.error || 'Delete failed')
@@ -88,12 +73,39 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
     }
   }
 
-  const items: MediaItem[] = files
-    .filter(f => !search.trim() || formatName(f.name).toLowerCase().includes(search.toLowerCase()))
-    .map(f => ({
-      id: f.name, url: f.url, name: formatName(f.name),
-      sizeBytes: f.size, provider: 'supabase', kind: 'image',
-    }))
+  // Imports Storage objects uploaded before the index existed. Resumable: each
+  // request handles a slice and hands back the offset to continue from, so a
+  // bucket with tens of thousands of objects cannot time out mid-run.
+  async function runSync() {
+    setSync({ running: true, imported: 0, message: null })
+    let offset   = 0
+    let imported = 0
+    try {
+      for (;;) {
+        const res  = await fetch(`/api/admin/media/sync?bucket=${bucket}&offset=${offset}`, { method: 'POST' })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Sync failed')
+        imported += data.imported || 0
+        offset    = data.nextOffset
+        setSync({ running: true, imported, message: null })
+        if (data.done) break
+      }
+      setSync({
+        running: false, imported,
+        message: imported > 0
+          ? `Indexed ${imported} file${imported !== 1 ? 's' : ''} from Storage.`
+          : 'Everything in Storage is already indexed.',
+      })
+      if (imported > 0) refresh()
+    } catch (e: any) {
+      setSync({ running: false, imported, message: null })
+      setError(e.message || 'Sync failed')
+    }
+  }
+
+  const countLabel = total === null
+    ? `${items.length} shown`
+    : `${items.length} of ${total} ${isSearching ? 'match' : 'file'}${total !== 1 ? 'es' : ''}`
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -103,7 +115,7 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
         {SUPABASE_BUCKETS.map(b => (
           <button
             key={b.key}
-            onClick={() => { setBucket(b.key); setSearch('') }}
+            onClick={() => { setBucket(b.key); setSearch(''); setSync({ running: false, imported: 0, message: null }) }}
             style={{
               fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.15em',
               textTransform: 'uppercase', padding: '6px 16px', borderRadius: '6px',
@@ -118,7 +130,7 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
           </button>
         ))}
         <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)' }}>
-          {files.length} file{files.length !== 1 ? 's' : ''}
+          {countLabel}
         </span>
       </div>
 
@@ -131,7 +143,7 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
         style={{
           border: `2px dashed ${dragOver ? 'var(--accent)' : 'rgba(var(--ink),0.12)'}`,
           borderRadius: '10px', padding: '28px', textAlign: 'center', cursor: 'pointer',
-          background: dragOver ? 'rgba(79,142,247,0.05)' : 'rgba(var(--ink),0.02)', transition: 'all 0.2s',
+          background: dragOver ? 'rgba(var(--accent-rgb),0.05)' : 'rgba(var(--ink),0.02)', transition: 'all 0.2s',
         }}
       >
         <input
@@ -156,17 +168,28 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
       </div>
 
       {uploadError && (
-        <div style={{ padding: '12px 16px', background: 'rgba(231,76,60,0.1)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'var(--red)' }}>
+        <div style={{ padding: '12px 16px', background: 'rgba(var(--red-rgb),0.1)', border: '1px solid rgba(var(--red-rgb),0.25)', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'var(--red)' }}>
           {uploadError}
         </div>
       )}
 
-      {files.length > 6 && (
-        <input
-          type="text" value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Search by filename…"
-          style={{ width: '100%', padding: '10px 14px', background: 'rgba(var(--ink),0.04)', border: '1px solid rgba(var(--ink),0.1)', borderRadius: '8px', color: 'var(--white)', fontFamily: 'var(--font-sans)', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
-        />
+      <MediaSearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Search title, filename, caption, credit…"
+        busy={loading && !!search}
+        action={{
+          label:   sync.running ? `Indexing… ${sync.imported}` : 'Sync from Storage',
+          title:   'Import files uploaded before the media index existed',
+          onClick: runSync,
+          disabled: sync.running,
+        }}
+      />
+
+      {sync.message && (
+        <div style={{ padding: '10px 14px', background: 'rgba(var(--green-rgb),0.08)', border: '1px solid rgba(var(--green-rgb),0.22)', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--green)' }}>
+          {sync.message}
+        </div>
       )}
 
       <MediaGrid
@@ -177,7 +200,14 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
         deletingId={deleting}
         onPick={it => onPick?.(it.url)}
         onDelete={handleDelete}
-        emptyLabel={search ? `No images match "${search}"` : 'No images yet — upload your first one above'}
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        onLoadMore={loadMore}
+        emptyLabel={
+          isSearching
+            ? `No images match "${search}"`
+            : 'No images indexed yet — upload one above, or Sync from Storage if you have existing files'
+        }
       />
     </div>
   )

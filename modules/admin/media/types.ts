@@ -1,29 +1,41 @@
 export type ProviderKey = 'supabase' | 'cloudinary'
 
 // A provider-agnostic media item the shared grid can render, pick, and delete.
-// Each provider panel maps its own records into this shape and closes over its
-// own delete logic, so the grid stays presentational.
+// Both provider panels now read the same /api/admin/media endpoint (backed by
+// the media_assets index), so this shape is what that endpoint returns; the
+// grid stays presentational.
 export interface MediaItem {
-  id:        string          // unique within a provider (supabase: filename, cloudinary: row id)
+  id:        string          // media_assets row id
   url:       string          // full/public URL — copied and passed to onPick
   thumbUrl?: string          // optimized preview; defaults to url
-  name:      string
+  name:      string          // human title, falling back to the storage key
   sizeBytes: number
   provider:  ProviderKey
   kind:      'image' | 'file'
+
+  // Index metadata — optional so a row written before the Phase 1 migration
+  // still renders.
+  assetId?:    string
+  storageKey?: string | null
+  altText?:    string | null
+  caption?:    string | null
+  credit?:     string | null
+  tags?:       string[]
+  width?:      number | null
+  height?:     number | null
+  mimeType?:   string | null
+  bucket?:     string | null
+  usageCount?: number
+  createdAt?:  string
 }
 
-// Shape returned by the Cloudinary list action (defined here, not in the
-// 'use server' file, since a server-action module may only export async fns).
-export interface CloudinaryItem {
-  id:        string
-  url:       string
-  publicId:  string
-  filename:  string
-  sizeBytes: number
-  width:     number | null
-  height:    number | null
-  createdAt: string
+// One page of search results from GET /api/admin/media. `total` is present only
+// on the first page — see the RPC comment in the Phase 1 migration.
+export interface MediaSearchResponse {
+  items:      MediaItem[]
+  nextCursor: string | null
+  total?:     number
+  error?:     string
 }
 
 export const SUPABASE_BUCKETS = [

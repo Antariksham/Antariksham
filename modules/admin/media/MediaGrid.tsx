@@ -7,22 +7,28 @@ import type { MediaItem } from './types'
 // ── Shared presentational grid + card. Reused by every provider panel. ────────
 
 interface GridProps {
-  items:       MediaItem[]
-  loading:     boolean
-  error:       string | null
-  pickerMode?: boolean
-  deletingId:  string | null
-  onPick?:     (item: MediaItem) => void
-  onDelete:    (item: MediaItem) => void
-  emptyLabel?: string
+  items:        MediaItem[]
+  loading:      boolean
+  error:        string | null
+  pickerMode?:  boolean
+  deletingId:   string | null
+  onPick?:      (item: MediaItem) => void
+  onDelete:     (item: MediaItem) => void
+  emptyLabel?:  string
+  // Keyset pagination — the grid holds one page at a time and asks for the
+  // next, so library size no longer drives DOM size or payload size.
+  hasMore?:     boolean
+  loadingMore?: boolean
+  onLoadMore?:  () => void
 }
 
 export function MediaGrid({
   items, loading, error, pickerMode, deletingId, onPick, onDelete, emptyLabel,
+  hasMore, loadingMore, onLoadMore,
 }: GridProps) {
   if (error) {
     return (
-      <div style={{ padding: '12px 16px', background: 'rgba(231,76,60,0.1)', border: '1px solid rgba(231,76,60,0.25)', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'var(--red)' }}>
+      <div style={{ padding: '12px 16px', background: 'rgba(var(--red-rgb),0.1)', border: '1px solid rgba(var(--red-rgb),0.25)', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'var(--red)' }}>
         {error}
       </div>
     )
@@ -48,17 +54,38 @@ export function MediaGrid({
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
-      {items.map(item => (
-        <MediaCard
-          key={`${item.provider}-${item.id}`}
-          item={item}
-          pickerMode={pickerMode}
-          deleting={deletingId === item.id}
-          onPick={onPick}
-          onDelete={onDelete}
-        />
-      ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
+        {items.map(item => (
+          <MediaCard
+            key={`${item.provider}-${item.id}`}
+            item={item}
+            pickerMode={pickerMode}
+            deleting={deletingId === item.id}
+            onPick={onPick}
+            onDelete={onDelete}
+          />
+        ))}
+      </div>
+
+      {hasMore && onLoadMore && (
+        <button
+          type="button"
+          onClick={onLoadMore}
+          disabled={loadingMore}
+          style={{
+            alignSelf: 'center', padding: '9px 26px', borderRadius: '7px',
+            background: 'rgba(var(--ink),0.04)',
+            border: '1px solid rgba(var(--ink),0.12)',
+            color: loadingMore ? 'rgba(var(--ink),0.45)' : 'rgba(var(--ink),0.85)',
+            fontFamily: 'var(--font-mono)', fontSize: '13px',
+            letterSpacing: '0.15em', textTransform: 'uppercase',
+            cursor: loadingMore ? 'not-allowed' : 'pointer', transition: 'all 0.15s',
+          }}
+        >
+          {loadingMore ? 'Loading…' : 'Load more'}
+        </button>
+      )}
     </div>
   )
 }
@@ -147,8 +174,8 @@ function MediaCard({
             style={{
               fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.12em',
               textTransform: 'uppercase', padding: '5px 8px', borderRadius: '5px',
-              border: '1px solid rgba(231,76,60,0.2)', background: 'transparent',
-              color: deleting ? 'rgba(231,76,60,0.3)' : 'rgba(231,76,60,0.6)',
+              border: '1px solid rgba(var(--red-rgb),0.2)', background: 'transparent',
+              color: deleting ? 'rgba(var(--red-rgb),0.3)' : 'rgba(var(--red-rgb),0.6)',
               cursor: deleting ? 'not-allowed' : 'pointer',
             }}
           >
@@ -162,9 +189,9 @@ function MediaCard({
 
 function actionStyle(kind: 'accent' | 'green' | 'muted'): React.CSSProperties {
   const c = kind === 'accent'
-    ? { border: 'var(--accent)', bg: 'rgba(79,142,247,0.12)', fg: 'var(--accent)' }
+    ? { border: 'var(--accent)', bg: 'rgba(var(--accent-rgb),0.12)', fg: 'var(--accent)' }
     : kind === 'green'
-    ? { border: 'var(--green)', bg: 'rgba(46,204,113,0.1)', fg: 'var(--green)' }
+    ? { border: 'var(--green)', bg: 'rgba(var(--green-rgb),0.1)', fg: 'var(--green)' }
     : { border: 'rgba(var(--ink),0.12)', bg: 'transparent', fg: 'rgba(var(--ink),0.72)' }
   return {
     flex: 1, fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.12em',
