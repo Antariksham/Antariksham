@@ -2059,8 +2059,44 @@ textarea.cite-input { resize: vertical; font-family: var(--font-mono); }
   margin-left: auto;
   white-space: nowrap;
 }
-@media (max-width: 560px) {
-  .sky-pass-elev { margin-left: 0; }
+/* ── Phones: reflow the single-line rows into a compact two-line grid ──
+   Both row types pack a fixed-width label, a flexible hint and two nowrap
+   items onto one line. Below ~600px that no longer fits: the hint collapses
+   to one word per line and the trailing chip pushes past the row, scrolling
+   the whole page sideways. On a grid the chip sits beside the name and the
+   detail text gets the full width. */
+@media (max-width: 600px) {
+  .sky-planet {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "dot  name  window"
+      "hint hint  elong";
+    column-gap: 10px;
+    row-gap: 3px;
+  }
+  .sky-planet-dot   { grid-area: dot; }
+  .sky-planet-name  { grid-area: name; min-width: 0; }
+  .sky-planet-hint  { grid-area: hint; }
+  .sky-planet-elong { grid-area: elong; text-align: right; }
+
+  .sky-pass {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "day  window"
+      "time time"
+      "path elev";
+    column-gap: 10px;
+    row-gap: 3px;
+  }
+  .sky-pass-day  { grid-area: day; min-width: 0; }
+  .sky-pass-time { grid-area: time; }
+  .sky-pass-path { grid-area: path; }
+  .sky-pass-elev { grid-area: elev; margin-left: 0; text-align: right; }
+
+  .sky-planet .sky-window,
+  .sky-pass   .sky-window { grid-area: window; justify-self: end; }
 }
 
 /* ── GALLERY (/gallery) — NASA Image Library browser ──
