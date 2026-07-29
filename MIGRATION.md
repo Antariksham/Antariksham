@@ -848,6 +848,33 @@ collection when Supabase env vars are absent — unrelated to app code).
     Theme-aware `.sky-*` styles (tokens only; the Moon disc reuses the
     pinned-dark `--space-*` canvas).
 
+- ✅ **Gallery (`/gallery`)** — the nav's last dead link now resolves: a
+  browse-and-search window on the **NASA Image and Video Library**
+  (`images-api.nasa.gov` — NASA's official, keyless, actively-maintained API;
+  deliberately NOT the retired community Mars Rover Photos API). Branch
+  `claude/explore-section-ideas-uuv5wo`.
+  - **Curated "Featured" tab = the SSR fallback**: twelve iconic, URL-verified
+    images (Aldrin, Earthrise, Webb's Cosmic Cliffs, Pillars of Creation, Pale
+    Blue Dot, eXtreme Deep Field, Perseverance's selfie, Artemis I, …) render
+    with zero network on the server (deterministic → hydration-safe) and
+    double as the graceful state when the API is down.
+  - **Live browsing**: topic chips (Nebulae / Galaxies / Webb / Mars / Moon /
+    Earth / Launches / Astronauts / Saturn), free-text search, result counts,
+    **Load more** pagination (id-de-duped), CSS-columns masonry grid with
+    hover titles, per-image `onError` hiding.
+  - **Lightbox**: keyboard-accessible dialog (Esc close, arrow prev/next,
+    wrap), title/date/photographer-credit, truncated description, link out to
+    `images.nasa.gov/details/…`, body scroll lock.
+  - **Proxy** (`app/api/gallery`): 10-min in-memory cache (capped keys),
+    query sanitizing, 8 s upstream timeout, slimmed response via a pure,
+    tested mapper (`modules/gallery/services/nasaImages.ts` — https-upgrade,
+    space-encoding, photographer→secondary_creator→center credit fallback,
+    video/malformed-item filtering; 5 node:test cases, **38 total**).
+  - **Tokens**: photo scrim + lightbox are pinned dark via new `--photo-ink` /
+    `--photo-scrim` / `--lightbox-bg` tokens (they frame photographs — the
+    `--space-*` rationale); everything else uses standard theme tokens (both
+    themes verified). Sitemap entry + ImageGallery JSON-LD + canonical/OG.
+
 **Mission Management System upgrade (Phase 1) — COMPLETE.** All 8 features
 shipped (Enhanced Identity, Rich Classification, Professional Specifications,
 Scientific Objectives, Advanced Timeline, Improved Launch Information, Enhanced
@@ -1101,9 +1128,12 @@ follow-ups (not required, but where the foundation is ready):
   true scaled radius, only the decorative ring is circular), dwarf planets
   (Ceres, Eris), and eventually the Phase-4 Three.js 3-D upgrade (keep it
   `next/dynamic({ssr:false})`-scoped like `/lunar-sim`).
-- **`/gallery` in the nav still 404s** (pre-existing; `/explore` was the same
-  until v1) — the natural next section; NASA Image Library search or Mars
-  rover photos would seed it.
+- ~~`/gallery` in the nav 404s~~ **shipped** (see §2) — NASA Image Library
+  browser with curated Featured tab, topic chips, search + lightbox. Polish
+  ideas: an APOD strip (link exists at `/live/apod`), surfacing mission-media
+  galleries from `missions.details.media`, and higher-res lightbox assets via
+  the library's `/asset/{id}` manifest. Note: the community-maintained NASA
+  Mars Rover Photos API is retired — do not build against it.
 
 **Admin auth follow-ups:**
 - Team-management UI (`/admin/team`) to invite/deactivate members and set roles

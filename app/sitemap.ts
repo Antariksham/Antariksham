@@ -23,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/explore',          priority: 0.7, freq: 'weekly'  },
     { path: '/explore/solar-system', priority: 0.6, freq: 'weekly' },
     { path: '/explore/sky-tonight',  priority: 0.6, freq: 'daily'  },
+    { path: '/gallery',              priority: 0.7, freq: 'weekly' },
     { path: '/lunar-sim',        priority: 0.6, freq: 'monthly' },
     { path: '/about',            priority: 0.5, freq: 'monthly' },
     { path: '/contact',          priority: 0.4, freq: 'yearly'  },
