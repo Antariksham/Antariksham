@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { GalleryImage, GallerySearchResult } from '../services/nasaImages'
 import { FALLBACK_IMAGES } from '../services/fallbackImages'
 import { Lightbox } from './Lightbox'
@@ -51,6 +51,19 @@ export function GalleryPage() {
       setStatus('error')
     }
   }, [])
+
+  // Deep link: /gallery?q=… runs that search on arrival (topic hubs link
+  // here). Read from `location` rather than `useSearchParams` so the route
+  // stays statically renderable; running after mount keeps SSR/hydration
+  // byte-identical to the curated Featured set.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('q')?.trim()
+    if (!q) return
+    setTopic('search')
+    setSearchText(q)
+    setQuery(q)
+    fetchImages(q, 1, false)
+  }, [fetchImages])
 
   const showFeatured = () => {
     setTopic('featured'); setQuery(''); setPage(1)

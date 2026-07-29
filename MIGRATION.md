@@ -875,6 +875,41 @@ collection when Supabase env vars are absent — unrelated to app code).
     `--space-*` rationale); everything else uses standard theme tokens (both
     themes verified). Sitemap entry + ImageGallery JSON-LD + canonical/OG.
 
+- ✅ **Explore — Topic Hubs (`/explore/topics`, `/explore/topics/[slug]`)** —
+  the Explore section's discovery layer, and the last SOON teaser flipped
+  live. Branch `claude/explore-section-ideas-uuv5wo`.
+  - **Nine curated hubs**: Mars, The Moon, The Sun, The Giant Planets, Black
+    Holes, Exoplanets, Human Spaceflight, Rockets & Launch, Deep Space. Each
+    is a *lens* over content the site already has — no new tables, no new
+    admin surface. `services/topics.ts` is a pure registry (slug, copy,
+    depiction colour, `terms`, optional `bodyId` + tool `links`,
+    `galleryQuery`); **adding a topic there creates a complete, SEO-ready hub
+    page** — no other file changes.
+  - **Ranked aggregation** (`services/topicContent.ts`): one `ilike` OR-query
+    per source (articles / knowledge_articles / missions) built by
+    `buildOrFilter` (strips PostgREST `,()*` syntax), then a pure
+    `rankByTerms` — a term hit scores 3 in a title, 2 in a mission
+    destination, 1 in body text, ties broken newest-first — so "Mars Sample
+    Return" outranks an article that mentions Mars in passing. Fetches 4× the
+    display limit so ranking has real choice. Supabase is imported **lazily
+    inside the try/catch**, so a hub renders its intro + tool links even with
+    no database (verified: shows a "Coverage coming soon" panel).
+  - **Two new deep links, both post-mount reads of `location.search`** (not
+    `useSearchParams`, so the routes stay statically renderable and SSR stays
+    byte-identical): **`/explore/solar-system?body=<id>`** selects that world
+    on arrival, and **`/gallery?q=<query>`** runs that image search. The hub's
+    tool rail uses both, so "See Mars in the Solar System Explorer" and "Mars
+    imagery in the Gallery" actually land on the right thing.
+  - **SEO**: `generateStaticParams` over the registry (all nine prerendered),
+    per-topic `generateMetadata`, CollectionPage + BreadcrumbList JSON-LD
+    (the index also emits `hasPart` for the nine hubs), sitemap entries for
+    the index and every topic, `notFound()` on an unknown slug (verified 404).
+  - 10 new zero-dep `node:test` cases (**48 total**) covering scoring,
+    ranking, de-dupe, filter building, and registry invariants — unique
+    url-safe slugs, required copy, root-relative links, and that every
+    `bodyId` resolves in the Solar System registry (a stale one would render
+    a dead deep link).
+
 **Mission Management System upgrade (Phase 1) — COMPLETE.** All 8 features
 shipped (Enhanced Identity, Rich Classification, Professional Specifications,
 Scientific Objectives, Advanced Timeline, Improved Launch Information, Enhanced
@@ -1120,14 +1155,15 @@ follow-ups (not required, but where the foundation is ready):
 - **Sky Tonight polish**: per-planet rise/set times for the user's location
   (the sun-geometry code generalises to planet RA/Dec), Moon rise/set, a
   notify-before-a-pass option, and localised (non-UTC) sun times display.
-- **Topic hubs** (`/explore/topics/[topic]`): curated Mars / Moon / black
-  holes / exoplanet landing pages aggregating articles + missions + learn +
-  live tools (SEO topic-authority pages). Teaser card waiting.
-- Orrery polish: deep-linkable selection (`?body=mars`), true elliptical orbit
-  paths for the eccentric bodies (Mercury/Pluto — the dot already sits at the
-  true scaled radius, only the decorative ring is circular), dwarf planets
-  (Ceres, Eris), and eventually the Phase-4 Three.js 3-D upgrade (keep it
-  `next/dynamic({ssr:false})`-scoped like `/lunar-sim`).
+- ~~Topic hubs~~ **shipped** (see §2) — nine curated hubs. Natural follow-ups:
+  surface hub links on the article/mission reading pages ("part of the Mars
+  hub"), let editors pin a hero item per topic, and add topic hubs to the
+  `/hi` bilingual surface.
+- Orrery polish: ~~deep-linkable selection (`?body=`)~~ done; still open —
+  true elliptical orbit paths for the eccentric bodies (Mercury/Pluto — the
+  dot already sits at the true scaled radius, only the decorative ring is
+  circular), dwarf planets (Ceres, Eris), and eventually the Phase-4 Three.js
+  3-D upgrade (keep it `next/dynamic({ssr:false})`-scoped like `/lunar-sim`).
 - ~~`/gallery` in the nav 404s~~ **shipped** (see §2) — NASA Image Library
   browser with curated Featured tab, topic chips, search + lightbox. Polish
   ideas: an APOD strip (link exists at `/live/apod`), surfacing mission-media

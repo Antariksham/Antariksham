@@ -2209,3 +2209,45 @@ textarea.cite-input { resize: vertical; font-family: var(--font-mono); }
   .gallery-lightbox { padding: 12px; }
   .gallery-lb-prev { left: 6px; } .gallery-lb-next { right: 6px; }
 }
+
+/* ── EXPLORE — Topic hubs (/explore/topics) ── */
+.topic-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .topic-intro { grid-template-columns: 1fr; }
+}
+.topic-lead {
+  font-size: 1rem; line-height: 1.7;
+  color: var(--dim);
+  margin: 0;
+}
+.topic-tools { display: flex; flex-direction: column; gap: 8px; }
+.topic-tool {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.topic-tool:hover { border-color: var(--accent); background: rgba(var(--ink), 0.03); }
+.topic-tool-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; margin-top: 5px; }
+.topic-tool-label {
+  display: block;
+  font-size: 0.88rem; font-weight: 600;
+  color: var(--white);
+}
+.topic-tool-sub {
+  display: block;
+  font-size: 0.78rem; line-height: 1.45;
+  color: var(--faint);
+  margin-top: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .topic-tool { transition: none; }
+}

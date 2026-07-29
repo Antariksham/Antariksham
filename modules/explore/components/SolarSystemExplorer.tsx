@@ -31,8 +31,14 @@ export function SolarSystemExplorer({ initialEpochMs, missionsByBody }: Props) {
 
   // After mount, snap to the actual current date (planets move < 1°/day, so
   // the visual change from a stale ISR epoch is imperceptible — this keeps
-  // the date readout honest).
-  useEffect(() => { setEpochMs(Date.now()) }, [])
+  // the date readout honest). Also honour a ?body=<id> deep link (topic hubs
+  // link straight to a world). Read from `location` rather than
+  // `useSearchParams` so the route stays statically renderable.
+  useEffect(() => {
+    setEpochMs(Date.now())
+    const id = new URLSearchParams(window.location.search).get('body')
+    if (id && BODY_BY_ID[id]) setSelectedId(id)
+  }, [])
 
   // Time travel. Animation only ever starts from an explicit user action, so
   // prefers-reduced-motion users are never surprised — but when it *is*

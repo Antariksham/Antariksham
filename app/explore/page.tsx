@@ -57,12 +57,12 @@ const EXPLORE_PAGES = [
     badge: 'TONIGHT',
   },
   {
-    href:  null,
+    href:  '/explore/topics',
     icon:  <Compass size={26} />,
     label: 'Topic Hubs',
-    desc:  'Curated gateways to Mars, the Moon, black holes, exoplanets and more — every article, mission and tool on a topic in one place.',
+    desc:  'Curated gateways to Mars, the Moon, black holes, exoplanets and more — every article, mission, guide and tool on a topic in one place.',
     color: 'var(--green)',
-    badge: 'SOON',
+    badge: 'CURATED',
   },
 ]
 
