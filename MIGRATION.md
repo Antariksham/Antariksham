@@ -770,6 +770,46 @@ collection when Supabase env vars are absent — unrelated to app code).
     required item to hard-blocking is a one-line change in the checklist/gate if
     a stricter policy is ever wanted.) No new migration.
 
+- ✅ **Explore section v1 — hub + Solar System Explorer** (`/explore`,
+  `/explore/solar-system`) — the nav's `/explore` link finally resolves (it
+  previously 404'd). New `modules/explore/` module. Branch
+  `claude/explore-section-ideas-uuv5wo`.
+  - **Interactive Solar System orrery** (`SolarSystemExplorer` + `OrrerySvg`):
+    a top-down SVG map — Sun, 8 planets, the Moon (riding a small orbit around
+    the Earth dot) and Pluto — with **true heliocentric positions** computed
+    from JPL Keplerian elements (`services/orrery.ts`, pure, 11 node:test
+    cases: Kepler solver, ecliptic projection, longitude/radius invariants).
+    Distances are log-compressed (Pluto still visibly dips inside Neptune's
+    orbit near perihelion) and body sizes exaggerated — an on-page note says so.
+  - **Time travel**: Today / 1 mo/s / 1 yr/s controls + a locale-independent
+    UTC date readout. Hydration-safe per §6: the server's render epoch is a
+    prop (SSR = hydration byte-identical), the client re-syncs to "now" after
+    mount, and animation only ever starts from a user action
+    (`prefers-reduced-motion` gets 1 step/s instead of 10).
+  - **Facts panel** (`BodyPanel`): per-body vitals grid, description, notable
+    moons, and **"Missions here"** — the missions DB's free-text `destination`
+    is matched to bodies via whole-word, longest-alias-wins matching
+    (`services/bodyMissions.ts`, pure, 6 tests: "Jupiter's moon Europa" →
+    Jupiter; "Galileo" never matches LEO). `getExploreMissions` imports
+    Supabase **lazily inside its try/catch**, so the page renders (with empty
+    cross-links) even with no DB env — it never 500s like DB-required pages.
+    Cross-links per body to `/search?q=…`, `/live/deep-space`, `/lunar-sim`,
+    `/live/iss-tracker`, `/missions/:slug`.
+  - **Design-system compliant**: chips/panel/facts use the standard tokens
+    (both themes verified in a headless browser); the orrery canvas itself is
+    pinned dark via new `--space-*` tokens (it depicts space — same rationale
+    as the deep-space hero), and per-body depiction colors are data in
+    `services/solarSystemBodies.ts` (the `DeepSpaceTracker` META precedent).
+    Deterministic seeded starfield (no `Math.random()` hydration risk).
+    Keyboard-accessible: SVG bodies are tabbable buttons + the chip rail acts
+    as tabs.
+  - **Hub** (`/explore`): CosmosDaily-style card grid — Solar System Explorer
+    (live) plus Sky Tonight and Topic Hubs as non-link "SOON" teasers. Full
+    SEO on both routes: canonical, OG/Twitter, JSON-LD (CollectionPage;
+    WebApplication + BreadcrumbList), sitemap entries. Titles rely on the root
+    titleTemplate (avoids the "… — Antariksham | Antariksham" duplication
+    other pages still have).
+
 **Mission Management System upgrade (Phase 1) — COMPLETE.** All 8 features
 shipped (Enhanced Identity, Rich Classification, Professional Specifications,
 Scientific Objectives, Advanced Timeline, Improved Launch Information, Enhanced
@@ -1010,6 +1050,22 @@ follow-ups (not required, but where the foundation is ready):
 - ~~Ship-or-delete decision~~ shipped: noindex removed, OG/canonical/JSON-LD
   added, linked from the `/live` hub and footer Intelligence column. (No
   sitemap file exists in the app yet — when one is added, include `/lunar-sim`.)
+
+**Explore section follow-ups (v1 shipped — see §2):**
+- **Sky Tonight** (`/explore/sky-tonight`): Moon phase + visible planets are
+  computable client-side from the same orrery math; ISS passes can reuse the
+  existing `/api/iss` proxy. Its hub teaser card is already waiting.
+- **Topic hubs** (`/explore/topics/[topic]`): curated Mars / Moon / black
+  holes / exoplanet landing pages aggregating articles + missions + learn +
+  live tools (SEO topic-authority pages). Teaser card waiting.
+- Orrery polish: deep-linkable selection (`?body=mars`), true elliptical orbit
+  paths for the eccentric bodies (Mercury/Pluto — the dot already sits at the
+  true scaled radius, only the decorative ring is circular), dwarf planets
+  (Ceres, Eris), and eventually the Phase-4 Three.js 3-D upgrade (keep it
+  `next/dynamic({ssr:false})`-scoped like `/lunar-sim`).
+- **`/gallery` in the nav still 404s** (pre-existing; `/explore` was the same
+  until v1) — the natural next section; NASA Image Library search or Mars
+  rover photos would seed it.
 
 **Admin auth follow-ups:**
 - Team-management UI (`/admin/team`) to invite/deactivate members and set roles

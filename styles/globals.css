@@ -1763,3 +1763,184 @@ textarea.cite-input { resize: vertical; font-family: var(--font-mono); }
   .admin-shell.is-ready .admin-main,
   .admin-scrim { transition: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   EXPLORE — Solar System orrery  (/explore/solar-system)
+   The orrery canvas depicts space itself, so — like a photograph — it stays
+   dark in both themes (same rationale as the deep-space hero). The --space-*
+   tokens below exist only for that canvas and deliberately do NOT flip in
+   light mode; every other Explore surface uses the standard theme tokens.
+   ══════════════════════════════════════════════════════════════ */
+:root {
+  --space-bg:      #05060c;
+  --space-glow:    radial-gradient(ellipse at 50% 42%, rgba(79, 110, 220, 0.10) 0%, transparent 55%);
+  --space-line:    rgba(150, 165, 215, 0.22);
+  --space-text:    rgba(214, 224, 255, 0.78);
+  --space-star:    #dce4ff;
+}
+
+/* ── Layout: orrery stage + facts panel ── */
+.orrery-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .orrery-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Body chip rail (tabs) ── */
+.orrery-rail {
+  display: flex; gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 16px;
+  scrollbar-width: thin;
+}
+.orrery-chip {
+  font-family: var(--font-sans);
+  font-size: 0.8rem; font-weight: 600; letter-spacing: 0.03em;
+  color: var(--dim);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.orrery-chip:hover { color: var(--white); border-color: var(--accent); }
+.orrery-chip[data-active="true"] {
+  color: var(--white);
+  border-color: var(--chip-color, var(--accent));
+  background: color-mix(in srgb, var(--chip-color, var(--accent)) 16%, transparent);
+}
+
+/* ── The space canvas ── */
+.orrery-panel {
+  background: var(--space-bg);
+  background-image: var(--space-glow);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.orrery-svg  { display: block; width: 100%; height: auto; }
+.orrery-star { fill: var(--space-star); }
+.orrery-ring { fill: none; stroke: var(--space-line); stroke-width: 1; }
+.orrery-ring--moon { stroke-width: 0.75; opacity: 0.7; }
+.orrery-body { cursor: pointer; outline: none; }
+.orrery-body:hover .orrery-dot         { filter: brightness(1.25); }
+.orrery-body:focus-visible .orrery-dot { stroke: var(--space-star); stroke-width: 2px; }
+.orrery-halo { fill: none; stroke-width: 1.5; opacity: 0.85; }
+.orrery-saturn-rings { fill: none; stroke-width: 1.6; opacity: 0.75; }
+.orrery-label {
+  fill: var(--space-text);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* ── Time controls + date readout ── */
+.orrery-controls {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  align-items: center; justify-content: space-between;
+  margin-top: 14px;
+}
+.orrery-time-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.orrery-date {
+  font-family: var(--font-mono);
+  font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--dim);
+  margin: 0;
+}
+.orrery-note {
+  font-size: 0.78rem; line-height: 1.55;
+  color: var(--faint);
+  margin-top: 12px;
+}
+
+/* ── Facts panel for the selected body ── */
+.body-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+@media (min-width: 961px) {
+  .body-panel { position: sticky; top: calc(var(--nav-height) + 20px); }
+}
+.body-kind {
+  font-family: var(--font-mono);
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  margin: 0 0 6px;
+}
+.body-title {
+  font-family: var(--font-sans);
+  font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em;
+  color: var(--white);
+  margin: 0 0 4px;
+}
+.body-tagline { font-size: 0.92rem; color: var(--dim); margin: 0 0 12px; }
+.body-desc    { font-size: 0.9rem; line-height: 1.65; color: var(--dim); margin: 0; }
+
+.body-facts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin: 16px 0 0;
+}
+@media (max-width: 380px) { .body-facts { grid-template-columns: 1fr; } }
+.body-fact {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(var(--ink), 0.03);
+  padding: 9px 11px;
+}
+.body-fact-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--faint);
+  margin: 0;
+}
+.body-fact-value {
+  font-size: 0.88rem; font-weight: 600;
+  color: var(--white);
+  margin: 3px 0 0;
+}
+.body-moons { font-size: 0.82rem; color: var(--dim); margin: 12px 0 0; }
+
+.body-section-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--faint);
+  margin: 20px 0 10px;
+}
+.body-missions { display: flex; flex-direction: column; gap: 6px; }
+.body-mission {
+  display: flex; align-items: center; gap: 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+  font-size: 0.86rem; font-weight: 600;
+  color: var(--white);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.body-mission:hover { border-color: var(--accent); background: rgba(var(--ink), 0.03); }
+.body-mission-dot  { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.body-mission-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.body-mission-year { font-family: var(--font-mono); font-size: 0.74rem; color: var(--faint); }
+.body-missions-empty { font-size: 0.84rem; color: var(--faint); margin: 0; }
+
+.body-links { display: flex; flex-direction: column; gap: 7px; margin-top: 18px; }
+.body-link  {
+  font-size: 0.85rem; font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+.body-link:hover { color: var(--accent-hover); text-decoration: underline; }
+
+@media (prefers-reduced-motion: reduce) {
+  .orrery-chip, .body-mission, .orrery-body .orrery-dot { transition: none; }
+}
