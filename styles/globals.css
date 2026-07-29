@@ -1763,3 +1763,560 @@ textarea.cite-input { resize: vertical; font-family: var(--font-mono); }
   .admin-shell.is-ready .admin-main,
   .admin-scrim { transition: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   EXPLORE — Solar System orrery  (/explore/solar-system)
+   The orrery canvas depicts space itself, so — like a photograph — it stays
+   dark in both themes (same rationale as the deep-space hero). The --space-*
+   tokens below exist only for that canvas and deliberately do NOT flip in
+   light mode; every other Explore surface uses the standard theme tokens.
+   ══════════════════════════════════════════════════════════════ */
+:root {
+  --space-bg:      #05060c;
+  --space-glow:    radial-gradient(ellipse at 50% 42%, rgba(79, 110, 220, 0.10) 0%, transparent 55%);
+  --space-line:    rgba(150, 165, 215, 0.22);
+  --space-text:    rgba(214, 224, 255, 0.78);
+  --space-star:    #dce4ff;
+}
+
+/* ── Layout: orrery stage + facts panel ── */
+.orrery-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .orrery-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Body chip rail (tabs) ── */
+.orrery-rail {
+  display: flex; gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 16px;
+  scrollbar-width: thin;
+}
+.orrery-chip {
+  font-family: var(--font-sans);
+  font-size: 0.8rem; font-weight: 600; letter-spacing: 0.03em;
+  color: var(--dim);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.orrery-chip:hover { color: var(--white); border-color: var(--accent); }
+.orrery-chip[data-active="true"] {
+  color: var(--white);
+  border-color: var(--chip-color, var(--accent));
+  background: color-mix(in srgb, var(--chip-color, var(--accent)) 16%, transparent);
+}
+
+/* ── The space canvas ── */
+.orrery-panel {
+  background: var(--space-bg);
+  background-image: var(--space-glow);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.orrery-svg  { display: block; width: 100%; height: auto; }
+.orrery-star { fill: var(--space-star); }
+.orrery-ring { fill: none; stroke: var(--space-line); stroke-width: 1; }
+.orrery-ring--moon { stroke-width: 0.75; opacity: 0.7; }
+.orrery-body { cursor: pointer; outline: none; }
+.orrery-body:hover .orrery-dot         { filter: brightness(1.25); }
+.orrery-body:focus-visible .orrery-dot { stroke: var(--space-star); stroke-width: 2px; }
+.orrery-halo { fill: none; stroke-width: 1.5; opacity: 0.85; }
+.orrery-saturn-rings { fill: none; stroke-width: 1.6; opacity: 0.75; }
+.orrery-label {
+  fill: var(--space-text);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* ── Time controls + date readout ── */
+.orrery-controls {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  align-items: center; justify-content: space-between;
+  margin-top: 14px;
+}
+.orrery-time-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.orrery-date {
+  font-family: var(--font-mono);
+  font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--dim);
+  margin: 0;
+}
+.orrery-note {
+  font-size: 0.78rem; line-height: 1.55;
+  color: var(--faint);
+  margin-top: 12px;
+}
+
+/* ── Facts panel for the selected body ── */
+.body-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+@media (min-width: 961px) {
+  .body-panel { position: sticky; top: calc(var(--nav-height) + 20px); }
+}
+.body-kind {
+  font-family: var(--font-mono);
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  margin: 0 0 6px;
+}
+.body-title {
+  font-family: var(--font-sans);
+  font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em;
+  color: var(--white);
+  margin: 0 0 4px;
+}
+.body-tagline { font-size: 0.92rem; color: var(--dim); margin: 0 0 12px; }
+.body-desc    { font-size: 0.9rem; line-height: 1.65; color: var(--dim); margin: 0; }
+
+.body-facts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin: 16px 0 0;
+}
+@media (max-width: 380px) { .body-facts { grid-template-columns: 1fr; } }
+.body-fact {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(var(--ink), 0.03);
+  padding: 9px 11px;
+}
+.body-fact-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--faint);
+  margin: 0;
+}
+.body-fact-value {
+  font-size: 0.88rem; font-weight: 600;
+  color: var(--white);
+  margin: 3px 0 0;
+}
+.body-moons { font-size: 0.82rem; color: var(--dim); margin: 12px 0 0; }
+
+.body-section-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--faint);
+  margin: 20px 0 10px;
+}
+.body-missions { display: flex; flex-direction: column; gap: 6px; }
+.body-mission {
+  display: flex; align-items: center; gap: 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+  font-size: 0.86rem; font-weight: 600;
+  color: var(--white);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.body-mission:hover { border-color: var(--accent); background: rgba(var(--ink), 0.03); }
+.body-mission-dot  { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.body-mission-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.body-mission-year { font-family: var(--font-mono); font-size: 0.74rem; color: var(--faint); }
+.body-missions-empty { font-size: 0.84rem; color: var(--faint); margin: 0; }
+
+.body-links { display: flex; flex-direction: column; gap: 7px; margin-top: 18px; }
+.body-link  {
+  font-size: 0.85rem; font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+.body-link:hover { color: var(--accent-hover); text-decoration: underline; }
+
+@media (prefers-reduced-motion: reduce) {
+  .orrery-chip, .body-mission, .orrery-body .orrery-dot { transition: none; }
+}
+
+/* ── EXPLORE — Sky Tonight (/explore/sky-tonight) ──
+   Cards use the standard theme tokens; only the Moon-disc canvas reuses the
+   pinned-dark --space-* tokens (it depicts the night sky, like the orrery). */
+.sky-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .sky-grid { grid-template-columns: 1fr; }
+}
+
+.sky-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+.sky-note {
+  font-size: 0.8rem; line-height: 1.55;
+  color: var(--faint);
+  margin: 0;
+}
+.sky-status { font-size: 0.86rem; color: var(--dim); margin: 14px 0 0; }
+.sky-error  { font-size: 0.86rem; color: var(--red); margin: 0; }
+
+/* Moon */
+.sky-moon-row {
+  display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+}
+.sky-canvas {
+  background: var(--space-bg);
+  background-image: var(--space-glow);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.sky-moon-canvas { width: 172px; flex: none; }
+.sky-moon-canvas svg { display: block; width: 100%; height: auto; }
+.sky-moon-info { flex: 1; min-width: 220px; }
+
+/* Planet rows */
+.sky-planets { display: flex; flex-direction: column; }
+.sky-planet {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.sky-planet:last-child { border-bottom: none; }
+.sky-planet[data-window="hidden"] { opacity: 0.55; }
+.sky-planet-dot  { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.sky-planet-name { font-weight: 700; color: var(--white); min-width: 92px; }
+.sky-planet-optics { font-weight: 400; font-size: 0.76rem; color: var(--faint); }
+.sky-planet-hint { flex: 1; color: var(--dim); font-size: 0.82rem; }
+.sky-planet-elong {
+  font-family: var(--font-mono);
+  font-size: 0.74rem; color: var(--faint);
+  white-space: nowrap;
+}
+
+/* Visibility-window chip (shared with ISS pass rows) */
+.sky-window {
+  font-family: var(--font-sans);
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 20px;
+  white-space: nowrap;
+}
+.sky-window[data-window="evening"] {
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+}
+.sky-window[data-window="morning"] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.sky-window[data-window="all-night"] {
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green) 35%, transparent);
+}
+.sky-window[data-window="hidden"] {
+  color: var(--faint);
+  background: rgba(var(--ink), 0.05);
+  border: 1px solid var(--border);
+}
+
+/* ISS pass rows */
+.sky-passes { display: flex; flex-direction: column; }
+.sky-pass {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.sky-pass:last-child { border-bottom: none; }
+.sky-pass[data-visible="false"] { opacity: 0.55; }
+.sky-pass-day  { font-weight: 700; color: var(--white); min-width: 84px; }
+.sky-pass-time { color: var(--dim); }
+.sky-pass-dur  { color: var(--faint); font-size: 0.78rem; }
+.sky-pass-path {
+  font-family: var(--font-mono);
+  font-size: 0.74rem; color: var(--dim);
+  white-space: nowrap;
+}
+.sky-pass-elev {
+  font-family: var(--font-mono);
+  font-size: 0.74rem; color: var(--faint);
+  margin-left: auto;
+  white-space: nowrap;
+}
+/* ── Phones: reflow the single-line rows into a compact two-line grid ──
+   Both row types pack a fixed-width label, a flexible hint and two nowrap
+   items onto one line. Below ~600px that no longer fits: the hint collapses
+   to one word per line and the trailing chip pushes past the row, scrolling
+   the whole page sideways. On a grid the chip sits beside the name and the
+   detail text gets the full width. */
+@media (max-width: 600px) {
+  .sky-planet {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "dot  name  window"
+      "hint hint  elong";
+    column-gap: 10px;
+    row-gap: 3px;
+  }
+  .sky-planet-dot   { grid-area: dot; }
+  .sky-planet-name  { grid-area: name; min-width: 0; }
+  .sky-planet-hint  { grid-area: hint; }
+  .sky-planet-elong { grid-area: elong; text-align: right; }
+
+  .sky-pass {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "day  window"
+      "time time"
+      "path elev";
+    column-gap: 10px;
+    row-gap: 3px;
+  }
+  .sky-pass-day  { grid-area: day; min-width: 0; }
+  .sky-pass-time { grid-area: time; }
+  .sky-pass-path { grid-area: path; }
+  .sky-pass-elev { grid-area: elev; margin-left: 0; text-align: right; }
+
+  .sky-planet .sky-window,
+  .sky-pass   .sky-window { grid-area: window; justify-self: end; }
+}
+
+/* ── GALLERY (/gallery) — NASA Image Library browser ──
+   Like the orrery's --space-* tokens, the photo scrim + lightbox frame a
+   photograph, so they are pinned dark in both themes; --photo-ink is the
+   fixed white ink used on those pinned-dark surfaces only. */
+:root {
+  --photo-ink: 255, 255, 255;
+  --photo-scrim: linear-gradient(transparent, rgba(0, 0, 0, 0.72));
+  --lightbox-bg: rgba(0, 0, 0, 0.88);
+}
+
+.gallery-search {
+  display: flex; gap: 10px;
+  margin-bottom: 16px;
+}
+.gallery-search-input {
+  flex: 1; min-width: 0;
+  font-family: var(--font-sans); font-size: 0.9rem;
+  color: var(--white);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.gallery-search-input::placeholder { color: var(--faint); }
+.gallery-search-input:focus { border-color: var(--accent); }
+
+.gallery-count {
+  font-family: var(--font-mono);
+  font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--faint);
+  margin: 2px 0 16px;
+}
+
+/* Masonry via CSS columns; each item avoids column breaks. */
+.gallery-grid {
+  columns: 4 260px;
+  column-gap: 14px;
+}
+.gallery-item {
+  position: relative; display: block; width: 100%;
+  break-inside: avoid;
+  margin: 0 0 14px;
+  padding: 0; border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--panel);
+  cursor: zoom-in;
+  text-align: left;
+}
+.gallery-img { display: block; width: 100%; height: auto; }
+.gallery-item-title {
+  position: absolute; inset: auto 0 0 0;
+  padding: 26px 10px 8px;
+  font-family: var(--font-sans);
+  font-size: 0.76rem; font-weight: 600; line-height: 1.35;
+  color: rgb(var(--photo-ink));
+  background: var(--photo-scrim);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+}
+.gallery-item:hover .gallery-item-title,
+.gallery-item:focus-visible .gallery-item-title { opacity: 1; }
+.gallery-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Lightbox */
+.gallery-lightbox {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--lightbox-bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 28px;
+}
+.gallery-lb-figure {
+  max-width: min(1080px, 94vw); max-height: 92vh;
+  display: flex; flex-direction: column;
+  margin: 0;
+}
+.gallery-lb-img {
+  max-width: 100%; max-height: 68vh;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: #000;
+}
+.gallery-lb-caption { padding: 14px 4px 0; overflow-y: auto; }
+.gallery-lb-title { font-family: var(--font-sans); font-weight: 700; font-size: 1rem; color: rgb(var(--photo-ink)); margin: 0 0 4px; }
+.gallery-lb-meta  { font-size: 0.8rem; color: rgba(var(--photo-ink), 0.65); margin: 0 0 8px; }
+.gallery-lb-desc  { font-size: 0.84rem; line-height: 1.55; color: rgba(var(--photo-ink), 0.8); margin: 0; max-height: 16vh; overflow-y: auto; }
+.gallery-lb-btn {
+  position: fixed; z-index: 201;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; line-height: 1;
+  color: rgb(var(--photo-ink));
+  background: rgba(var(--photo-ink), 0.1);
+  border: 1px solid rgba(var(--photo-ink), 0.25);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.gallery-lb-btn:hover { background: rgba(var(--photo-ink), 0.22); }
+.gallery-lb-close { top: 18px; right: 18px; }
+.gallery-lb-prev  { left: 14px;  top: 50%; transform: translateY(-50%); }
+.gallery-lb-next  { right: 14px; top: 50%; transform: translateY(-50%); }
+
+@media (max-width: 560px) {
+  .gallery-search { flex-direction: column; }
+  .gallery-lightbox { padding: 12px; }
+  .gallery-lb-prev { left: 6px; } .gallery-lb-next { right: 6px; }
+}
+
+/* ── EXPLORE — Topic hubs (/explore/topics) ── */
+.topic-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .topic-intro { grid-template-columns: 1fr; }
+}
+.topic-lead {
+  font-size: 1rem; line-height: 1.7;
+  color: var(--dim);
+  margin: 0;
+}
+.topic-tools { display: flex; flex-direction: column; gap: 8px; }
+.topic-tool {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.topic-tool:hover { border-color: var(--accent); background: rgba(var(--ink), 0.03); }
+.topic-tool-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; margin-top: 5px; }
+.topic-tool-label {
+  display: block;
+  font-size: 0.88rem; font-weight: 600;
+  color: var(--white);
+}
+.topic-tool-sub {
+  display: block;
+  font-size: 0.78rem; line-height: 1.45;
+  color: var(--faint);
+  margin-top: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .topic-tool { transition: none; }
+}
+
+/* ── GALLERY — APOD archive (/gallery/apod) ── */
+.apod-controls {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px;
+  margin-bottom: 16px;
+}
+.apod-jump { display: flex; flex-direction: column; gap: 5px; }
+.apod-jump-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--faint);
+}
+.apod-date-input { flex: none; width: auto; min-width: 170px; }
+/* The native date picker indicator is black-on-dark by default in dark mode. */
+:root:not([data-theme="light"]) .apod-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.65);
+}
+
+/* Date + media badges sit on the photo, so they use the pinned photo ink. */
+.apod-date-chip,
+.apod-video-chip {
+  position: absolute; top: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+  color: rgb(var(--photo-ink));
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 20px;
+  padding: 3px 9px;
+  pointer-events: none;
+}
+.apod-date-chip  { left: 8px; }
+.apod-video-chip { right: 8px; }
+
+/* APOD entry point on the gallery index */
+.apod-promo {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.apod-promo:hover { border-color: var(--gold); background: rgba(var(--ink), 0.03); }
+.apod-promo-title {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.95rem; font-weight: 700;
+  color: var(--white);
+}
+.apod-promo-sub {
+  display: block;
+  font-size: 0.82rem; color: var(--dim);
+  margin-top: 2px;
+}
+.apod-promo-cta {
+  font-family: var(--font-sans);
+  font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .apod-promo { transition: none; }
+}

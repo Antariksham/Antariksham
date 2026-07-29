@@ -770,6 +770,187 @@ collection when Supabase env vars are absent — unrelated to app code).
     required item to hard-blocking is a one-line change in the checklist/gate if
     a stricter policy is ever wanted.) No new migration.
 
+- ✅ **Explore section v1 — hub + Solar System Explorer** (`/explore`,
+  `/explore/solar-system`) — the nav's `/explore` link finally resolves (it
+  previously 404'd). New `modules/explore/` module. Branch
+  `claude/explore-section-ideas-uuv5wo`.
+  - **Interactive Solar System orrery** (`SolarSystemExplorer` + `OrrerySvg`):
+    a top-down SVG map — Sun, 8 planets, the Moon (riding a small orbit around
+    the Earth dot) and Pluto — with **true heliocentric positions** computed
+    from JPL Keplerian elements (`services/orrery.ts`, pure, 11 node:test
+    cases: Kepler solver, ecliptic projection, longitude/radius invariants).
+    Distances are log-compressed (Pluto still visibly dips inside Neptune's
+    orbit near perihelion) and body sizes exaggerated — an on-page note says so.
+  - **Time travel**: Today / 1 mo/s / 1 yr/s controls + a locale-independent
+    UTC date readout. Hydration-safe per §6: the server's render epoch is a
+    prop (SSR = hydration byte-identical), the client re-syncs to "now" after
+    mount, and animation only ever starts from a user action
+    (`prefers-reduced-motion` gets 1 step/s instead of 10).
+  - **Facts panel** (`BodyPanel`): per-body vitals grid, description, notable
+    moons, and **"Missions here"** — the missions DB's free-text `destination`
+    is matched to bodies via whole-word, longest-alias-wins matching
+    (`services/bodyMissions.ts`, pure, 6 tests: "Jupiter's moon Europa" →
+    Jupiter; "Galileo" never matches LEO). `getExploreMissions` imports
+    Supabase **lazily inside its try/catch**, so the page renders (with empty
+    cross-links) even with no DB env — it never 500s like DB-required pages.
+    Cross-links per body to `/search?q=…`, `/live/deep-space`, `/lunar-sim`,
+    `/live/iss-tracker`, `/missions/:slug`.
+  - **Design-system compliant**: chips/panel/facts use the standard tokens
+    (both themes verified in a headless browser); the orrery canvas itself is
+    pinned dark via new `--space-*` tokens (it depicts space — same rationale
+    as the deep-space hero), and per-body depiction colors are data in
+    `services/solarSystemBodies.ts` (the `DeepSpaceTracker` META precedent).
+    Deterministic seeded starfield (no `Math.random()` hydration risk).
+    Keyboard-accessible: SVG bodies are tabbable buttons + the chip rail acts
+    as tabs.
+  - **Hub** (`/explore`): CosmosDaily-style card grid — Solar System Explorer
+    (live) plus Sky Tonight and Topic Hubs as non-link "SOON" teasers. Full
+    SEO on both routes: canonical, OG/Twitter, JSON-LD (CollectionPage;
+    WebApplication + BreadcrumbList), sitemap entries. Titles rely on the root
+    titleTemplate (avoids the "… — Antariksham | Antariksham" duplication
+    other pages still have).
+
+- ✅ **Explore — Sky Tonight (`/explore/sky-tonight`)** — the hub's second live
+  experience: what's above you right now. Branch `claude/explore-section-ideas-uuv5wo`.
+  - **Moon phase card**: elongation-based phase (mean longitudes + the Moon's
+    equation of centre), SVG phase disc (two-arc terminator construction,
+    Northern-Hemisphere convention), illumination %, moon age, next full/new
+    moon (validated in tests against the real 2024-04-08 solar-eclipse new
+    moon and 2024-01-25 full moon).
+  - **Planets tonight**: evening / morning / all-night / hidden windows for
+    all seven planets from geocentric solar elongation — location-independent,
+    so it's SSR-safe with the same epoch-prop pattern as the orrery. Rows
+    reuse the orrery's body colors; ice giants flagged binoculars/telescope.
+  - **ISS passes for your location**: a new **`/api/iss/passes?lat&lon`**
+    proxy route runs satellite.js SGP4 (48 h at 30 s steps) against the shared
+    Celestrak TLE (extracted from the position route into
+    `modules/iss/services/tle.ts` — one fetch + cache for both routes) and
+    classifies each pass **actually visible** (ISS sunlit outside Earth's
+    shadow cylinder while the observer's Sun is below −6°) — verified against
+    real Delhi passes (post-sunset passes visible, daytime ones not).
+    Coordinates are rounded to ~11 km before leaving the device and never
+    stored. Client card: geolocation → pass rows (local times, compass path
+    start→peak→end, max elevation, duration, Visible badge) + sunrise/sunset.
+    satellite.js stays **server-only** (its v7 wasm runtime imports
+    `node:module`, which client webpack can't bundle — discovered the hard
+    way; the API-proxy pattern was the right architecture anyway).
+  - **Pure core + tests**: `skyTonight.ts` (moon phase, planet windows, sun
+    RA/Dec + altitude + NOAA-style sunrise/sunset incl. polar day/night) and
+    `issPasses.ts` (pass scanning over any look function, 16-wind compass) —
+    16 new zero-dep node:test cases (33 total in `modules/explore`).
+    `skyTonight.ts` runtime-imports the orrery math via an explicit `.ts`
+    extension — **`allowImportingTsExtensions` is now enabled** in
+    tsconfig.json (legal with `noEmit` + bundler resolution) so pure modules
+    CAN share code and still run under Node's type-stripping test runner
+    (supersedes the "no runtime cross-imports" workaround where needed).
+  - Hub teaser flipped to a live card (badge TONIGHT), sitemap entry, full
+    SEO (canonical, OG/Twitter, WebApplication + BreadcrumbList JSON-LD).
+    Theme-aware `.sky-*` styles (tokens only; the Moon disc reuses the
+    pinned-dark `--space-*` canvas).
+
+- ✅ **Gallery (`/gallery`)** — the nav's last dead link now resolves: a
+  browse-and-search window on the **NASA Image and Video Library**
+  (`images-api.nasa.gov` — NASA's official, keyless, actively-maintained API;
+  deliberately NOT the retired community Mars Rover Photos API). Branch
+  `claude/explore-section-ideas-uuv5wo`.
+  - **Curated "Featured" tab = the SSR fallback**: twelve iconic, URL-verified
+    images (Aldrin, Earthrise, Webb's Cosmic Cliffs, Pillars of Creation, Pale
+    Blue Dot, eXtreme Deep Field, Perseverance's selfie, Artemis I, …) render
+    with zero network on the server (deterministic → hydration-safe) and
+    double as the graceful state when the API is down.
+  - **Live browsing**: topic chips (Nebulae / Galaxies / Webb / Mars / Moon /
+    Earth / Launches / Astronauts / Saturn), free-text search, result counts,
+    **Load more** pagination (id-de-duped), CSS-columns masonry grid with
+    hover titles, per-image `onError` hiding.
+  - **Lightbox**: keyboard-accessible dialog (Esc close, arrow prev/next,
+    wrap), title/date/photographer-credit, truncated description, link out to
+    `images.nasa.gov/details/…`, body scroll lock.
+  - **Proxy** (`app/api/gallery`): 10-min in-memory cache (capped keys),
+    query sanitizing, 8 s upstream timeout, slimmed response via a pure,
+    tested mapper (`modules/gallery/services/nasaImages.ts` — https-upgrade,
+    space-encoding, photographer→secondary_creator→center credit fallback,
+    video/malformed-item filtering; 5 node:test cases, **38 total**).
+  - **Tokens**: photo scrim + lightbox are pinned dark via new `--photo-ink` /
+    `--photo-scrim` / `--lightbox-bg` tokens (they frame photographs — the
+    `--space-*` rationale); everything else uses standard theme tokens (both
+    themes verified). Sitemap entry + ImageGallery JSON-LD + canonical/OG.
+
+- ✅ **Explore — Topic Hubs (`/explore/topics`, `/explore/topics/[slug]`)** —
+  the Explore section's discovery layer, and the last SOON teaser flipped
+  live. Branch `claude/explore-section-ideas-uuv5wo`.
+  - **Nine curated hubs**: Mars, The Moon, The Sun, The Giant Planets, Black
+    Holes, Exoplanets, Human Spaceflight, Rockets & Launch, Deep Space. Each
+    is a *lens* over content the site already has — no new tables, no new
+    admin surface. `services/topics.ts` is a pure registry (slug, copy,
+    depiction colour, `terms`, optional `bodyId` + tool `links`,
+    `galleryQuery`); **adding a topic there creates a complete, SEO-ready hub
+    page** — no other file changes.
+  - **Ranked aggregation** (`services/topicContent.ts`): one `ilike` OR-query
+    per source (articles / knowledge_articles / missions) built by
+    `buildOrFilter` (strips PostgREST `,()*` syntax), then a pure
+    `rankByTerms` — a term hit scores 3 in a title, 2 in a mission
+    destination, 1 in body text, ties broken newest-first — so "Mars Sample
+    Return" outranks an article that mentions Mars in passing. Fetches 4× the
+    display limit so ranking has real choice. Supabase is imported **lazily
+    inside the try/catch**, so a hub renders its intro + tool links even with
+    no database (verified: shows a "Coverage coming soon" panel).
+  - **Two new deep links, both post-mount reads of `location.search`** (not
+    `useSearchParams`, so the routes stay statically renderable and SSR stays
+    byte-identical): **`/explore/solar-system?body=<id>`** selects that world
+    on arrival, and **`/gallery?q=<query>`** runs that image search. The hub's
+    tool rail uses both, so "See Mars in the Solar System Explorer" and "Mars
+    imagery in the Gallery" actually land on the right thing.
+  - **SEO**: `generateStaticParams` over the registry (all nine prerendered),
+    per-topic `generateMetadata`, CollectionPage + BreadcrumbList JSON-LD
+    (the index also emits `hasPart` for the nine hubs), sitemap entries for
+    the index and every topic, `notFound()` on an unknown slug (verified 404).
+  - 10 new zero-dep `node:test` cases (**48 total**) covering scoring,
+    ranking, de-dupe, filter building, and registry invariants — unique
+    url-safe slugs, required copy, root-relative links, and that every
+    `bodyId` resolves in the Solar System registry (a stale one would render
+    a dead deep link).
+
+- ✅ **APOD Archive (`/gallery/apod`)** — three decades of NASA's Astronomy
+  Picture of the Day, browsable and deep-linkable. Branch
+  `claude/explore-section-ideas-uuv5wo`.
+  - **Date-window paging** (`modules/nasa/services/apodArchive.ts`, pure):
+    all date maths is plain ISO strings in UTC — APOD is keyed by calendar
+    date, never an instant, so parsing into local `Date`s would shift entries
+    across midnight for some readers and break hydration parity.
+    `latestWindow` / `olderWindow` / `windowEndingAt` produce contiguous,
+    non-overlapping 24-day pages clamped to the **1995-06-16 epoch** (after
+    which "Load earlier" reports the beginning rather than paging into the
+    void).
+  - **The open-end rule**: NASA 400s on any `end_date` past its most recent
+    entry (its "today" follows US Eastern, which can lag UTC), so the newest
+    window deliberately sends **no** `end_date` and lets the API decide where
+    the archive ends. Verified against the live API. Backward pages always
+    have two past bounds, so they send both.
+  - **`/api/apod` proxy**: validates the ISO range (rejects junk, pre-epoch,
+    inverted, and >60-day spans — all four verified), caches past windows for
+    24 h and the open "latest" window for 1 h (entries are immutable once
+    published), 8 s timeout, `NASA_API_KEY` stays server-side.
+  - **SSR-first**: the route server-renders the newest 24 entries via
+    `getApodWindow`, so the archive ships **indexable content** (plus
+    ImageGallery JSON-LD describing exactly those server-rendered items) and
+    the client only pages backwards from there. No key / outage → a friendly
+    unavailable state, never a 500.
+  - **UI**: masonry grid reusing the gallery's classes, per-tile date chip and
+    ▶ Video badge (video days have no still — `thumbs=true` supplies
+    `thumbnail_url`), **jump-to-date** picker bounded to the epoch…latest,
+    Latest reset, `?date=YYYY-MM-DD` deep link (post-mount `location.search`
+    read, so the route stays statically renderable), and the shared
+    **Lightbox** showing the full astronomer's explanation.
+    `GalleryImage` gained optional `sourceUrl`/`sourceLabel` so one lightbox
+    serves both sources — APOD entries link to their `apod.nasa.gov/apod/apYYMMDD.html`
+    permalink instead of images.nasa.gov. NASA's `copyright` field arrives
+    with embedded newlines, so it is collapsed to one line.
+  - 14 new zero-dep `node:test` cases (**62 total**) covering leap-year/
+    year-boundary date shifts, window contiguity, epoch clamping, permalink
+    formatting, credit cleaning, and defensive slimming (junk payloads, a
+    single object, entries with no usable still). An entry point sits on
+    `/gallery`; sitemap entry added.
+
 **Mission Management System upgrade (Phase 1) — COMPLETE.** All 8 features
 shipped (Enhanced Identity, Rich Classification, Professional Specifications,
 Scientific Objectives, Advanced Timeline, Improved Launch Information, Enhanced
@@ -1010,6 +1191,30 @@ follow-ups (not required, but where the foundation is ready):
 - ~~Ship-or-delete decision~~ shipped: noindex removed, OG/canonical/JSON-LD
   added, linked from the `/live` hub and footer Intelligence column. (No
   sitemap file exists in the app yet — when one is added, include `/lunar-sim`.)
+
+**Explore section follow-ups (v1 + Sky Tonight shipped — see §2):**
+- **Sky Tonight polish**: per-planet rise/set times for the user's location
+  (the sun-geometry code generalises to planet RA/Dec), Moon rise/set, a
+  notify-before-a-pass option, and localised (non-UTC) sun times display.
+- ~~Topic hubs~~ **shipped** (see §2) — nine curated hubs. Natural follow-ups:
+  surface hub links on the article/mission reading pages ("part of the Mars
+  hub"), let editors pin a hero item per topic, and add topic hubs to the
+  `/hi` bilingual surface.
+- Orrery polish: ~~deep-linkable selection (`?body=`)~~ done; still open —
+  true elliptical orbit paths for the eccentric bodies (Mercury/Pluto — the
+  dot already sits at the true scaled radius, only the decorative ring is
+  circular), dwarf planets (Ceres, Eris), and eventually the Phase-4 Three.js
+  3-D upgrade (keep it `next/dynamic({ssr:false})`-scoped like `/lunar-sim`).
+- ~~`/gallery` in the nav 404s~~ **shipped** (see §2) — NASA Image Library
+  browser with curated Featured tab, topic chips, search + lightbox, plus the
+  **APOD Archive** at `/gallery/apod` (see §2). Polish ideas: surfacing
+  mission-media galleries from `missions.details.media`, higher-res lightbox
+  assets via the library's `/asset/{id}` manifest, and per-day APOD permalink
+  routes (`/gallery/apod/[date]`) if individual days should rank on their own.
+  Note: the community-maintained NASA Mars Rover Photos API is retired — do
+  not build against it. APOD needs `NASA_API_KEY` set in the environment
+  (already used by `/live/apod`); without it the archive degrades to a
+  friendly unavailable state.
 
 **Admin auth follow-ups:**
 - Team-management UI (`/admin/team`) to invite/deactivate members and set roles

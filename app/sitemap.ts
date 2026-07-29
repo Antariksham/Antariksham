@@ -4,6 +4,7 @@ import { getAllArticleSlugs }   from '@/modules/articles/services/getArticles'
 import { getAllMissionSlugs }   from '@/modules/missions/services/getMissions'
 import { getAllKnowledgeSlugs } from '@/modules/learn/services/getKnowledgeArticles'
 import { getAllAuthorSlugs }    from '@/modules/authors/services/getAuthors'
+import { TOPICS }               from '@/modules/explore/services/topics'
 
 // Rebuilt hourly. Content pages are listed dynamically from the database; if a
 // query fails at build/runtime it degrades to the static routes rather than
@@ -20,6 +21,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/missions',         priority: 0.8, freq: 'daily'   },
     { path: '/learn',            priority: 0.8, freq: 'weekly'  },
     { path: '/live',             priority: 0.7, freq: 'always'  },
+    { path: '/explore',          priority: 0.7, freq: 'weekly'  },
+    { path: '/explore/solar-system', priority: 0.6, freq: 'weekly' },
+    { path: '/explore/sky-tonight',  priority: 0.6, freq: 'daily'  },
+    { path: '/explore/topics',       priority: 0.7, freq: 'weekly' },
+    ...TOPICS.map(t => ({ path: `/explore/topics/${t.slug}`, priority: 0.6, freq: 'weekly' as const })),
+    { path: '/gallery',              priority: 0.7, freq: 'weekly' },
+    { path: '/gallery/apod',         priority: 0.6, freq: 'daily'  },
     { path: '/lunar-sim',        priority: 0.6, freq: 'monthly' },
     { path: '/about',            priority: 0.5, freq: 'monthly' },
     { path: '/contact',          priority: 0.4, freq: 'yearly'  },
