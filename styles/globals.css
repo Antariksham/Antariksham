@@ -1944,3 +1944,121 @@ textarea.cite-input { resize: vertical; font-family: var(--font-mono); }
 @media (prefers-reduced-motion: reduce) {
   .orrery-chip, .body-mission, .orrery-body .orrery-dot { transition: none; }
 }
+
+/* ── EXPLORE — Sky Tonight (/explore/sky-tonight) ──
+   Cards use the standard theme tokens; only the Moon-disc canvas reuses the
+   pinned-dark --space-* tokens (it depicts the night sky, like the orrery). */
+.sky-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .sky-grid { grid-template-columns: 1fr; }
+}
+
+.sky-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+.sky-note {
+  font-size: 0.8rem; line-height: 1.55;
+  color: var(--faint);
+  margin: 0;
+}
+.sky-status { font-size: 0.86rem; color: var(--dim); margin: 14px 0 0; }
+.sky-error  { font-size: 0.86rem; color: var(--red); margin: 0; }
+
+/* Moon */
+.sky-moon-row {
+  display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+}
+.sky-canvas {
+  background: var(--space-bg);
+  background-image: var(--space-glow);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.sky-moon-canvas { width: 172px; flex: none; }
+.sky-moon-canvas svg { display: block; width: 100%; height: auto; }
+.sky-moon-info { flex: 1; min-width: 220px; }
+
+/* Planet rows */
+.sky-planets { display: flex; flex-direction: column; }
+.sky-planet {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.sky-planet:last-child { border-bottom: none; }
+.sky-planet[data-window="hidden"] { opacity: 0.55; }
+.sky-planet-dot  { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.sky-planet-name { font-weight: 700; color: var(--white); min-width: 92px; }
+.sky-planet-optics { font-weight: 400; font-size: 0.76rem; color: var(--faint); }
+.sky-planet-hint { flex: 1; color: var(--dim); font-size: 0.82rem; }
+.sky-planet-elong {
+  font-family: var(--font-mono);
+  font-size: 0.74rem; color: var(--faint);
+  white-space: nowrap;
+}
+
+/* Visibility-window chip (shared with ISS pass rows) */
+.sky-window {
+  font-family: var(--font-sans);
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 20px;
+  white-space: nowrap;
+}
+.sky-window[data-window="evening"] {
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+}
+.sky-window[data-window="morning"] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.sky-window[data-window="all-night"] {
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green) 35%, transparent);
+}
+.sky-window[data-window="hidden"] {
+  color: var(--faint);
+  background: rgba(var(--ink), 0.05);
+  border: 1px solid var(--border);
+}
+
+/* ISS pass rows */
+.sky-passes { display: flex; flex-direction: column; }
+.sky-pass {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.sky-pass:last-child { border-bottom: none; }
+.sky-pass[data-visible="false"] { opacity: 0.55; }
+.sky-pass-day  { font-weight: 700; color: var(--white); min-width: 84px; }
+.sky-pass-time { color: var(--dim); }
+.sky-pass-dur  { color: var(--faint); font-size: 0.78rem; }
+.sky-pass-path {
+  font-family: var(--font-mono);
+  font-size: 0.74rem; color: var(--dim);
+  white-space: nowrap;
+}
+.sky-pass-elev {
+  font-family: var(--font-mono);
+  font-size: 0.74rem; color: var(--faint);
+  margin-left: auto;
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .sky-pass-elev { margin-left: 0; }
+}

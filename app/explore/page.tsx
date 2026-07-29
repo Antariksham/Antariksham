@@ -49,12 +49,12 @@ const EXPLORE_PAGES = [
     badge: 'INTERACTIVE',
   },
   {
-    href:  null,
+    href:  '/explore/sky-tonight',
     icon:  <MoonStar size={26} />,
     label: 'Sky Tonight',
-    desc:  'What is above you right now — tonight’s Moon phase, visible planets and upcoming ISS passes for your location.',
+    desc:  'What is above you right now — tonight’s Moon phase, visible planets and upcoming ISS passes computed for your location.',
     color: 'var(--gold)',
-    badge: 'SOON',
+    badge: 'TONIGHT',
   },
   {
     href:  null,

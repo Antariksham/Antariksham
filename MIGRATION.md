@@ -810,6 +810,44 @@ collection when Supabase env vars are absent — unrelated to app code).
     titleTemplate (avoids the "… — Antariksham | Antariksham" duplication
     other pages still have).
 
+- ✅ **Explore — Sky Tonight (`/explore/sky-tonight`)** — the hub's second live
+  experience: what's above you right now. Branch `claude/explore-section-ideas-uuv5wo`.
+  - **Moon phase card**: elongation-based phase (mean longitudes + the Moon's
+    equation of centre), SVG phase disc (two-arc terminator construction,
+    Northern-Hemisphere convention), illumination %, moon age, next full/new
+    moon (validated in tests against the real 2024-04-08 solar-eclipse new
+    moon and 2024-01-25 full moon).
+  - **Planets tonight**: evening / morning / all-night / hidden windows for
+    all seven planets from geocentric solar elongation — location-independent,
+    so it's SSR-safe with the same epoch-prop pattern as the orrery. Rows
+    reuse the orrery's body colors; ice giants flagged binoculars/telescope.
+  - **ISS passes for your location**: a new **`/api/iss/passes?lat&lon`**
+    proxy route runs satellite.js SGP4 (48 h at 30 s steps) against the shared
+    Celestrak TLE (extracted from the position route into
+    `modules/iss/services/tle.ts` — one fetch + cache for both routes) and
+    classifies each pass **actually visible** (ISS sunlit outside Earth's
+    shadow cylinder while the observer's Sun is below −6°) — verified against
+    real Delhi passes (post-sunset passes visible, daytime ones not).
+    Coordinates are rounded to ~11 km before leaving the device and never
+    stored. Client card: geolocation → pass rows (local times, compass path
+    start→peak→end, max elevation, duration, Visible badge) + sunrise/sunset.
+    satellite.js stays **server-only** (its v7 wasm runtime imports
+    `node:module`, which client webpack can't bundle — discovered the hard
+    way; the API-proxy pattern was the right architecture anyway).
+  - **Pure core + tests**: `skyTonight.ts` (moon phase, planet windows, sun
+    RA/Dec + altitude + NOAA-style sunrise/sunset incl. polar day/night) and
+    `issPasses.ts` (pass scanning over any look function, 16-wind compass) —
+    16 new zero-dep node:test cases (33 total in `modules/explore`).
+    `skyTonight.ts` runtime-imports the orrery math via an explicit `.ts`
+    extension — **`allowImportingTsExtensions` is now enabled** in
+    tsconfig.json (legal with `noEmit` + bundler resolution) so pure modules
+    CAN share code and still run under Node's type-stripping test runner
+    (supersedes the "no runtime cross-imports" workaround where needed).
+  - Hub teaser flipped to a live card (badge TONIGHT), sitemap entry, full
+    SEO (canonical, OG/Twitter, WebApplication + BreadcrumbList JSON-LD).
+    Theme-aware `.sky-*` styles (tokens only; the Moon disc reuses the
+    pinned-dark `--space-*` canvas).
+
 **Mission Management System upgrade (Phase 1) — COMPLETE.** All 8 features
 shipped (Enhanced Identity, Rich Classification, Professional Specifications,
 Scientific Objectives, Advanced Timeline, Improved Launch Information, Enhanced
@@ -1051,10 +1089,10 @@ follow-ups (not required, but where the foundation is ready):
   added, linked from the `/live` hub and footer Intelligence column. (No
   sitemap file exists in the app yet — when one is added, include `/lunar-sim`.)
 
-**Explore section follow-ups (v1 shipped — see §2):**
-- **Sky Tonight** (`/explore/sky-tonight`): Moon phase + visible planets are
-  computable client-side from the same orrery math; ISS passes can reuse the
-  existing `/api/iss` proxy. Its hub teaser card is already waiting.
+**Explore section follow-ups (v1 + Sky Tonight shipped — see §2):**
+- **Sky Tonight polish**: per-planet rise/set times for the user's location
+  (the sun-geometry code generalises to planet RA/Dec), Moon rise/set, a
+  notify-before-a-pass option, and localised (non-UTC) sun times display.
 - **Topic hubs** (`/explore/topics/[topic]`): curated Mars / Moon / black
   holes / exoplanet landing pages aggregating articles + missions + learn +
   live tools (SEO topic-authority pages). Teaser card waiting.
