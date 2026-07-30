@@ -1105,6 +1105,79 @@ runner strips TypeScript, so the suites still need no test framework: zero new
 dependencies. Verified: 0 ESLint errors across all source dirs, 294/294 tests
 pass, `next build` exits 0.
 
+**Dynamic (type-to-create) article tags — COMPLETE.** The article editor's Tags
+panel was a fixed list: it rendered whatever rows happened to be in
+`public.tags` (in practice the five from `test/seed-articles.sql`) as toggle
+chips, `getFormOptions()` only ever read that table, and the save path accepted
+`tagIds` alone. There was no create-tag route or admin screen anywhere, so the
+only way to add a tag was inserting a row by hand in Supabase. Now:
+
+- **`modules/admin/tags/tagNames.ts`** — pure, DOM-free helpers. A tag has a
+  display `name` ("Falcon 9") and an identity `slug` ("falcon-9"); the slug is
+  what dedupes, so `Falcon 9` / `falcon 9` / ` FALCON-9 ` cannot become three
+  tags. `tagSlug` strips combining accents rather than deleting the letter
+  (`lib/utils.slugify` matches on `\w` and would turn "Sové" into "sov").
+  8 new `node:test` cases (**302 total**).
+- **`POST /api/admin/tags`** → `resolveOrCreateTag` in
+  `modules/admin/services/adminTags.ts`. Resolve-or-create keyed on the slug, so
+  it is idempotent: posting a name whose slug exists returns that row with
+  `created: false`. Admin-only (tags are a shared taxonomy), and a lost
+  insert race re-reads the winner's row instead of failing.
+- **`modules/admin/tags/TagPicker.tsx`** — one input that both filters the
+  existing vocabulary and creates a new tag (Enter, or the Create button, which
+  only appears once nothing keys to the same slug). Selected chips stay visible
+  while filtering. Creation is immediate rather than deferred to save, so the
+  new tag resolves to a name in the live preview and the translation panes at
+  once; `ArticleForm` merges session-created tags over its server-rendered list.
+- **`supabase/migrations/20260730130000_tags_slug_unique.sql`** — unique index on
+  `tags (slug)`, the DB-level guard behind the race handling above.
+
+Verified: 302/302 tests pass, `next build` compiles, and the panel was driven in
+headless Chromium in both themes — filtering, selecting an existing tag by a
+different spelling (no row created), creating a new tag, rejecting a name that
+slugs to nothing, and the server-error path.
+
+**Tags admin screen (`/admin/tags`) — COMPLETE.** The other half of
+type-to-create: because the editor mints a tag the moment someone types a new
+name, a typo is a row, and nothing could rename, merge or delete one. Now:
+
+- **List with usage counts.** `getAdminTags()` returns every tag with the number
+  of articles on it, tallied from `article_tags` in 1000-row ordered pages —
+  PostgREST caps a response at 1000 rows and join rows outnumber articles, so a
+  single unordered fetch would silently undercount. Tags on 0 articles are
+  badged "unused" and outlined in gold; they are what you came to clean up.
+  Filter box plus a Name / Most-used sort.
+- **Rename** (`PATCH /api/admin/tags?id=`) keeps the slug in step with the name —
+  otherwise the identity key drifts from what authors see and a second tag with
+  the same display name could be created alongside it. A rename that would land
+  on another tag's slug returns 409 naming that tag and pointing at merge, rather
+  than letting the unique index answer with a 23505.
+- **Merge** (`POST /api/admin/tags/merge`) repoints the source's `article_tags`
+  rows at the target, drops the ones the target already had (that pair is unique),
+  deletes the source, and reports how many moved vs were already tagged. The diff
+  is a pure, tested `planTagMerge` because PostgREST cannot express
+  `not in (subquery)`; ids go over in batches of 200 so the query string cannot
+  blow up. Not a transaction — PostgREST has none — so the order is chosen to
+  leave a half-finished merge re-runnable rather than corrupt.
+- **Delete** removes the join rows first: the base schema predates this repo's
+  migrations, so ON DELETE CASCADE cannot be assumed, and orphaned `article_tags`
+  rows would break the editor's lookups. The confirm dialog names the article
+  count and points at merge as the non-destructive alternative.
+- **Inline create** on the screen too, reusing the resolve-or-create endpoint, so
+  seeding a vocabulary before writing doesn't mean opening an article. It reports
+  "already existed" when the slug was taken instead of implying a new row.
+- **New `--modal-scrim` token** (dark + light). Dialog scrims were hardcoded
+  `rgba(10,10,15,0.85)` / `rgba(0,0,0,0.7)` in five places; the alpha that reads
+  as "focus this dialog" over a dark page swallows a light one, so it needs to be
+  a per-theme token. Only the new screen uses it so far.
+- 8 new `node:test` cases (**310 total**).
+
+Verified: 310/310 tests pass, `next build` compiles, and the screen was driven in
+headless Chromium in both themes against a mocked API — load with counts, sort,
+filter, rename with live slug preview, a 409 rename conflict surfacing instead of
+applying, merge (source excluded from its own target list, counts updated),
+delete warning naming the article count, create, and the duplicate-create notice.
+
 **Not yet done:** All 8 Phase 2 features are complete. The Phase 1 Mission
 Management System upgrade is complete (all 8 features). Remaining: Phases 3–4 of
 the plan, and the polish items in §10.
@@ -1340,6 +1413,37 @@ the full design and the measured numbers. Still to do:
 - **Context pre-fill on upload** — seeding tags from the article's own
   categories when the Media Library is opened from an editor needs a
   `defaultTags` prop threaded through the callers.
+
+**Taxonomy management — what's left after tags (§2 covers the editor field and
+the `/admin/tags` screen):**
+- **Space agencies are a fixed list, and it's a dead end.** `getAgencyOptions()`
+  (`adminMissions.ts:275`) is the only reference to `space_agencies` in the
+  admin — read-only. The mission editor's primary-agency select and all three
+  role fields (partners / commercial / institutions) can only offer seeded rows,
+  so a mission for an unseeded agency cannot be filed at all. Destinations right
+  above them already allow custom values, so the inconsistency shows in one
+  screen. Type-to-create is the wrong shape here: agencies carry `slug`,
+  `short_name`, `country`, `logo_url`, `website_url` and `description`, all
+  rendered on public mission pages, so a name-only row would publish an agency
+  with no logo. Wants a `/admin/agencies` CRUD screen modelled on
+  `/admin/authors`.
+- **Categories are still a fixed list, and it's a three-part fix.** Same shape as
+  tags were — chips from `getFormOptions()`, no write path to `categories`
+  anywhere — but the name is hardcoded in two more places: `ArticleCategory` is a
+  literal union of 10 names (`types/article.ts:14`), and the public `/articles`
+  filter rail repeats the same 10 as an array (`ArticlesPage.tsx:8`). So a
+  category created in the admin would be neither a valid type value nor visible
+  to readers. `TagPicker` + a `resolveOrCreate` generalise to the field, but the
+  union has to be relaxed and the rail driven from the DB first — and since
+  category names reach URLs and SEO surfaces, adding one is an editorial
+  decision, not a drive-by.
+- **Non-Latin tag names are rejected.** `isValidTagName` needs an ASCII slug to
+  key on, so a name written entirely in Devanagari or CJK has none. Tags are
+  authored on the English article and shared across its translations, so this
+  has not bitten yet; a fallback slug would be the fix if it ever does.
+- **A public `/tags/<slug>` archive.** The relational join and stable slugs are
+  in place; there is still no tag landing page (tags only render as chips on an
+  article and drive admin filtering).
 
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into

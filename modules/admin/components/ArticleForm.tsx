@@ -16,6 +16,7 @@ import {
   Save, Eye, Globe, ChevronDown, X, Plus, AlertCircle, Pencil, Columns2, Search,
 } from 'lucide-react'
 import { ArticleTranslationEditor } from '@/modules/admin/components/ArticleTranslationEditor'
+import { TagPicker } from '@/modules/admin/tags/TagPicker'
 import { ArticlePreview } from '@/modules/admin/preview/ArticlePreview'
 import { ContentEditorField } from '@/modules/admin/editor/ContentEditorField'
 import { FeaturedImageManager } from '@/modules/admin/media/FeaturedImageManager'
@@ -109,6 +110,19 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
   // Session-only SEO focus keyword (drives keyword analysis + the checklist).
   const [focusKeyword, setFocusKeyword] = useState('')
 
+  // Tags minted from the Tags panel during this session. Merged over the
+  // server-rendered list so a brand-new tag is immediately selectable, and
+  // resolves to a name in the preview and the translation panes, without
+  // waiting for the page's props to be refetched.
+  const [createdTags, setCreatedTags] = useState<TagOption[]>([])
+
+  const allTags = useMemo(() => {
+    if (createdTags.length === 0) return tags
+    const byId = new Map(createdTags.map(t => [t.id, t]))
+    for (const t of tags) byId.set(t.id, t)   // the server's copy wins once refetched
+    return Array.from(byId.values()).sort((a, b) => a.name.localeCompare(b.name))
+  }, [tags, createdTags])
+
   // The body HTML can be large, so debounce it into the preview; every other
   // (cheap) field flows through live for instant feedback.
   const debouncedContent = useDebouncedValue(form.content, 180)
@@ -142,7 +156,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
         .map(id => categories.find(c => c.id === id)?.name)
         .filter((n): n is string => Boolean(n)),
       tags:          form.tagIds
-        .map(id => tags.find(t => t.id === id)?.name)
+        .map(id => allTags.find(t => t.id === id)?.name)
         .filter((n): n is string => Boolean(n)),
       author:        author ? { name: author.name, avatar: null } : null,
       publishedAt:   article?.publishedAt ?? null,
@@ -153,7 +167,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
   }, [
     form.title, form.excerpt, debouncedContent, form.featuredImage, form.featuredImageMeta,
     form.categoryIds, form.tagIds, form.authorId, form.articleType,
-    categories, tags, authors, article,
+    categories, allTags, authors, article,
   ])
 
   // ── Autosave ──────────────────────────────────────────────────
@@ -632,30 +646,15 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
           </div>
         </SidePanel>
 
-        {/* Tags */}
+        {/* Tags — filter the vocabulary, or type a new one and create it */}
         <SidePanel label={`Tags ${form.tagIds.length > 0 ? `(${form.tagIds.length})` : ''}`}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '130px', overflowY: 'auto' }}>
-            {tags.map(tag => {
-              const active = form.tagIds.includes(tag.id)
-              return (
-                <button
-                  key={tag.id}
-                  onClick={() => toggleTag(tag.id)}
-                  style={{
-                    padding: '3px 9px', borderRadius: '4px', cursor: 'pointer',
-                    fontFamily: 'var(--font-mono)', fontSize: '13px',
-                    letterSpacing: '0.08em', textTransform: 'uppercase',
-                    background: active ? 'rgba(243,156,18,0.12)' : 'transparent',
-                    border: `1px solid ${active ? 'rgba(243,156,18,0.4)' : 'var(--border)'}`,
-                    color: active ? 'var(--gold)' : 'rgba(var(--ink),0.62)',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  {tag.name}
-                </button>
-              )
-            })}
-          </div>
+          <TagPicker
+            tags={allTags}
+            selectedIds={form.tagIds}
+            onToggle={toggleTag}
+            onCreated={tag => setCreatedTags(prev =>
+              prev.some(t => t.id === tag.id) ? prev : [...prev, tag])}
+          />
         </SidePanel>
 
       </div>
@@ -675,7 +674,7 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
               featuredImage:     form.featuredImage || null,
               featuredImageMeta: form.featuredImageMeta,
               categories:        form.categoryIds.map(id => categories.find(c => c.id === id)?.name).filter((n): n is string => Boolean(n)),
-              tags:              form.tagIds.map(id => tags.find(t => t.id === id)?.name).filter((n): n is string => Boolean(n)),
+              tags:              form.tagIds.map(id => allTags.find(t => t.id === id)?.name).filter((n): n is string => Boolean(n)),
               authorName:        authors.find(a => a.id === form.authorId)?.name || null,
               publishedAt:       article.publishedAt,
               articleType:       form.articleType,
