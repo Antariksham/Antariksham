@@ -1078,6 +1078,17 @@ additive `missions.details` jsonb column (+ the base columns it keeps in sync),
 94 zero-dependency unit tests, and a fully backward-compatible editor + public
 experience.
 
+**Continuous integration — COMPLETE.** The 27 colocated `*.test.ts` suites
+(**294 tests**) were runnable but unwired: no `test` script, no CI, so they only
+ran when someone remembered to. Now `.github/workflows/ci.yml` runs
+**lint → test → build** on every push and every PR into `main`, and
+`package.json` gained `lint`, `test` (`node --test`) and `test:watch` scripts.
+Node 22's built-in runner strips TypeScript, so the suites still need no test
+framework — zero new dependencies. The build step passes placeholder Supabase env
+vars, which sidesteps the `supabaseUrl is required` failure of rule 8 (§6) and
+makes the build gate genuinely green rather than expected-red. All three gates
+pass as of this commit.
+
 **Not yet done:** All 8 Phase 2 features are complete. The Phase 1 Mission
 Management System upgrade is complete (all 8 features). Remaining: Phases 3–4 of
 the plan, and the polish items in §10.
@@ -1097,6 +1108,14 @@ the plan, and the polish items in §10.
   identifier in commits/PRs/code.
 - **Always run `next build` before committing** non-trivial changes and confirm
   it compiles. The `supabaseUrl` page-data error is expected without env vars.
+- **CI is the backstop for that gate.** `.github/workflows/ci.yml` runs
+  `npm run lint`, `npm test` and `npm run build` on every push and every PR into
+  `main`, so a machine that can't build locally (tablet, phone) still gets the
+  rule-8 check — read the PR's ✓/✗ instead. Locally the same three commands are
+  `npm run lint && npm test && npm run build`; `npm run test:watch` re-runs the
+  suites on save. CI supplies placeholder Supabase env vars, so its build must
+  be **fully green** — a red build there is a real compile or type error, never
+  the missing-env error.
 
 ---
 

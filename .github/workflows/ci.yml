@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+# A newer push to the same branch cancels the older run, so you always
+# read results for your latest commit instead of a stale one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: lint · test · build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Node 22 ships the built-in test runner with TypeScript type
+          # stripping, which is what lets `node --test` run the .test.ts
+          # files directly with no test framework installed.
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        # Placeholder values, not secrets. `next build` only needs these to
+        # satisfy the Supabase client constructor at import time; nothing in
+        # the build talks to Supabase. Real credentials live in the hosting
+        # provider's env, and using fakes here keeps the build green on forks
+        # (CLAUDE.md rule 8).
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
+        run: npm run build
