@@ -1,8 +1,10 @@
 # Media Library — scale architecture (search, grouping, filtering at 10k+ assets)
 
-**Status:** **Phases 1, 2 and 4 are implemented** (§9) — the index, the search
-functions, server-side search with keyset pagination, and upload-time metadata
-with dedupe, content-hash keys and thumbnails. Phases 3 and 5 are still design.
+**Status:** **Phases 1, 2 and 4 are implemented, plus Phase 5's detail drawer**
+(§9) — the index, the search functions, server-side search with keyset
+pagination, upload-time metadata with dedupe and content-hash keys, and
+after-the-fact editing of any asset. Phase 3 and the rest of Phase 5 are still
+design.
 **Problem:** uploads are stored as `1753612345678-img-4471.jpg`. At a few hundred
 images that is ugly; at a few thousand it makes the library unusable — you cannot
 search, group, filter, or find anything.
@@ -474,7 +476,8 @@ reads `title`. New uploads get the §2 scheme.
 | **2** | `GET /api/admin/media` reads the functions; keyset pagination; both provider panels read it | **the 200-file ceiling and the client-side search both disappear** | ✅ **done** |
 | **3** | Backfill script + `media_usages` + metadata harvest | safe deletes, "unused" filter | ~1 day |
 | **4** | Upload dialog (title/alt/tags), dedupe precheck, new key scheme, thumbnails | new uploads stop being the problem | ✅ **done** |
-| **5** | Filter rail, virtualised grid, detail drawer, bulk ops, `⌘K` quick-pick | the "one second" experience | ~2 days |
+| **5a** | Per-asset detail drawer — edit title / alt / caption / credit / tags after upload | ✅ **done** |  |
+| **5b** | Filter rail, virtualised grid, bulk ops, `⌘K` quick-pick | the "one second" experience | ~1.5 days |
 
 Phases 1+2 fixed the two things that actually break at scale: the 200-file cap
 and filename-only client-side search. A **Sync from Storage** action
@@ -488,6 +491,19 @@ and the `featured_image_meta` harvest are still Phase 3.
 instant, but could only index words that already existed — a title derived from
 the filename. The upload dialog now asks for a title, alt text and tags at the
 moment of upload, so new images arrive findable.
+
+**The detail drawer closes the retroactive gap.** Clicking any card opens it:
+title, alt text, caption, credit and tags, saved through
+`PATCH /api/admin/media/:id`, plus the read-only file facts and copy/open/delete.
+Two decisions worth recording:
+
+- **Alt text is required at upload but only warned about in the drawer.**
+  Blocking a title fix because a *different* field is incomplete punishes the
+  person improving the record. Cards carry a `No alt` badge instead, so the gap
+  stays visible without being an obstacle.
+- **A save merges into the grid in place rather than refetching.** Refetching
+  would be simpler but would reset scroll and can reorder or drop the row being
+  edited, since results depend on the very fields just changed.
 
 **What is left is about the images already there.** Anything uploaded before
 Phase 4 still has only a filename-derived title. Phase 3's metadata harvest

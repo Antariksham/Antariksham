@@ -22,11 +22,13 @@ interface GridProps {
   onLoadMore?:  () => void
   // Search spans every bucket, so results need to say which one they came from.
   showBucket?:  boolean
+  /** Opens the detail drawer. Without it, cards are not clickable. */
+  onOpenDetails?: (item: MediaItem) => void
 }
 
 export function MediaGrid({
   items, loading, error, pickerMode, deletingId, onPick, onDelete, emptyLabel,
-  hasMore, loadingMore, onLoadMore, showBucket,
+  hasMore, loadingMore, onLoadMore, showBucket, onOpenDetails,
 }: GridProps) {
   if (error) {
     return (
@@ -67,6 +69,7 @@ export function MediaGrid({
             onPick={onPick}
             onDelete={onDelete}
             showBucket={showBucket}
+            onOpenDetails={onOpenDetails}
           />
         ))}
       </div>
@@ -103,7 +106,7 @@ function formatBytes(bytes: number): string {
 }
 
 function MediaCard({
-  item, pickerMode, deleting, onPick, onDelete, showBucket,
+  item, pickerMode, deleting, onPick, onDelete, showBucket, onOpenDetails,
 }: {
   item: MediaItem
   pickerMode?: boolean
@@ -111,6 +114,7 @@ function MediaCard({
   onPick?: (item: MediaItem) => void
   onDelete: (item: MediaItem) => void
   showBucket?: boolean
+  onOpenDetails?: (item: MediaItem) => void
 }) {
   const [hovered, setHovered] = useState(false)
   const [copied,  setCopied]  = useState(false)
@@ -141,8 +145,22 @@ function MediaCard({
         transition: 'border-color 0.2s', display: 'flex', flexDirection: 'column',
       }}
     >
-      {/* Preview */}
-      <div style={{ width: '100%', aspectRatio: '16/10', background: 'var(--surface)', overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Preview — the whole thing opens the detail drawer. */}
+      <div
+        onClick={onOpenDetails ? () => onOpenDetails(item) : undefined}
+        role={onOpenDetails ? 'button' : undefined}
+        tabIndex={onOpenDetails ? 0 : undefined}
+        onKeyDown={onOpenDetails ? e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenDetails(item) }
+        } : undefined}
+        title={onOpenDetails ? 'Open details' : undefined}
+        style={{
+          width: '100%', aspectRatio: '16/10', background: 'var(--surface)',
+          overflow: 'hidden', position: 'relative', display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+          cursor: onOpenDetails ? 'pointer' : 'default',
+        }}
+      >
         {item.kind === 'image' ? (
           <img
             src={item.thumbUrl || item.url}
@@ -153,13 +171,49 @@ function MediaCard({
         ) : (
           <FileArchive size={30} style={{ color: 'rgba(var(--ink),0.4)' }} />
         )}
+
+        {/* Hover affordance — the click target is not otherwise discoverable. */}
+        {onOpenDetails && hovered && (
+          <span style={{
+            position: 'absolute', bottom: '6px', right: '6px',
+            padding: '2px 7px', borderRadius: '4px',
+            background: 'rgba(0,0,0,0.6)', color: 'rgba(255,255,255,0.92)',
+            fontFamily: 'var(--font-mono)', fontSize: '10px',
+            letterSpacing: '0.1em', textTransform: 'uppercase',
+          }}>
+            Details
+          </span>
+        )}
       </div>
 
       {/* Info + actions */}
       <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(var(--ink),0.8)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+        <div
+          onClick={onOpenDetails ? () => onOpenDetails(item) : undefined}
+          style={{
+            fontFamily: 'var(--font-sans)', fontSize: '14px',
+            color: 'rgba(var(--ink),0.8)', overflow: 'hidden',
+            whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+            cursor: onOpenDetails ? 'pointer' : 'default',
+          }}
+        >
           {item.name}
         </div>
+
+        {!item.altText && item.kind === 'image' && (
+          <span
+            title="No alt text — open details to add one"
+            style={{
+              alignSelf: 'flex-start', padding: '1px 6px', borderRadius: '4px',
+              background: 'rgba(var(--gold-rgb),0.12)',
+              border: '1px solid rgba(var(--gold-rgb),0.3)',
+              color: 'var(--gold)', fontFamily: 'var(--font-mono)', fontSize: '10px',
+              letterSpacing: '0.08em', textTransform: 'uppercase',
+            }}
+          >
+            No alt
+          </span>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)' }}>
             {formatBytes(item.sizeBytes)}

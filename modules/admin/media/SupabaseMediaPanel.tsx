@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react'
 import { MediaGrid } from './MediaGrid'
 import { MediaSearchBar } from './MediaSearchBar'
 import { MediaUploadDialog } from './MediaUploadDialog'
+import { MediaDetailDrawer } from './MediaDetailDrawer'
 import { useMediaSearch } from './useMediaSearch'
 import { SUPABASE_BUCKETS, type SupabaseBucket, type MediaItem } from './types'
 
@@ -32,11 +33,12 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
   const [deleting,    setDeleting]    = useState<string | null>(null)
   const [dragOver,    setDragOver]    = useState(false)
   const [sync,        setSync]        = useState<SyncState>({ running: false, imported: 0, message: null })
+  const [detail,      setDetail]      = useState<MediaItem | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
     items, total, loading, loadingMore, error, setError,
-    hasMore, search, setSearch, isSearching, refresh, loadMore, removeItem,
+    hasMore, search, setSearch, isSearching, refresh, loadMore, removeItem, updateItem,
   } = useMediaSearch({ provider: 'supabase', bucket })
 
   // Files are staged, not uploaded. The dialog collects the title, alt text and
@@ -61,7 +63,7 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
     setDeleting(item.id)
     try {
       const res = await fetch(`/api/admin/media?bucket=${bucket}&id=${encodeURIComponent(item.id)}`, { method: 'DELETE' })
-      if (res.ok) removeItem(item.id)
+      if (res.ok) { removeItem(item.id); setDetail(null) }
       else {
         const data = await res.json()
         setError(data.error || 'Delete failed')
@@ -175,6 +177,16 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
         </div>
       )}
 
+      {detail && (
+        <MediaDetailDrawer
+          item={detail}
+          deleting={deleting === detail.id}
+          onClose={() => setDetail(null)}
+          onSaved={(id, patch) => { updateItem(id, patch); setDetail(prev => (prev ? { ...prev, ...patch } : prev)) }}
+          onDelete={handleDelete}
+        />
+      )}
+
       {staged && (
         <MediaUploadDialog
           files={staged}
@@ -223,6 +235,7 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
         loadingMore={loadingMore}
         onLoadMore={loadMore}
         showBucket={isSearching}
+        onOpenDetails={setDetail}
         emptyLabel={
           isSearching
             ? `No images match "${search}" in either bucket`

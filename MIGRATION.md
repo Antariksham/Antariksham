@@ -166,6 +166,31 @@ collection when Supabase env vars are absent — unrelated to app code).
   `modules/admin/services/getAdminUser.ts`. Bootstrap steps are in
   `supabase/migrations/README.md`.
 
+- ✅ **Media Library — per-asset detail drawer (Phase 5a)** — until now metadata
+  could only be set at the moment of upload, which left every pre-Phase-4 image
+  stuck with a filename-derived title and no way to fix it.
+  - **`MediaDetailDrawer`**: click any card (preview or filename) to edit title,
+    alt text, caption, credit and tags, saved via `PATCH /api/admin/media/<id>`.
+    Also shows read-only file facts (dimensions, size, type, provider, bucket,
+    added date, storage key) plus copy URL / open / delete. Escape closes;
+    closing with unsaved edits confirms first.
+  - **Alt is required at upload but only warned about here** — refusing to save a
+    title fix because a different field is incomplete would punish the person
+    improving the record. Cards show a `No alt` badge instead, so the gap is
+    visible without being an obstacle.
+  - **Saves merge into the grid in place** (`updateItem`) rather than refetching:
+    a refetch would reset scroll and can reorder or drop the row being edited,
+    because results depend on the fields just changed.
+  - `isMetaDirty` compares what would be *saved*, not raw fields, so a half-typed
+    tag counts as a change while a decorative toggle that leaves the stored alt
+    identical does not. `metaFromAsset` treats `alt_text = ''` as decorative and
+    `null` as undescribed.
+  - Verified by driving the drawer in a headless browser in both themes, which
+    caught a real layout bug no test would have: as a flex child of the
+    scrolling column, the preview's aspect-ratio box collapsed to zero height and
+    the image vanished entirely. 8 new unit tests cover the seeding and
+    dirty-tracking rules (45 total).
+
 - ✅ **Media Library — Phase 4 follow-ups from review on the deployed panel.**
   Three defects surfaced once it was in front of real data:
   - **Every card showed a generic file icon instead of the image.** The grid

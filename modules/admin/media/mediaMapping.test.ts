@@ -8,7 +8,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { toMediaItem, kindForMime, type AssetRow } from './mediaMapping.ts'
-import { emptyMeta, resolveTags, hasAlt } from './mediaMeta.ts'
+import { emptyMeta, resolveTags, hasAlt, metaFromAsset, isMetaDirty } from './mediaMeta.ts'
 
 function row(overrides: Partial<AssetRow> = {}): AssetRow {
   return {
@@ -132,4 +132,69 @@ test('emptyMeta starts with an empty draft so nothing leaks between files', () =
   assert.equal(emptyMeta('Title').tagDraft, '')
   assert.deepEqual(emptyMeta('Title').tags, [])
   assert.equal(emptyMeta('Title').title, 'Title')
+})
+
+// ── Phase 5: seeding and dirty-tracking for the detail drawer ─────────────────
+
+test('metaFromAsset round-trips a described asset', () => {
+  const meta = metaFromAsset({
+    title: 'Vikram lander', altText: 'On the lunar surface',
+    caption: 'Touchdown', credit: 'ISRO', tags: ['isro'],
+  })
+  assert.equal(meta.title, 'Vikram lander')
+  assert.equal(meta.altText, 'On the lunar surface')
+  assert.equal(meta.decorative, false)
+  assert.equal(meta.caption, 'Touchdown')
+  assert.deepEqual(meta.tags, ['isro'])
+  assert.equal(meta.tagDraft, '')
+})
+
+test('metaFromAsset distinguishes a decorative empty alt from a missing one', () => {
+  // '' is a deliberate statement about a decorative image...
+  assert.equal(metaFromAsset({ altText: '' }).decorative, true)
+  // ...whereas null has simply never been filled in.
+  assert.equal(metaFromAsset({ altText: null }).decorative, false)
+  assert.equal(metaFromAsset({}).decorative, false)
+})
+
+test('metaFromAsset survives an asset with nothing filled in', () => {
+  const meta = metaFromAsset({})
+  assert.equal(meta.title, '')
+  assert.deepEqual(meta.tags, [])
+  assert.equal(hasAlt(meta), false)
+})
+
+test('isMetaDirty is false for an untouched form', () => {
+  const meta = metaFromAsset({ title: 'A', altText: 'B', credit: 'C', tags: ['d'] })
+  assert.equal(isMetaDirty(meta, { ...meta }), false)
+})
+
+test('isMetaDirty spots each editable field', () => {
+  const base = metaFromAsset({ title: 'A', altText: 'B', caption: 'C', credit: 'D', tags: ['e'] })
+  assert.equal(isMetaDirty(base, { ...base, title: 'A2' }), true)
+  assert.equal(isMetaDirty(base, { ...base, altText: 'B2' }), true)
+  assert.equal(isMetaDirty(base, { ...base, caption: 'C2' }), true)
+  assert.equal(isMetaDirty(base, { ...base, credit: 'D2' }), true)
+  assert.equal(isMetaDirty(base, { ...base, tags: ['e', 'f'] }), true)
+})
+
+test('isMetaDirty counts a half-typed tag as a change', () => {
+  // Otherwise Save stays disabled on the one edit most likely to be lost.
+  const base = metaFromAsset({ title: 'A', altText: 'B' })
+  assert.equal(isMetaDirty(base, { ...base, tagDraft: 'mars' }), true)
+})
+
+test('isMetaDirty ignores whitespace-only edits', () => {
+  const base = metaFromAsset({ title: 'A', altText: 'B' })
+  assert.equal(isMetaDirty(base, { ...base, title: '  A  ' }), false)
+  assert.equal(isMetaDirty(base, { ...base, tagDraft: '   ' }), false)
+})
+
+test('isMetaDirty compares the alt that would be SAVED, not the raw field', () => {
+  // Marking an already-empty alt decorative saves the same '' — not a change.
+  const empty = metaFromAsset({ title: 'A', altText: null })
+  assert.equal(isMetaDirty(empty, { ...empty, decorative: true }), false)
+  // But marking a described image decorative discards its alt — that is a change.
+  const described = metaFromAsset({ title: 'A', altText: 'A lander' })
+  assert.equal(isMetaDirty(described, { ...described, decorative: true }), true)
 })

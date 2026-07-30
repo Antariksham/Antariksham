@@ -59,7 +59,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       .update(patch)
       .eq('id', id)
       .is('deleted_at', null)
-      .select('id, title, alt_text, credit, tags')
+      .select('id, title, alt_text, caption, credit, tags')
       .maybeSingle()
 
     if (error) throw error

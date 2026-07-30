@@ -5,6 +5,7 @@ import { MediaGrid } from './MediaGrid'
 import { MediaSearchBar } from './MediaSearchBar'
 import { CloudinaryButton } from './CloudinaryButton'
 import { MediaMetadataDialog, type EditableAsset } from './MediaMetadataDialog'
+import { MediaDetailDrawer } from './MediaDetailDrawer'
 import { useMediaSearch } from './useMediaSearch'
 import { deleteCloudinaryMedia } from '@/actions/cloudinary-media'
 import type { MediaItem } from './types'
@@ -32,10 +33,11 @@ export function CloudinaryMediaPanel({ pickerMode, onPick }: Props) {
   // Assets the widget just created, waiting to be described.
   const [awaiting, setAwaiting] = useState<EditableAsset[]>([])
   const [note,     setNote]     = useState<string | null>(null)
+  const [detail,   setDetail]   = useState<MediaItem | null>(null)
 
   const {
     items, total, loading, loadingMore, error, setError,
-    hasMore, search, setSearch, isSearching, refresh, loadMore, removeItem,
+    hasMore, search, setSearch, isSearching, refresh, loadMore, removeItem, updateItem,
   } = useMediaSearch({ provider: 'cloudinary' })
 
   // thumb_url is not populated for Cloudinary rows — the derivative is a pure
@@ -55,7 +57,7 @@ export function CloudinaryMediaPanel({ pickerMode, onPick }: Props) {
     setDeleting(item.id)
     const res = await deleteCloudinaryMedia(item.id)
     if (res.error) setError(res.error)
-    else removeItem(item.id)
+    else { removeItem(item.id); setDetail(null) }
     setDeleting(null)
   }
 
@@ -76,6 +78,16 @@ export function CloudinaryMediaPanel({ pickerMode, onPick }: Props) {
         <div style={{ padding: '10px 14px', background: 'rgba(var(--green-rgb),0.08)', border: '1px solid rgba(var(--green-rgb),0.22)', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--green)' }}>
           {note}
         </div>
+      )}
+
+      {detail && (
+        <MediaDetailDrawer
+          item={detail}
+          deleting={deleting === detail.id}
+          onClose={() => setDetail(null)}
+          onSaved={(id, patch) => { updateItem(id, patch); setDetail(prev => (prev ? { ...prev, ...patch } : prev)) }}
+          onDelete={handleDelete}
+        />
       )}
 
       {awaiting.length > 0 && (
@@ -111,6 +123,7 @@ export function CloudinaryMediaPanel({ pickerMode, onPick }: Props) {
         hasMore={hasMore}
         loadingMore={loadingMore}
         onLoadMore={loadMore}
+        onOpenDetails={setDetail}
         emptyLabel={
           isSearching
             ? `No images match "${search}"`

@@ -100,6 +100,15 @@ export function useMediaSearch({ provider, bucket, pageSize = PAGE_SIZE }: Optio
     setTotal(prev => (prev === null ? null : Math.max(0, prev - 1)))
   }, [])
 
+  /**
+   * Merge an edited item back in place. Refetching after a metadata save would
+   * be correct but would also reset scroll and could reorder or drop the row the
+   * user is looking at, since search results depend on the fields just changed.
+   */
+  const updateItem = useCallback((id: string, patch: Partial<MediaItem>) => {
+    setItems(prev => prev.map(i => (i.id === id ? { ...i, ...patch } : i)))
+  }, [])
+
   return {
     items, total, loading, loadingMore, error, setError,
     hasMore: !!cursor,
@@ -108,5 +117,6 @@ export function useMediaSearch({ provider, bucket, pageSize = PAGE_SIZE }: Optio
     refresh: load,
     loadMore,
     removeItem,
+    updateItem,
   }
 }

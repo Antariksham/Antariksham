@@ -14,6 +14,7 @@ export interface MediaMeta {
   title:      string
   altText:    string
   decorative: boolean
+  caption:    string
   credit:     string
   tags:       string[]
   /** Half-typed tag, not yet turned into a chip. Owned here, not by the input. */
@@ -21,7 +22,52 @@ export interface MediaMeta {
 }
 
 export function emptyMeta(title = ''): MediaMeta {
-  return { title, altText: '', decorative: false, credit: '', tags: [], tagDraft: '' }
+  return { title, altText: '', decorative: false, caption: '', credit: '', tags: [], tagDraft: '' }
+}
+
+/** What the drawer needs from an already-indexed asset to edit it. */
+export interface IndexedAsset {
+  title?:   string | null
+  altText?: string | null
+  caption?: string | null
+  credit?:  string | null
+  tags?:    string[]
+}
+
+/**
+ * Seed the edit form from a stored asset.
+ *
+ * `altText === ''` is treated as decorative rather than missing: an empty alt is
+ * a deliberate statement about a decorative image, and round-tripping it as
+ * "undescribed" would nag the editor forever about something already answered.
+ * A null alt, by contrast, genuinely has not been filled in.
+ */
+export function metaFromAsset(asset: IndexedAsset): MediaMeta {
+  return {
+    title:      asset.title   || '',
+    altText:    asset.altText || '',
+    decorative: asset.altText === '',
+    caption:    asset.caption || '',
+    credit:     asset.credit  || '',
+    tags:       asset.tags    || [],
+    tagDraft:   '',
+  }
+}
+
+/**
+ * Has anything actually changed? Compares what would be SAVED, not raw fields,
+ * so a half-typed tag counts as a change and a decorative toggle that leaves the
+ * saved alt identical does not.
+ */
+export function isMetaDirty(before: MediaMeta, after: MediaMeta): boolean {
+  const savedAlt = (m: MediaMeta) => (m.decorative ? '' : m.altText.trim())
+  return (
+    before.title.trim()  !== after.title.trim()  ||
+    savedAlt(before)     !== savedAlt(after)     ||
+    before.caption.trim()!== after.caption.trim()||
+    before.credit.trim() !== after.credit.trim() ||
+    resolveTags(before).join(',') !== resolveTags(after).join(',')
+  )
 }
 
 /**

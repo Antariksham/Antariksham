@@ -13,17 +13,29 @@ import { hasAlt, type MediaMeta } from './mediaMeta'
  * a DOM; re-exported here so callers need only one import.
  */
 
-export { emptyMeta, resolveTags, hasAlt, type MediaMeta } from './mediaMeta'
+export {
+  emptyMeta, resolveTags, hasAlt, metaFromAsset, isMetaDirty, type MediaMeta,
+} from './mediaMeta'
 
 interface Props {
   value:     MediaMeta
   onChange:  (meta: MediaMeta) => void
   disabled?: boolean
-  /** Hide the per-item tag field when tags are being set for a whole batch. */
+  /** Label for the tag field — batch dialogs and the drawer word it differently. */
   tagLabel?: string
+  /** Caption is asked for when editing an existing asset, not at upload time. */
+  showCaption?: boolean
+  /**
+   * Whether a missing alt renders as an error. True while uploading, where the
+   * record is being created; false in the drawer, where refusing to save a title
+   * fix because a different field is incomplete would just make the tool worse.
+   */
+  altRequired?: boolean
 }
 
-export function MediaMetaFields({ value, onChange, disabled, tagLabel }: Props) {
+export function MediaMetaFields({
+  value, onChange, disabled, tagLabel, showCaption, altRequired = true,
+}: Props) {
   const set = <K extends keyof MediaMeta>(key: K, val: MediaMeta[K]) =>
     onChange({ ...value, [key]: val })
 
@@ -52,7 +64,7 @@ export function MediaMetaFields({ value, onChange, disabled, tagLabel }: Props) 
           onChange={e => set('altText', e.target.value)}
           disabled={disabled || value.decorative}
           placeholder={value.decorative ? 'Decorative — no alt text needed' : 'e.g. The Vikram lander on the lunar south pole'}
-          style={inputStyle(!hasAlt(value))}
+          style={inputStyle(altRequired && !hasAlt(value))}
         />
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '5px', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(var(--ink),0.6)' }}>
           <input
@@ -64,6 +76,24 @@ export function MediaMetaFields({ value, onChange, disabled, tagLabel }: Props) 
           Decorative — no alt text needed
         </label>
       </div>
+
+      {showCaption && (
+        <div>
+          <label style={labelStyle}>
+            Caption
+            <span style={{ marginLeft: '8px', fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: 'rgba(var(--ink),0.5)' }}>
+              shown under the image to readers
+            </span>
+          </label>
+          <input
+            value={value.caption}
+            onChange={e => set('caption', e.target.value)}
+            disabled={disabled}
+            placeholder="Optional"
+            style={inputStyle(false)}
+          />
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 190px' }}>
