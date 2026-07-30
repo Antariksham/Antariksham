@@ -3,7 +3,7 @@
 import { v2 as cloudinary } from 'cloudinary'
 import { getAdminUser } from '@/modules/admin/services/getAdminUser'
 import { supabaseAdmin } from '@/lib/supabase'
-import type { CloudinaryItem } from '@/modules/admin/media/types'
+import { slugify, titleFromFilename } from '@/modules/admin/media/mediaNaming'
 
 // Configured lazily inside each action so a missing env var never throws at
 // module load / build time. cloud_name + api_key are public (the upload widget
@@ -42,13 +42,18 @@ export async function recordCloudinaryUpload(info: {
 
   // Columns map onto the existing media_assets schema:
   //   file_url <- secure_url, file_type <- mime, file_size <- bytes, title <- name
+  // Title/slug go through the same derivation as the Supabase path so both
+  // providers land in the search index looking the same.
+  const title = titleFromFilename(info.original_filename || info.public_id)
+
   const { data, error } = await supabaseAdmin()
     .from('media_assets')
     .insert({
       provider:    'cloudinary',
       storage_key: info.public_id,
       file_url:    info.secure_url,
-      title:       info.original_filename || info.public_id,
+      title,
+      slug:        slugify(title),
       file_type:   info.format ? `image/${info.format}` : null,
       file_size:   info.bytes,
       width:       info.width ?? null,
@@ -66,33 +71,9 @@ export async function recordCloudinaryUpload(info: {
   return { id: data.id as string }
 }
 
-export async function listCloudinaryMedia(): Promise<{ items: CloudinaryItem[]; error?: string }> {
-  if (!(await getAdminUser())) return { items: [], error: 'Unauthorized' }
-
-  const { data, error } = await supabaseAdmin()
-    .from('media_assets')
-    .select('id, file_url, storage_key, title, file_size, width, height, created_at')
-    .eq('provider', 'cloudinary')
-    .order('created_at', { ascending: false })
-    .limit(200)
-
-  if (error) {
-    console.error('listCloudinaryMedia error:', error)
-    return { items: [], error: 'Failed to list media' }
-  }
-
-  const items: CloudinaryItem[] = (data || []).map((r: any) => ({
-    id:        r.id,
-    url:       r.file_url,
-    publicId:  r.storage_key,
-    filename:  r.title || r.storage_key,
-    sizeBytes: r.file_size || 0,
-    width:     r.width ?? null,
-    height:    r.height ?? null,
-    createdAt: r.created_at || '',
-  }))
-  return { items }
-}
+// Listing lives in GET /api/admin/media, which searches and paginates the
+// media_assets index for both providers. The 200-row cap that used to live here
+// is gone with it.
 
 export async function deleteCloudinaryMedia(id: string) {
   if (!(await getAdminUser())) return { error: 'Unauthorized' as const }

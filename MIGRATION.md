@@ -166,6 +166,124 @@ collection when Supabase env vars are absent — unrelated to app code).
   `modules/admin/services/getAdminUser.ts`. Bootstrap steps are in
   `supabase/migrations/README.md`.
 
+- ✅ **Media Library — per-asset detail drawer (Phase 5a)** — until now metadata
+  could only be set at the moment of upload, which left every pre-Phase-4 image
+  stuck with a filename-derived title and no way to fix it.
+  - **`MediaDetailDrawer`**: click any card (preview or filename) to edit title,
+    alt text, caption, credit and tags, saved via `PATCH /api/admin/media/<id>`.
+    Also shows read-only file facts (dimensions, size, type, provider, bucket,
+    added date, storage key) plus copy URL / open / delete. Escape closes;
+    closing with unsaved edits confirms first.
+  - **Alt is required at upload but only warned about here** — refusing to save a
+    title fix because a different field is incomplete would punish the person
+    improving the record. Cards show a `No alt` badge instead, so the gap is
+    visible without being an obstacle.
+  - **Saves merge into the grid in place** (`updateItem`) rather than refetching:
+    a refetch would reset scroll and can reorder or drop the row being edited,
+    because results depend on the fields just changed.
+  - `isMetaDirty` compares what would be *saved*, not raw fields, so a half-typed
+    tag counts as a change while a decorative toggle that leaves the stored alt
+    identical does not. `metaFromAsset` treats `alt_text = ''` as decorative and
+    `null` as undescribed.
+  - Verified by driving the drawer in a headless browser in both themes, which
+    caught a real layout bug no test would have: as a flex child of the
+    scrolling column, the preview's aspect-ratio box collapsed to zero height and
+    the image vanished entirely. 8 new unit tests cover the seeding and
+    dirty-tracking rules (45 total).
+
+- ✅ **Media Library — Phase 4 follow-ups from review on the deployed panel.**
+  Three defects surfaced once it was in front of real data:
+  - **Every card showed a generic file icon instead of the image.** The grid
+    draws an `<img>` only when `kind === 'image'`, and the mapping introduced in
+    Phase 2 never set the field — the whole library rendered as a wall of icons.
+    The mapping moved out of the route handler into a pure, tested
+    `mediaMapping.ts` (untested glue between two layers is exactly where this
+    hides), and a null mime now resolves to `image` rather than `file`, since
+    rows imported by Sync from Storage often have no mime recorded.
+  - **A tag typed without pressing Enter was silently discarded**, which looks
+    identical to "I tagged it mars and search found nothing". The half-typed
+    draft is now owned by the parent (`mediaMeta.ts`) and merged on submit by
+    `resolveTags`, so what is on screen is what gets saved — committing on blur
+    alone would only have turned the bug into a race with the click handler.
+    Cards also show their tags now, so this is visible rather than silent.
+  - **Search was scoped to the open bucket tab.** An image uploaded to
+    `mission-images` was reported as "no matches" when searched from
+    `article-images`. Buckets are storage locations, not subject boundaries: a
+    query now spans both, the count says *all buckets*, and each result card
+    carries a bucket badge. Tabs still scope browsing.
+  - **Cloudinary asked for nothing** and left assets titled after the phone's
+    filename. `<CldUploadWidget>` is a third-party iframe that hands the file
+    over only after it lands, so metadata is collected immediately afterwards:
+    `PATCH /api/admin/media/<id>` plus `MediaMetadataDialog`, sharing
+    `MediaMetaFields` with the Supabase dialog so the two providers cannot drift.
+  - 14 new regression tests cover the mapping and the tag-draft merge
+    specifically (37 total across the media helpers).
+
+- ✅ **Media Library — upload-time metadata (Phase 4)** — the step that makes
+  the index worth having. Phases 1+2 made the whole library searchable, but
+  could only index words that already existed, and `IMG_4471.jpg` has none.
+  Files are now **staged, not uploaded**: `MediaUploadDialog` opens between
+  picking and uploading and asks for a title (prefilled from the filename), alt
+  text and tags.
+  - **Findability**: tags apply to the whole batch with per-image extras, and
+    autocomplete over existing tags (`media_tag_suggestions`, added in
+    `supabase/migrations/20260730120000_media_tag_suggestions.sql`) keeps the
+    vocabulary converging — `normalizeTags` enforces one spelling regardless.
+  - **Accessibility**: alt text is required, with a *Decorative* checkbox that
+    writes an explicitly empty alt — the correct signal, and a different thing
+    from a missing one.
+  - **Dedupe**: every file is SHA-256'd in the browser and checked against the
+    library in one batched `POST /api/admin/media/precheck` before any bytes
+    move; duplicates are shown in the dialog and skipped. The server recomputes
+    the checksum itself and re-checks, so the client hint is an optimisation,
+    never a gate.
+  - **Content-hash keys**: `<yyyy>-<mm>-<slug>--<sha256[0..8]>.<ext>`, so
+    uploads are idempotent and the objects can be served immutable for a year.
+    Kept flat rather than `yyyy/mm/` folders because Supabase Storage's `list()`
+    is non-recursive and folders would break the resumable sync walk. **Existing
+    keys are never touched** — published articles store absolute URLs.
+  - **Thumbnails**: a 400×250 WebP derivative generated in a canvas in the
+    browser (the image is already decoded there), stored under a `thumbs/`
+    prefix and deleted with its asset. Avoids both a native image dependency in
+    the serverless bundle and the paid Storage render transform; degrades to the
+    original if the browser cannot encode WebP.
+  - Verified with 23 unit tests on the naming/hashing/tag helpers and 10 SQL
+    cases covering tag suggestions, prefix and provider scoping, LIKE-escaping,
+    soft-delete exclusion, and that the unique checksum index actually rejects a
+    second live copy while freeing the checksum after a soft delete.
+
+- ✅ **Media Library at scale (Phases 1+2)** — `media_assets` is now the
+  searchable **index of record** for both providers, and the library no longer
+  lists Storage. Previously the Supabase tab read the bucket directly with a
+  hard `limit: 200` and filtered filenames in the browser, so image 201 was
+  invisible and "mars" could only match a filename.
+  - **Migration** (`supabase/migrations/20260729120000_media_library_index.sql`):
+    per-asset descriptive columns (`alt_text`, `caption`, `credit`,
+    `photographer`, `tags`, `collection_id`, `checksum_sha256`, `blurhash`,
+    `deleted_at`, …), a one-level `media_collections` table, a weighted
+    generated `search_vector`, GIN indexes (full text, tags, `pg_trgm` on
+    `title` + `storage_key`), a partial btree for keyset pagination, and the
+    `search_media_assets` / `count_media_assets` functions. Additive and
+    idempotent.
+  - **API** (`app/api/admin/media/route.ts`): `GET` searches the index with
+    filters + an opaque keyset cursor and returns `{ items, nextCursor, total }`
+    (total on the first page only, fetched in parallel); `POST` writes a row on
+    every upload and rolls the object back if indexing fails; `DELETE` resolves
+    by asset id. `POST /api/admin/media/sync` is a resumable importer for files
+    uploaded before the index existed.
+  - **UI**: shared `useMediaSearch` hook (debounced, race-safe) + `MediaSearchBar`
+    + "Load more" in `MediaGrid`. **Both** panels use it, so the Cloudinary tab
+    gains the search and pagination it never had.
+  - **Measured at 50,003 rows**: first page 0.6 ms, deep keyset page 0.5 ms,
+    selective search 0.7 ms, common search 1.1 ms. Four planner traps found by
+    reading EXPLAIN rather than by inspection — a CTE in the function body cost
+    ~300× by blocking inlining, a `count(*) over ()` window made every page scan
+    the whole match set, a scalar count function planned blind at 190 ms, and an
+    unindexed `OR` branch collapsed the whole `BitmapOr`. All four are written
+    up in the doc and the migration comments.
+  - Remaining phases (upload-time metadata, usage graph, filter rail) are in
+    §10 and [`docs/MEDIA_LIBRARY_ARCHITECTURE.md`](./docs/MEDIA_LIBRARY_ARCHITECTURE.md).
+
 - ✅ **Multi-provider Media Library (Supabase + Cloudinary)**: refactored the
   admin Media Library into a tabbed, provider-adapter architecture under
   `modules/admin/media/` (thin `MediaLibrary` shell + shared `MediaGrid` +
@@ -1161,6 +1279,25 @@ follow-ups (not required, but where the foundation is ready):
   the `mission_translations` model without a schema change.
 - **Public API / analytics / launches-integration** — the structured model is
   now ready to power those (the original goal of Phase 1).
+
+**Media Library at scale — Phases 1, 2 and 4 shipped; 3 and 5 open.** See
+[`docs/MEDIA_LIBRARY_ARCHITECTURE.md`](./docs/MEDIA_LIBRARY_ARCHITECTURE.md) for
+the full design and the measured numbers. Still to do:
+
+- **Phase 3 — backfill + usage graph.** `media_usages` (which article/mission
+  uses which asset) for safe deletes and an "unused" filter, plus checksums,
+  dimensions and blurhash for rows that predate Phase 4, and harvesting
+  `articles.featured_image_meta` / `missions.details.media` onto the asset rows.
+  That harvest is also the cheapest way to give pre-Phase-4 images real
+  descriptions in bulk. Until it runs, dedupe only protects images uploaded from
+  Phase 4 onward, since older rows have no checksum.
+- **Phase 5 — the browsing experience.** Filter rail with tag facets,
+  virtualised grid, per-asset detail drawer (edit title/alt/tags after the
+  fact), bulk tag/move/delete, and `⌘K` quick-pick in the editor. `sort`,
+  orientation/date/unused filters and facet counts land here too.
+- **Context pre-fill on upload** — seeding tags from the article's own
+  categories when the Media Library is opened from an editor needs a
+  `defaultTags` prop threaded through the callers.
 
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into

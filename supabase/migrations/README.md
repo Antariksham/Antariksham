@@ -38,6 +38,48 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260730120000_media_tag_suggestions.sql`
+
+Adds `media_tag_suggestions(prefix, provider, limit)` — existing media tags
+matching a prefix, most-used first. Powers the tag autocomplete in the Media
+Library upload dialog, which is what keeps the tag vocabulary converging on one
+spelling per subject instead of drifting into `isro` / `ISRO` / `Isro`.
+
+PostgREST cannot express `unnest` + `group by` through its select syntax, hence
+a function. Read-only and idempotent; nothing depends on it existing, so the
+dialog degrades to a plain tag input if it has not been applied.
+
+### `20260729120000_media_library_index.sql`
+
+Makes `media_assets` the **searchable index of record** for the admin Media
+Library, across both providers. Before it, the Supabase tab listed Storage
+directly with a hard `limit: 200` and filtered filenames in the browser, so the
+library stopped working past ~200 images and could only ever match on a
+filename.
+
+Adds per-asset descriptive columns (`alt_text`, `caption`, `credit`,
+`photographer`, `tags`, `collection_id`, `checksum_sha256`, `blurhash`,
+`deleted_at`, …), a one-level `media_collections` table, a weighted generated
+`search_vector`, GIN indexes (full text, tags, and `pg_trgm` on `title` +
+`storage_key`), a partial btree for keyset pagination, and two functions:
+`search_media_assets` (one page, keyset cursor) and `count_media_assets` (row
+total). Additive and idempotent — existing columns and rows are untouched, and
+the app degrades gracefully if it has not been applied.
+
+Three details are load-bearing; see the comments in the file before editing it:
+
+- Both functions must stay a **single flat SELECT** so Postgres inlines them and
+  can use the GIN indexes. A CTE in the body costs ~300× on a selective search.
+- `count_media_assets` returns a one-row **table**, not a bare `bigint` — scalar
+  SQL functions are never inlined.
+- The tags branch of `search_vector` cannot use `array_to_string` (only STABLE,
+  so a generated column rejects it); it goes through the immutable
+  `media_tags_text` helper.
+
+After applying, run **Sync from Storage** in the Media Library once per bucket
+to index files uploaded before this existed. Full design and the remaining
+phases: [`docs/MEDIA_LIBRARY_ARCHITECTURE.md`](../../docs/MEDIA_LIBRARY_ARCHITECTURE.md).
+
 ### `20260726140000_mission_details.sql`
 
 Adds an additive, nullable `details jsonb` column to `missions` — the extensible,
