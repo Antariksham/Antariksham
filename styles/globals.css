@@ -83,6 +83,11 @@
   /* Sticky nav / mobile-menu background (translucent) */
   --nav-bg: rgba(10,10,15,0.95);
 
+  /* Scrim behind admin dialogs. A token because the alpha has to differ per
+     theme: the same near-opaque black that reads as "focus this dialog" over a
+     dark page swallows a light one. */
+  --modal-scrim: rgba(10,10,15,0.85);
+
   /* Featured "Next Launch" card background — dark gradient in dark mode */
   --featured-bg: linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 100%);
 
@@ -116,6 +121,7 @@
   --card-shadow: 0 4px 20px rgba(15,15,26,0.10);
   --hero-scrim:  linear-gradient(180deg, rgba(240,244,255,0.32) 0%, rgba(240,244,255,0.85) 100%);
   --nav-bg:      rgba(240,244,255,0.85);
+  --modal-scrim: rgba(15,15,26,0.55);
   --featured-bg: linear-gradient(135deg, #ffffff 0%, #eef2fc 100%);
 }
 
