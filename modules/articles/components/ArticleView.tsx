@@ -31,6 +31,7 @@ export function toRenderModel(article: Article): ArticleRenderModel {
     featuredImage: article.featuredImage,
     featuredImageMeta: article.featuredImageMeta,
     categories:    article.categories,
+    categoryColors: article.categoryColors,
     tags:          article.tags,
     author:        article.author
       ? { name: article.author.name, avatar: article.author.avatar, slug: article.author.slug }

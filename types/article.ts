@@ -11,17 +11,16 @@ export type ArticleType =
   | 'explainer'
   | 'guide'
 
-export type ArticleCategory =
-  | 'NASA'
-  | 'SpaceX'
-  | 'ISRO'
-  | 'ESA'
-  | 'JAXA'
-  | 'Astronomy'
-  | 'Discoveries'
-  | 'Technology'
-  | 'Missions'
-  | 'Science'
+/**
+ * A category name.
+ *
+ * This was a literal union of the ten seeded names, which made the type lie:
+ * `public.categories` is a table an editor can add rows to (see
+ * `/admin/categories`), so any name is valid and the union silently excluded
+ * every new one. `ArticleType` above stays a union because those really are
+ * fixed — each value has its own styling and behaviour in the renderer.
+ */
+export type ArticleCategory = string
 
 // Newsroom-grade metadata for the featured image. Stored in the additive
 // `articles.featured_image_meta` JSONB column (all fields optional; the whole
@@ -67,6 +66,10 @@ export interface Article {
   readingTime:   number
   views:         number
   categories:    ArticleCategory[]
+  /** Category name → its `categories.color`, for the ones that set one. The
+   *  column was already being fetched and thrown away; the renderer fell back to
+   *  a hardcoded name-keyed map, so a new category could never have a colour. */
+  categoryColors?: Record<string, string>
   tags:          string[]
   // i18n — the language actually served (falls back to 'en' when no published
   // translation exists) and every language this article is readable in.
@@ -85,5 +88,6 @@ export interface ArticleCard {
   readingTime:   number
   articleType:   ArticleType
   categories:    ArticleCategory[]
+  categoryColors?: Record<string, string>
   featured:      boolean
 }

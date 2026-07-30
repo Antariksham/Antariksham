@@ -451,7 +451,7 @@ export async function runScheduledPublishing(
 
 // ── Categories & Tags (for the form dropdowns) ────────────────
 
-export interface CategoryOption { id: string; name: string; slug: string }
+export interface CategoryOption { id: string; name: string; slug: string; color?: string | null }
 export interface TagOption      { id: string; name: string; slug: string }
 export interface AuthorOption   { id: string; name: string }
 
@@ -465,7 +465,7 @@ export async function getFormOptions(): Promise<{
   // Reference tables are small, but cap them so a runaway tag list can never
   // exceed Supabase's per-request row ceiling.
   const [catRes, tagRes, authRes] = await Promise.all([
-    db.from('categories').select('id, name, slug').order('name').limit(500),
+    db.from('categories').select('id, name, slug, color').order('name').limit(500),
     db.from('tags').select('id, name, slug').order('name').limit(1000),
     db.from('authors').select('id, name').order('name').limit(500),
   ])

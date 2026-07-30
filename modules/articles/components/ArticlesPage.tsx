@@ -2,13 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { ArticleCard, ArticleCategory } from '@/types/article'
+import type { PublicCategory } from '@/modules/articles/services/getCategories'
 import { timeAgo } from '@/lib/utils'
 import { langPrefix, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
-
-const CATEGORIES: ArticleCategory[] = [
-  'NASA', 'SpaceX', 'ISRO', 'ESA', 'JAXA',
-  'Astronomy', 'Discoveries', 'Technology', 'Missions', 'Science',
-]
 
 const PER_PAGE = 12
 
@@ -16,6 +12,9 @@ interface Props {
   articles: ArticleCard[]
   featured: ArticleCard[]
   total:    number
+  /** Filter chips, read from `public.categories` on the server. Was a hardcoded
+   *  array here, so a category added in the admin never reached readers. */
+  categories?: PublicCategory[]
   /** Language of the listing — English by default; 'hi' for the /hi listing. */
   lang?:    LanguageCode
 }
@@ -27,7 +26,9 @@ function buildQuery(page: number, category: ArticleCategory | 'all', lang: Langu
   return params.toString()
 }
 
-export function ArticlesPage({ articles: initialArticles, total: initialTotal, lang = DEFAULT_LANGUAGE }: Props) {
+export function ArticlesPage({
+  articles: initialArticles, total: initialTotal, categories = [], lang = DEFAULT_LANGUAGE,
+}: Props) {
   const base = langPrefix(lang)
   const [activeCategory, setActiveCategory] = useState<ArticleCategory | 'all'>('all')
 
@@ -114,13 +115,13 @@ export function ArticlesPage({ articles: initialArticles, total: initialTotal, l
           {/* Category filter */}
           <div className="tags-row" style={{ marginTop: '1.25rem' }}>
             <button className={`tag ${activeCategory === 'all' ? 'active' : ''}`} onClick={() => setActiveCategory('all')}>All</button>
-            {CATEGORIES.map(cat => (
+            {categories.map(cat => (
               <button
-                key={cat}
-                className={`tag ${activeCategory === cat ? 'active' : ''}`}
-                onClick={() => setActiveCategory(activeCategory === cat ? 'all' : cat)}
+                key={cat.slug || cat.name}
+                className={`tag ${activeCategory === cat.name ? 'active' : ''}`}
+                onClick={() => setActiveCategory(activeCategory === cat.name ? 'all' : cat.name)}
               >
-                {cat}
+                {cat.name}
               </button>
             ))}
           </div>

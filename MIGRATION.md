@@ -1226,6 +1226,56 @@ defects that run surfaced are fixed: the refusal banner wasn't announced to
 screen readers (`role="alert"`/`role="status"` on both new screens' banners), and
 the edit form trusted the API never to send `null` into a controlled input.
 
+**Dynamic categories — COMPLETE.** The last of the fixed lists, and the one that
+was fixed in *four* places at once, not one: no write path to `categories`
+(`getFormOptions()` was its only reader), the ten seeded names hardcoded as a
+literal union in `types/article.ts`, the same ten hardcoded *again* as the public
+listing's filter rail, and a hardcoded name-keyed colour map in the renderer.
+A category added by hand in Supabase was invisible to readers and could never
+have a colour. All four are closed:
+
+- **`ArticleCategory` is now `string`.** The union was a lie — `categories` is a
+  table an editor can add rows to, so it silently excluded every new name.
+  `ArticleType` stays a union, because those values really are fixed (each has
+  its own styling and behaviour in the renderer).
+- **The filter rail reads the table.** New `getCategories()` (anon-key, public per
+  RLS) is fetched server-side in `/articles` and `/hi/articles` and passed down,
+  so the chips are SSR'd with no client round-trip. A failed read falls back to
+  chips-less rather than breaking the listing. The filter still keys on the
+  category **name**, exactly as `/api/articles` always did — no public URL moved.
+- **Colour comes from the row.** `categories.color` was already in every select
+  and then thrown away during normalisation, so the renderer fell back to a
+  hardcoded map of hex values. It now flows through as an optional
+  `categoryColors` on `Article`/`ArticleCard`/`ArticleRenderModel`; the legacy map
+  survives as a fallback for the ten seeded names (converted to tokens per rule
+  1), and anything else gets `var(--accent)` instead of a hardcoded blue. The
+  editor's live preview passes the same map, so a new category previews in its
+  real colour.
+- **`/admin/categories`** — CRUD with name, slug and colour, an article count per
+  category, and "unused" badging. Two guards worth naming: **"All" is reserved**,
+  because `ArticlesPage` uses that literal string as its no-filter sentinel and a
+  category actually named it could never be selected; and **colour must be a hex**
+  — the value lands in a CSS `color`, so `normalizeHexColor` accepts `#abc` /
+  `#aabbcc` and rejects everything else rather than half-applying it. Renaming
+  warns that the public filter link changes (the listing filters on the name), and
+  editing keeps the stored slug stable. Delete is refused while any article uses
+  the category — unlike a tag, a category is how the site *files* an article, so
+  silently unfiling published work is worse than an error.
+- The article editor's Categories panel gets a "Category missing? Manage
+  categories ↗" link (new tab, so an unsaved draft survives), matching the
+  agencies affordance.
+- 7 new `node:test` cases (**325 total**).
+
+Verified: 325/325 tests pass, `next build` compiles, and both sides were driven in
+headless Chromium in light and dark. Admin: create with derived slug and colour,
+the reserved name refused **with no request issued**, a CSS-injection-shaped
+colour string refused, the rename warning naming both filter links, an in-use
+delete refused with the count while the dialog stays open, and an unused delete
+succeeding. Public: the rail renders from the data (`All / NASA / Deep Space /
+Astronomía`), clicking the admin-created chip issues `?category=Deep+Space`, and
+the article labels compute to `#a855f7` from the row, `var(--gold)` from the
+legacy fallback, and `var(--accent)` for an unlisted new category.
+
 **Not yet done:** All 8 Phase 2 features are complete. The Phase 1 Mission
 Management System upgrade is complete (all 8 features). Remaining: Phases 3–4 of
 the plan, and the polish items in §10.
@@ -1475,16 +1525,16 @@ the `/admin/tags` screen):**
   badge a list would move megabytes; the thorough scan runs on delete, where it
   matters. If the collaborator count is wanted in the list, it needs either a
   Postgres function or a generated column.
-- **Categories are still a fixed list, and it's a three-part fix.** Same shape as
-  tags were — chips from `getFormOptions()`, no write path to `categories`
-  anywhere — but the name is hardcoded in two more places: `ArticleCategory` is a
-  literal union of 10 names (`types/article.ts:14`), and the public `/articles`
-  filter rail repeats the same 10 as an array (`ArticlesPage.tsx:8`). So a
-  category created in the admin would be neither a valid type value nor visible
-  to readers. `TagPicker` + a `resolveOrCreate` generalise to the field, but the
-  union has to be relaxed and the rail driven from the DB first — and since
-  category names reach URLs and SEO surfaces, adding one is an editorial
-  decision, not a drive-by.
+- **Category merge / recategorise-in-bulk.** Deleting a category is refused while
+  any article uses it (§2), which is the safe behaviour, but the fix — moving
+  those articles to another category — is one article at a time in the editor. The
+  tag merge is the model; `article_categories` has the same shape as
+  `article_tags`, so it is largely the same code.
+- **The public filter still keys on the category NAME**, not the slug
+  (`?category=NASA` → `article_categories.categories.name`). That is why renaming
+  one changes its filter link, and why the admin warns about it. Switching the
+  param to the slug would make renames free, but it moves existing URLs and so
+  needs the §6.5 treatment.
 - **Non-Latin tag names are rejected.** `isValidTagName` needs an ASCII slug to
   key on, so a name written entirely in Devanagari or CJK has none. Tags are
   authored on the English article and shared across its translations, so this
