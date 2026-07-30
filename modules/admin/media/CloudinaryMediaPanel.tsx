@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { MediaGrid } from './MediaGrid'
 import { MediaSearchBar } from './MediaSearchBar'
 import { CloudinaryButton } from './CloudinaryButton'
+import { MediaMetadataDialog, type EditableAsset } from './MediaMetadataDialog'
 import { useMediaSearch } from './useMediaSearch'
 import { deleteCloudinaryMedia } from '@/actions/cloudinary-media'
 import type { MediaItem } from './types'
@@ -28,6 +29,9 @@ interface Props {
 
 export function CloudinaryMediaPanel({ pickerMode, onPick }: Props) {
   const [deleting, setDeleting] = useState<string | null>(null)
+  // Assets the widget just created, waiting to be described.
+  const [awaiting, setAwaiting] = useState<EditableAsset[]>([])
+  const [note,     setNote]     = useState<string | null>(null)
 
   const {
     items, total, loading, loadingMore, error, setError,
@@ -40,6 +44,11 @@ export function CloudinaryMediaPanel({ pickerMode, onPick }: Props) {
     () => items.map(item => ({ ...item, thumbUrl: item.thumbUrl || thumb(item.url) })),
     [items],
   )
+
+  const collectUploaded = useCallback((asset: { id: string; url: string; title: string | null }) => {
+    setNote(null)
+    setAwaiting(prev => (prev.some(a => a.id === asset.id) ? prev : [...prev, asset]))
+  }, [])
 
   async function handleDelete(item: MediaItem) {
     if (!confirm(`Delete "${item.name}" from Cloudinary? This cannot be undone.`)) return
@@ -60,8 +69,29 @@ export function CloudinaryMediaPanel({ pickerMode, onPick }: Props) {
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.6)' }}>
           Optimized delivery · AVIF/WebP auto · {countLabel}
         </span>
-        <CloudinaryButton onDone={refresh} />
+        <CloudinaryButton onDone={refresh} onUploaded={collectUploaded} />
       </div>
+
+      {note && (
+        <div style={{ padding: '10px 14px', background: 'rgba(var(--green-rgb),0.08)', border: '1px solid rgba(var(--green-rgb),0.22)', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--green)' }}>
+          {note}
+        </div>
+      )}
+
+      {awaiting.length > 0 && (
+        <MediaMetadataDialog
+          assets={awaiting}
+          onClose={savedCount => {
+            setAwaiting([])
+            if (savedCount > 0) {
+              setNote(`Described ${savedCount} image${savedCount !== 1 ? 's' : ''}.`)
+              refresh()
+            } else {
+              setNote('Uploaded without a title or tags — they will be hard to find until you add some.')
+            }
+          }}
+        />
+      )}
 
       <MediaSearchBar
         value={search}

@@ -3,10 +3,11 @@ import { supabaseAdmin }             from '@/lib/supabase'
 
 import { getAdminUser } from '@/modules/admin/services/getAdminUser'
 import {
-  slugify, titleFromFilename, displayName,
+  slugify, titleFromFilename,
   encodeCursor, decodeCursor, parseTags, normalizeTags,
   sha256Hex, buildStorageKey, thumbKeyFor, extForMime,
 } from '@/modules/admin/media/mediaNaming'
+import { toMediaItem, type AssetRow } from '@/modules/admin/media/mediaMapping'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,54 +26,6 @@ function validBucket(b: string | null): b is Bucket {
 
 function validProvider(p: string | null): p is Provider {
   return ALLOWED_PROVIDERS.includes(p as Provider)
-}
-
-// Row shape returned by the search_media_assets RPC.
-interface AssetRow {
-  id:            string
-  provider:      string
-  storage_key:   string | null
-  bucket:        string | null
-  file_url:      string | null
-  thumb_url:     string | null
-  title:         string | null
-  slug:          string | null
-  alt_text:      string | null
-  caption:       string | null
-  credit:        string | null
-  tags:          string[] | null
-  collection_id: string | null
-  width:         number | null
-  height:        number | null
-  file_size:     number | null
-  file_type:     string | null
-  created_at:    string
-  usage_count:   number | null
-}
-
-function toItem(row: AssetRow) {
-  return {
-    id:         row.id,
-    assetId:    row.id,
-    storageKey: row.storage_key,
-    url:        row.file_url,
-    thumbUrl:   row.thumb_url || undefined,
-    // Falls back through title → storage key → id so a row written before this
-    // migration still renders something readable.
-    name:       row.title || (row.storage_key ? displayName(row.storage_key) : row.id),
-    altText:    row.alt_text,
-    caption:    row.caption,
-    credit:     row.credit,
-    tags:       row.tags || [],
-    sizeBytes:  row.file_size || 0,
-    width:      row.width,
-    height:     row.height,
-    mimeType:   row.file_type,
-    provider:   row.provider,
-    bucket:     row.bucket,
-    usageCount: row.usage_count || 0,
-    createdAt:  row.created_at,
-  }
 }
 
 // ── GET /api/admin/media ──────────────────────────────────────────────────────
@@ -135,7 +88,7 @@ export async function GET(req: NextRequest) {
     if (count?.error) throw count.error
 
     const rows  = (page.data || []) as AssetRow[]
-    const items = rows.map(toItem)
+    const items = rows.map(toMediaItem)
 
     // A full page means there may be more; a short page is definitively the end.
     const last       = rows[rows.length - 1]

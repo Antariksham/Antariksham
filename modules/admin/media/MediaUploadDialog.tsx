@@ -1,10 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { AlertTriangle, Check, X, Copy } from 'lucide-react'
+import { AlertTriangle, Check, Copy, X } from 'lucide-react'
 import { TagInput } from './TagInput'
+import {
+  MediaMetaFields, emptyMeta, resolveTags, hasAlt,
+  labelStyle, primaryButton, secondaryButton, type MediaMeta,
+} from './MediaMetaFields'
 import { hashFile, readImageMeta, makeThumbnail, type ImageMeta } from './imageTools'
-import { titleFromFilename, normalizeTags } from './mediaNaming'
+import { titleFromFilename } from './mediaNaming'
 import type { SupabaseBucket } from './types'
 
 /**
@@ -38,28 +42,25 @@ interface Duplicate {
 }
 
 interface Staged {
-  file:      File
+  file:       File
   previewUrl: string
-  title:     string
-  altText:   string
-  decorative: boolean
-  credit:    string
-  tags:      string[]
-  meta:      ImageMeta | null
-  checksum:  string | null
-  duplicate: Duplicate | null
-  status:    'pending' | 'uploading' | 'done' | 'skipped' | 'error'
-  error:     string | null
+  meta:       MediaMeta
+  image:      ImageMeta | null
+  checksum:   string | null
+  duplicate:  Duplicate | null
+  status:     'pending' | 'uploading' | 'done' | 'skipped' | 'error'
+  error:      string | null
 }
 
 const LOW_RESOLUTION = 640
 
 export function MediaUploadDialog({ files, bucket, onCancel, onDone }: Props) {
-  const [items,     setItems]     = useState<Staged[]>([])
+  const [items,      setItems]      = useState<Staged[]>([])
   const [sharedTags, setSharedTags] = useState<string[]>([])
-  const [busy,      setBusy]      = useState(false)
-  const [analysing, setAnalysing] = useState(true)
-  const [error,     setError]     = useState<string | null>(null)
+  const [sharedDraft, setSharedDraft] = useState('')
+  const [busy,       setBusy]       = useState(false)
+  const [analysing,  setAnalysing]  = useState(true)
+  const [error,      setError]      = useState<string | null>(null)
   const objectUrls = useRef<string[]>([])
 
   // Stage the files: preview, dimensions, checksum, then one batched duplicate
@@ -72,18 +73,16 @@ export function MediaUploadDialog({ files, bucket, onCancel, onDone }: Props) {
       for (const file of files) {
         const previewUrl = URL.createObjectURL(file)
         objectUrls.current.push(previewUrl)
-        const [meta, checksum] = await Promise.all([
+        const [image, checksum] = await Promise.all([
           readImageMeta(file),
           hashFile(file).catch(() => null),
         ])
         staged.push({
           file, previewUrl,
-          title:      titleFromFilename(file.name),
-          altText:    '', decorative: false, credit: '',
-          tags:       [],
-          meta, checksum,
-          duplicate:  null,
-          status:     'pending', error: null,
+          meta:      emptyMeta(titleFromFilename(file.name)),
+          image, checksum,
+          duplicate: null,
+          status:    'pending', error: null,
         })
       }
       if (cancelled) return
@@ -123,16 +122,19 @@ export function MediaUploadDialog({ files, bucket, onCancel, onDone }: Props) {
     setItems(prev => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)))
   }, [])
 
-  const pending    = items.filter(i => i.status === 'pending')
-  const duplicates = items.filter(i => i.status === 'skipped')
-  const missingAlt = pending.filter(i => !i.decorative && !i.altText.trim())
-  const missingTitle = pending.filter(i => !i.title.trim())
-  const blocked    = missingAlt.length > 0 || missingTitle.length > 0
+  const pending      = items.filter(i => i.status === 'pending')
+  const duplicates   = items.filter(i => i.status === 'skipped')
+  const missingAlt   = pending.filter(i => !hasAlt(i.meta))
+  const missingTitle = pending.filter(i => !i.meta.title.trim())
+  const blocked      = missingAlt.length > 0 || missingTitle.length > 0
 
   async function upload() {
     if (blocked || busy) return
     setBusy(true); setError(null)
     let uploaded = 0
+
+    // Includes anything still half-typed in a tag field — see MediaMetaFields.
+    const batchTags = [...sharedTags, sharedDraft]
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i]
@@ -142,18 +144,18 @@ export function MediaUploadDialog({ files, bucket, onCancel, onDone }: Props) {
       try {
         const fd = new FormData()
         fd.append('file', item.file)
-        fd.append('title', item.title.trim())
+        fd.append('title', item.meta.title.trim())
         // A decorative image gets an explicitly empty alt, which is the correct
         // accessibility signal — not a missing one.
-        fd.append('altText', item.decorative ? '' : item.altText.trim())
-        if (item.credit.trim()) fd.append('credit', item.credit.trim())
+        fd.append('altText', item.meta.decorative ? '' : item.meta.altText.trim())
+        if (item.meta.credit.trim()) fd.append('credit', item.meta.credit.trim())
 
-        const tags = normalizeTags([...sharedTags, ...item.tags])
+        const tags = resolveTags(item.meta, batchTags)
         if (tags.length) fd.append('tags', tags.join(','))
 
-        if (item.meta) {
-          fd.append('width',  String(item.meta.width))
-          fd.append('height', String(item.meta.height))
+        if (item.image) {
+          fd.append('width',  String(item.image.width))
+          fd.append('height', String(item.image.height))
         }
 
         const thumb = await makeThumbnail(item.file)
@@ -218,7 +220,9 @@ export function MediaUploadDialog({ files, bucket, onCancel, onDone }: Props) {
             <label style={labelStyle}>Tags for all {files.length} image{files.length !== 1 ? 's' : ''}</label>
             <TagInput
               value={sharedTags}
+              draft={sharedDraft}
               onChange={setSharedTags}
+              onDraftChange={setSharedDraft}
               placeholder="e.g. mars, rover, nasa — Enter to add"
             />
           </div>
@@ -274,8 +278,8 @@ export function MediaUploadDialog({ files, bucket, onCancel, onDone }: Props) {
 // ── One staged file ──────────────────────────────────────────────────────────
 
 function StagedRow({ item, onChange }: { item: Staged; onChange: (patch: Partial<Staged>) => void }) {
-  const lowRes = item.meta && item.meta.width < LOW_RESOLUTION
-  const done   = item.status === 'done'
+  const lowRes  = item.image && item.image.width < LOW_RESOLUTION
+  const done    = item.status === 'done'
   const skipped = item.status === 'skipped'
 
   return (
@@ -295,7 +299,7 @@ function StagedRow({ item, onChange }: { item: Staged; onChange: (patch: Partial
           <img src={item.previewUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         </div>
         <div style={{ marginTop: '5px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', textAlign: 'center' }}>
-          {item.meta ? `${item.meta.width}×${item.meta.height}` : '—'}
+          {item.image ? `${item.image.width}×${item.image.height}` : '—'}
         </div>
       </div>
 
@@ -309,66 +313,18 @@ function StagedRow({ item, onChange }: { item: Staged; onChange: (patch: Partial
             </span>
           </div>
         ) : (
-          <>
-            <div>
-              <label style={labelStyle}>Title</label>
-              <input
-                value={item.title}
-                onChange={e => onChange({ title: e.target.value })}
-                disabled={done}
-                placeholder="What is in this image?"
-                style={inputStyle(!item.title.trim())}
-              />
-            </div>
-
-            <div>
-              <label style={labelStyle}>
-                Alt text
-                <span style={{ marginLeft: '8px', fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: 'rgba(var(--ink),0.5)' }}>
-                  described for screen readers and search
-                </span>
-              </label>
-              <input
-                value={item.altText}
-                onChange={e => onChange({ altText: e.target.value })}
-                disabled={done || item.decorative}
-                placeholder={item.decorative ? 'Decorative — no alt text needed' : 'e.g. The Vikram lander on the lunar south pole'}
-                style={inputStyle(!item.decorative && !item.altText.trim())}
-              />
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '5px', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'rgba(var(--ink),0.6)' }}>
-                <input
-                  type="checkbox"
-                  checked={item.decorative}
-                  onChange={e => onChange({ decorative: e.target.checked })}
-                  disabled={done}
-                />
-                Decorative — no alt text needed
-              </label>
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <div style={{ flex: '1 1 200px' }}>
-                <label style={labelStyle}>Credit</label>
-                <input
-                  value={item.credit}
-                  onChange={e => onChange({ credit: e.target.value })}
-                  disabled={done}
-                  placeholder="e.g. ISRO"
-                  style={inputStyle(false)}
-                />
-              </div>
-              <div style={{ flex: '2 1 240px' }}>
-                <label style={labelStyle}>Extra tags for this image</label>
-                <TagInput value={item.tags} onChange={tags => onChange({ tags })} placeholder="optional" />
-              </div>
-            </div>
-          </>
+          <MediaMetaFields
+            value={item.meta}
+            onChange={meta => onChange({ meta })}
+            disabled={done}
+            tagLabel="Extra tags for this image"
+          />
         )}
 
         {/* Status line */}
         {lowRes && !skipped && (
           <Note tone="warn">
-            Low resolution ({item.meta!.width}×{item.meta!.height}) — may look soft. Aim for 1200px+ wide.
+            Low resolution ({item.image!.width}×{item.image!.height}) — may look soft. Aim for 1200px+ wide.
           </Note>
         )}
         {item.status === 'error' && <Note tone="error">{item.error}</Note>}
@@ -387,46 +343,4 @@ function Note({ tone, children }: { tone: 'warn' | 'error' | 'ok'; children: Rea
       <span>{children}</span>
     </div>
   )
-}
-
-// ── Styles ───────────────────────────────────────────────────────────────────
-
-const labelStyle: React.CSSProperties = {
-  display: 'block', marginBottom: '4px',
-  fontFamily: 'var(--font-mono)', fontSize: '11px',
-  letterSpacing: '0.12em', textTransform: 'uppercase',
-  color: 'rgba(var(--ink),0.6)',
-}
-
-function inputStyle(invalid: boolean): React.CSSProperties {
-  return {
-    width: '100%', padding: '7px 10px', boxSizing: 'border-box',
-    background: 'rgba(var(--ink),0.04)',
-    border: `1px solid ${invalid ? 'rgba(var(--red-rgb),0.45)' : 'rgba(var(--ink),0.12)'}`,
-    borderRadius: '7px', outline: 'none',
-    color: 'var(--white)', fontFamily: 'var(--font-sans)', fontSize: '14px',
-  }
-}
-
-function primaryButton(disabled: boolean): React.CSSProperties {
-  return {
-    padding: '8px 20px', borderRadius: '7px',
-    background: disabled ? 'rgba(var(--accent-rgb),0.25)' : 'var(--accent)',
-    border: '1px solid transparent',
-    color: disabled ? 'rgba(var(--ink),0.55)' : 'var(--black)',
-    fontFamily: 'var(--font-mono)', fontSize: '13px',
-    letterSpacing: '0.12em', textTransform: 'uppercase',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-  }
-}
-
-function secondaryButton(disabled: boolean): React.CSSProperties {
-  return {
-    padding: '8px 18px', borderRadius: '7px',
-    background: 'transparent', border: '1px solid rgba(var(--ink),0.14)',
-    color: 'rgba(var(--ink),0.8)',
-    fontFamily: 'var(--font-mono)', fontSize: '13px',
-    letterSpacing: '0.12em', textTransform: 'uppercase',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-  }
 }

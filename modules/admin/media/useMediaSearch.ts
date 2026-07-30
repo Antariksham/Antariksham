@@ -44,7 +44,10 @@ export function useMediaSearch({ provider, bucket, pageSize = PAGE_SIZE }: Optio
 
   const buildUrl = useCallback((nextCursor: string | null) => {
     const params = new URLSearchParams({ provider, limit: String(pageSize) })
-    if (bucket)     params.set('bucket', bucket)
+    // Bucket tabs scope BROWSING, not searching. Someone looking for "mars" is
+    // not thinking about which bucket it landed in — scoping the query to the
+    // open tab just reports "no matches" while the image sits in the other one.
+    if (bucket && !debounced) params.set('bucket', bucket)
     if (debounced)  params.set('q', debounced)
     if (nextCursor) params.set('cursor', nextCursor)
     return `/api/admin/media?${params.toString()}`

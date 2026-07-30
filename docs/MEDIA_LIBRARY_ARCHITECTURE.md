@@ -319,7 +319,7 @@ Supporting routes:
 |---|---|
 | `POST /api/admin/media/precheck` | `{ sha256 }` → existing asset or `null` (dedupe before upload) |
 | `POST /api/admin/media` | upload + derive + insert row (existing route, extended) |
-| `PATCH /api/admin/media/:id` | edit title / alt / caption / credit / tags / collection |
+| `PATCH /api/admin/media/:id` | ✅ edit title / alt / caption / credit / tags (title change moves the slug, which feeds the search vector) |
 | `POST /api/admin/media/bulk` | tag / move / delete N selected assets |
 | `GET /api/admin/media/:id/usages` | "where is this used" |
 | `POST /api/admin/media/:id/replace` | swap bytes, **keep the URL** — fixes a bad crop everywhere at once |
@@ -405,6 +405,28 @@ native image dependency in the serverless bundle and the paid Supabase Storage
 render transform. They live under a `thumbs/` prefix and are deleted with their
 asset. Every step degrades to null rather than throwing — a browser that cannot
 encode WebP costs the upload its thumbnail, not the upload.
+
+### Cloudinary takes the same metadata, one step later
+
+`<CldUploadWidget>` is a third-party iframe that hands the file over only after
+it has landed, so there is nowhere to interrupt beforehand. Each upload is
+recorded, its asset id reported back, and `MediaMetadataDialog` opens once the
+widget closes to `PATCH` the same title / alt / credit / tags onto the rows.
+Both providers share `MediaMetaFields`, so they cannot drift into asking for
+different things in different ways.
+
+The dialog can be dismissed with *Skip for now*, which says plainly that the
+images will be hard to find until they are described — better than a modal that
+cannot be escaped.
+
+### Search spans buckets; tabs only scope browsing
+
+`article-images` and `mission-images` are storage locations, not subject
+boundaries. Scoping a query to the open tab means an editor who uploaded to one
+bucket and searches from the other is told "no matches" about an image that is
+right there. So a query drops the bucket filter, the count says *all buckets*,
+and each result card carries a bucket badge. The tabs still scope browsing,
+which is what they are actually good for.
 
 ### Still open here
 

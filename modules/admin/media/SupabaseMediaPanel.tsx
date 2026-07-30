@@ -105,7 +105,9 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
 
   const countLabel = total === null
     ? `${items.length} shown`
-    : `${items.length} of ${total} ${isSearching ? 'match' : 'file'}${total !== 1 ? 'es' : ''}`
+    : isSearching
+      ? `${items.length} of ${total} match${total !== 1 ? 'es' : ''} · all buckets`
+      : `${items.length} of ${total} file${total !== 1 ? 's' : ''}`
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -220,9 +222,10 @@ export function SupabaseMediaPanel({ pickerMode, onPick, defaultBucket = 'articl
         hasMore={hasMore}
         loadingMore={loadingMore}
         onLoadMore={loadMore}
+        showBucket={isSearching}
         emptyLabel={
           isSearching
-            ? `No images match "${search}"`
+            ? `No images match "${search}" in either bucket`
             : 'No images indexed yet — upload one above, or Sync from Storage if you have existing files'
         }
       />

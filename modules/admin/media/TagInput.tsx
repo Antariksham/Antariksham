@@ -7,18 +7,24 @@ import { normalizeTags, MAX_TAGS } from './mediaNaming'
 // Tag chips with autocomplete over tags already in the library. Suggesting what
 // exists is what keeps the vocabulary converging — without it you end up with
 // isro / ISRO / Isro as three separate filters.
+//
+// The half-typed draft is owned by the PARENT, not this component. Typing "mars"
+// and clicking Upload without pressing Enter used to throw the tag away, and
+// committing it on blur only turns that into a race with the click handler.
+// Hoisting it means the submitting code can always merge whatever is on screen.
 
 interface Props {
   value:        string[]
+  draft:        string
   onChange:     (tags: string[]) => void
+  onDraftChange: (draft: string) => void
   placeholder?: string
   autoFocus?:   boolean
 }
 
 interface Suggestion { tag: string; uses: number }
 
-export function TagInput({ value, onChange, placeholder, autoFocus }: Props) {
-  const [draft,       setDraft]       = useState('')
+export function TagInput({ value, draft, onChange, onDraftChange, placeholder, autoFocus }: Props) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [open,        setOpen]        = useState(false)
   const requestId = useRef(0)
@@ -42,9 +48,8 @@ export function TagInput({ value, onChange, placeholder, autoFocus }: Props) {
   }, [draft, value])
 
   function add(raw: string) {
-    const merged = normalizeTags([...value, raw])
-    onChange(merged)
-    setDraft('')
+    onChange(normalizeTags([...value, raw]))
+    onDraftChange('')
     setSuggestions([])
   }
 
@@ -97,10 +102,19 @@ export function TagInput({ value, onChange, placeholder, autoFocus }: Props) {
           value={draft}
           autoFocus={autoFocus}
           disabled={atLimit}
-          onChange={e => { setDraft(e.target.value); setOpen(true) }}
+          onChange={e => { onDraftChange(e.target.value); setOpen(true) }}
           onKeyDown={handleKeyDown}
           onFocus={() => setOpen(true)}
-          onBlur={() => setTimeout(() => setOpen(false), 120)}
+          // Turn the draft into a chip when focus leaves, so what is on screen
+          // matches what will be saved. Correctness does not depend on this
+          // firing — the parent merges the draft on submit either way.
+          onBlur={() => {
+            const pending = draft.trim()
+            setTimeout(() => {
+              setOpen(false)
+              if (pending) add(pending)
+            }, 120)
+          }}
           placeholder={atLimit ? `Tag limit reached (${MAX_TAGS})` : (placeholder || 'Add tags…')}
           style={{
             flex: 1, minWidth: '110px', padding: '3px 2px',

@@ -20,11 +20,13 @@ interface GridProps {
   hasMore?:     boolean
   loadingMore?: boolean
   onLoadMore?:  () => void
+  // Search spans every bucket, so results need to say which one they came from.
+  showBucket?:  boolean
 }
 
 export function MediaGrid({
   items, loading, error, pickerMode, deletingId, onPick, onDelete, emptyLabel,
-  hasMore, loadingMore, onLoadMore,
+  hasMore, loadingMore, onLoadMore, showBucket,
 }: GridProps) {
   if (error) {
     return (
@@ -64,6 +66,7 @@ export function MediaGrid({
             deleting={deletingId === item.id}
             onPick={onPick}
             onDelete={onDelete}
+            showBucket={showBucket}
           />
         ))}
       </div>
@@ -100,13 +103,14 @@ function formatBytes(bytes: number): string {
 }
 
 function MediaCard({
-  item, pickerMode, deleting, onPick, onDelete,
+  item, pickerMode, deleting, onPick, onDelete, showBucket,
 }: {
   item: MediaItem
   pickerMode?: boolean
   deleting: boolean
   onPick?: (item: MediaItem) => void
   onDelete: (item: MediaItem) => void
+  showBucket?: boolean
 }) {
   const [hovered, setHovered] = useState(false)
   const [copied,  setCopied]  = useState(false)
@@ -156,9 +160,40 @@ function MediaCard({
         <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'rgba(var(--ink),0.8)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
           {item.name}
         </div>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)' }}>
-          {formatBytes(item.sizeBytes)}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: 'rgba(var(--ink),0.78)' }}>
+            {formatBytes(item.sizeBytes)}
+          </span>
+          {showBucket && item.bucket && (
+            <span style={{
+              padding: '1px 6px', borderRadius: '4px',
+              background: 'rgba(var(--ink),0.07)', border: '1px solid rgba(var(--ink),0.1)',
+              fontFamily: 'var(--font-mono)', fontSize: '11px',
+              color: 'rgba(var(--ink),0.6)', whiteSpace: 'nowrap',
+            }}>
+              {item.bucket.replace('-images', '')}
+            </span>
+          )}
         </div>
+
+        {item.tags && item.tags.length > 0 && (
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+            {item.tags.slice(0, 3).map(tag => (
+              <span key={tag} style={{
+                padding: '1px 5px', borderRadius: '4px',
+                background: 'rgba(var(--accent-rgb),0.1)',
+                color: 'var(--accent)', fontFamily: 'var(--font-mono)', fontSize: '11px',
+              }}>
+                {tag}
+              </span>
+            ))}
+            {item.tags.length > 3 && (
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.5)' }}>
+                +{item.tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
 
         <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
           {pickerMode ? (

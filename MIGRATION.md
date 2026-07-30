@@ -166,6 +166,34 @@ collection when Supabase env vars are absent — unrelated to app code).
   `modules/admin/services/getAdminUser.ts`. Bootstrap steps are in
   `supabase/migrations/README.md`.
 
+- ✅ **Media Library — Phase 4 follow-ups from review on the deployed panel.**
+  Three defects surfaced once it was in front of real data:
+  - **Every card showed a generic file icon instead of the image.** The grid
+    draws an `<img>` only when `kind === 'image'`, and the mapping introduced in
+    Phase 2 never set the field — the whole library rendered as a wall of icons.
+    The mapping moved out of the route handler into a pure, tested
+    `mediaMapping.ts` (untested glue between two layers is exactly where this
+    hides), and a null mime now resolves to `image` rather than `file`, since
+    rows imported by Sync from Storage often have no mime recorded.
+  - **A tag typed without pressing Enter was silently discarded**, which looks
+    identical to "I tagged it mars and search found nothing". The half-typed
+    draft is now owned by the parent (`mediaMeta.ts`) and merged on submit by
+    `resolveTags`, so what is on screen is what gets saved — committing on blur
+    alone would only have turned the bug into a race with the click handler.
+    Cards also show their tags now, so this is visible rather than silent.
+  - **Search was scoped to the open bucket tab.** An image uploaded to
+    `mission-images` was reported as "no matches" when searched from
+    `article-images`. Buckets are storage locations, not subject boundaries: a
+    query now spans both, the count says *all buckets*, and each result card
+    carries a bucket badge. Tabs still scope browsing.
+  - **Cloudinary asked for nothing** and left assets titled after the phone's
+    filename. `<CldUploadWidget>` is a third-party iframe that hands the file
+    over only after it lands, so metadata is collected immediately afterwards:
+    `PATCH /api/admin/media/<id>` plus `MediaMetadataDialog`, sharing
+    `MediaMetaFields` with the Supabase dialog so the two providers cannot drift.
+  - 14 new regression tests cover the mapping and the tag-draft merge
+    specifically (37 total across the media helpers).
+
 - ✅ **Media Library — upload-time metadata (Phase 4)** — the step that makes
   the index worth having. Phases 1+2 made the whole library searchable, but
   could only index words that already existed, and `IMG_4471.jpg` has none.
