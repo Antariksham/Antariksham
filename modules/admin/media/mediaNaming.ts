@@ -15,18 +15,16 @@
  * uploads use the scheme below.
  */
 
+// Relative, with the extension: `node --test` runs this module directly and
+// cannot resolve the `@/` alias.
+import { slugifyUnicode } from '../../../lib/utils.ts'
+
 /** Timestamp prefix written by the original upload route (`Date.now()-name`). */
 const LEGACY_TS_PREFIX = /^\d{13}-/
 
 /** URL-safe, lowercase, collapsed-dash slug. Capped so keys stay manageable. */
 export function slugify(input: string, maxLength = 80): string {
-  const slug = input
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '') // strip combining accents
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-  return slug.slice(0, maxLength).replace(/-+$/g, '')
+  return slugifyUnicode(input, maxLength)
 }
 
 /**

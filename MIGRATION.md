@@ -1178,6 +1178,54 @@ filter, rename with live slug preview, a 409 rename conflict surfacing instead o
 applying, merge (source excluded from its own target list, counts updated),
 delete warning naming the article count, create, and the duplicate-create notice.
 
+**Space Agencies admin screen (`/admin/agencies`) — COMPLETE.** `space_agencies`
+was read-only everywhere in the app — `getAgencyOptions()` was the only reference
+to it in the admin — so the mission editor's four agency pickers (primary +
+partners / commercial / institutions) could only offer seeded rows, and a mission
+for an unlisted agency could not be filed at all. Now:
+
+- **Full CRUD**, modelled on `/admin/authors`: name, short name, slug, country,
+  website, logo (via the Media Library picker) and description. Deliberately not
+  the type-to-create chip field the Tags panel uses — an agency row carries a
+  logo, country and website that the public mission page renders, so a name-only
+  row would publish an agency with a blank logo.
+- **Delete is refused while anything still points at the agency**, and says
+  where. This is the part that matters: `missions.agency_id` is a foreign key, so
+  that side would fail anyway, but the collaborator roles are ids inside
+  `missions.details.classification.agencies.*` — a jsonb blob with no constraint
+  behind it. Deleting a referenced agency there would silently strand ids the
+  public page can no longer resolve, quietly dropping collaborators off a live
+  page. The usage scan is paged and fails *closed*: an unexpected query error
+  throws rather than reading as "not referenced", and only a genuinely missing
+  `details` column (pre-20260726140000) is treated as "no collaborators".
+- **Derived fields** follow the name until touched — slug, plus an acronym
+  suggestion for the short name ("National Aeronautics and Space Administration"
+  → NASA, "Centre National d'Études Spatiales" → CNES, folding the accent because
+  an acronym is ASCII by convention). Editing an existing agency keeps its stored
+  slug stable, so a rename can't silently move its URL.
+- **The mission editor no longer dead-ends**: an "Agency not listed? Add it in
+  Space Agencies ↗" link (new tab, so an unsaved mission survives), and the
+  agency labels stop rendering `Foo ()` now that a short name is optional.
+- 8 new `node:test` cases (**318 total**).
+
+**One shared slug helper.** `slugifyUnicode` now lives in `lib/utils.ts`, and
+`tagSlug` plus the Media Library's `slugify` delegate to it — accent-folding was
+about to have a fourth copy. Kept separate from the existing `slugify`, which
+matches on `\w` and *deletes* accented letters ("Sové" → "sov"); that one still
+backs article slugs, unchanged. The two pure modules import it relatively with a
+`.ts` extension because `node --test` runs them directly and cannot resolve the
+`@/` alias (the same style `mediaMeta.ts` already used). The Media Library's own
+suite proves the delegation is behaviour-identical.
+
+Verified: 318/318 tests pass, `next build` compiles, and the screen was driven in
+headless Chromium in both themes against a mocked API — list with mission counts,
+create with derived slug/acronym and a protocol-less website, edit prefill with
+the slug staying stable, a refused in-use delete keeping the dialog open with the
+reason, a successful delete of an unused agency, and filtering by country. Two
+defects that run surfaced are fixed: the refusal banner wasn't announced to
+screen readers (`role="alert"`/`role="status"` on both new screens' banners), and
+the edit form trusted the API never to send `null` into a controlled input.
+
 **Not yet done:** All 8 Phase 2 features are complete. The Phase 1 Mission
 Management System upgrade is complete (all 8 features). Remaining: Phases 3–4 of
 the plan, and the polish items in §10.
@@ -1416,17 +1464,17 @@ the full design and the measured numbers. Still to do:
 
 **Taxonomy management — what's left after tags (§2 covers the editor field and
 the `/admin/tags` screen):**
-- **Space agencies are a fixed list, and it's a dead end.** `getAgencyOptions()`
-  (`adminMissions.ts:275`) is the only reference to `space_agencies` in the
-  admin — read-only. The mission editor's primary-agency select and all three
-  role fields (partners / commercial / institutions) can only offer seeded rows,
-  so a mission for an unseeded agency cannot be filed at all. Destinations right
-  above them already allow custom values, so the inconsistency shows in one
-  screen. Type-to-create is the wrong shape here: agencies carry `slug`,
-  `short_name`, `country`, `logo_url`, `website_url` and `description`, all
-  rendered on public mission pages, so a name-only row would publish an agency
-  with no logo. Wants a `/admin/agencies` CRUD screen modelled on
-  `/admin/authors`.
+- **Reassigning missions off an agency is still manual.** The Agencies screen
+  refuses to delete an agency that any mission references (§2), which is the safe
+  behaviour, but the fix — repointing those missions — has to be done mission by
+  mission in the editor. A "reassign all to…" action, mirroring the tag merge,
+  would close the loop. The collaborator side would need a jsonb rewrite per
+  mission, so it is more than the tag version.
+- **The Agencies list counts primary missions only.** Collaborator roles live
+  inside `missions.details`, and pulling that jsonb for every mission just to
+  badge a list would move megabytes; the thorough scan runs on delete, where it
+  matters. If the collaborator count is wanted in the list, it needs either a
+  Postgres function or a generated column.
 - **Categories are still a fixed list, and it's a three-part fix.** Same shape as
   tags were — chips from `getFormOptions()`, no write path to `categories`
   anywhere — but the name is hardcoded in two more places: `ArticleCategory` is a

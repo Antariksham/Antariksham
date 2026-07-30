@@ -254,13 +254,13 @@ export function TagsAdmin() {
 
         {/* Error / notice */}
         {error && (
-          <div style={banner('red')}>
+          <div role="alert" style={banner('red')}>
             <AlertCircle size={14} style={{ color: 'var(--red)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--red)' }}>{error}</span>
           </div>
         )}
         {notice && (
-          <div style={banner('accent')}>
+          <div role="status" style={banner('accent')}>
             <Check size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--accent)' }}>{notice}</span>
           </div>
