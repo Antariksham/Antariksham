@@ -244,9 +244,23 @@ async function toCards(rows: any[], lang: LanguageCode): Promise<ArticleCard[]> 
       readingTime:   row.reading_time || 5,
       articleType:   row.article_type,
       categories:    (row.article_categories || []).map((ac: any) => ac.categories?.name).filter(Boolean),
+      categoryColors: categoryColorsFrom(row),
       featured:      row.featured || false,
     }
   })
+}
+
+// The `categories.color` values that came back with the row, keyed by name. The
+// select has always asked for `color`; nothing ever read it, so the renderer
+// fell back to a hardcoded map and a newly created category had no colour it
+// could ever show.
+function categoryColorsFrom(row: any): Record<string, string> | undefined {
+  const colors: Record<string, string> = {}
+  for (const ac of (row.article_categories || [])) {
+    const cat = ac?.categories
+    if (cat?.name && cat.color) colors[cat.name] = cat.color
+  }
+  return Object.keys(colors).length > 0 ? colors : undefined
 }
 
 function normalizeFullArticle(row: any, lang: LanguageCode, translations: FullTranslation[]): Article {
@@ -278,6 +292,7 @@ function normalizeFullArticle(row: any, lang: LanguageCode, translations: FullTr
     readingTime:   row.reading_time || 5,
     views:         row.views || 0,
     categories:    (row.article_categories || []).map((ac: any) => ac.categories?.name).filter(Boolean),
+    categoryColors: categoryColorsFrom(row),
     tags:          (row.article_tags || []).map((at: any) => at.tags?.name).filter(Boolean),
     language:           served,
     availableLanguages,

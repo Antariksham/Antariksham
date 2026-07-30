@@ -39,6 +39,26 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
+/**
+ * Slug for names that carry accents — agencies, missions, tags.
+ *
+ * `slugify` above matches on `\w`, which is ASCII-only, so it *deletes* accented
+ * letters rather than folding them: "Centre National d'Études" loses the É and
+ * comes out "centre-national-dtudes". Decomposing first and dropping the
+ * combining marks keeps the word ("detudes"). Kept separate from `slugify` so
+ * existing article slugs are unaffected.
+ */
+export function slugifyUnicode(input: string, maxLength = 80): string {
+  const slug = input
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')   // strip combining accents
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  // The cap can land mid-word and leave a trailing dash.
+  return slug.slice(0, maxLength).replace(/-+$/g, '')
+}
+
 export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
   return text.slice(0, maxLength).trim() + '...'

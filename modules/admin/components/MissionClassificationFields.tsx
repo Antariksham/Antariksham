@@ -35,7 +35,9 @@ export function MissionClassificationFields({
   value, onChange, primaryAgencyId, onPrimaryAgencyChange, agencies,
 }: Props) {
   const agencyOptions = useMemo(
-    () => agencies.map(a => ({ value: a.id, label: `${a.name} (${a.shortName})` })),
+    // The short name is optional now that agencies are editable, and "Foo ()"
+    // reads like a bug.
+    () => agencies.map(a => ({ value: a.id, label: a.shortName ? `${a.name} (${a.shortName})` : a.name })),
     [agencies],
   )
   const agencyLabel = useMemo(() => {
@@ -118,10 +120,26 @@ export function MissionClassificationFields({
             style={{ ...selectStyle, paddingRight: '28px' }}
           >
             <option value="">— No primary agency —</option>
-            {agencies.map(a => <option key={a.id} value={a.id}>{a.name} ({a.shortName})</option>)}
+            {agencies.map(a => (
+              <option key={a.id} value={a.id}>{a.shortName ? `${a.name} (${a.shortName})` : a.name}</option>
+            ))}
           </select>
           <ChevronDown size={12} style={caretStyle} />
         </div>
+
+        {/* The list is only as complete as space_agencies. Opens in a new tab so
+            an unsaved mission isn't lost on the way to adding one. */}
+        <p style={{ margin: '-8px 0 14px', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.04em' }}>
+          Agency not listed?{' '}
+          <a
+            href="/admin/agencies"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--accent)', textDecoration: 'none' }}
+          >
+            Add it in Space Agencies ↗
+          </a>
+        </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <TokenField

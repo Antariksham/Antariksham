@@ -1,4 +1,5 @@
 import { getArticles, getFeaturedArticles } from '@/modules/articles/services/getArticles'
+import { getCategories } from '@/modules/articles/services/getCategories'
 import { ArticlesPage } from '@/modules/articles/components/ArticlesPage'
 import type { Metadata } from 'next'
 
@@ -10,9 +11,10 @@ export const metadata: Metadata = {
 export const revalidate = 300
 
 export default async function ArticlesRoute() {
-  const [{ articles, total }, featured] = await Promise.all([
+  const [{ articles, total }, featured, categories] = await Promise.all([
     getArticles({ page: 1, perPage: 12 }),
     getFeaturedArticles(7),
+    getCategories(),
   ])
 
   return (
@@ -20,6 +22,7 @@ export default async function ArticlesRoute() {
       articles={articles}
       featured={featured}
       total={total}
+      categories={categories}
     />
   )
 }

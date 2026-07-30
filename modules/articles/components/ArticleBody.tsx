@@ -15,6 +15,9 @@ export interface ArticleRenderModel {
   featuredImage: string | null
   featuredImageMeta?: FeaturedImageMeta | null
   categories:    string[]        // display names
+  /** Category name → its own colour, when the row sets one. Optional: the admin
+   *  preview and older callers simply fall back to the legacy map below. */
+  categoryColors?: Record<string, string>
   tags:          string[]
   author:        { name: string; avatar: string | null; slug?: string | null } | null
   publishedAt:   string | null
@@ -23,11 +26,20 @@ export interface ArticleRenderModel {
   articleType:   ArticleType
 }
 
-const CAT_COLORS: Record<string, string> = {
-  NASA: '#4f8ef7', SpaceX: '#4f8ef7', ISRO: '#f39c12',
-  ESA: '#2ecc71', JAXA: '#f39c12', Astronomy: '#4f8ef7',
-  Discoveries: '#2ecc71', Technology: '#4f8ef7',
-  Missions: '#f39c12', Science: 'var(--white)',
+// Fallback colours for the ten originally seeded categories, kept so their
+// established look survives rows that have no `color` set. A category's own
+// `categories.color` wins (see `model.categoryColors`), and anything unlisted
+// gets the accent — which is what every admin-created category used to get
+// forever, because this map was the only source of colour.
+const LEGACY_CAT_COLORS: Record<string, string> = {
+  NASA: 'var(--accent)', SpaceX: 'var(--accent)', ISRO: 'var(--gold)',
+  ESA: 'var(--green)', JAXA: 'var(--gold)', Astronomy: 'var(--accent)',
+  Discoveries: 'var(--green)', Technology: 'var(--accent)',
+  Missions: 'var(--gold)', Science: 'var(--white)',
+}
+
+function categoryColor(cat: string, fromDb?: Record<string, string>): string {
+  return fromDb?.[cat] || LEGACY_CAT_COLORS[cat] || 'var(--accent)'
 }
 
 /** Word count from trusted HTML — strips tags, collapses whitespace. */
@@ -75,7 +87,7 @@ export function ArticleBody({
             <CatTag
               key={cat}
               {...(preview ? {} : { href: articlesListHref(lang) })}
-              style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: CAT_COLORS[cat] || '#4f8ef7', textDecoration: 'none' }}
+              style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: categoryColor(cat, model.categoryColors), textDecoration: 'none' }}
             >
               {cat}
             </CatTag>

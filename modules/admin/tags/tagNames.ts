@@ -10,6 +10,10 @@
  * all share them.
  */
 
+// Relative, with the extension: `node --test` runs this module directly and
+// cannot resolve the `@/` alias (see mediaMeta.ts for the same import style).
+import { slugifyUnicode } from '../../../lib/utils.ts'
+
 /** Display names are sidebar chips, not sentences. */
 export const MAX_TAG_NAME_LENGTH = 48
 export const MAX_TAG_SLUG_LENGTH = 60
@@ -30,20 +34,12 @@ export function normalizeTagName(raw: string): string {
 /**
  * Identity slug for a tag name.
  *
- * Deliberately not `slugify` from `lib/utils`: that one matches on `\w`, which
- * drops non-ASCII letters outright ("Sové" → "sov"), and agency and mission
- * names are exactly where accents show up. Stripping the combining marks
- * instead keeps the word intact ("sove").
+ * `slugifyUnicode`, not `slugify`, from `lib/utils`: the latter matches on `\w`
+ * and so drops non-ASCII letters outright ("Sové" → "sov"), and agency and
+ * mission names are exactly where accents show up.
  */
 export function tagSlug(raw: string): string {
-  return raw
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '') // strip combining accents
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, MAX_TAG_SLUG_LENGTH)
-    .replace(/-+$/g, '')             // the cap can land on a dash
+  return slugifyUnicode(raw, MAX_TAG_SLUG_LENGTH)
 }
 
 /**

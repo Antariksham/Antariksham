@@ -1178,6 +1178,104 @@ filter, rename with live slug preview, a 409 rename conflict surfacing instead o
 applying, merge (source excluded from its own target list, counts updated),
 delete warning naming the article count, create, and the duplicate-create notice.
 
+**Space Agencies admin screen (`/admin/agencies`) — COMPLETE.** `space_agencies`
+was read-only everywhere in the app — `getAgencyOptions()` was the only reference
+to it in the admin — so the mission editor's four agency pickers (primary +
+partners / commercial / institutions) could only offer seeded rows, and a mission
+for an unlisted agency could not be filed at all. Now:
+
+- **Full CRUD**, modelled on `/admin/authors`: name, short name, slug, country,
+  website, logo (via the Media Library picker) and description. Deliberately not
+  the type-to-create chip field the Tags panel uses — an agency row carries a
+  logo, country and website that the public mission page renders, so a name-only
+  row would publish an agency with a blank logo.
+- **Delete is refused while anything still points at the agency**, and says
+  where. This is the part that matters: `missions.agency_id` is a foreign key, so
+  that side would fail anyway, but the collaborator roles are ids inside
+  `missions.details.classification.agencies.*` — a jsonb blob with no constraint
+  behind it. Deleting a referenced agency there would silently strand ids the
+  public page can no longer resolve, quietly dropping collaborators off a live
+  page. The usage scan is paged and fails *closed*: an unexpected query error
+  throws rather than reading as "not referenced", and only a genuinely missing
+  `details` column (pre-20260726140000) is treated as "no collaborators".
+- **Derived fields** follow the name until touched — slug, plus an acronym
+  suggestion for the short name ("National Aeronautics and Space Administration"
+  → NASA, "Centre National d'Études Spatiales" → CNES, folding the accent because
+  an acronym is ASCII by convention). Editing an existing agency keeps its stored
+  slug stable, so a rename can't silently move its URL.
+- **The mission editor no longer dead-ends**: an "Agency not listed? Add it in
+  Space Agencies ↗" link (new tab, so an unsaved mission survives), and the
+  agency labels stop rendering `Foo ()` now that a short name is optional.
+- 8 new `node:test` cases (**318 total**).
+
+**One shared slug helper.** `slugifyUnicode` now lives in `lib/utils.ts`, and
+`tagSlug` plus the Media Library's `slugify` delegate to it — accent-folding was
+about to have a fourth copy. Kept separate from the existing `slugify`, which
+matches on `\w` and *deletes* accented letters ("Sové" → "sov"); that one still
+backs article slugs, unchanged. The two pure modules import it relatively with a
+`.ts` extension because `node --test` runs them directly and cannot resolve the
+`@/` alias (the same style `mediaMeta.ts` already used). The Media Library's own
+suite proves the delegation is behaviour-identical.
+
+Verified: 318/318 tests pass, `next build` compiles, and the screen was driven in
+headless Chromium in both themes against a mocked API — list with mission counts,
+create with derived slug/acronym and a protocol-less website, edit prefill with
+the slug staying stable, a refused in-use delete keeping the dialog open with the
+reason, a successful delete of an unused agency, and filtering by country. Two
+defects that run surfaced are fixed: the refusal banner wasn't announced to
+screen readers (`role="alert"`/`role="status"` on both new screens' banners), and
+the edit form trusted the API never to send `null` into a controlled input.
+
+**Dynamic categories — COMPLETE.** The last of the fixed lists, and the one that
+was fixed in *four* places at once, not one: no write path to `categories`
+(`getFormOptions()` was its only reader), the ten seeded names hardcoded as a
+literal union in `types/article.ts`, the same ten hardcoded *again* as the public
+listing's filter rail, and a hardcoded name-keyed colour map in the renderer.
+A category added by hand in Supabase was invisible to readers and could never
+have a colour. All four are closed:
+
+- **`ArticleCategory` is now `string`.** The union was a lie — `categories` is a
+  table an editor can add rows to, so it silently excluded every new name.
+  `ArticleType` stays a union, because those values really are fixed (each has
+  its own styling and behaviour in the renderer).
+- **The filter rail reads the table.** New `getCategories()` (anon-key, public per
+  RLS) is fetched server-side in `/articles` and `/hi/articles` and passed down,
+  so the chips are SSR'd with no client round-trip. A failed read falls back to
+  chips-less rather than breaking the listing. The filter still keys on the
+  category **name**, exactly as `/api/articles` always did — no public URL moved.
+- **Colour comes from the row.** `categories.color` was already in every select
+  and then thrown away during normalisation, so the renderer fell back to a
+  hardcoded map of hex values. It now flows through as an optional
+  `categoryColors` on `Article`/`ArticleCard`/`ArticleRenderModel`; the legacy map
+  survives as a fallback for the ten seeded names (converted to tokens per rule
+  1), and anything else gets `var(--accent)` instead of a hardcoded blue. The
+  editor's live preview passes the same map, so a new category previews in its
+  real colour.
+- **`/admin/categories`** — CRUD with name, slug and colour, an article count per
+  category, and "unused" badging. Two guards worth naming: **"All" is reserved**,
+  because `ArticlesPage` uses that literal string as its no-filter sentinel and a
+  category actually named it could never be selected; and **colour must be a hex**
+  — the value lands in a CSS `color`, so `normalizeHexColor` accepts `#abc` /
+  `#aabbcc` and rejects everything else rather than half-applying it. Renaming
+  warns that the public filter link changes (the listing filters on the name), and
+  editing keeps the stored slug stable. Delete is refused while any article uses
+  the category — unlike a tag, a category is how the site *files* an article, so
+  silently unfiling published work is worse than an error.
+- The article editor's Categories panel gets a "Category missing? Manage
+  categories ↗" link (new tab, so an unsaved draft survives), matching the
+  agencies affordance.
+- 7 new `node:test` cases (**325 total**).
+
+Verified: 325/325 tests pass, `next build` compiles, and both sides were driven in
+headless Chromium in light and dark. Admin: create with derived slug and colour,
+the reserved name refused **with no request issued**, a CSS-injection-shaped
+colour string refused, the rename warning naming both filter links, an in-use
+delete refused with the count while the dialog stays open, and an unused delete
+succeeding. Public: the rail renders from the data (`All / NASA / Deep Space /
+Astronomía`), clicking the admin-created chip issues `?category=Deep+Space`, and
+the article labels compute to `#a855f7` from the row, `var(--gold)` from the
+legacy fallback, and `var(--accent)` for an unlisted new category.
+
 **Not yet done:** All 8 Phase 2 features are complete. The Phase 1 Mission
 Management System upgrade is complete (all 8 features). Remaining: Phases 3–4 of
 the plan, and the polish items in §10.
@@ -1416,27 +1514,27 @@ the full design and the measured numbers. Still to do:
 
 **Taxonomy management — what's left after tags (§2 covers the editor field and
 the `/admin/tags` screen):**
-- **Space agencies are a fixed list, and it's a dead end.** `getAgencyOptions()`
-  (`adminMissions.ts:275`) is the only reference to `space_agencies` in the
-  admin — read-only. The mission editor's primary-agency select and all three
-  role fields (partners / commercial / institutions) can only offer seeded rows,
-  so a mission for an unseeded agency cannot be filed at all. Destinations right
-  above them already allow custom values, so the inconsistency shows in one
-  screen. Type-to-create is the wrong shape here: agencies carry `slug`,
-  `short_name`, `country`, `logo_url`, `website_url` and `description`, all
-  rendered on public mission pages, so a name-only row would publish an agency
-  with no logo. Wants a `/admin/agencies` CRUD screen modelled on
-  `/admin/authors`.
-- **Categories are still a fixed list, and it's a three-part fix.** Same shape as
-  tags were — chips from `getFormOptions()`, no write path to `categories`
-  anywhere — but the name is hardcoded in two more places: `ArticleCategory` is a
-  literal union of 10 names (`types/article.ts:14`), and the public `/articles`
-  filter rail repeats the same 10 as an array (`ArticlesPage.tsx:8`). So a
-  category created in the admin would be neither a valid type value nor visible
-  to readers. `TagPicker` + a `resolveOrCreate` generalise to the field, but the
-  union has to be relaxed and the rail driven from the DB first — and since
-  category names reach URLs and SEO surfaces, adding one is an editorial
-  decision, not a drive-by.
+- **Reassigning missions off an agency is still manual.** The Agencies screen
+  refuses to delete an agency that any mission references (§2), which is the safe
+  behaviour, but the fix — repointing those missions — has to be done mission by
+  mission in the editor. A "reassign all to…" action, mirroring the tag merge,
+  would close the loop. The collaborator side would need a jsonb rewrite per
+  mission, so it is more than the tag version.
+- **The Agencies list counts primary missions only.** Collaborator roles live
+  inside `missions.details`, and pulling that jsonb for every mission just to
+  badge a list would move megabytes; the thorough scan runs on delete, where it
+  matters. If the collaborator count is wanted in the list, it needs either a
+  Postgres function or a generated column.
+- **Category merge / recategorise-in-bulk.** Deleting a category is refused while
+  any article uses it (§2), which is the safe behaviour, but the fix — moving
+  those articles to another category — is one article at a time in the editor. The
+  tag merge is the model; `article_categories` has the same shape as
+  `article_tags`, so it is largely the same code.
+- **The public filter still keys on the category NAME**, not the slug
+  (`?category=NASA` → `article_categories.categories.name`). That is why renaming
+  one changes its filter link, and why the admin warns about it. Switching the
+  param to the slug would make renames free, but it moves existing URLs and so
+  needs the §6.5 treatment.
 - **Non-Latin tag names are rejected.** `isValidTagName` needs an ASCII slug to
   key on, so a name written entirely in Devanagari or CJK has none. Tags are
   authored on the English article and shared across its translations, so this

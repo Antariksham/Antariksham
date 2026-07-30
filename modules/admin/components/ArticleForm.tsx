@@ -155,6 +155,13 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
       categories:    form.categoryIds
         .map(id => categories.find(c => c.id === id)?.name)
         .filter((n): n is string => Boolean(n)),
+      // So the preview shows a new category in its real colour, not the
+      // renderer's fallback.
+      categoryColors: form.categoryIds.reduce<Record<string, string>>((acc, id) => {
+        const cat = categories.find(c => c.id === id)
+        if (cat?.name && cat.color) acc[cat.name] = cat.color
+        return acc
+      }, {}),
       tags:          form.tagIds
         .map(id => allTags.find(t => t.id === id)?.name)
         .filter((n): n is string => Boolean(n)),
@@ -644,6 +651,15 @@ export function ArticleForm({ mode, article, categories, tags, authors }: Props)
               )
             })}
           </div>
+          {/* Categories are structural — the filter rail and the article label —
+              so they get a screen rather than type-to-create. New tab, so an
+              unsaved draft survives the detour. */}
+          <p style={{ margin: '10px 0 0', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.04em' }}>
+            Category missing?{' '}
+            <a href="/admin/categories" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              Manage categories ↗
+            </a>
+          </p>
         </SidePanel>
 
         {/* Tags — filter the vocabulary, or type a new one and create it */}
