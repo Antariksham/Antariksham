@@ -1,0 +1,26 @@
+-- Unique tag slugs — the database's guard for type-to-create tags.
+--
+-- The article editor's Tags panel is no longer a fixed list: typing a name that
+-- does not exist yet creates it (POST /api/admin/tags →
+-- modules/admin/services/adminTags.ts). That resolves by SLUG, so `Falcon 9`,
+-- `falcon 9` and ` FALCON-9 ` all land on one row instead of forking the
+-- vocabulary. The app checks before it inserts, but two editors typing the same
+-- new tag in the same moment would both pass that check.
+--
+-- This index makes the database the authority. The API catches the resulting
+-- 23505 and re-reads the winner's row, so the loser of the race still gets the
+-- tag rather than an error.
+--
+-- ⚠️ This FAILS if duplicate tag slugs already exist. Check FIRST:
+--
+--   select slug, count(*) from public.tags group by slug having count(*) > 1;
+--
+-- To merge a duplicate: repoint its article_tags rows at the row you are
+-- keeping, then delete it.
+--
+--   update public.article_tags set tag_id = '<keep-id>' where tag_id = '<drop-id>'
+--     and article_id not in (select article_id from public.article_tags where tag_id = '<keep-id>');
+--   delete from public.article_tags where tag_id = '<drop-id>';
+--   delete from public.tags        where id     = '<drop-id>';
+
+create unique index if not exists tags_slug_key on public.tags (slug);

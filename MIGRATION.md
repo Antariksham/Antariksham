@@ -1105,6 +1105,38 @@ runner strips TypeScript, so the suites still need no test framework: zero new
 dependencies. Verified: 0 ESLint errors across all source dirs, 294/294 tests
 pass, `next build` exits 0.
 
+**Dynamic (type-to-create) article tags — COMPLETE.** The article editor's Tags
+panel was a fixed list: it rendered whatever rows happened to be in
+`public.tags` (in practice the five from `test/seed-articles.sql`) as toggle
+chips, `getFormOptions()` only ever read that table, and the save path accepted
+`tagIds` alone. There was no create-tag route or admin screen anywhere, so the
+only way to add a tag was inserting a row by hand in Supabase. Now:
+
+- **`modules/admin/tags/tagNames.ts`** — pure, DOM-free helpers. A tag has a
+  display `name` ("Falcon 9") and an identity `slug` ("falcon-9"); the slug is
+  what dedupes, so `Falcon 9` / `falcon 9` / ` FALCON-9 ` cannot become three
+  tags. `tagSlug` strips combining accents rather than deleting the letter
+  (`lib/utils.slugify` matches on `\w` and would turn "Sové" into "sov").
+  8 new `node:test` cases (**302 total**).
+- **`POST /api/admin/tags`** → `resolveOrCreateTag` in
+  `modules/admin/services/adminTags.ts`. Resolve-or-create keyed on the slug, so
+  it is idempotent: posting a name whose slug exists returns that row with
+  `created: false`. Admin-only (tags are a shared taxonomy), and a lost
+  insert race re-reads the winner's row instead of failing.
+- **`modules/admin/tags/TagPicker.tsx`** — one input that both filters the
+  existing vocabulary and creates a new tag (Enter, or the Create button, which
+  only appears once nothing keys to the same slug). Selected chips stay visible
+  while filtering. Creation is immediate rather than deferred to save, so the
+  new tag resolves to a name in the live preview and the translation panes at
+  once; `ArticleForm` merges session-created tags over its server-rendered list.
+- **`supabase/migrations/20260730130000_tags_slug_unique.sql`** — unique index on
+  `tags (slug)`, the DB-level guard behind the race handling above.
+
+Verified: 302/302 tests pass, `next build` compiles, and the panel was driven in
+headless Chromium in both themes — filtering, selecting an existing tag by a
+different spelling (no row created), creating a new tag, rejecting a name that
+slugs to nothing, and the server-error path.
+
 **Not yet done:** All 8 Phase 2 features are complete. The Phase 1 Mission
 Management System upgrade is complete (all 8 features). Remaining: Phases 3–4 of
 the plan, and the polish items in §10.
@@ -1340,6 +1372,25 @@ the full design and the measured numbers. Still to do:
 - **Context pre-fill on upload** — seeding tags from the article's own
   categories when the Media Library is opened from an editor needs a
   `defaultTags` prop threaded through the callers.
+
+**Taxonomy management — the natural follow-ups to type-to-create tags (§2):**
+- **A Tags admin screen.** Type-to-create means a typo mints a row, and nothing
+  in the app can rename, merge or delete one — `resolveOrCreateTag` is the only
+  write path. Rename + merge (repoint `article_tags`, drop the loser) and a
+  usage count per tag would make the vocabulary maintainable; the merge SQL is
+  already written out in the migration's header comment.
+- **Categories are still a fixed list.** Same shape as tags were: chips from
+  `getFormOptions()`, no create path. `TagPicker` + `resolveOrCreateTag`
+  generalise to it, but categories drive navigation and SEO surfaces, so
+  creating one is a bigger editorial decision than adding a tag — worth a
+  deliberate choice before wiring the same affordance.
+- **Non-Latin tag names are rejected.** `isValidTagName` needs an ASCII slug to
+  key on, so a name written entirely in Devanagari or CJK has none. Tags are
+  authored on the English article and shared across its translations, so this
+  has not bitten yet; a fallback slug would be the fix if it ever does.
+- **A public `/tags/<slug>` archive.** The relational join and stable slugs are
+  in place; there is still no tag landing page (tags only render as chips on an
+  article and drive admin filtering).
 
 **Plan phases still open:**
 - **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into

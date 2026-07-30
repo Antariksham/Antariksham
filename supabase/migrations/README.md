@@ -38,6 +38,21 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260730130000_tags_slug_unique.sql`
+
+Adds a unique index on `public.tags (slug)`.
+
+The article editor's Tags panel now creates a tag when an author types a name
+that doesn't exist yet, resolving by slug so `Falcon 9` / `falcon 9` /
+`FALCON-9` cannot become three tags. The app checks before inserting; this index
+closes the race between two editors typing the same new tag at once (the API
+catches the 23505 and re-reads the winner's row).
+
+⚠️ Fails if duplicate slugs already exist — the file opens with the query to
+check and the steps to merge a duplicate. Until it is applied, type-to-create
+still works; a simultaneous double-create would just leave two rows sharing a
+slug.
+
 ### `20260730120000_media_tag_suggestions.sql`
 
 Adds `media_tag_suggestions(prefix, provider, limit)` — existing media tags
