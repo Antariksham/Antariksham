@@ -612,7 +612,7 @@ export function AuthorsAdmin() {
               Delete author?
             </h3>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'rgba(var(--ink),0.78)', lineHeight: 1.6, margin: '0 0 20px' }}>
-              <strong style={{ color: 'var(--white)' }}>{deleteTarget.name}</strong> will be permanently deleted. Articles assigned to this author will become unattributed — they won't be deleted.
+              <strong style={{ color: 'var(--white)' }}>{deleteTarget.name}</strong> will be permanently deleted. Articles assigned to this author will become unattributed &mdash; they won&rsquo;t be deleted.
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button onClick={() => setDeleteTarget(null)} style={footerBtn(false)}>Cancel</button>

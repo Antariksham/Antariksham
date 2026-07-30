@@ -1078,6 +1078,33 @@ additive `missions.details` jsonb column (+ the base columns it keeps in sync),
 94 zero-dependency unit tests, and a fully backward-compatible editor + public
 experience.
 
+**Lint coverage gap closed + tests wired to CI — COMPLETE.** Two related holes,
+both now shut:
+
+- **`modules/` was never linted.** `next build` and `next lint` only cover
+  Next's default folders (`app`, `pages`, `components`, `lib`, `src`). Nearly
+  all of this codebase lives in `modules/` (~32k lines, ~80% of feature code),
+  so neither Vercel's build nor a local `next lint` ever looked at it —
+  confirmed by planting an identical `react-hooks/rules-of-hooks` violation in
+  `components/` (caught) and `modules/` (missed). `next.config.js` now sets
+  `eslint.dirs` to the real source roots, so **the Vercel build we already run
+  on every commit lints the whole tree**. Enabling it surfaced one genuine
+  error — an unescaped `'`/`—` in `AuthorsAdmin.tsx`'s delete dialog — fixed
+  here, because an ESLint error fails `next build` and would have blocked
+  deploys. Eight warnings (mostly `no-img-element`) remain and do not fail
+  builds; see §10.
+- **The 27 colocated `*.test.ts` suites (294 tests) had no runner.** No `test`
+  script, no CI, so they ran only when someone remembered to type `node --test`.
+  `package.json` gained `lint`, `test` and `test:watch`; `.github/workflows/ci.yml`
+  runs the suites on every push and every PR into `main`.
+
+CI is deliberately **tests-only**. Vercel already builds each commit with real
+env vars and returns build logs plus a preview URL, and that build now lints
+too — re-running either in Actions would just be a slower second copy. Node 22's
+runner strips TypeScript, so the suites still need no test framework: zero new
+dependencies. Verified: 0 ESLint errors across all source dirs, 294/294 tests
+pass, `next build` exits 0.
+
 **Not yet done:** All 8 Phase 2 features are complete. The Phase 1 Mission
 Management System upgrade is complete (all 8 features). Remaining: Phases 3–4 of
 the plan, and the polish items in §10.
@@ -1097,6 +1124,21 @@ the plan, and the polish items in §10.
   identifier in commits/PRs/code.
 - **Always run `next build` before committing** non-trivial changes and confirm
   it compiles. The `supabaseUrl` page-data error is expected without env vars.
+- **Who checks what.** Vercel builds every commit with real env vars and returns
+  build logs + a preview URL; since `next.config.js` sets `eslint.dirs`, that
+  build is also the lint gate for the whole tree, `modules/` included. An ESLint
+  **error** fails it (warnings do not), so a red Vercel build means a real
+  compile, type, or lint error. GitHub Actions
+  (`.github/workflows/ci.yml`) adds only the unit suites, the one check Vercel
+  never runs. Between them, a machine that cannot build locally (tablet, phone)
+  still gets the full rule-8 gate — read the PR's ✓/✗ instead of a terminal.
+- **Locally:** `npm run lint`, `npm test`, `npm run build`. `npm run test:watch`
+  re-runs the suites on save. To build without real Supabase credentials, pass
+  placeholders (`NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co`,
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY=x`, `SUPABASE_SERVICE_ROLE_KEY=x`) — the client
+  constructor only needs them to exist, and the build then exits 0 instead of
+  hitting the rule-8 `supabaseUrl is required` error. The SSR data fetches log
+  `ENOTFOUND placeholder.supabase.co` and fall back; that is expected noise.
 
 ---
 
@@ -1396,6 +1438,22 @@ the full design and the measured numbers. Still to do:
 - Deep Space: JWST/orbiting-instrument card variant; real probe photos via
   `META.image`.
 - Learn: wire real thumbnails after running the migration.
+
+**Eight ESLint warnings**, surfaced when `eslint.dirs` first pointed the linter
+at `modules/` (§2). They do not fail the build, but they were invisible until
+now and are worth clearing:
+- `@next/next/no-img-element` ×5 — raw `<img>` in `AuthorsAdmin`, `MediaGrid`,
+  `ISSTracker`, `MissionSlugPage`, `APODSection`. Ties into the "media blur
+  placeholders / `next/image`" item above; fixing that fixes these.
+- `jsx-a11y/alt-text` ×1 — `AdminSidebar.tsx:37` image has no `alt`.
+- `react-hooks/exhaustive-deps` ×2 — `LinkAssistant` (`useMemo`, missing
+  `getText`) and `ISSTracker` (`useEffect`, missing `initialPosition`). Check
+  these two by hand rather than autofixing; a missing dep can be deliberate.
+
+**No component or route tests.** All 27 suites cover pure logic (naming,
+scheduling, citations, search, analytics). Nothing exercises a React component
+or an API route, so theme regressions (rule 2, light *and* dark) and UI breakage
+still need a human on the Vercel preview URL.
 
 ---
 

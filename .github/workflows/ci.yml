@@ -1,0 +1,42 @@
+name: Tests
+
+# Deliberately narrow. Vercel already builds every commit with real env vars
+# and gives back build logs plus a preview URL, and `next build` runs ESLint
+# over the dirs listed in next.config.js — so duplicating lint or build here
+# would only add a slower, less useful copy of a check that already exists.
+# The one thing Vercel never does is run the unit suites. That's this job.
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+# A newer push to the same branch cancels the older run, so you always read
+# results for your latest commit instead of a stale one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Node 22 ships the built-in test runner with TypeScript type
+          # stripping, which is what lets `node --test` run the .test.ts files
+          # directly with no test framework installed.
+          node-version: '22'
+          cache: npm
+
+      # --ignore-scripts: the suites are pure logic and need no postinstall
+      # work, so this skips it and keeps the job under a minute.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run unit tests
+        run: npm test
