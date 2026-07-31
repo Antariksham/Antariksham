@@ -155,6 +155,22 @@ collection when Supabase env vars are absent — unrelated to app code).
     so they inherit it, and the root layout gained the `openGraph`/`twitter`
     defaults it never had — previously the homepage shared as a bare link with
     no image, no `og:site_name` and no card type.
+  - **Installable PWA + iOS home screen** — `app/manifest.ts` (served at
+    `/manifest.webmanifest`) with name/description from `siteConfig`,
+    `display: standalone` and a dark `theme_color`, since a manifest gets one
+    colour and the brand's ground is the dark one. Icons are committed PNGs, not
+    the SVGs used elsewhere: iOS ignores SVG for `apple-touch-icon` and Chrome's
+    installability check still wants raster 192/512. The **maskable** icon is a
+    separate file rather than the same one relabelled — launchers crop maskable
+    icons to a circle/squircle, so it is drawn full-bleed with the mark pulled
+    into the central 80% safe zone (verified against both crops).
+    `app/apple-icon.png` is flattened, because iOS composites transparency onto
+    black and the rounded corners would fringe.
+    `scripts/generate-icons.mjs` rasterises all four; **sharp is deliberately not
+    a dependency** (`npm i --no-save sharp && node scripts/generate-icons.mjs`)
+    since this runs by hand every few years and the PNGs are committed.
+    The path data is duplicated there and in the three asset files — the header
+    comment in `Logo.tsx` lists all of them.
   - **Gotcha worth remembering:** React HTML-escapes `>` inside
     ``<style>{`…`}</style>``, so the responsive rule hiding the wordmark on
     narrow phones shipped as `.nav-logo &gt; span` and silently never matched.

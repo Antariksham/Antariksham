@@ -20,6 +20,11 @@
  * the base. The standalone asset versions (`app/icon.svg`, `public/logo.svg`)
  * repeat these same paths over a dark plate, because a file cannot read a CSS
  * variable — see the comments there.
+ *
+ * ⚠ The four path strings below are duplicated in `app/icon.svg`,
+ * `public/logo.svg`, `app/opengraph-image.tsx` and `scripts/generate-icons.mjs`
+ * (which rasterises the PWA and iOS PNGs). If you reshape the mark, update all
+ * of them and re-run `npm i --no-save sharp && node scripts/generate-icons.mjs`.
  */
 
 export interface LogoProps {
