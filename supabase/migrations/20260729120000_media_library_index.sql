@@ -34,7 +34,7 @@ alter table public.media_assets
   add column if not exists checksum_sha256 text,   -- Phase 4: dedupe on upload
   add column if not exists captured_at     timestamptz,
   add column if not exists thumb_url       text,
-  add column if not exists blurhash        text,   -- closes MIGRATION.md §10 blur placeholders
+  add column if not exists blurhash        text,   -- closes ENGINEERING.md §10 blur placeholders
   add column if not exists dominant_color  text,
   add column if not exists usage_count     integer not null default 0,
   add column if not exists last_used_at    timestamptz,

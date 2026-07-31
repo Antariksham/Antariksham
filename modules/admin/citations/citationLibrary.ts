@@ -3,12 +3,12 @@
  * ─────────────────────────────────────────────────────────────────
  * A browser-local library so an editor can reuse a citation across articles
  * without re-typing it. De-duplicated by citation key. (A shared, server-backed
- * team library is a natural follow-up — see MIGRATION §10.)
+ * team library is a natural follow-up — see ENGINEERING.md §10.)
  */
 import type { Citation } from './citationTypes'
 import { citationKey } from './formatCitation'
 
-const STORAGE_KEY = 'cosmosdaily.citation.library.v1'
+const STORAGE_KEY = 'antariksham.citation.library.v1'
 
 export function loadLibrary(): Citation[] {
   try {

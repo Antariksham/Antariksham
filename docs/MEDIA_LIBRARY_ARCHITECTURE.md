@@ -124,7 +124,7 @@ alter table public.media_assets
   add column if not exists checksum_sha256 text,
   add column if not exists captured_at     timestamptz,   -- when shot ≠ when uploaded
   add column if not exists thumb_url       text,
-  add column if not exists blurhash        text,          -- also closes MIGRATION.md §10 "blur placeholders"
+  add column if not exists blurhash        text,          -- also closes ENGINEERING.md §10 "blur placeholders"
   add column if not exists dominant_color  text,
   add column if not exists usage_count     integer not null default 0,
   add column if not exists last_used_at    timestamptz,
@@ -330,7 +330,7 @@ Supporting routes:
 
 ## 6. UI changes
 
-Everything below uses the CosmosDaily tokens and classes per `CLAUDE.md` §1–§4
+Everything below uses the design tokens and classes per `CLAUDE.md` §1–§4
 (`rgba(var(--ink), a)`, `var(--accent)`, `.card`, `.btn*`), and must be verified
 in both light and dark.
 
@@ -444,8 +444,7 @@ the callers, and is not wired up.
 > object 404s the live site. There is no rename in Supabase Storage that
 > preserves the old URL.
 
-`scripts/backfill-media-assets.mjs` (dry-run by default, like
-`scripts/migrate-cosmosdaily-articles.mjs`):
+`scripts/backfill-media-assets.mjs` (dry-run by default, `--apply` to write):
 
 1. Paginate `storage.list()` 1000 at a time over both buckets (the current code
    stops at 200 — that is why this must paginate).
@@ -563,7 +562,7 @@ you need cross-entity search over millions of documents with per-field boosting.
 
 ## 12. Migration-doc bookkeeping
 
-When implemented, move the completed phases into `MIGRATION.md` §2 and strike
+When implemented, move the completed phases into `ENGINEERING.md` §2 and strike
 the corresponding lines from §10, including the existing
 *"Media blur placeholders / build-time optimisation"* item — `blurhash` +
 `dominant_color` in §3 closes it.

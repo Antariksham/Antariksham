@@ -1,7 +1,7 @@
 # What to build or update next
 
 A prioritised review of the site as it stands, written after reading the code
-rather than the roadmap. `MIGRATION.md` §10 tracks *follow-ups to things already
+rather than the roadmap. `ENGINEERING.md` §10 tracks *follow-ups to things already
 built*; this file asks a different question — **where is the site weakest right
 now, and what gives the most back per hour spent?**
 
@@ -54,20 +54,16 @@ inherited defaults. The most-shared URL on the site previews as a bare link.
 Put OG/Twitter defaults in the root layout metadata so every route inherits them
 and individual pages only override what differs.
 
-### 3. `robots.txt` is static and points at the old domain
+### 3. `robots.txt` is static and duplicates the domain — ✅ FIXED
 
-`public/robots.txt` hardcodes `Sitemap: https://antariksham.org/sitemap.xml`.
-The site is migrating to `cosmosdaily.space`, and `app/sitemap.ts:15` already
-derives its base from `siteConfig.url` — so the sitemap will follow the domain
-change and robots.txt silently will not.
+> Done. `public/robots.txt` was deleted and replaced by `app/robots.ts`, which
+> derives the sitemap URL from `siteConfig.url`. The domain now lives in exactly
+> one place. Original writeup kept for the record:
 
-Convert it to `app/robots.ts` reading `siteConfig.url`. This is the same class of
-drift §6 exists to prevent, and it is a one-file change.
-
-Related: `config/site.ts` is still entirely Antariksham branding (name, domain,
-email, twitter handle, tagline). Whatever the cutover plan is, that file is the
-single switch, and it is worth confirming it is the *only* place the old domain
-is written down before Phase 3 starts.
+`public/robots.txt` hardcoded `Sitemap: https://antariksham.org/sitemap.xml`
+while `app/sitemap.ts:15` derived its base from `siteConfig.url` — two copies of
+the same fact, which had already drifted. This is the class of drift §6 exists to
+prevent, and it was a one-file change.
 
 ### 4. There is no global 404 or error page
 
@@ -278,16 +274,11 @@ Ordered by payoff, not effort.
 
 ## One strategic note
 
-The most consequential thing on this list is not a feature.
+The site is now **independent** — one repo, one domain (`antariksham.org`), no
+cutover pending and nothing staged behind another project. That removes the
+constraint this list was originally written under, where every feature added
+before a domain move would have had to be re-verified after it.
 
-**Phase 3 — the actual cutover to `cosmosdaily.space` — has not happened.** The
-migration script (`scripts/migrate-cosmosdaily-articles.mjs`) is written but
-never run, and it is waiting on credentials and a go-ahead rather than on any
-engineering. Meanwhile `config/site.ts` and `public/robots.txt` still say
-Antariksham.
-
-Every feature added before cutover is a feature that has to be re-verified after
-it. If the goal is still to become production at `cosmosdaily.space`, the
-highest-value work is finishing the migration — and the Tier 0 SEO fixes above
-are the natural first step, because they are exactly the things that must be
-correct *before* traffic moves, not after.
+So the ordering above is now simply the ordering: Tier 0 first because those are
+broken, then Tier 1 because search and structured data are where the most value
+per hour is. Nothing is waiting on a migration any more.

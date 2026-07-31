@@ -9,7 +9,7 @@ import { NavProgress } from '@/components/layout/NavProgress'
 import '@/styles/globals.css'
 import '@/styles/responsive.css'
 
-// CosmosDaily fonts. Merriweather = article reading prose (serif);
+// Site fonts. Merriweather = article reading prose (serif);
 // DM Sans = labels / eyebrows / meta. The UI + headings use a Segoe UI
 // system stack defined in styles/globals.css (--font-sans), so no webfont
 // is downloaded for the body/UI type.

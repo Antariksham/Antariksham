@@ -4,7 +4,7 @@
 // flight software beats the stochastic missions it is dealt. All access
 // is guarded: SSR, private-mode quota errors and corrupted payloads all
 // degrade to in-memory zeros. Consumers must only read after mount
-// (hydration-safe — see MIGRATION.md §5).
+// (hydration-safe — see ENGINEERING.md §5).
 
 export interface MissionStats {
   total_attempts: number
@@ -12,7 +12,7 @@ export interface MissionStats {
   crashes: number
 }
 
-const STORAGE_KEY = 'cosmosdaily.lunar-sim.stats.v1'
+const STORAGE_KEY = 'antariksham.lunar-sim.stats.v1'
 
 export const EMPTY_STATS: MissionStats = {
   total_attempts: 0,

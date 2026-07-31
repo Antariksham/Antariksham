@@ -7,8 +7,8 @@
  */
 export type BeaconType = 'view' | 'read' | 'share' | 'bookmark'
 
-const VID_KEY = 'cosmosdaily.analytics.vid'
-const SID_KEY = 'cosmosdaily.analytics.sid'
+const VID_KEY = 'antariksham.analytics.vid'
+const SID_KEY = 'antariksham.analytics.sid'
 
 const rand = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36)
 

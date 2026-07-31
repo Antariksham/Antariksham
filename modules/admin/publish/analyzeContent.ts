@@ -24,7 +24,10 @@ export interface ContentStats {
   readingTimeMin: number
 }
 
-const SITE_HOSTS = ['antariksham.org', 'cosmosdaily.space', 'localhost']
+// Hosts that count as "this site" when classifying a link as internal.
+// `isExternal` strips a leading www. and also matches subdomains, so one entry
+// per real domain is enough. Add here if the site ever gains another domain.
+const SITE_HOSTS = ['antariksham.org', 'localhost']
 
 function isExternal(href: string): boolean {
   if (!href) return false

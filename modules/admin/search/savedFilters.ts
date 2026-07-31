@@ -4,7 +4,7 @@
  * (e.g. "Drafts over 1k views", "NASA, this month") in one click. Generic over
  * the filter shape so it survived the move to server-side querying.
  */
-const STORAGE_KEY = 'cosmosdaily.article.filters.v2'
+const STORAGE_KEY = 'antariksham.article.filters.v2'
 
 export interface SavedFilter<F = unknown> { id: string; name: string; filters: F }
 

@@ -8,7 +8,7 @@
  *     inherits whatever text colour its container sets. In the nav that is
  *     `var(--white)` — `#ffffff` in dark, `#0f0f1a` in light — so the logo is
  *     correct in both themes with no second asset and no hardcoded colour
- *     (MIGRATION.md §6 rules 1 and 2). A white-on-black PNG would be invisible
+ *     (ENGINEERING.md §6 rules 1 and 2). A white-on-black PNG would be invisible
  *     in light mode.
  *  2. **No network request and no layout shift.** It is markup, so it paints
  *     with the nav on first render.

@@ -6,22 +6,20 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────
-   COSMOSDAILY DESIGN TOKENS  (Phase 1 reskin)
-   Variable NAMES are kept from the original Antariksham system so
-   every existing `var(--…)` reference resolves automatically; only
-   the VALUES are swapped to CosmosDaily's live design (css/style.css
-   / migration-plan Appendix A). The original "black" identity is
-   archived in styles/themes/antariksham-black.css and under the git
-   tag design/antariksham-black-v1.
+   ANTARIKSHAM DESIGN TOKENS
+   The single source of truth for colour, type and geometry. Nothing
+   outside this file should hardcode a colour — see CLAUDE.md rule 1.
+   The earlier "black" identity is archived in
+   styles/themes/antariksham-black.css and under the git tag
+   design/antariksham-black-v1; it is history, not a live theme.
    ───────────────────────────────────────────────────────────── */
 :root {
-  /* Fonts — CosmosDaily: sans UI + headings, serif reserved for reading prose */
+  /* Fonts — sans for UI + headings, serif reserved for reading prose */
   --font-sans:  'Segoe UI', system-ui, -apple-system, sans-serif; /* UI + headings */
   --font-serif: 'Merriweather', Georgia, serif;                   /* article body prose */
-  --font-mono:  'DM Sans', system-ui, sans-serif;                 /* labels / eyebrows / meta (CosmosDaily has no mono face) */
+  --font-mono:  'DM Sans', system-ui, sans-serif;                 /* labels / eyebrows / meta (the system has no true mono face) */
 
-  /* Surfaces — CosmosDaily navy family (bg-primary/secondary/card), with the
-     two extra Antariksham depth levels interpolated into the same hue */
+  /* Surfaces — one navy family, five depth levels in the same hue */
   --black:      #0a0a0f;   /* → --bg-primary   */
   --deep:       #0f0f17;
   --surface:    #12121a;   /* → --bg-secondary */
@@ -38,7 +36,7 @@
   --accent-hover:#3a7ae0;
   --accent-dim:  rgba(79,142,247,0.10);
 
-  /* Semantic — CosmosDaily success / warning / danger */
+  /* Semantic — success / warning / danger */
   --gold:       #f39c12;   /* → --warning */
   --gold-dim:   rgba(243,156,18,0.10);
   --green:      #2ecc71;   /* → --success */
@@ -54,20 +52,20 @@
   --gold-rgb:   243, 156, 18;
   --red-rgb:    231, 76, 60;
 
-  /* Purple has no CosmosDaily equivalent — folded into the accent */
+  /* Purple is folded into the accent — kept as a token for existing references */
   --purple:     #4f8ef7;
 
   /* Lines */
   --border:     #2a2a3e;
   --border-hi:  #3a3a52;
 
-  /* Geometry — CosmosDaily radius + 1200px container */
+  /* Geometry — corner radius + 1200px container */
   --radius:     12px;
   --radius-sm:  8px;
   --nav-height: 64px;
   --max-width:  1200px;
 
-  /* CosmosDaily card hover shadow */
+  /* Card hover shadow */
   --card-shadow: 0 4px 20px rgba(0,0,0,0.4);
 
   /* Theme-aware "ink" — the RGB triplet behind every rgba(var(--ink), a) text,
@@ -97,7 +95,7 @@
 /* ── LIGHT THEME ──────────────────────────────────────────────
    Manual toggle sets data-theme="light" on <html>. Only the base tokens
    flip; every component reads through them (surfaces, text, accent, border)
-   or through rgba(var(--ink), a). CosmosDaily's live light palette. */
+   or through rgba(var(--ink), a). */
 :root[data-theme="light"] {
   color-scheme: light;
   --ink:        15, 15, 26;
@@ -278,10 +276,12 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
 
 /* ─────────────────────────────────────────────────────────────
-   COSMOSDAILY COMPONENT CLASSES  (homepage sibling)
-   Ported from CosmosDaily's live css/style.css so shared surfaces
-   use the same class system. CosmosDaily token names aliased to
-   Antariksham's existing variables.
+   COMPONENT CLASSES
+   The shared surface vocabulary every page is built from — .container,
+   .section, .card, .grid-3, .btn*, .page-header, .prose, .tag. Copy an
+   existing page rather than inventing new one-off styles.
+   The --bg- and --text- names below are semantic aliases onto the base
+   tokens above, so components can read either spelling.
    ───────────────────────────────────────────────────────────── */
 :root {
   --bg-primary:    var(--black);
@@ -364,18 +364,18 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* hero */
-.cd-hero { background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+.home-hero { background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
 .hero-badge {
   display: inline-block; background: rgba(79,142,247,0.15); color: var(--accent);
   border: 1px solid rgba(79,142,247,0.3); padding: 0.3rem 0.8rem; border-radius: 20px;
   font-family: var(--font-sans); font-size: 0.8rem; font-weight: 600;
   letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;
 }
-.cd-hero h1 {
+.home-hero h1 {
   font-family: var(--font-sans); font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 1rem;
 }
-.cd-hero p { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem; max-width: 560px; }
+.home-hero p { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem; max-width: 560px; }
 
 /* tags */
 .tag {
@@ -434,7 +434,7 @@ a { color: inherit; text-decoration: none; }
   .nav-progress.loading { transition: opacity 0.2s ease; }
 }
 
-/* page header (CosmosDaily inner-page pattern) */
+/* page header (inner-page pattern) */
 .page-header {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);

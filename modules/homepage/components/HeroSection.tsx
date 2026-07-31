@@ -33,7 +33,7 @@ export async function HeroSection() {
 
   return (
     <section
-      className="cd-hero"
+      className="home-hero"
       style={{
         position:   'relative',
         overflow:   'hidden',
