@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
 import type { MissionCard } from '@/types/mission'
+import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
 const STATUS_COLOR: Record<string, string> = {
   active:           'var(--green)',
@@ -38,8 +39,8 @@ export function MissionsSection({ missions }: Props) {
             return (
               <Link key={mission.id} href={`/missions/${mission.slug}`} className="card">
                 {mission.featuredImage
-                  ? /* eslint-disable-next-line @next/next/no-img-element */
-                    <img className="card-image" src={mission.featuredImage} alt={mission.name} loading="lazy" />
+                  ? <SmartImage className="card-image" src={mission.featuredImage} alt={mission.name}
+                    width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
                   : <div className="card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', opacity: 0.25 }}>🛸</div>}
                 <div className="card-body">
                   <p className="card-category">

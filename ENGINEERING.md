@@ -208,6 +208,35 @@ env vars are absent — unrelated to app code).
     since this runs by hand every few years and the PNGs are committed.
     The path data is duplicated there and in the three asset files — the header
     comment in `Logo.tsx` lists all of them.
+  - **`next/image` back on, safely** (`components/ui/SmartImage.tsx`,
+    `config/images.ts`). It had been removed because with no
+    `images.remotePatterns` the optimiser answers **400 for every external host**,
+    so admin-entered featured images simply broke. The answer is not a wildcard:
+    `hostname: '**'` makes the site an open image proxy anyone can push arbitrary
+    URLs through, resized on the site's own Vercel bill.
+    - `SmartImage` optimises when the host is allow-listed (Supabase Storage,
+      Cloudinary, same-origin) and renders a plain `<img>` otherwise — i.e.
+      exactly today's behaviour for anything it cannot safely handle. It is the
+      **only** `next/image` importer in the codebase, so the fallback lives in
+      one place.
+    - The allow-list is **derived from environment variables on both sides**:
+      `next.config.js` builds `remotePatterns` from `NEXT_PUBLIC_SUPABASE_URL`
+      and `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, and `config/images.ts` runs the
+      matching check at render time from the same two. They cannot drift, and
+      drift here would mean a 400 on a live image — the original failure.
+    - Applied to all seven `.card-image` renders (article/mission cards on the
+      homepage, listings, topic hubs, author pages), with a shared
+      `CARD_IMAGE_SIZES` so a card downloads roughly a third of the bytes.
+    - **Measured end to end** on a real allow-listed host: a 1200px PNG came back
+      as **660 bytes of WebP at 640w, from 4,387 bytes** — and a non-allow-listed
+      host was correctly refused with 400, which is exactly why the fallback
+      exists. The rendered tag carries a 10-entry `srcSet` (256w–3840w) plus the
+      `sizes` hint.
+    - Note the lint count is unchanged at 8: the card files already carried
+      `eslint-disable` comments for their raw `<img>`, so converting them moved
+      nothing. Those stale suppressions were removed. The five remaining
+      `no-img-element` warnings are admin panels and the three runtime images
+      whose hosts are not allow-listed.
   - **Layout shift from images fixed at its real sources.** An earlier note in
     docs/NEXT-STEPS.md claimed "layout shift on every image on the site" because
     no `<img>` declared width/height. **That was wrong** and worth recording:

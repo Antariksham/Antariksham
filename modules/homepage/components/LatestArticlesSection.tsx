@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { timeAgo } from '@/lib/utils'
 import type { ArticleCard } from '@/types/article'
+import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
 const TYPE_LABEL: Record<string, string> = {
   'breaking-news':      'Breaking',
@@ -34,8 +35,8 @@ export function LatestArticlesSection({ articles }: Props) {
           {items.map(a => (
             <Link key={a.id} href={`/articles/${a.slug}`} className="card">
               {a.featuredImage
-                ? /* eslint-disable-next-line @next/next/no-img-element */
-                  <img className="card-image" src={a.featuredImage} alt={a.title} loading="lazy" />
+                ? <SmartImage className="card-image" src={a.featuredImage} alt={a.title}
+                    width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
                 : <div className="card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', opacity: 0.25 }}>🪐</div>}
               <div className="card-body">
                 <p className="card-category">{a.categories?.[0] || 'Space'}</p>

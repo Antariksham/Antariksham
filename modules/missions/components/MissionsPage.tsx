@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import type { MissionCard, MissionStatus } from '@/types/mission'
 import { formatDate } from '@/lib/utils'
 import { statusMeta, legacyStatusFor } from '@/modules/missions/services/missionClassification'
+import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
 const STATUSES: { value: MissionStatus | 'all'; label: string }[] = [
   { value: 'all',            label: 'All'           },
@@ -181,8 +182,8 @@ function MissionGridCard({ mission }: { mission: MissionCard }) {
   return (
     <a href={`/missions/${mission.slug}`} className="card">
       {mission.featuredImage
-        ? /* eslint-disable-next-line @next/next/no-img-element */
-          <img className="card-image" src={mission.featuredImage} alt={mission.name} loading="lazy" />
+        ? <SmartImage className="card-image" src={mission.featuredImage} alt={mission.name}
+                    width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
         : <div className="card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', opacity: 0.25 }}>🛸</div>}
       <div className="card-body">
         <p className="card-category">

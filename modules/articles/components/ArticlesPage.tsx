@@ -5,6 +5,7 @@ import type { ArticleCard, ArticleCategory } from '@/types/article'
 import type { PublicCategory } from '@/modules/articles/services/getCategories'
 import { timeAgo } from '@/lib/utils'
 import { langPrefix, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
+import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
 const PER_PAGE = 12
 
@@ -175,8 +176,8 @@ function GridCard({ article, base, lang }: { article: ArticleCard; base: string;
   return (
     <a href={`${base}/articles/${article.slug}`} className="card">
       {article.featuredImage
-        ? /* eslint-disable-next-line @next/next/no-img-element */
-          <img className="card-image" src={article.featuredImage} alt={article.title} loading="lazy" />
+        ? <SmartImage className="card-image" src={article.featuredImage} alt={article.title}
+                    width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
         : <div className="card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', opacity: 0.25 }}>🪐</div>}
       <div className="card-body">
         {article.articleType === 'breaking-news' && (

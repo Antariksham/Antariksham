@@ -3,6 +3,7 @@ import { StatusBadge } from '@/modules/missions/components/MissionsPage'
 import { BODY_BY_ID } from '../services/solarSystemBodies'
 import type { Topic } from '../services/topics'
 import type { TopicContent } from '../services/topicContent'
+import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -79,8 +80,8 @@ export function TopicHub({ topic, content }: Props) {
             {articles.map(a => (
               <Link key={a.id} href={`/articles/${a.slug}`} className="card">
                 {a.featuredImage
-                  ? /* eslint-disable-next-line @next/next/no-img-element */
-                    <img className="card-image" src={a.featuredImage} alt={a.title} loading="lazy" decoding="async" />
+                  ? <SmartImage className="card-image" src={a.featuredImage} alt={a.title}
+                    width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
                   : <div className="card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', opacity: 0.25 }}>{topic.emoji}</div>}
                 <div className="card-body">
                   {a.category && <p className="card-category">{a.category}</p>}
@@ -108,8 +109,8 @@ export function TopicHub({ topic, content }: Props) {
             {missions.map(m => (
               <Link key={m.id} href={`/missions/${m.slug}`} className="card">
                 {m.featuredImage
-                  ? /* eslint-disable-next-line @next/next/no-img-element */
-                    <img className="card-image" src={m.featuredImage} alt={m.name} loading="lazy" decoding="async" />
+                  ? <SmartImage className="card-image" src={m.featuredImage} alt={m.name}
+                    width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
                   : <div className="card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', opacity: 0.25 }}>🛸</div>}
                 <div className="card-body">
                   <p className="card-category">
