@@ -170,7 +170,21 @@ Four specific wins, roughly in order of effort-to-payoff:
 - **`WebSite` + `SearchAction` on the homepage** for the sitelinks searchbox —
   which is worth much more once Tier 1.1 makes the search behind it good.
 
-### 3. Fix image delivery — the biggest Core Web Vitals lever
+### 3. Fix image delivery — the biggest Core Web Vitals lever — ◐ PARTLY DONE
+
+> **Correction to the claim below:** "layout shift on every image" was wrong.
+> `.card-image` is `height: 200px` and most other images sit inside sized
+> parents, so they never shifted. Three real sources were found and fixed —
+> `.article-body img` (now carries width/height, written by the editor), the
+> APOD hero, and mission timeline images. Measured: 0px reserved before, 360px
+> after.
+>
+> **Still open:** no `next/image`, so no `srcset` or format negotiation, and the
+> five `no-img-element` warnings remain — dimensions do not clear that rule.
+> Enabling it needs a Cloudinary loader or `remotePatterns`, and a wildcard
+> pattern makes the site an open image proxy billed to Vercel. That is a
+> cost/security decision for the owner. Original writeup:
+
 
 There is **no `next/image` anywhere in the codebase**. There are 39 raw `<img>`
 tags across `app/`, `modules/` and `components/`; **19 carry a `loading`

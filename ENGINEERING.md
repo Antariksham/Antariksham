@@ -208,6 +208,40 @@ env vars are absent — unrelated to app code).
     since this runs by hand every few years and the PNGs are committed.
     The path data is duplicated there and in the three asset files — the header
     comment in `Logo.tsx` lists all of them.
+  - **Layout shift from images fixed at its real sources.** An earlier note in
+    docs/NEXT-STEPS.md claimed "layout shift on every image on the site" because
+    no `<img>` declared width/height. **That was wrong** and worth recording:
+    `.card-image` is `height: 200px`, and most other images sit at
+    `width/height: 100%` inside an already-sized parent, so they never shifted.
+    Reading the CSS rather than counting tags found three that genuinely did:
+    - **`.article-body img`** (`max-width: 100%; height: auto`) — every image an
+      author drops mid-article. The worst of the three, because it moves text
+      under a reader's eyes. Fixed at the source: the editor now probes the
+      image's intrinsic size when inserting it (`imageDimensions.ts`) and writes
+      real `width`/`height` attributes, from which the browser derives an
+      aspect-ratio and reserves the box — `height: auto` still scales it
+      responsively, so **no CSS changed**. Both insert paths do it (rich and
+      HTML-source), and `sanitizeHtml` had to be taught to keep the attributes
+      or they were stripped straight back out.
+    - **APOD hero** and **mission timeline images** — both `height: auto` with
+      nothing to compute from; now boxed at a fixed aspect-ratio.
+    - Probing never blocks insertion: a broken URL, a hotlinking block or a slow
+      CDN resolves to null after 5 s and the image goes in exactly as before.
+      Failing to optimise is acceptable; failing to insert the author's image is
+      not.
+    - Verified by measuring, not by inspection: in a browser, with the site's own
+      CSS and a 640px column, an unsized image reserves **0px** before load and
+      the same image with `width="1600" height="900"` reserves **360px**. Also
+      confirmed the sanitizer round-trips all four attributes.
+    - **Still open**, and deliberately not decided here: no `next/image`, so
+      there is still no `srcset` or format negotiation, and the five
+      `@next/next/no-img-element` lint warnings remain (dimensions do not clear
+      that rule — only `next/image` does). Enabling it needs either a Cloudinary
+      loader or `remotePatterns`, and a wildcard pattern turns the site into an
+      open image proxy billed to Vercel — a cost/security call for the owner, not
+      a silent default. The `/gallery` masonry also still shifts: it is a column
+      layout whose heights come from the images, and NASA's search API does not
+      return dimensions to reserve space with.
   - **Structured data closed out** (`modules/seo/jsonLd.ts`). Coverage was
     uneven: articles and the Explore/Gallery pages emitted JSON-LD, **missions
     and Learn emitted none at all**, breadcrumbs existed only on Explore, and the

@@ -446,9 +446,14 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
                       </p>
                     )}
                     {/* Image */}
+                    {/* Boxed at a fixed ratio rather than left to size itself: an
+                        unsized image here pushed every later event down the
+                        timeline as it loaded. */}
                     {event.image && (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={event.image} alt={event.title} loading="lazy" style={{ maxWidth: '100%', borderRadius: '8px', margin: '4px 0 8px', display: 'block' }} />
+                      <div style={{ width: '100%', maxWidth: '520px', aspectRatio: '16 / 9', borderRadius: '8px', overflow: 'hidden', margin: '4px 0 8px', background: 'var(--panel)' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={event.image} alt={event.title} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      </div>
                     )}
                     {/* Location + links */}
                     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
