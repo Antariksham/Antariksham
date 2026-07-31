@@ -9,6 +9,8 @@ import { timelineStatusMeta, timelineImportanceMeta } from '@/modules/missions/s
 import { launchTargetTimestamp, launchSuccessMeta, isLaunchEmpty } from '@/modules/missions/services/missionLaunch'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { sectionHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
+import { buildMissionJsonLd, buildBreadcrumbs } from '@/modules/seo/jsonLd'
+import { siteConfig } from '@/config/site'
 
 const ROLE_LABEL: Record<CollaboratorRole, string> = {
   partner:     'Partner Agencies',
@@ -78,6 +80,30 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
   const hasMediaSection = !!media.banner.url || galleryImages.length > 0 || media.videos.length > 0 || media.documents.length > 0
   return (
     <div lang={lang} style={{ background: 'var(--black)', minHeight: '100vh', paddingTop: 'var(--nav-height)' }}>
+
+      {/* Structured data. Missions previously emitted none at all, despite being
+          the site's most distinctive content and carrying the richest model. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([
+          buildMissionJsonLd({
+            name:          mission.name,
+            slug:          mission.slug,
+            description:   mission.description,
+            featuredImage: mission.featuredImage,
+            launchDate:    mission.launchDate,
+            destination:   mission.classification.destinations[0] || mission.destination,
+            agencyName:    mission.agency?.name || null,
+            summary:       mission.identity.summary || undefined,
+            website:       mission.identity.website || undefined,
+            wikipedia:     mission.identity.wikipedia || undefined,
+          }, siteConfig),
+          buildBreadcrumbs([
+            { name: 'Missions', path: '/missions' },
+            { name: mission.name, path: `/missions/${mission.slug}` },
+          ], siteConfig),
+        ]) }}
+      />
 
       {/* ── Hero image ──────────────────────────────── */}
       {mission.featuredImage && (

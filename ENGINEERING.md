@@ -208,6 +208,30 @@ env vars are absent — unrelated to app code).
     since this runs by hand every few years and the PNGs are committed.
     The path data is duplicated there and in the three asset files — the header
     comment in `Logo.tsx` lists all of them.
+  - **Structured data closed out** (`modules/seo/jsonLd.ts`). Coverage was
+    uneven: articles and the Explore/Gallery pages emitted JSON-LD, **missions
+    and Learn emitted none at all**, breadcrumbs existed only on Explore, and the
+    editor's FAQ block never became an `FAQPage`.
+    - **`FAQPage`** built from the article's own HTML, so the markup and the
+      visible page cannot disagree. Half-written blocks (missing question or
+      answer) are skipped rather than guessed at — structured data that does not
+      match the page is penalised.
+    - **`BreadcrumbList`** on articles, missions and Learn.
+    - **Missions → `CreativeWork`**, not `Event`: a mission is an ongoing subject
+      the page documents, and `Event` wants a start date many missions lack.
+      Destination becomes `about` (a `Place`), the operating agency `sponsor`
+      (it sponsors the mission; it does not publish the page).
+    - **Learn → `LearningResource`**, with `educationalLevel` from the difficulty
+      the CMS already stores.
+    - **`WebSite` + `SearchAction`** on the homepage — the sitelinks searchbox,
+      which is worth having now the search behind it reads article bodies.
+    - The builders **take the site config as an argument** rather than importing
+      it. That keeps the module free of the `@/` alias so it runs under the bare
+      node test runner like every other pure module here, while the domain still
+      lives only in `config/site.ts` (rule 9). 14 new tests (348 total).
+    - Note for anyone extending it: `matchAll` is unavailable at this tsconfig
+      target, so the FAQ scan uses an `exec` loop with a per-call regex — a
+      module-level `/g` regex would carry `lastIndex` between calls.
   - **Public search rebuilt on Postgres full text** — the weakest system on the
     site. It was `ILIKE '%q%'` over title + excerpt only, which meant **article
     bodies were never searchable**: a reader looking for a phrase that appears in

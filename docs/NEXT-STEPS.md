@@ -142,7 +142,12 @@ already validated.
 Once search is genuinely good, the ⌘K command palette from Tier 0.5 is a small
 UI layer on top of it, and it becomes the site's best navigation surface.
 
-### 2. Close the structured-data gaps — this is free search real estate
+### 2. Close the structured-data gaps — this is free search real estate — ✅ DONE
+
+> Done, in `modules/seo/jsonLd.ts`: FAQPage from the editor's own FAQ blocks,
+> BreadcrumbList on articles/missions/Learn, missions as CreativeWork, Learn as
+> LearningResource, and WebSite + SearchAction on the homepage. Original writeup:
+
 
 JSON-LD coverage is uneven. Present on `/explore/*`, `/gallery/*`, `/lunar-sim`
 and articles. **Absent from missions and Learn entirely** — a grep for `ld+json`

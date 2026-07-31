@@ -4,6 +4,7 @@ import { ArticleBody, countWords, type ArticleRenderModel } from './ArticleBody'
 import { TableOfContents } from './TableOfContents'
 import { buildToc, tocCount } from '../services/toc'
 import { buildArticleJsonLd } from '../services/articleMetadata'
+import { buildBreadcrumbs, buildFaqJsonLd } from '@/modules/seo/jsonLd'
 import { ReaderProvider, type ReaderMeta } from '../reader/ReaderContext'
 import { ArticleEnhancer } from '../blocks/ArticleEnhancer'
 import { AnalyticsBeacon } from '../analytics/AnalyticsBeacon'
@@ -87,10 +88,19 @@ export function ArticleView({
       {/* Thin reading-progress bar pinned under the nav (Feature 2) */}
       <ReadingProgressBar />
 
-      {/* Structured data (Article/NewsArticle JSON-LD) for search engines */}
+      {/* Structured data: the Article itself, its breadcrumb trail, and — when the
+          author used the editor's FAQ block — an FAQPage built from that same
+          visible content, so the markup and the page always agree. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildArticleJsonLd(article)) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([
+          buildArticleJsonLd(article),
+          buildBreadcrumbs([
+            { name: 'Articles', path: '/articles' },
+            { name: article.title, path: `/articles/${article.slug}` },
+          ], siteConfig),
+          buildFaqJsonLd(article.content || ''),
+        ].filter(Boolean)) }}
       />
 
       {/* ── Reading column + sticky TOC rail ──

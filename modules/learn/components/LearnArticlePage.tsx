@@ -5,6 +5,8 @@ import katex from 'katex'
 import type { KnowledgeArticle, DifficultyLevel } from '@/types/knowledge'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { sectionHref, HI_SANS, HI_SERIF, type LanguageCode } from '@/lib/i18n'
+import { buildLearnJsonLd, buildBreadcrumbs } from '@/modules/seo/jsonLd'
+import { siteConfig } from '@/config/site'
 
 const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
   beginner:     'var(--green)',
@@ -32,6 +34,27 @@ export function LearnArticlePage({ article, lang = 'en' }: Props) {
 
   return (
     <div lang={lang} style={{ maxWidth: '800px', margin: '0 auto', padding: '60px 24px 100px' }}>
+
+      {/* Structured data. Learn is teaching material, so LearningResource is the
+          accurate type — and it emitted nothing at all before. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([
+          buildLearnJsonLd({
+            title:           article.title,
+            slug:            article.slug,
+            excerpt:         article.excerpt,
+            thumbnail:       article.thumbnail,
+            difficultyLevel: article.difficultyLevel,
+            createdAt:       article.createdAt,
+            updatedAt:       article.updatedAt,
+          }, siteConfig),
+          buildBreadcrumbs([
+            { name: 'Learn', path: '/learn' },
+            { name: article.title, path: `/learn/${article.slug}` },
+          ], siteConfig),
+        ]) }}
+      />
 
       {/* ── Back link + language switch ────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '40px' }}>
