@@ -80,7 +80,12 @@ For a site whose whole strategy is inheriting earned search traffic, the 404 is 
 page real users will land on. It should be a branded dead end with search and
 recent articles on it.
 
-### 5. The nav advertises a `⌘K` shortcut that does nothing
+### 5. The nav advertises a `⌘K` shortcut that does nothing — ✅ FIXED
+
+> Done. The badge is removed (along with the `.nav-kbd` rule in
+> `styles/responsive.css`, which never matched it). A real palette is now
+> unblocked by the search rewrite below, if wanted. Original writeup:
+
 
 `components/layout/Navbar.tsx:42` renders a `⌘K` badge inside the search pill.
 No global key handler exists — a search across `app/`, `modules/` and
@@ -96,7 +101,15 @@ badge.
 
 ## Tier 1 — The highest-leverage things to build
 
-### 1. Rebuild public search — it is the weakest system on the site
+### 1. Rebuild public search — it is the weakest system on the site — ✅ DONE
+
+> Done, via `supabase/migrations/20260731120000_content_search.sql` and
+> `modules/search/services/`. Article bodies are searchable, results rank by
+> relevance, the query is a bound parameter, and typos get a "did you mean".
+> Validated against a real Postgres 16 with 50,003 rows — the measured numbers
+> and the point at which ranking cost needs revisiting are in the migration
+> header. Original writeup:
+
 
 `modules/search/services/search.ts` is `ILIKE '%query%'` against **title and
 excerpt only**, across three tables:

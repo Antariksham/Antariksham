@@ -208,6 +208,51 @@ env vars are absent — unrelated to app code).
     since this runs by hand every few years and the PNGs are committed.
     The path data is duplicated there and in the three asset files — the header
     comment in `Logo.tsx` lists all of them.
+  - **Public search rebuilt on Postgres full text** — the weakest system on the
+    site. It was `ILIKE '%q%'` over title + excerpt only, which meant **article
+    bodies were never searchable**: a reader looking for a phrase that appears in
+    paragraph three got nothing back. Results were also ordered by
+    `published_at` rather than relevance, capped at 8/6/6 with no paging, unable
+    to use an index (leading wildcard), and the query was interpolated straight
+    into the PostgREST `.or()` filter, so a comma malformed it.
+    - **`supabase/migrations/20260731120000_content_search.sql`** adds a weighted
+      generated `search_vector` (title A, excerpt/destination B, body C) to
+      `articles`, `knowledge_articles` and `missions`, GIN indexes over each,
+      `pg_trgm` indexes, and two functions: `search_content()` (ranked, all three
+      types in one round trip) and `search_content_fuzzy()` ("did you mean").
+      Article and knowledge bodies are HTML, so tags are stripped before indexing
+      — otherwise every article matches "div".
+    - **The injection class is gone by construction**: `websearch_to_tsquery`
+      takes the query as a bound parameter, never as SQL text. It also never
+      raises on malformed input and understands quoted phrases, `OR` and
+      leading `-`.
+    - **Deploy order does not matter.** `search.ts` falls back to the old ILIKE
+      path when the functions are absent (`isMissingFunction` distinguishes
+      "migration not run" from a real failure, so an outage is never silently
+      downgraded). The legacy path also now escapes the filter metacharacters it
+      used to splice in raw.
+    - **Validated against a real Postgres 16**, not by inspection: 50,003 rows
+      seeded locally. Body-only match found (3 results where the old query
+      returned 1), drafts excluded, HTML tags not indexed, ranking correct,
+      comma/hostile input safe, and `EXPLAIN` confirms `Bitmap Index Scan on
+      articles_search_vector_idx` at 0.13 ms.
+    - **Two things the measurements changed.** The fuzzy fallback first used
+      `similarity()`, which compares the query against the *whole* title — a
+      short typo scored against a long headline fell under the threshold and
+      matched nothing, so "Starshp" never found "Starship". `word_similarity`
+      (`<%`) scores against the best-matching word instead and gets 0.75. And
+      cost scales with *matched* rows at ~3.3 µs each (2 matches 0.57 ms, 10k
+      matches 37 ms, 50k 166 ms) — inherent to ordering by relevance, since
+      every match must be scored before the LIMIT applies. Documented in the
+      migration header with the threshold for revisiting; deliberately **not**
+      "fixed" by truncating candidates, which would silently return something
+      other than the best matches.
+    - 9 new unit tests on the pure row mapping (334 total).
+  - **`⌘K` badge removed.** The nav advertised a shortcut nothing bound — the
+    only Cmd+K handler in the codebase is the admin editor's link insert. A real
+    palette is now unblocked by the search work above, but a visible promise the
+    product does not keep is worse than no badge. The `.nav-kbd` rule in
+    `styles/responsive.css` went with it; it never matched the element anyway.
   - **Global 404 + error boundaries.** `app/not-found.tsx`, `app/error.tsx` and
     `app/global-error.tsx`. Previously only `app/articles/not-found.tsx` existed,
     so every other bad URL — and any render failure — landed on Next's unstyled
