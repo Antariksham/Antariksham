@@ -65,7 +65,11 @@ while `app/sitemap.ts:15` derived its base from `siteConfig.url` — two copies 
 the same fact, which had already drifted. This is the class of drift §6 exists to
 prevent, and it was a one-file change.
 
-### 4. There is no global 404 or error page
+### 4. There is no global 404 or error page — ✅ FIXED
+
+> Done. `app/not-found.tsx`, `app/error.tsx` and `app/global-error.tsx` now
+> exist, branded and theme-aware. Original writeup kept for the record:
+
 
 `app/articles/not-found.tsx` exists. `app/not-found.tsx`, `app/error.tsx` and
 `app/global-error.tsx` do not. So any mistyped URL, any dead inbound link, and

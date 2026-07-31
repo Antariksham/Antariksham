@@ -89,11 +89,16 @@ export function Navbar() {
       )}
 
       <style>{`
-        @media (min-width: 900px) {
+        /* 1100, not 900. The full desktop row is logo + wordmark + six links +
+           the search pill + the toggle; below about 1080px they collide — the
+           wordmark ran into "ARTICLES" and at 900px the toggle was clipped off
+           the right edge. The compact row handles that band comfortably, so it
+           owns everything up to 1100. */
+        @media (min-width: 1100px) {
           .mobile-nav { display: none !important; }
           .desktop-nav { display: flex !important; }
         }
-        @media (max-width: 899px) {
+        @media (max-width: 1099px) {
           .mobile-nav { display: flex !important; }
           .desktop-nav { display: none !important; }
         }
@@ -105,7 +110,7 @@ export function Navbar() {
            mark being pushed off the left edge. */
         .site-nav  { padding: 0 32px; }
         .nav-menu  { padding: 24px 32px; }
-        @media (max-width: 899px) {
+        @media (max-width: 1099px) {
           .site-nav { padding: 0 1.5rem; }
           .nav-menu { padding: 24px 1.5rem; }
         }

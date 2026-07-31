@@ -175,6 +175,14 @@ a { color: inherit; text-decoration: none; }
 .font-mono  { font-family: var(--font-mono); }
 .font-sans  { font-family: var(--font-sans); }
 
+/* Visible to screen readers, not to the eye. For labels that would be redundant
+   next to an obvious control but that assistive tech still needs. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
 .page-container {
   max-width: var(--max-width);
   margin:    0 auto;
@@ -365,9 +373,12 @@ a { color: inherit; text-decoration: none; }
 
 /* hero */
 .home-hero { background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+/* Tint and border go through --accent-rgb so they follow the theme. They used
+   to hardcode the dark-mode accent, which left the badge wearing a dark-blue
+   tint in light mode while its text flipped to the light-mode blue. */
 .hero-badge {
-  display: inline-block; background: rgba(79,142,247,0.15); color: var(--accent);
-  border: 1px solid rgba(79,142,247,0.3); padding: 0.3rem 0.8rem; border-radius: 20px;
+  display: inline-block; background: rgba(var(--accent-rgb), 0.15); color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb), 0.3); padding: 0.3rem 0.8rem; border-radius: 20px;
   font-family: var(--font-sans); font-size: 0.8rem; font-weight: 600;
   letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;
 }

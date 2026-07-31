@@ -208,6 +208,34 @@ env vars are absent — unrelated to app code).
     since this runs by hand every few years and the PNGs are committed.
     The path data is duplicated there and in the three asset files — the header
     comment in `Logo.tsx` lists all of them.
+  - **Global 404 + error boundaries.** `app/not-found.tsx`, `app/error.tsx` and
+    `app/global-error.tsx`. Previously only `app/articles/not-found.tsx` existed,
+    so every other bad URL — and any render failure — landed on Next's unstyled
+    default with no nav, no theme and no way back.
+    - The 404 and error pages render inside the root layout, so they inherit the
+      chrome for free, and both use the shared classes (`.container`,
+      `.hero-badge`, `.page-title`, `.page-lede`, `.btn*`).
+    - **The 404 deliberately makes no database call.** The likeliest reason
+      someone is on an error surface is that something is already broken; a page
+      that needs Supabase to render can fail in exactly the case it exists for.
+      A no-JS `GET` form to `/search` plus links driven off `mainNav` (so a new
+      section appears automatically) are enough and cannot break.
+    - `global-error.tsx` replaces the root layout, so it ships its own
+      `<html>/<body>` and writes every colour as `var(--token, <dark value>)` —
+      if the stylesheet is part of what failed it still renders in brand colours.
+      With no theme script there is no saved choice to honour, so dark is the
+      right fallback; rule 2 does not apply to that one page.
+    - Added a `.sr-only` utility, which the design system was missing.
+  - **`.hero-badge` did not theme.** It hardcoded `rgba(79,142,247,…)` — the
+    *dark* accent — for its tint and border while its text used `var(--accent)`,
+    so in light mode the badge kept a dark-blue tint under light-blue text.
+    Routed through `--accent-rgb`, which already existed and flips per theme.
+    Affects all seven usages including the homepage hero.
+  - **Desktop nav was overcrowded from 900–1080px** (pre-existing). The full row
+    is logo + wordmark + six links + search pill + toggle; below ~1080px the
+    wordmark collided with "ARTICLES" and at 900px the toggle was clipped off the
+    right edge. The desktop breakpoint moved 900 → 1100, so that band gets the
+    compact row, which fits it comfortably.
   - **The browser tab still showed Vercel's triangle.** `app/favicon.ico` was
     still the untouched `create-next-app` default (25.9 KB, 16/32/48/256 BMP
     entries), and **Chrome prefers `favicon.ico` over `icon.svg`** — so adding
