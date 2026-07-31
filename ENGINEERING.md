@@ -208,6 +208,21 @@ env vars are absent — unrelated to app code).
     since this runs by hand every few years and the PNGs are committed.
     The path data is duplicated there and in the three asset files — the header
     comment in `Logo.tsx` lists all of them.
+  - **Mobile nav fixes (from a real device, not a simulator).** Two things the
+    desktop view hid. (1) The bar hardcoded `padding: 0 32px` while every page's
+    content sits in `.container` at `1.5rem` (24px), so the logo was indented 8px
+    further than the headline under it — on a 360px phone that reads as the mark
+    being shoved off the left edge. Padding moved into `.site-nav` and matched to
+    `.container` below the 900px breakpoint. (2) The wordmark was being hidden
+    under 430px, so phones showed a bare mark and never the name. Replaced with
+    fluid sizing — `Logo` now accepts a CSS length as well as a number, and the
+    nav passes `clamp()` for mark, wordmark and gap — plus 36px mobile controls
+    with a 6px gap, which reclaims the ~10px that makes the full lockup fit at
+    320px. **The wordmark is never hidden at any width.** Verified in-browser at
+    320/360/375/412/820/1280.
+    Also worth knowing: `.page-container`, which `styles/responsive.css` still
+    targets with mobile padding rules, is **used by no component** — those rules
+    are dead. `.container` is the real one.
   - **Gotcha worth remembering:** React HTML-escapes `>` inside
     ``<style>{`…`}</style>``, so the responsive rule hiding the wordmark on
     narrow phones shipped as `.nav-logo &gt; span` and silently never matched.

@@ -28,11 +28,18 @@
  */
 
 export interface LogoProps {
-  /** Rendered width and height in px. Default 28. */
-  size?: number
+  /**
+   * Width and height of the mark. A number is treated as px; a string is used
+   * as a raw CSS length, so callers can pass a fluid value like
+   * `clamp(24px, 7vw, 30px)` and have the mark scale with the viewport.
+   */
+  size?: number | string
   className?: string
   style?: React.CSSProperties
 }
+
+/** Numbers mean px; strings are already CSS lengths (clamp(), rem, …). */
+const toLength = (v: number | string) => (typeof v === 'number' ? `${v}px` : v)
 
 /** Left blade of the "A" — apex to the lower-left foot. */
 const BLADE_LEFT  = 'M50 5C44.5 32 33 62 7 92L28 84C48 56 50.5 30 50 5Z'
@@ -49,14 +56,17 @@ const STAR  = 'M50 58C50.4 62.2 53.4 64.6 56.5 65C53.4 65.4 50.4 67.8 50 72C49.6
  * link that wraps it. Pass `title` when it appears without adjacent text.
  */
 export function LogoMark({ size = 28, className, style, title }: LogoProps & { title?: string }) {
+  const length = toLength(size)
   return (
     <svg
-      width={size}
-      height={size}
+      // Sized through CSS so a fluid length works; the width/height attributes
+      // stay as a numeric fallback for the plain-number case.
+      width={typeof size === 'number' ? size : undefined}
+      height={typeof size === 'number' ? size : undefined}
       viewBox="0 0 100 100"
       fill="currentColor"
       className={className}
-      style={{ display: 'block', flexShrink: 0, ...style }}
+      style={{ display: 'block', flexShrink: 0, width: length, height: length, ...style }}
       role={title ? 'img' : undefined}
       aria-hidden={title ? undefined : true}
       focusable="false"
@@ -78,14 +88,21 @@ export function LogoMark({ size = 28, className, style, title }: LogoProps & { t
 export function Logo({
   size = 26,
   wordmarkSize = 22,
+  gap = 10,
   showWordmark = true,
   className,
   style,
-}: LogoProps & { wordmarkSize?: number; showWordmark?: boolean }) {
+}: LogoProps & {
+  /** Font size of the wordmark. Number = px, string = raw CSS length. */
+  wordmarkSize?: number | string
+  /** Space between mark and wordmark. Number = px, string = raw CSS length. */
+  gap?: number | string
+  showWordmark?: boolean
+}) {
   return (
     <span
       className={className}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: 'var(--white)', ...style }}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: toLength(gap), color: 'var(--white)', ...style }}
     >
       <LogoMark size={size} />
       {showWordmark && (
@@ -96,7 +113,7 @@ export function Logo({
           className="logo-wordmark"
           style={{
             fontFamily:    'var(--font-sans)',
-            fontSize:      `${wordmarkSize}px`,
+            fontSize:      toLength(wordmarkSize),
             fontWeight:    600,
             // The wordmark in the source logo is widely tracked — that spacing
             // is part of the mark, not a typographic accident.
