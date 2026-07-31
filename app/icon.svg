@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!--
+    Favicon. Next.js picks this up by file convention and emits the <link rel="icon">.
+    app/favicon.ico stays alongside it as the legacy fallback for old browsers.
+
+    Unlike components/brand/Logo.tsx this bakes in its colours: a standalone .svg
+    served as an image cannot read the site's CSS variables, and a browser tab
+    strip is not the page — it is light in most desktop themes, so a bare white
+    mark would disappear there. The dark plate is the brand's own background, so
+    the icon reads on any tab strip. Values match --black (dark) and --white (dark)
+    from styles/globals.css; keep them in sync by hand if the palette moves.
+  -->
+  <rect width="100" height="100" rx="22" fill="#0a0a0f"/>
+  <g fill="#ffffff" transform="translate(12 12) scale(0.76)">
+    <path d="M50 5C44.5 32 33 62 7 92L28 84C48 56 50.5 30 50 5Z"/>
+    <path d="M50 5C55.5 32 67 62 93 92L72 84C52 56 49.5 30 50 5Z"/>
+    <path d="M24 83Q52 101 80 80Q52 92 24 83Z"/>
+    <path d="M50 58C50.4 62.2 53.4 64.6 56.5 65C53.4 65.4 50.4 67.8 50 72C49.6 67.8 46.6 65.4 43.5 65C46.6 64.6 49.6 62.2 50 58Z"/>
+  </g>
+</svg>

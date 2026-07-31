@@ -32,7 +32,6 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       siteName: siteConfig.name,
       locale: siteConfig.locale,
       type: 'website',
-      images: [siteConfig.seo.defaultImage],
     },
     twitter: {
       card: siteConfig.seo.twitterCard,

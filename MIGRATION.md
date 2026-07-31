@@ -131,6 +131,41 @@ collection when Supabase env vars are absent — unrelated to app code).
   pattern everywhere else — cards, missions detail, learn thumbnails), so any
   external / admin-entered URL loads directly with no host allow-list to maintain.
 
+- ✅ **Brand logo wired in site-wide** — the site had no mark anywhere: the nav
+  and footer were a text wordmark, and `config/site.ts` pointed every share card
+  and the Organization JSON-LD `logo` at `/images/og-default.jpg`, a file that
+  was never in the repo.
+  - **`components/brand/Logo.tsx`** — the mark drawn as inline SVG (four paths in
+    a 100×100 viewBox: two tapered blades, a base arc, a four-point star in the
+    counter). Every path is `fill="currentColor"`, so it inherits `var(--white)`
+    and is white in dark mode / near-black in light mode from one definition —
+    a white-on-black raster would have been invisible in light mode (rules 1
+    and 2). Exports `LogoMark` (mark only) and `Logo` (mark + wordmark); the
+    wordmark is real text in the sans stack, not outlines, so it stays crisp and
+    selectable. Wired into `Navbar` and `Footer`.
+  - **`app/icon.svg`** — favicon by Next file convention (Next emits it
+    alongside the existing `favicon.ico` fallback). This one bakes its colours
+    on a dark plate: a standalone `.svg` served as an image cannot read CSS
+    variables, and a bare white mark would vanish on a light browser tab strip.
+    `public/logo.svg` is the same treatment as a standalone asset, and is now
+    what `siteConfig.seo.logo` points the Organization JSON-LD at.
+  - **`app/opengraph-image.tsx`** — generates the 1200×630 share card
+    (`ImageResponse`), replacing the missing `og-default.jpg`. The eight pages
+    that hardcoded `images: [siteConfig.seo.defaultImage]` had that line removed
+    so they inherit it, and the root layout gained the `openGraph`/`twitter`
+    defaults it never had — previously the homepage shared as a bare link with
+    no image, no `og:site_name` and no card type.
+  - **Gotcha worth remembering:** React HTML-escapes `>` inside
+    ``<style>{`…`}</style>``, so the responsive rule hiding the wordmark on
+    narrow phones shipped as `.nav-logo &gt; span` and silently never matched.
+    Fixed by giving the wordmark a `logo-wordmark` class and using a descendant
+    selector. Verified in a headless browser at 360/420/440px (mark alone below
+    430px, full lockup above) — note Chromium clamps `--window-size` to a
+    minimum width, so narrow breakpoints must be tested in a sized iframe.
+  - Also tokenised two hardcoded `#4f8ef7` values in the footer brand block
+    touched by this change (light mode's accent is `#2563eb`, so they did not
+    theme). 325 tests pass; lint unchanged at the same 8 pre-existing warnings.
+
 - ✅ **Admin missions could not be saved/deleted**: `MissionForm` and
   `MissionRowActions` POST/PATCH/DELETE to `/api/admin/missions`, but that route
   handler never existed — every save hit a 404 HTML page, `res.json()` threw, and
@@ -1481,11 +1516,12 @@ bad migration is a one-line revert.
 > **See also [`docs/NEXT-STEPS.md`](./docs/NEXT-STEPS.md)** — a prioritised
 > outside-in review of the site (Tier 0 broken things → Tier 3 growth). This
 > section tracks follow-ups to features already built; that file asks where the
-> site is weakest overall. It flags several items not listed here, including a
-> missing `/images/og-default.jpg` that breaks eight pages' share cards and the
-> Organization logo in every article's JSON-LD, a `robots.txt` still hardcoded to
-> the old domain, no global 404/error page, no `next/image` (0 of 39 `<img>` tags
-> declare `width`/`height`), and public search that never looks at article bodies.
+> site is weakest overall. Its Tier 0 items on the missing default share image
+> and the absent root Open Graph defaults are now **done** (see §2, brand logo).
+> Still open there: `robots.txt` hardcoded to the old domain, no global
+> 404/error page, the decorative `⌘K` badge that binds nothing, no `next/image`
+> (0 of 39 `<img>` tags declare `width`/`height`), and a public search that
+> never looks at article bodies.
 
 **Mission Management System upgrade (Phase 1) — COMPLETE (all 8 features, see
 §2).** The Mission module is now a professional, extensible data model. Natural

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { siteConfig } from '@/config/site'
 import { mainNav } from '@/config/navigation'
+import { Logo } from '@/components/brand/Logo'
 import { ThemeToggle } from './ThemeToggle'
 
 export function Navbar() {
@@ -13,11 +14,15 @@ export function Navbar() {
     <>
       <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', background: 'var(--nav-bg)', backdropFilter: 'blur(24px)', borderBottom: '1px solid var(--border)' }}>
 
-        {/* LOGO — no .org */}
-        <Link href="/" className="press" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
-          <span style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 700, color: 'var(--white)', letterSpacing: '0.02em' }}>
-            {siteConfig.name}
-          </span>
+        {/* LOGO — mark + wordmark, no .org. Both inherit var(--white), so the
+            mark is white in dark mode and near-black in light mode. */}
+        <Link
+          href="/"
+          className="press"
+          aria-label={`${siteConfig.name} — home`}
+          style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}
+        >
+          <Logo size={30} wordmarkSize={21} className="nav-logo" />
         </Link>
 
         {/* DESKTOP NAV */}
@@ -79,6 +84,13 @@ export function Navbar() {
         @media (max-width: 899px) {
           .mobile-nav { display: flex !important; }
           .desktop-nav { display: none !important; }
+        }
+        /* On the narrowest phones the wordmark plus three controls overflow the
+           64px bar — drop to the mark alone, which still identifies the site.
+           Descendant selector, not "＞": React escapes that character inside a
+           <style> template literal and the rule would never match. */
+        @media (max-width: 430px) {
+          .nav-logo .logo-wordmark { display: none; }
         }
       `}</style>
     </>

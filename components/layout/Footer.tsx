@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 import { footerNav } from '@/config/navigation'
+import { Logo } from '@/components/brand/Logo'
 
 export function Footer() {
   const year = new Date().getFullYear()
@@ -11,10 +12,11 @@ export function Footer() {
 
         {/* BRAND */}
         <div style={{ marginBottom: '40px', paddingBottom: '40px', borderBottom: '1px solid rgba(var(--ink),0.08)' }}>
-          <div style={{ fontFamily: 'var(--font-sans)', fontSize: '26px', fontWeight: 700, color: 'var(--white)', marginBottom: '6px' }}>
-            {siteConfig.name}<span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: '#4f8ef7', marginLeft: '2px' }}>{siteConfig.tld}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '8px' }}>
+            <Logo size={34} wordmarkSize={25} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', color: 'var(--accent)' }}>{siteConfig.tld}</span>
           </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', opacity: 0.8, marginBottom: '16px' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', opacity: 0.8, marginBottom: '16px' }}>
             {siteConfig.positioning}
           </div>
           <p style={{ fontSize: '15px', color: 'rgba(var(--ink),0.75)', lineHeight: 1.7, maxWidth: '440px', marginBottom: '0' }}>

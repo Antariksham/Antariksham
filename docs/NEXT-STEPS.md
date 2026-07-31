@@ -13,7 +13,13 @@ Every claim here was checked against the source. File references are exact.
 
 Small fixes, disproportionate impact. Do these first; none takes long.
 
-### 1. The default social-share image does not exist
+### 1. The default social-share image does not exist — ✅ FIXED
+
+> Done. `app/opengraph-image.tsx` now generates the card, `public/logo.svg` backs
+> the Organization JSON-LD via `siteConfig.seo.logo`, and the eight pages below
+> had their hardcoded `images:` line removed so they inherit it. Original
+> writeup kept for the record:
+
 
 `config/site.ts:16` declares `defaultImage: '/images/og-default.jpg'`, but
 `public/images/` **is not a directory** — the file was never added. It is used in
@@ -34,7 +40,11 @@ two places that both matter:
 title, in both themes' palette. That replaces the missing static file *and*
 upgrades every page that currently has no image at all.
 
-### 2. The homepage ships no Open Graph or Twitter metadata
+### 2. The homepage ships no Open Graph or Twitter metadata — ✅ FIXED
+
+> Done. The root layout now carries `openGraph` and `twitter` defaults that every
+> route inherits. Original writeup kept for the record:
+
 
 `app/page.tsx:7-10` sets only `title` and `description`; the root layout
 (`app/layout.tsx:29-36`) sets only `metadataBase`, `title`, `description`. There
