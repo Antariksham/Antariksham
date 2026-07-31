@@ -1478,6 +1478,15 @@ bad migration is a one-line revert.
 
 ## 10. Remaining work / roadmap
 
+> **See also [`docs/NEXT-STEPS.md`](./docs/NEXT-STEPS.md)** — a prioritised
+> outside-in review of the site (Tier 0 broken things → Tier 3 growth). This
+> section tracks follow-ups to features already built; that file asks where the
+> site is weakest overall. It flags several items not listed here, including a
+> missing `/images/og-default.jpg` that breaks eight pages' share cards and the
+> Organization logo in every article's JSON-LD, a `robots.txt` still hardcoded to
+> the old domain, no global 404/error page, no `next/image` (0 of 39 `<img>` tags
+> declare `width`/`height`), and public search that never looks at article bodies.
+
 **Mission Management System upgrade (Phase 1) — COMPLETE (all 8 features, see
 §2).** The Mission module is now a professional, extensible data model. Natural
 follow-ups (not required, but where the foundation is ready):
