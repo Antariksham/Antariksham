@@ -21,7 +21,7 @@
  */
 
 import sharp from 'sharp'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -46,6 +46,10 @@ const svg = ({ px, radius, transform }) => `<svg xmlns="http://www.w3.org/2000/s
 
 // Standard inset, matching app/icon.svg so every icon reads identically.
 const INSET    = 'translate(12 12) scale(0.76)'
+// A browser tab gives the mark 16 physical pixels. At the standard inset only
+// ~10 of them are glyph, which turns to mush, so the favicon gets a tighter
+// inset — the plate still reads, the "A" just fills more of it.
+const TIGHT    = 'translate(8 8) scale(0.84)'
 // Maskable icons get cropped to a circle or squircle by the launcher, so the
 // mark has to sit inside the central 80% safe zone — scale 0.6, re-centred.
 const MASKABLE = 'translate(20 20.9) scale(0.6)'
@@ -72,3 +76,49 @@ for (const { out, px, radius, transform, flatten } of ICONS) {
   if (width !== px || height !== px) throw new Error(`${out}: expected ${px}², got ${width}×${height}`)
   console.log(`${out.padEnd(38)} ${width}×${height}`)
 }
+
+/**
+ * `app/favicon.ico` — the one Chrome actually shows in a tab.
+ *
+ * It takes precedence over `app/icon.svg` in Chrome, so leaving the
+ * create-next-app default here meant the site kept showing Vercel's triangle no
+ * matter what else was declared.
+ *
+ * sharp cannot write ICO, but the container is trivial: a 6-byte header, one
+ * 16-byte directory entry per image, then the image blobs. The entries are
+ * PNG-encoded, which every browser in use has understood for well over a
+ * decade — no need for the legacy BMP encoding.
+ */
+const ICO_SIZES = [16, 32, 48]
+
+const frames = await Promise.all(
+  ICO_SIZES.map(px =>
+    sharp(Buffer.from(svg({ px, radius: 22, transform: TIGHT })))
+      .png({ compressionLevel: 9 })
+      .toBuffer(),
+  ),
+)
+
+const header = Buffer.alloc(6)
+header.writeUInt16LE(0, 0)                 // reserved
+header.writeUInt16LE(1, 2)                 // 1 = icon
+header.writeUInt16LE(frames.length, 4)
+
+let offset = 6 + frames.length * 16
+const entries = frames.map((data, i) => {
+  const e = Buffer.alloc(16)
+  e[0] = ICO_SIZES[i] % 256                // 0 would mean 256
+  e[1] = ICO_SIZES[i] % 256
+  e[2] = 0                                 // palette colours (0 = truecolour)
+  e[3] = 0                                 // reserved
+  e.writeUInt16LE(1,  4)                   // colour planes
+  e.writeUInt16LE(32, 6)                   // bits per pixel
+  e.writeUInt32LE(data.length, 8)
+  e.writeUInt32LE(offset, 12)
+  offset += data.length
+  return e
+})
+
+const icoPath = join(ROOT, 'app/favicon.ico')
+await writeFile(icoPath, Buffer.concat([header, ...entries, ...frames]))
+console.log(`${'app/favicon.ico'.padEnd(38)} ${ICO_SIZES.join(', ')} px`)

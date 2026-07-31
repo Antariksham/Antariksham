@@ -208,6 +208,23 @@ env vars are absent — unrelated to app code).
     since this runs by hand every few years and the PNGs are committed.
     The path data is duplicated there and in the three asset files — the header
     comment in `Logo.tsx` lists all of them.
+  - **The browser tab still showed Vercel's triangle.** `app/favicon.ico` was
+    still the untouched `create-next-app` default (25.9 KB, 16/32/48/256 BMP
+    entries), and **Chrome prefers `favicon.ico` over `icon.svg`** — so adding
+    the SVG changed nothing in the tab. `scripts/generate-icons.mjs` now also
+    emits `app/favicon.ico` from the brand mark: sharp cannot write ICO, so the
+    container is assembled directly (6-byte header, one 16-byte directory entry
+    per image, then PNG-encoded blobs at 16/32/48). 2.7 KB, and it uses a
+    **tighter inset** than the other icons — at 16 physical pixels the standard
+    inset leaves only ~10px of actual glyph, which turns to mush.
+    Also deleted `public/next.svg` and `public/vercel.svg`, unreferenced
+    scaffold leftovers, one of which was literally the Vercel logo.
+    Two traps worth remembering: the **dev server keeps a stale copy** at
+    `.next/server/app/favicon.ico`, so a changed icon appears not to take effect
+    until `.next` is cleared (production builds are unaffected — verified by
+    decoding the base64 Next inlines into the built route). And
+    **`pkill -f "next dev"` kills its own shell**, because the pattern matches
+    the invoking command line — kill by listening port instead.
   - **Mobile nav fixes (from a real device, not a simulator).** Two things the
     desktop view hid. (1) The bar hardcoded `padding: 0 32px` while every page's
     content sits in `.container` at `1.5rem` (24px), so the logo was indented 8px
