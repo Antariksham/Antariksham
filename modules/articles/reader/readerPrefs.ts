@@ -32,9 +32,9 @@ export const LINE_VALUE: Record<LineHeight, number> = { tight: 1.65, normal: 1.9
 /** Reading measure (max column width) in px. */
 export const WIDTH_PX: Record<ReadingWidth, number> = { narrow: 660, default: 740, wide: 860 }
 
-export const PREFS_STORAGE_KEY = 'cosmosdaily.reader.prefs.v1'
-export const BOOKMARKS_STORAGE_KEY = 'cosmosdaily.bookmarks.v1'
-export const POSITION_STORAGE_KEY = 'cosmosdaily.reader.pos.v1'
+export const PREFS_STORAGE_KEY = 'antariksham.reader.prefs.v1'
+export const BOOKMARKS_STORAGE_KEY = 'antariksham.bookmarks.v1'
+export const POSITION_STORAGE_KEY = 'antariksham.reader.pos.v1'
 
 const FONTS: readonly FontSize[] = ['sm', 'base', 'lg', 'xl']
 const LINES: readonly LineHeight[] = ['tight', 'normal', 'relaxed']

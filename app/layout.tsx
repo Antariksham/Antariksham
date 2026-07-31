@@ -9,7 +9,7 @@ import { NavProgress } from '@/components/layout/NavProgress'
 import '@/styles/globals.css'
 import '@/styles/responsive.css'
 
-// CosmosDaily fonts. Merriweather = article reading prose (serif);
+// Site fonts. Merriweather = article reading prose (serif);
 // DM Sans = labels / eyebrows / meta. The UI + headings use a Segoe UI
 // system stack defined in styles/globals.css (--font-sans), so no webfont
 // is downloaded for the body/UI type.
@@ -33,6 +33,26 @@ export const metadata: Metadata = {
     template: siteConfig.seo.titleTemplate,
   },
   description: siteConfig.description,
+  // Social defaults every route inherits. Individual pages override only what
+  // differs (title, description, url); the card image itself comes from
+  // app/opengraph-image.tsx by file convention, so it is deliberately not set
+  // here — naming it would pin every page to one image and defeat per-route
+  // cards later.
+  openGraph: {
+    type:        'website',
+    siteName:    siteConfig.name,
+    locale:      siteConfig.locale,
+    title:       siteConfig.seo.defaultTitle,
+    description: siteConfig.description,
+    url:         siteConfig.url,
+  },
+  twitter: {
+    card:        siteConfig.seo.twitterCard,
+    site:        siteConfig.twitter,
+    creator:     siteConfig.twitter,
+    title:       siteConfig.seo.defaultTitle,
+    description: siteConfig.description,
+  },
 }
 
 export const viewport: Viewport = {

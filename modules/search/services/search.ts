@@ -1,4 +1,11 @@
 import { supabase } from '@/lib/supabase'
+import {
+  groupSearchRows,
+  suggestionsFromFuzzy,
+  isMissingFunction,
+  type SearchRow,
+  type FuzzyRow,
+} from './searchRows'
 
 // ── Result shape types ────────────────────────────────────────
 
@@ -47,10 +54,26 @@ export interface SearchResults {
   learn:     SearchLearnResult[]
   total:     number
   query:     string
+  /** "Did you mean" terms, only populated when the search itself found nothing. */
+  suggestions?: string[]
 }
 
 // ── Main search function ──────────────────────────────────────
 
+/**
+ * Full-text search across articles, missions and knowledge articles.
+ *
+ * Runs through the `search_content` RPC added in
+ * supabase/migrations/20260731120000_content_search.sql, which searches article
+ * BODIES (not just titles and excerpts), ranks by relevance rather than date,
+ * and takes the query as a bound parameter instead of splicing it into a filter
+ * string.
+ *
+ * Falls back to the previous ILIKE query when that function is not present, so
+ * deploying this code before running the migration degrades to the old
+ * behaviour instead of breaking search — the same tolerance used for
+ * `thumbnail`, `details` and `featured_image_meta` elsewhere.
+ */
 export async function search(query: string): Promise<SearchResults> {
   const q = query.trim()
 
@@ -58,7 +81,42 @@ export async function search(query: string): Promise<SearchResults> {
     return { articles: [], missions: [], learn: [], total: 0, query: q }
   }
 
-  const pattern = `%${q}%`
+  const { data, error } = await supabase.rpc('search_content', { q, max_results: 30 })
+
+  if (!error) {
+    const results = groupSearchRows((data ?? []) as SearchRow[], q)
+
+    // Only pay for the trigram scan when full text found nothing at all.
+    if (results.total === 0) {
+      const { data: fuzzy, error: fuzzyError } = await supabase
+        .rpc('search_content_fuzzy', { q, max_results: 10 })
+      if (!fuzzyError && fuzzy) {
+        results.suggestions = suggestionsFromFuzzy(fuzzy as FuzzyRow[])
+      }
+    }
+    return results
+  }
+
+  if (!isMissingFunction(error)) {
+    // A real failure (RLS, network, timeout) — report it, then still try the
+    // legacy path so the page shows something rather than nothing.
+    console.error('search_content rpc error:', error)
+  }
+
+  return legacySearch(q)
+}
+
+// ── Legacy ILIKE search ───────────────────────────────────────
+//
+// Kept only as the fallback described above. It searches title + excerpt only
+// and orders by date, so it cannot find a phrase that appears in an article
+// body. Delete it once the migration has been applied everywhere.
+
+async function legacySearch(q: string): Promise<SearchResults> {
+  // Escape the PostgREST filter metacharacters. The original code interpolated
+  // `q` raw, so a comma split the .or() string into extra conditions and a
+  // search for "Apollo 11, 12" failed outright.
+  const pattern = `%${q.replace(/[,()\\]/g, ' ')}%`
 
   // Run all 3 queries in parallel
   const [articlesRes, missionsRes, learnRes] = await Promise.all([

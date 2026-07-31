@@ -47,12 +47,22 @@ export function APODSection({ apod }: Props) {
       <div style={{ maxWidth: '900px', margin: '0 auto', padding: 'clamp(32px,5vw,56px) clamp(20px,5vw,48px)' }}>
 
         {/* Image or Video */}
+        {/* aspect-ratio reserves the box before the bytes land. This image was
+            `height: auto` with nothing to compute a height from, so the whole
+            page below it jumped once NASA's (often very large) photo arrived.
+            16/9 is a presentational choice, not a claim about the source: the
+            image is object-fit: cover inside it, exactly as before. */}
         {apod.mediaType === 'image' ? (
-          <div style={{ width: '100%', borderRadius: '16px', overflow: 'hidden', marginBottom: '36px', background: 'var(--panel)' }}>
+          <div style={{
+            width: '100%', aspectRatio: '16 / 9', maxHeight: '70vh',
+            borderRadius: '16px', overflow: 'hidden', marginBottom: '36px',
+            background: 'var(--panel)',
+          }}>
             <img
               src={apod.hdurl || apod.url}
               alt={apod.title}
-              style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '70vh', objectFit: 'cover' }}
+              decoding="async"
+              style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }}
             />
           </div>
         ) : (

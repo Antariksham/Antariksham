@@ -19,7 +19,7 @@
 // tilts thrust toward +x, so rotation.z = -pitch).
 //
 // Loaded only on /lunar-sim via next/dynamic({ ssr: false }) so the
-// WebGL bundle never reaches other routes (MIGRATION.md §10 pattern).
+// WebGL bundle never reaches other routes (ENGINEERING.md §10 pattern).
 // Colors inside the canvas are scene lighting/material constants (a
 // rendered picture, same in both themes), not UI design tokens.
 

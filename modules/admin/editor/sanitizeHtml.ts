@@ -47,7 +47,11 @@ const STRUCTURAL_SPAN_CLASSES = [
 
 const ATTR_ALLOWLIST: Record<string, Set<string>> = {
   a:       new Set(['href', 'title']),
-  img:     new Set(['src', 'alt', 'title', 'loading', 'data-zoomable']),
+  // width/height are the whole point of the CLS fix: with them present the
+  // browser derives an aspect-ratio from the attributes and reserves the right
+  // space before the bytes arrive, even though the CSS says `height: auto`.
+  // Stripping them here would silently undo that.
+  img:     new Set(['src', 'alt', 'title', 'loading', 'decoding', 'width', 'height', 'data-zoomable']),
   iframe:  new Set(['src', 'title', 'allow', 'allowfullscreen']),
   td:      new Set(['colspan', 'rowspan']),
   th:      new Set(['colspan', 'rowspan', 'scope']),

@@ -3,7 +3,7 @@
 import React from 'react'
 
 // Shared chrome + field styles for the admin auth pages (login, forgot, reset).
-// Uses the CosmosDaily tokens so it themes in light/dark like the rest of the site.
+// Reads the design tokens so it themes in light/dark like the rest of the site.
 
 export function AuthShell({
   title,

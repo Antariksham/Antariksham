@@ -9,6 +9,7 @@ import {
   Table as TableIcon, Info, Plus, BookMarked, Waypoints,
 } from 'lucide-react'
 import { sanitizeHtml } from './sanitizeHtml'
+import { probeImageSize, imageSizeAttrs } from './imageDimensions'
 import { EDITOR_BLOCKS, type EditorBlock } from './editorBlocks'
 import { CitationManager } from '@/modules/admin/citations/CitationManager'
 import { LinkAssistant } from '@/modules/admin/links/LinkAssistant'
@@ -17,7 +18,8 @@ import type { Citation, CitationStyle } from '@/modules/admin/citations/citation
 import { HI_SERIF } from '@/lib/i18n'
 
 export interface RichEditorHandle {
-  insertImage: (opts: { src: string; alt?: string; caption?: string; credit?: string }) => void
+  /** Async: probes the image's intrinsic size before inserting (see imageDimensions.ts). */
+  insertImage: (opts: { src: string; alt?: string; caption?: string; credit?: string }) => void | Promise<void>
   focus:       () => void
 }
 
@@ -155,10 +157,18 @@ export const RichEditor = forwardRef<RichEditorHandle, Props>(function RichEdito
     insertHtml(`<div class="embed embed-video"><iframe src="${src}" title="Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p><br></p>`)
   }
 
-  const insertImage = useCallback((opts: { src: string; alt?: string; caption?: string; credit?: string }) => {
+  const insertImage = useCallback(async (opts: { src: string; alt?: string; caption?: string; credit?: string }) => {
+    // Read the intrinsic size first so the figure can carry width/height and the
+    // published article reserves the right space instead of shifting the text
+    // below it when the image loads. Resolves to null on any failure, in which
+    // case the markup is exactly what it used to be.
+    const size = await probeImageSize(opts.src)
+
+    // Restore *after* the await — the range was captured on blur, so the wait
+    // does not lose the caret.
     restoreSelection()
     const cap = [opts.caption, opts.credit && `<span class="credit">${escapeHtml(opts.credit)}</span>`].filter(Boolean).join(' ')
-    const fig = `<figure><img src="${escapeHtml(opts.src)}" alt="${escapeHtml(opts.alt || '')}" loading="lazy">${cap ? `<figcaption>${cap}</figcaption>` : '<figcaption>Add a caption…</figcaption>'}</figure><p><br></p>`
+    const fig = `<figure><img src="${escapeHtml(opts.src)}" alt="${escapeHtml(opts.alt || '')}" loading="lazy" decoding="async"${imageSizeAttrs(size)}>${cap ? `<figcaption>${cap}</figcaption>` : '<figcaption>Add a caption…</figcaption>'}</figure><p><br></p>`
     insertHtml(fig)
   }, [insertHtml])
 

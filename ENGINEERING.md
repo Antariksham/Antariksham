@@ -1,55 +1,92 @@
-# Antariksham → CosmosDaily — Migration & Engineering Guide
+# Antariksham — Engineering Guide
 
-> **Read this first.** It explains what this repo is, what has been done, the
+> **Read this first.** It explains what this repo is, what has been built, the
 > rules that keep the site consistent, how to do common tasks, and what remains.
-> It is written so a new AI agent or developer can continue the migration
-> without re-deriving context.
+> It is written so a new AI agent or developer can pick the project up without
+> re-deriving context.
 
 ---
 
 ## 1. What this project is
 
-Three codebases are being consolidated into **one** production site at
-**`cosmosdaily.space`**, without losing the SEO/design CosmosDaily has earned.
+**Antariksham is an independent space-journalism and knowledge platform**, built
+on Next.js and shipping at **`antariksham.org`**. It is a single, self-contained
+product: one repo, one domain, one design system, answering to nothing else.
 
-| Repo | Role | Fate |
-|---|---|---|
-| `space-website` | The **live** static HTML/CSS/JS site (the design source of truth). | Retires page-by-page. |
-| `cosmosdaily-nextjs` | Early Next.js migration (article route only). | Superseded; rebuilt here. |
-| **`Antariksham`** (this repo) | The **mature Next.js engine** (modules, API proxy, Supabase, admin CMS). | **Becomes production**, reskinned in CosmosDaily's design. |
+What it does today:
 
-**The decision:** Antariksham becomes the only engine going forward, **reskinned
-in CosmosDaily's visual design**. It never launches under its own name — the
-`cosmosdaily.space` domain, URLs, and content are what survive. Rollout is
-page-by-page behind a `vercel.json` rewrite (see §9), each page verified in
-Google Search Console for 1–2 weeks before the next.
+| Surface | What it is |
+|---|---|
+| **Articles** | Original space journalism with a full editorial CMS — rich block editor, live preview, scheduling, SEO workspace, citations, analytics. |
+| **Missions** | A structured mission database (identity, classification, specifications, objectives, timeline, launch info, media) with public mission pages. |
+| **Learn** | An educational knowledge engine, Merriweather-set for long reading. |
+| **Live** | Real-time surfaces — ISS tracker, launch schedule, deep-space telemetry, NASA APOD — SSR fallback plus client refresh through an `/api/*` proxy. |
+| **Explore** | Solar-system orrery, Sky Tonight, curated topic hubs. |
+| **Gallery** | NASA image library browser and the APOD archive. |
+| **Lunar Sim** | The SELENE C++ flight software compiled to WebAssembly, with a Three.js descent visualisation. |
+| **Admin** | Supabase-auth CMS behind `/admin` — articles, missions, learn, media library, taxonomy, analytics. |
 
-The full strategy lives in the uploaded **CosmosDaily Engine Migration Plan**
-(the four phases: Reskin → Data Migration → URL/Metadata Parity & Cutover →
-Advanced Features). This guide is the engineering companion to that plan.
+Content is bilingual-capable (English + Hindi) on articles, learn and missions.
+
+**A note on history.** This repo previously carried a plan to reskin the engine
+into another site's design and launch under that site's domain. **That plan is
+cancelled.** There is no cutover, no rewrite proxy, no data import from another
+project, and no other domain — nothing points anywhere else. The visual design
+that came out of that period is simply Antariksham's design now, and the
+engineering history below is kept because it is real history of this codebase.
+References to the old plan have been removed from the code; anything still
+mentioning it in `styles/themes/antariksham-black.css` is left alone on purpose,
+because that file is a frozen archive (§8).
 
 ---
 
 ## 2. Current status (what's DONE)
 
-Work happens on branch **`claude/understand-target-codebase-ecpqrw`** → PR **#20**
-(draft) against `main`. Every change builds (`next build` compiles; the only
-build error is a pre-existing `supabaseUrl is required` during page-data
-collection when Supabase env vars are absent — unrelated to app code).
+Every change builds (`next build` compiles; the only build error is a
+pre-existing `supabaseUrl is required` during page-data collection when Supabase
+env vars are absent — unrelated to app code).
 
-**Phase 1 (Reskin) — essentially complete:**
-- ✅ **Design tokens & full color migration** to CosmosDaily's palette. Antariksham's
-  CSS variable *names* were kept; only *values* were swapped, and every hardcoded
-  color across ~50 files was routed to tokens.
-- ✅ **CosmosDaily class system ported** into `styles/globals.css` (`.container`,
+- ✅ **Cut loose from the cancelled migration — the site is independent.** The
+  repo used to be organised around reskinning this engine and launching it under
+  another project's domain. That is off; Antariksham ships as itself at
+  `antariksham.org`, with no cutover, no rewrite proxy, no data import and
+  nothing pointing anywhere else.
+  - **Dead machinery deleted**: `scripts/migrate-cosmosdaily-articles.mjs` and
+    its runbook, plus the §9 staged-cutover mechanism (§9 is now *Deployment*,
+    keeping the number so the dozens of `§4`/`§5`/`§6`/`§10` cross-references
+    scattered through the code did not have to be renumbered).
+  - **`MIGRATION.md` → `ENGINEERING.md`** — there is no migration to document.
+    All ~13 cross-references in code comments and SQL were updated with it.
+  - **One source of truth for the domain**: `public/robots.txt` carried a second
+    hardcoded copy that had already drifted, and is replaced by `app/robots.ts`
+    deriving from `siteConfig.url`. Now a rule in CLAUDE.md (#9).
+  - **`SITE_HOSTS`** in `modules/admin/publish/analyzeContent.ts` — the editor's
+    internal-vs-external link test — no longer lists a foreign domain.
+  - **Storage keys renamed** `cosmosdaily.*` → `antariksham.*` (8 keys: reader
+    prefs, bookmarks, reading position, analytics visitor/session, lunar-sim
+    scoreboard, admin saved filters, citation library). Deliberately **no
+    migration shim**: `localStorage` is per-origin, so moving to the real domain
+    resets it regardless of key names — a shim would have protected nothing.
+  - **Brand naming swept** out of `styles/globals.css` comments, `test/seed-articles.sql`
+    ("Antariksham Staff"), and two code comments. `.cd-hero` → `.home-hero`;
+    the other `.cd-*` classes were **left alone** because there `cd` means
+    *countdown* (they are scoped under `.article-body .countdown`), not the old
+    brand — a blind rename would have broken the countdown block.
+  - Left untouched on purpose: the `/news → /articles` 301s in `next.config.js`
+    (Antariksham's own URL history) and `styles/themes/antariksham-black.css`
+    (frozen archive, §8 — its one mention is accurate history).
+
+**Foundation — complete:**
+- ✅ **Design tokens & full colour system.** Every hardcoded colour across ~50
+  files was routed to CSS variable tokens in `styles/globals.css`.
+- ✅ **Shared class system** in `styles/globals.css` (`.container`,
   `.section`, `.card`, `.grid-3`, `.btn*`, `.page-header`, `.page-title`,
   `.prose`, `.tag`, `.hero-badge`, etc.).
 - ✅ **Every public page rebuilt on that system**: homepage, `/articles`, `/missions`,
   `/live` hub, `/live/deep-space`, `/search`, article & learn reading pages, all
   static/legal pages, nav, footer.
 - ✅ **Typography**: sans (Segoe UI stack) for UI/headings/cards; **Merriweather
-  serif reserved for article & learn reading bodies only** (exactly how
-  CosmosDaily uses type).
+  serif reserved for article & learn reading bodies only**.
 - ✅ **Universal light/dark theme toggle** (nav, every page, `localStorage`,
   no-flash). See §5.
 - ✅ **Legibility pass**: small label sizes and low text-contrast raised across the
@@ -85,7 +122,7 @@ collection when Supabase env vars are absent — unrelated to app code).
   variance, gate pitch — new `WebScenarioConfig` fields in the FSW repo's
   `wasm/selene_wasm.cpp`; ranges validated by Monte Carlo against the FSW).
   A **localStorage scoreboard** (`services/missionStats.ts`,
-  `cosmosdaily.lunar-sim.stats.v1`: total_attempts / safe_landings / crashes)
+  `antariksham.lunar-sim.stats.v1`: total_attempts / safe_landings / crashes)
   records each touchdown verdict and drives a hydration-safe **success-rate
   widget** in the telemetry grid.
 - ✅ **Launch Tracker "Next Launch" card theming fix**: the featured card's
@@ -130,6 +167,249 @@ collection when Supabase env vars are absent — unrelated to app code).
   cards (plain `<img>`) worked. Converted both to plain `<img>` (the site's house
   pattern everywhere else — cards, missions detail, learn thumbnails), so any
   external / admin-entered URL loads directly with no host allow-list to maintain.
+
+- ✅ **Brand logo wired in site-wide** — the site had no mark anywhere: the nav
+  and footer were a text wordmark, and `config/site.ts` pointed every share card
+  and the Organization JSON-LD `logo` at `/images/og-default.jpg`, a file that
+  was never in the repo.
+  - **`components/brand/Logo.tsx`** — the mark drawn as inline SVG (four paths in
+    a 100×100 viewBox: two tapered blades, a base arc, a four-point star in the
+    counter). Every path is `fill="currentColor"`, so it inherits `var(--white)`
+    and is white in dark mode / near-black in light mode from one definition —
+    a white-on-black raster would have been invisible in light mode (rules 1
+    and 2). Exports `LogoMark` (mark only) and `Logo` (mark + wordmark); the
+    wordmark is real text in the sans stack, not outlines, so it stays crisp and
+    selectable. Wired into `Navbar` and `Footer`.
+  - **`app/icon.svg`** — favicon by Next file convention (Next emits it
+    alongside the existing `favicon.ico` fallback). This one bakes its colours
+    on a dark plate: a standalone `.svg` served as an image cannot read CSS
+    variables, and a bare white mark would vanish on a light browser tab strip.
+    `public/logo.svg` is the same treatment as a standalone asset, and is now
+    what `siteConfig.seo.logo` points the Organization JSON-LD at.
+  - **`app/opengraph-image.tsx`** — generates the 1200×630 share card
+    (`ImageResponse`), replacing the missing `og-default.jpg`. The eight pages
+    that hardcoded `images: [siteConfig.seo.defaultImage]` had that line removed
+    so they inherit it, and the root layout gained the `openGraph`/`twitter`
+    defaults it never had — previously the homepage shared as a bare link with
+    no image, no `og:site_name` and no card type.
+  - **Installable PWA + iOS home screen** — `app/manifest.ts` (served at
+    `/manifest.webmanifest`) with name/description from `siteConfig`,
+    `display: standalone` and a dark `theme_color`, since a manifest gets one
+    colour and the brand's ground is the dark one. Icons are committed PNGs, not
+    the SVGs used elsewhere: iOS ignores SVG for `apple-touch-icon` and Chrome's
+    installability check still wants raster 192/512. The **maskable** icon is a
+    separate file rather than the same one relabelled — launchers crop maskable
+    icons to a circle/squircle, so it is drawn full-bleed with the mark pulled
+    into the central 80% safe zone (verified against both crops).
+    `app/apple-icon.png` is flattened, because iOS composites transparency onto
+    black and the rounded corners would fringe.
+    `scripts/generate-icons.mjs` rasterises all four; **sharp is deliberately not
+    a dependency** (`npm i --no-save sharp && node scripts/generate-icons.mjs`)
+    since this runs by hand every few years and the PNGs are committed.
+    The path data is duplicated there and in the three asset files — the header
+    comment in `Logo.tsx` lists all of them.
+  - **`next/image` back on, safely** (`components/ui/SmartImage.tsx`,
+    `config/images.ts`). It had been removed because with no
+    `images.remotePatterns` the optimiser answers **400 for every external host**,
+    so admin-entered featured images simply broke. The answer is not a wildcard:
+    `hostname: '**'` makes the site an open image proxy anyone can push arbitrary
+    URLs through, resized on the site's own Vercel bill.
+    - `SmartImage` optimises when the host is allow-listed (Supabase Storage,
+      Cloudinary, same-origin) and renders a plain `<img>` otherwise — i.e.
+      exactly today's behaviour for anything it cannot safely handle. It is the
+      **only** `next/image` importer in the codebase, so the fallback lives in
+      one place.
+    - The allow-list is **derived from environment variables on both sides**:
+      `next.config.js` builds `remotePatterns` from `NEXT_PUBLIC_SUPABASE_URL`
+      and `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, and `config/images.ts` runs the
+      matching check at render time from the same two. They cannot drift, and
+      drift here would mean a 400 on a live image — the original failure.
+    - Applied to all seven `.card-image` renders (article/mission cards on the
+      homepage, listings, topic hubs, author pages), with a shared
+      `CARD_IMAGE_SIZES` so a card downloads roughly a third of the bytes.
+    - **Measured end to end** on a real allow-listed host: a 1200px PNG came back
+      as **660 bytes of WebP at 640w, from 4,387 bytes** — and a non-allow-listed
+      host was correctly refused with 400, which is exactly why the fallback
+      exists. The rendered tag carries a 10-entry `srcSet` (256w–3840w) plus the
+      `sizes` hint.
+    - Note the lint count is unchanged at 8: the card files already carried
+      `eslint-disable` comments for their raw `<img>`, so converting them moved
+      nothing. Those stale suppressions were removed. The five remaining
+      `no-img-element` warnings are admin panels and the three runtime images
+      whose hosts are not allow-listed.
+  - **Layout shift from images fixed at its real sources.** An earlier note in
+    docs/NEXT-STEPS.md claimed "layout shift on every image on the site" because
+    no `<img>` declared width/height. **That was wrong** and worth recording:
+    `.card-image` is `height: 200px`, and most other images sit at
+    `width/height: 100%` inside an already-sized parent, so they never shifted.
+    Reading the CSS rather than counting tags found three that genuinely did:
+    - **`.article-body img`** (`max-width: 100%; height: auto`) — every image an
+      author drops mid-article. The worst of the three, because it moves text
+      under a reader's eyes. Fixed at the source: the editor now probes the
+      image's intrinsic size when inserting it (`imageDimensions.ts`) and writes
+      real `width`/`height` attributes, from which the browser derives an
+      aspect-ratio and reserves the box — `height: auto` still scales it
+      responsively, so **no CSS changed**. Both insert paths do it (rich and
+      HTML-source), and `sanitizeHtml` had to be taught to keep the attributes
+      or they were stripped straight back out.
+    - **APOD hero** and **mission timeline images** — both `height: auto` with
+      nothing to compute from; now boxed at a fixed aspect-ratio.
+    - Probing never blocks insertion: a broken URL, a hotlinking block or a slow
+      CDN resolves to null after 5 s and the image goes in exactly as before.
+      Failing to optimise is acceptable; failing to insert the author's image is
+      not.
+    - Verified by measuring, not by inspection: in a browser, with the site's own
+      CSS and a 640px column, an unsized image reserves **0px** before load and
+      the same image with `width="1600" height="900"` reserves **360px**. Also
+      confirmed the sanitizer round-trips all four attributes.
+    - **Still open**, and deliberately not decided here: no `next/image`, so
+      there is still no `srcset` or format negotiation, and the five
+      `@next/next/no-img-element` lint warnings remain (dimensions do not clear
+      that rule — only `next/image` does). Enabling it needs either a Cloudinary
+      loader or `remotePatterns`, and a wildcard pattern turns the site into an
+      open image proxy billed to Vercel — a cost/security call for the owner, not
+      a silent default. The `/gallery` masonry also still shifts: it is a column
+      layout whose heights come from the images, and NASA's search API does not
+      return dimensions to reserve space with.
+  - **Structured data closed out** (`modules/seo/jsonLd.ts`). Coverage was
+    uneven: articles and the Explore/Gallery pages emitted JSON-LD, **missions
+    and Learn emitted none at all**, breadcrumbs existed only on Explore, and the
+    editor's FAQ block never became an `FAQPage`.
+    - **`FAQPage`** built from the article's own HTML, so the markup and the
+      visible page cannot disagree. Half-written blocks (missing question or
+      answer) are skipped rather than guessed at — structured data that does not
+      match the page is penalised.
+    - **`BreadcrumbList`** on articles, missions and Learn.
+    - **Missions → `CreativeWork`**, not `Event`: a mission is an ongoing subject
+      the page documents, and `Event` wants a start date many missions lack.
+      Destination becomes `about` (a `Place`), the operating agency `sponsor`
+      (it sponsors the mission; it does not publish the page).
+    - **Learn → `LearningResource`**, with `educationalLevel` from the difficulty
+      the CMS already stores.
+    - **`WebSite` + `SearchAction`** on the homepage — the sitelinks searchbox,
+      which is worth having now the search behind it reads article bodies.
+    - The builders **take the site config as an argument** rather than importing
+      it. That keeps the module free of the `@/` alias so it runs under the bare
+      node test runner like every other pure module here, while the domain still
+      lives only in `config/site.ts` (rule 9). 14 new tests (348 total).
+    - Note for anyone extending it: `matchAll` is unavailable at this tsconfig
+      target, so the FAQ scan uses an `exec` loop with a per-call regex — a
+      module-level `/g` regex would carry `lastIndex` between calls.
+  - **Public search rebuilt on Postgres full text** — the weakest system on the
+    site. It was `ILIKE '%q%'` over title + excerpt only, which meant **article
+    bodies were never searchable**: a reader looking for a phrase that appears in
+    paragraph three got nothing back. Results were also ordered by
+    `published_at` rather than relevance, capped at 8/6/6 with no paging, unable
+    to use an index (leading wildcard), and the query was interpolated straight
+    into the PostgREST `.or()` filter, so a comma malformed it.
+    - **`supabase/migrations/20260731120000_content_search.sql`** adds a weighted
+      generated `search_vector` (title A, excerpt/destination B, body C) to
+      `articles`, `knowledge_articles` and `missions`, GIN indexes over each,
+      `pg_trgm` indexes, and two functions: `search_content()` (ranked, all three
+      types in one round trip) and `search_content_fuzzy()` ("did you mean").
+      Article and knowledge bodies are HTML, so tags are stripped before indexing
+      — otherwise every article matches "div".
+    - **The injection class is gone by construction**: `websearch_to_tsquery`
+      takes the query as a bound parameter, never as SQL text. It also never
+      raises on malformed input and understands quoted phrases, `OR` and
+      leading `-`.
+    - **Deploy order does not matter.** `search.ts` falls back to the old ILIKE
+      path when the functions are absent (`isMissingFunction` distinguishes
+      "migration not run" from a real failure, so an outage is never silently
+      downgraded). The legacy path also now escapes the filter metacharacters it
+      used to splice in raw.
+    - **Validated against a real Postgres 16**, not by inspection: 50,003 rows
+      seeded locally. Body-only match found (3 results where the old query
+      returned 1), drafts excluded, HTML tags not indexed, ranking correct,
+      comma/hostile input safe, and `EXPLAIN` confirms `Bitmap Index Scan on
+      articles_search_vector_idx` at 0.13 ms.
+    - **Two things the measurements changed.** The fuzzy fallback first used
+      `similarity()`, which compares the query against the *whole* title — a
+      short typo scored against a long headline fell under the threshold and
+      matched nothing, so "Starshp" never found "Starship". `word_similarity`
+      (`<%`) scores against the best-matching word instead and gets 0.75. And
+      cost scales with *matched* rows at ~3.3 µs each (2 matches 0.57 ms, 10k
+      matches 37 ms, 50k 166 ms) — inherent to ordering by relevance, since
+      every match must be scored before the LIMIT applies. Documented in the
+      migration header with the threshold for revisiting; deliberately **not**
+      "fixed" by truncating candidates, which would silently return something
+      other than the best matches.
+    - 9 new unit tests on the pure row mapping (334 total).
+  - **`⌘K` badge removed.** The nav advertised a shortcut nothing bound — the
+    only Cmd+K handler in the codebase is the admin editor's link insert. A real
+    palette is now unblocked by the search work above, but a visible promise the
+    product does not keep is worse than no badge. The `.nav-kbd` rule in
+    `styles/responsive.css` went with it; it never matched the element anyway.
+  - **Global 404 + error boundaries.** `app/not-found.tsx`, `app/error.tsx` and
+    `app/global-error.tsx`. Previously only `app/articles/not-found.tsx` existed,
+    so every other bad URL — and any render failure — landed on Next's unstyled
+    default with no nav, no theme and no way back.
+    - The 404 and error pages render inside the root layout, so they inherit the
+      chrome for free, and both use the shared classes (`.container`,
+      `.hero-badge`, `.page-title`, `.page-lede`, `.btn*`).
+    - **The 404 deliberately makes no database call.** The likeliest reason
+      someone is on an error surface is that something is already broken; a page
+      that needs Supabase to render can fail in exactly the case it exists for.
+      A no-JS `GET` form to `/search` plus links driven off `mainNav` (so a new
+      section appears automatically) are enough and cannot break.
+    - `global-error.tsx` replaces the root layout, so it ships its own
+      `<html>/<body>` and writes every colour as `var(--token, <dark value>)` —
+      if the stylesheet is part of what failed it still renders in brand colours.
+      With no theme script there is no saved choice to honour, so dark is the
+      right fallback; rule 2 does not apply to that one page.
+    - Added a `.sr-only` utility, which the design system was missing.
+  - **`.hero-badge` did not theme.** It hardcoded `rgba(79,142,247,…)` — the
+    *dark* accent — for its tint and border while its text used `var(--accent)`,
+    so in light mode the badge kept a dark-blue tint under light-blue text.
+    Routed through `--accent-rgb`, which already existed and flips per theme.
+    Affects all seven usages including the homepage hero.
+  - **Desktop nav was overcrowded from 900–1080px** (pre-existing). The full row
+    is logo + wordmark + six links + search pill + toggle; below ~1080px the
+    wordmark collided with "ARTICLES" and at 900px the toggle was clipped off the
+    right edge. The desktop breakpoint moved 900 → 1100, so that band gets the
+    compact row, which fits it comfortably.
+  - **The browser tab still showed Vercel's triangle.** `app/favicon.ico` was
+    still the untouched `create-next-app` default (25.9 KB, 16/32/48/256 BMP
+    entries), and **Chrome prefers `favicon.ico` over `icon.svg`** — so adding
+    the SVG changed nothing in the tab. `scripts/generate-icons.mjs` now also
+    emits `app/favicon.ico` from the brand mark: sharp cannot write ICO, so the
+    container is assembled directly (6-byte header, one 16-byte directory entry
+    per image, then PNG-encoded blobs at 16/32/48). 2.7 KB, and it uses a
+    **tighter inset** than the other icons — at 16 physical pixels the standard
+    inset leaves only ~10px of actual glyph, which turns to mush.
+    Also deleted `public/next.svg` and `public/vercel.svg`, unreferenced
+    scaffold leftovers, one of which was literally the Vercel logo.
+    Two traps worth remembering: the **dev server keeps a stale copy** at
+    `.next/server/app/favicon.ico`, so a changed icon appears not to take effect
+    until `.next` is cleared (production builds are unaffected — verified by
+    decoding the base64 Next inlines into the built route). And
+    **`pkill -f "next dev"` kills its own shell**, because the pattern matches
+    the invoking command line — kill by listening port instead.
+  - **Mobile nav fixes (from a real device, not a simulator).** Two things the
+    desktop view hid. (1) The bar hardcoded `padding: 0 32px` while every page's
+    content sits in `.container` at `1.5rem` (24px), so the logo was indented 8px
+    further than the headline under it — on a 360px phone that reads as the mark
+    being shoved off the left edge. Padding moved into `.site-nav` and matched to
+    `.container` below the 900px breakpoint. (2) The wordmark was being hidden
+    under 430px, so phones showed a bare mark and never the name. Replaced with
+    fluid sizing — `Logo` now accepts a CSS length as well as a number, and the
+    nav passes `clamp()` for mark, wordmark and gap — plus 36px mobile controls
+    with a 6px gap, which reclaims the ~10px that makes the full lockup fit at
+    320px. **The wordmark is never hidden at any width.** Verified in-browser at
+    320/360/375/412/820/1280.
+    Also worth knowing: `.page-container`, which `styles/responsive.css` still
+    targets with mobile padding rules, is **used by no component** — those rules
+    are dead. `.container` is the real one.
+  - **Gotcha worth remembering:** React HTML-escapes `>` inside
+    ``<style>{`…`}</style>``, so the responsive rule hiding the wordmark on
+    narrow phones shipped as `.nav-logo &gt; span` and silently never matched.
+    Fixed by giving the wordmark a `logo-wordmark` class and using a descendant
+    selector. Verified in a headless browser at 360/420/440px (mark alone below
+    430px, full lockup above) — note Chromium clamps `--window-size` to a
+    minimum width, so narrow breakpoints must be tested in a sized iframe.
+  - Also tokenised two hardcoded `#4f8ef7` values in the footer brand block
+    touched by this change (light mode's accent is `#2563eb`, so they did not
+    theme). 325 tests pass; lint unchanged at the same 8 pre-existing warnings.
 
 - ✅ **Admin missions could not be saved/deleted**: `MissionForm` and
   `MissionRowActions` POST/PATCH/DELETE to `/api/admin/missions`, but that route
@@ -301,8 +581,7 @@ collection when Supabase env vars are absent — unrelated to app code).
 - ✅ **Renamed the news section to "Articles"**: `/news` → `/articles` (route,
   nav, page header, all internal links, sitemap) with permanent **301 redirects**
   from `/news` and `/news/:slug` in `next.config.js`. Code moved to
-  `modules/articles/` (`ArticlesPage`, `getArticles`). The eventual CosmosDaily
-  cutover 301s are now `/article/:slug → /articles/:slug`.
+  `modules/articles/` (`ArticlesPage`, `getArticles`).
 
 - ✅ **Bilingual content (Hindi, extensible) — Articles, Learn & Missions**: any
   of these can be read in English or a hand-written translation **without
@@ -921,7 +1200,7 @@ collection when Supabase env vars are absent — unrelated to app code).
     Deterministic seeded starfield (no `Math.random()` hydration risk).
     Keyboard-accessible: SVG bodies are tabbable buttons + the chip rail acts
     as tabs.
-  - **Hub** (`/explore`): CosmosDaily-style card grid — Solar System Explorer
+  - **Hub** (`/explore`): card grid — Solar System Explorer
     (live) plus Sky Tonight and Topic Hubs as non-link "SOON" teasers. Full
     SEO on both routes: canonical, OG/Twitter, JSON-LD (CollectionPage;
     WebApplication + BreadcrumbList), sitemap entries. Titles rely on the root
@@ -1350,7 +1629,7 @@ Everything visual flows through **CSS custom properties** in
 
 ### Tokens
 - Surfaces: `--black` (page), `--surface` (secondary), `--panel` (cards),
-  `--raised`. CosmosDaily aliases exist too: `--bg-primary/secondary/card`.
+  `--raised`. Semantic aliases exist too: `--bg-primary/secondary/card`.
 - Text: `--white` (primary), `--dim` (secondary), `--faint` (muted). Aliases:
   `--text-primary/secondary/muted`.
 - Accent/semantic: `--accent`, `--accent-hover`, `--green`, `--gold`, `--red`,
@@ -1466,17 +1745,48 @@ from; none should be modified):
 
 ---
 
-## 9. Rollout / cutover mechanism (Plan Phase 3)
+## 9. Deployment & the domain
 
-Production cutover happens through `space-website/vercel.json` **rewrites**: a
-route on `cosmosdaily.space` is proxied to the new engine one page at a time
-(already proven for `/article/:slug`). To migrate a page: reach URL/metadata
-parity, add a rewrite for that path, verify in Search Console, then proceed. A
-bad migration is a one-line revert.
+Deployed on **Vercel**, straight from `main`. The domain is attached in the
+Vercel dashboard, which handles DNS, TLS and routing — there is no proxy, no
+rewrite layer, and nothing in this repo that needs to know where it is hosted.
+
+**The domain is written down exactly once**, in `config/site.ts`:
+
+```ts
+url: 'https://antariksham.org'
+```
+
+Everything derives from it — `app/sitemap.ts`, `app/robots.ts`, canonical tags,
+JSON-LD, OG URLs, and the editor's internal-vs-external link detection
+(`modules/admin/publish/analyzeContent.ts`, which also lists `localhost` for dev).
+Changing the domain should mean changing that one constant. `public/robots.txt`
+used to keep a second copy and had already drifted out of sync with it; it was
+deleted in favour of `app/robots.ts`. **Do not reintroduce a second copy.**
+
+Environment variables live in the Vercel project settings — Supabase URL and
+keys, `NASA_API_KEY`, optional Cloudinary. Absent Supabase env vars, `next build`
+compiles but fails at page-data collection with `supabaseUrl is required`; that
+is expected locally and not an app bug.
+
+**When a public URL changes**, 301 the old path in `next.config.js` `redirects()`
+and keep the sitemap in sync — see §6. The `/news → /articles` redirects there
+are Antariksham's own history from renaming that section, and stay.
 
 ---
 
 ## 10. Remaining work / roadmap
+
+> **The prioritised queue lives in [`docs/NEXT-STEPS.md`](./docs/NEXT-STEPS.md).**
+> Start there — it says what to build next and in what order, and carries the
+> verification commands and environment gotchas. This section is the long tail:
+> per-feature follow-ups recorded as each thing was built. Both are current;
+> NEXT-STEPS is the short list, this is the archive.
+>
+> One item needs the repo owner rather than a coding session: **run
+> `supabase/migrations/20260731120000_content_search.sql`**. Until it is applied,
+> public search falls back to the old title-and-excerpt query and never reads
+> article bodies.
 
 **Mission Management System upgrade (Phase 1) — COMPLETE (all 8 features, see
 §2).** The Mission module is now a professional, extensible data model. Natural
@@ -1543,21 +1853,17 @@ the `/admin/tags` screen):**
   in place; there is still no tag landing page (tags only render as chips on an
   article and drive admin filtering).
 
-**Plan phases still open:**
-- **Phase 2 — Data migration:** move CosmosDaily's flat category/tag fields into
-  Antariksham's relational `categories`/`tags` join tables (one-time script).
-  *Script written* — `scripts/migrate-cosmosdaily-articles.mjs` (dry-run by
-  default; reads the old project, reshapes into the new relational schema). Old
-  and new are **separate** Supabase projects, so it does export→import→reshape.
-  Not yet run — needs the two projects' service keys + a go-ahead. See
-  `scripts/README.md` for the field mapping, gap decisions, and the required
-  `/article/:slug → /articles/:slug` 301s.
-- **Phase 3 — URL & metadata parity, then staged cutover** via `vercel.json`
-  (see §9), honoring §6.5.
-- **Phase 4 — Advanced features** (only after cutover): 3D planet rendering
-  (Three.js / R3F via `next/dynamic({ssr:false})`, scoped so the WebGL bundle
-  never loads on other routes), satellite data control center (extend the
-  API-proxy pattern), advanced astronomy tools (each as its own `modules/<tool>/`).
+**Bigger features still open:**
+- **3D planet rendering** (Three.js / R3F via `next/dynamic({ssr:false})`, scoped
+  so the WebGL bundle never loads on other routes — `/lunar-sim` already proves
+  the pattern).
+- **Satellite data control center** — extends the existing API-proxy pattern.
+- **Advanced astronomy tools**, each as its own `modules/<tool>/`.
+
+> The former migration/cutover phases are gone. Antariksham is independent (§1):
+> there is no other project to import content from and no staged rollout behind
+> another domain. `scripts/migrate-cosmosdaily-articles.mjs` was deleted;
+> `git log` has it if the history is ever wanted.
 
 **Lunar Landing Simulator (`/lunar-sim`, testing):**
 - ~~3-D visualization milestone~~ done — see §2. Possible polish: GLTF lander
@@ -1631,8 +1937,8 @@ the `/admin/tags` screen):**
   implemented.
 
 **Site-level polish TODOs:**
-- Nav links are still Antariksham's uppercase-mono style; CosmosDaily's are
-  sentence-case sans — decide.
+- Nav links use an uppercase-mono style; a sentence-case sans alternative was
+  once considered — decide and commit to one.
 - Light-mode edge cases: decorative gradient covers (LearnThumb, hero fallback)
   fade toward the light surface — consider pinning dark. A few badges flip to
   dark-on-color text.
@@ -1680,7 +1986,7 @@ still need a human on the Vercel preview URL.
 
 | Path | What |
 |---|---|
-| `styles/globals.css` | **The design system** — tokens, themes, all CosmosDaily classes. |
+| `styles/globals.css` | **The design system** — tokens, themes, all shared classes. |
 | `app/layout.tsx` | Root layout, fonts, no-flash theme script, nav/footer wiring. |
 | `components/layout/{Navbar,Footer,ThemeToggle}.tsx` | Global chrome + theme toggle. |
 | `modules/*/components|services` | Feature UI + data. |

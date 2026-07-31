@@ -2,7 +2,7 @@
 // (see ISSTracker + app/api/iss/route.ts). Server-side live fetches used to live
 // here but did no-store network at build time, throwing DYNAMIC_SERVER_USAGE
 // during static generation — they were removed in favor of the client-refresh
-// pattern (MIGRATION.md §4).
+// pattern (ENGINEERING.md §4).
 
 // Convert lat/lng to SVG x/y coordinates on a 1000x500 world map
 export function latLngToSVG(

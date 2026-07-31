@@ -58,7 +58,7 @@ export function buildArticleJsonLd(input: JsonLdInput): Record<string, unknown> 
     publisher: {
       '@type': 'Organization',
       name:    siteConfig.name,
-      logo:    { '@type': 'ImageObject', url: `${siteConfig.url}${siteConfig.seo.defaultImage}` },
+      logo:    { '@type': 'ImageObject', url: `${siteConfig.url}${siteConfig.seo.logo}` },
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': url },
   }

@@ -9,8 +9,8 @@
 
 -- 1) AUTHOR (optional) — one shared test author -------------------------------
 insert into public.authors (name, bio, featured)
-select 'CosmosDaily Staff', 'Seed author used for local/testing content.', false
-where not exists (select 1 from public.authors where name = 'CosmosDaily Staff');
+select 'Antariksham Staff', 'Seed author used for local/testing content.', false
+where not exists (select 1 from public.authors where name = 'Antariksham Staff');
 
 -- 2) ARTICLES (required) ------------------------------------------------------
 -- Exactly one is featured=true (matches the "single featured story" rule).
@@ -20,7 +20,7 @@ insert into public.articles
    status, article_type, featured, reading_time, views, published_at)
 select
   v.title, v.slug, v.excerpt, v.content, v.featured_image,
-  (select id from public.authors where name = 'CosmosDaily Staff' limit 1),
+  (select id from public.authors where name = 'Antariksham Staff' limit 1),
   v.status, v.article_type, v.featured, v.reading_time, v.views, v.published_at
 from (values
   (

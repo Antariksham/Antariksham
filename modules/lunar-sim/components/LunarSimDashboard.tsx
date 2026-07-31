@@ -34,7 +34,7 @@ import {
   type MissionStats,
 } from '../services/missionStats'
 
-// WebGL bundle stays off every other route (MIGRATION.md §10 pattern).
+// WebGL bundle stays off every other route (ENGINEERING.md §10 pattern).
 const LunarScene = dynamic(() => import('./LunarScene'), {
   ssr: false,
   loading: () => (
@@ -245,7 +245,7 @@ export function LunarSimDashboard() {
   speedRef.current = speed
 
   // The scoreboard is read from localStorage only after mount so the SSR
-  // and first client render agree (hydration-safe, MIGRATION.md §5).
+  // and first client render agree (hydration-safe, ENGINEERING.md §5).
   useEffect(() => { setStats(readMissionStats()) }, [])
 
   // Fly a scenario inside the wasm module and rewind the playback clock.

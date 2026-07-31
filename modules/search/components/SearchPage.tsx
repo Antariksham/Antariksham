@@ -314,7 +314,16 @@ function LearnCard({ result }: { result: SearchLearnResult }) {
 
 // ── Empty / idle states ───────────────────────────────────────
 
-function EmptyState({ query }: { query: string }) {
+function EmptyState({
+  query,
+  suggestions = [],
+  onSuggestion,
+}: {
+  query: string
+  /** "Did you mean" terms from the trigram fallback — only present on a miss. */
+  suggestions?: string[]
+  onSuggestion: (term: string) => void
+}) {
   return (
     <div style={{ textAlign: 'center', padding: '80px 0' }}>
       <div style={{ fontSize: '40px', marginBottom: '16px', opacity: 0.4 }}>🔭</div>
@@ -335,6 +344,30 @@ function EmptyState({ query }: { query: string }) {
       }}>
         Nothing matched &ldquo;{query}&rdquo; — try different keywords
       </p>
+
+      {suggestions.length > 0 && (
+        <div style={{ marginTop: '22px' }}>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em',
+            textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', marginBottom: '12px',
+          }}>
+            Did you mean
+          </div>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {suggestions.map(term => (
+              <button
+                key={term}
+                type="button"
+                onClick={() => onSuggestion(term)}
+                className="tag press"
+                style={{ cursor: 'pointer', border: '1px solid var(--border)', background: 'var(--bg-card)' }}
+              >
+                {term}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -444,6 +477,14 @@ export function SearchPage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Suggestion chip click — delegate via container click
+  // Direct handler for the "did you mean" chips. The idle-state chips use the
+  // delegated version below because they are rendered by a child that does not
+  // take props; these are ours, so pass the callback straight down.
+  const runSuggestion = useCallback((term: string) => {
+    setInputValue(term)
+    fetchRef.current(term)
+  }, [])
+
   const handleSuggestionClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const btn = (e.target as HTMLElement).closest('button[data-query]')
     if (!btn) return
@@ -575,7 +616,13 @@ export function SearchPage() {
         )}
 
         {/* Empty state */}
-        {showEmpty && <EmptyState query={results!.query} />}
+        {showEmpty && (
+          <EmptyState
+            query={results!.query}
+            suggestions={results!.suggestions}
+            onSuggestion={runSuggestion}
+          />
+        )}
 
         {/* Results grouped by type */}
         {showResults && (

@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { getAuthorBySlug, getAllAuthorSlugs } from '@/modules/authors/services/getAuthors'
 import { getArticles } from '@/modules/articles/services/getArticles'
 import { timeAgo } from '@/lib/utils'
+import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
 export const revalidate = 300
 
@@ -92,8 +93,8 @@ export default async function AuthorProfilePage(
             {articles.map(article => (
               <a key={article.id} href={`/articles/${article.slug}`} className="card">
                 {article.featuredImage
-                  ? /* eslint-disable-next-line @next/next/no-img-element */
-                    <img className="card-image" src={article.featuredImage} alt={article.title} loading="lazy" />
+                  ? <SmartImage className="card-image" src={article.featuredImage} alt={article.title}
+                    width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
                   : <div className="card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', opacity: 0.25 }}>🪐</div>}
                 <div className="card-body">
                   <p className="card-category">{article.categories[0] || 'Space'}</p>

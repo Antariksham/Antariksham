@@ -38,6 +38,30 @@ exists`, etc.), so re-running one is harmless.
 
 ## Migrations
 
+### `20260731120000_content_search.sql`
+
+Full-text search for public content. Adds a weighted generated `search_vector`
+to `articles`, `knowledge_articles` and `missions`, GIN indexes over each, and
+the `search_content()` / `search_content_fuzzy()` functions the search page uses.
+
+Replaces an `ILIKE '%q%'` scan over title + excerpt only — so **article bodies
+were never searchable**, results were ordered by date rather than relevance, and
+the query was interpolated into a PostgREST filter string.
+
+Additive and idempotent; safe to re-run. **The site works before and after**:
+`modules/search/services/search.ts` falls back to the old query path when these
+functions are absent, so code and migration can be deployed in either order.
+
+Needs `pg_trgm` for the "did you mean" fallback. The migration creates it and
+only raises a NOTICE if it lacks permission — turn it on in Supabase → Database
+→ Extensions and re-run, and the fuzzy suggestions start working. Everything
+else functions without it.
+
+The generated columns backfill on creation, so on a large `articles` table this
+migration takes a moment and holds a lock while it rewrites. Run it off-peak if
+the corpus is big. See the header comment in the file for measured timings at
+50,000 rows and the point at which the ranking cost needs revisiting.
+
 ### `20260730130000_tags_slug_unique.sql`
 
 Adds a unique index on `public.tags (slug)`.

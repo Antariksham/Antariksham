@@ -5,6 +5,7 @@ import { Sparkles, FileCode, X } from 'lucide-react'
 import { MediaLibrary } from '@/modules/admin/components/MediaLibrary'
 import { RichEditor, type RichEditorHandle } from './RichEditor'
 import { sanitizeHtml } from './sanitizeHtml'
+import { probeImageSize, imageSizeAttrs } from './imageDimensions'
 
 /**
  * The article body editor. Wraps the block-based RichEditor with a Rich ⇄ HTML
@@ -24,11 +25,15 @@ export function ContentEditorField({
   const [showMedia, setShowMedia] = useState(false)
   const richRef = useRef<RichEditorHandle>(null)
 
-  function handlePick(url: string) {
+  async function handlePick(url: string) {
     if (mode === 'rich') {
       richRef.current?.insertImage({ src: url, alt: '' })
     } else {
-      const fig = `<figure><img src="${url}" alt="" loading="lazy"><figcaption>Add a caption…</figcaption></figure>\n`
+      // HTML mode builds its own markup, so it needs the same width/height the
+      // rich editor now emits — otherwise choosing "HTML source" silently
+      // produces article images that shift the page as they load.
+      const size = await probeImageSize(url)
+      const fig = `<figure><img src="${url}" alt="" loading="lazy" decoding="async"${imageSizeAttrs(size)}><figcaption>Add a caption…</figcaption></figure>\n`
       onChange((value ? value + '\n' : '') + fig)
     }
     setShowMedia(false)

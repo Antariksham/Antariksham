@@ -28,7 +28,7 @@ description: Build/launch/drive recipe for verifying Antariksham changes end-to-
   is real-time; click the `× speed` button twice (4×) to reach touchdown in
   ~15–25 s. Watch `[lunar-sim]` console logs for mission seed / TOUCHDOWN.
   Mission scoreboard persists in localStorage key
-  `cosmosdaily.lunar-sim.stats.v1`.
+  `antariksham.lunar-sim.stats.v1`.
 - Rebuilding the wasm needs emsdk (not preinstalled): clone
   `emscripten-core/emsdk`, `install latest && activate latest`, then run the
   FSW repo's `wasm/build.sh --test` and copy `wasm/dist/*` to `public/wasm/`.

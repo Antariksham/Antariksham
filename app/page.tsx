@@ -3,6 +3,7 @@ import { siteConfig }          from '@/config/site'
 import { HomePage }            from '@/modules/homepage/components/HomePage'
 import { getLatestArticles }   from '@/modules/articles/services/getArticles'
 import { getActiveMissions }   from '@/modules/missions/services/getMissions'
+import { buildWebSiteJsonLd, buildOrganizationJsonLd } from '@/modules/seo/jsonLd'
 
 export const metadata: Metadata = {
   title:       siteConfig.seo.defaultTitle,
@@ -18,5 +19,19 @@ export default async function Page() {
     getActiveMissions(6),
   ])
 
-  return <HomePage articles={articles} missions={missions} />
+  return (
+    <>
+      {/* WebSite + Organization for the site as a whole. The SearchAction is the
+          sitelinks searchbox — worth having now that the search behind it
+          actually looks inside article bodies. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([
+          buildWebSiteJsonLd(siteConfig),
+          buildOrganizationJsonLd(siteConfig),
+        ]) }}
+      />
+      <HomePage articles={articles} missions={missions} />
+    </>
+  )
 }

@@ -22,7 +22,6 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     locale: siteConfig.locale,
     type: 'website',
-    images: [siteConfig.seo.defaultImage],
   },
   twitter: {
     card: siteConfig.seo.twitterCard,

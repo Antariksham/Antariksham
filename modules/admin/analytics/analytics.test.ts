@@ -20,7 +20,7 @@ test('classifyReferrer: search / social / self / referral / direct', () => {
   assert.equal(classifyReferrer('www.google.com'), 'organic')
   assert.equal(classifyReferrer('t.co'), 'social')
   assert.equal(classifyReferrer('x.com'), 'social')
-  assert.equal(classifyReferrer('cosmosdaily.space', 'cosmosdaily.space'), 'direct')
+  assert.equal(classifyReferrer('antariksham.org', 'antariksham.org'), 'direct')
   assert.equal(classifyReferrer('some-blog.example'), 'referral')
   assert.equal(classifyReferrer(''), 'direct')
 })
