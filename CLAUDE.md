@@ -2,9 +2,13 @@
 
 **Antariksham is an independent space-journalism and knowledge platform, built
 on Next.js and shipping at `antariksham.org`.** It is its own product — not a
-migration, not a reskin, and not staged behind another site. Before doing
-anything, read [`ENGINEERING.md`](./ENGINEERING.md) — it has the architecture,
-design system, how-to recipes, engineering history, and roadmap.
+migration, not a reskin, and not staged behind another site.
+
+**Starting a session?** Read [`docs/NEXT-STEPS.md`](./docs/NEXT-STEPS.md) — it is
+the working queue: what to build next, in priority order, plus how to verify and
+the environment gotchas worth knowing before you hit them. Read
+[`ENGINEERING.md`](./ENGINEERING.md) for the reference material — architecture,
+design system, how-to recipes, and the history of what was built and why.
 
 ## Non-negotiable rules (details in ENGINEERING.md §5–§6)
 

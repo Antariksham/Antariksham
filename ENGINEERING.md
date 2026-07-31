@@ -1777,15 +1777,16 @@ are Antariksham's own history from renaming that section, and stay.
 
 ## 10. Remaining work / roadmap
 
-> **See also [`docs/NEXT-STEPS.md`](./docs/NEXT-STEPS.md)** — a prioritised
-> outside-in review of the site (Tier 0 broken things → Tier 3 growth). This
-> section tracks follow-ups to features already built; that file asks where the
-> site is weakest overall. Its Tier 0 items on the missing default share image
-> and the absent root Open Graph defaults are now **done** (see §2, brand logo).
-> Still open there: `robots.txt` hardcoded to the old domain, no global
-> 404/error page, the decorative `⌘K` badge that binds nothing, no `next/image`
-> (0 of 39 `<img>` tags declare `width`/`height`), and a public search that
-> never looks at article bodies.
+> **The prioritised queue lives in [`docs/NEXT-STEPS.md`](./docs/NEXT-STEPS.md).**
+> Start there — it says what to build next and in what order, and carries the
+> verification commands and environment gotchas. This section is the long tail:
+> per-feature follow-ups recorded as each thing was built. Both are current;
+> NEXT-STEPS is the short list, this is the archive.
+>
+> One item needs the repo owner rather than a coding session: **run
+> `supabase/migrations/20260731120000_content_search.sql`**. Until it is applied,
+> public search falls back to the old title-and-excerpt query and never reads
+> article bodies.
 
 **Mission Management System upgrade (Phase 1) — COMPLETE (all 8 features, see
 §2).** The Mission module is now a professional, extensible data model. Natural
