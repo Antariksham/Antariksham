@@ -19,6 +19,7 @@ import {
   langFromPathname,
   stripLangPrefix,
   counterpartPath,
+  localizeHref,
   sectionHref,
   sectionListHref,
 } from './i18n.ts'
@@ -73,6 +74,32 @@ test('counterpartPath: switching to the language you are already in is a no-op',
   assert.equal(counterpartPath('/learn', 'en'), '/learn')
   // Never double-prefixes.
   assert.equal(counterpartPath('/hi/articles', 'hi'), '/hi/articles')
+})
+
+test('localizeHref: chrome links follow the reader into their language', () => {
+  // The bug this exists to stop: switch to Hindi on the home page, click
+  // "Articles" in the nav, land back in English.
+  assert.equal(localizeHref('/', 'hi'), '/hi')
+  assert.equal(localizeHref('/articles', 'hi'), '/hi/articles')
+  assert.equal(localizeHref('/learn', 'hi'), '/hi/learn')
+  assert.equal(localizeHref('/missions', 'hi'), '/hi/missions')
+})
+
+test('localizeHref: an untranslated section keeps its own URL', () => {
+  // The difference from counterpartPath. "Live" from /hi must go to /live —
+  // that is where the content is — not bounce back to the Hindi home.
+  for (const href of ['/live', '/live/iss-tracker', '/explore', '/gallery/apod', '/about', '/search']) {
+    assert.equal(localizeHref(href, 'hi'), href, `${href} in hi`)
+    assert.equal(localizeHref(href, 'en'), href, `${href} in en`)
+  }
+})
+
+test('localizeHref: English is the identity, and it never double-prefixes', () => {
+  for (const href of ['/', '/articles', '/learn', '/missions', '/live', '/about']) {
+    assert.equal(localizeHref(href, 'en'), href)
+  }
+  assert.equal(localizeHref('/hi/articles', 'hi'), '/hi/articles')
+  assert.equal(localizeHref('/hi/articles', 'en'), '/articles')
 })
 
 test('counterpartPath: agrees with the href builders it has to match', () => {

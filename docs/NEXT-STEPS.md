@@ -97,14 +97,11 @@ nothing. Every visit is terminal.
 
 The expensive part — translation storage, the language toggle, admin language
 tabs — is **done**, and `app/hi/` now has its listings: `page.tsx` (home),
-`articles/`, `learn/`, `missions/` plus the three detail routes. A Hindi reader
-can browse rather than land on one page and dead-end. What is still missing is
-the layer that lets them *arrive* and *stay*:
+`articles/`, `learn/`, `missions/` plus the three detail routes. A reader who
+picks Hindi now *stays* in Hindi: every chrome link (nav, mega-menu, footer,
+logo) is routed through `localizeHref`, so following the site never silently
+drops them back into English. What is still missing:
 
-- ~~A language switch in the nav~~ and ~~language-aware back links~~ **done** —
-  `components/layout/LanguageSwitch` (desktop pill + drawer row) crosses to the
-  counterpart of the page you are on, and the Learn/Mission back links and all
-  three breadcrumb trails are language-aware. See §2.
 - **Site chrome is still English** on `/hi/*` — nav, footer, section headings,
   filter chips, "Read article →", the difficulty labels. This is the biggest
   remaining experience gap: one ~30-string dictionary lifts every Hindi page at

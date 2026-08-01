@@ -132,15 +132,31 @@ export function stripLangPrefix(pathname: string): string {
  * precise control.
  */
 export function counterpartPath(pathname: string, target: string): string {
-  const bare       = stripLangPrefix(pathname)
-  const targetHome = langPrefix(target) || '/'
+  return localizedTarget(stripLangPrefix(pathname), target) ?? (langPrefix(target) || '/')
+}
 
-  if (bare === '/') return targetHome
+/**
+ * A **chrome** link — nav, mega-menu, footer, logo — pointed at the language
+ * the reader is currently in, so following it doesn't silently drop them back
+ * into English.
+ *
+ * The difference from `counterpartPath` is only the fallback, and it matters.
+ * That one answers "the same page in another language", so an untranslated
+ * route sends you to that language's home. This one answers "where should this
+ * nav item go for a reader in `lang`" — and an untranslated section keeps its
+ * own URL, because that is where the content actually is. Clicking "Live" from
+ * `/hi` belongs on `/live`, not back at `/hi`.
+ */
+export function localizeHref(href: string, lang: string): string {
+  const bare = stripLangPrefix(href)
+  return localizedTarget(bare, lang) ?? bare
+}
 
+/** Shared by both: the localized URL for a bare path, or null if untranslated. */
+function localizedTarget(bare: string, lang: string): string | null {
+  if (bare === '/') return langPrefix(lang) || '/'
   const root = bare.split('/')[1] ?? ''
-  if (!LOCALIZED_ROOTS.has(root)) return targetHome
-
-  return `${langPrefix(target)}${bare}`
+  return LOCALIZED_ROOTS.has(root) ? `${langPrefix(lang)}${bare}` : null
 }
 
 /** Build the articles listing URL for a given language. */

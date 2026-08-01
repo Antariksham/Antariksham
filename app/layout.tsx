@@ -7,6 +7,7 @@ import { langFromPathname } from '@/lib/i18n'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { NavProgress } from '@/components/layout/NavProgress'
+import { HtmlLangSync } from '@/components/layout/HtmlLangSync'
 import '@/styles/globals.css'
 import '@/styles/responsive.css'
 
@@ -99,6 +100,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Suspense fallback={null}>
           <NavProgress />
         </Suspense>
+        {/* `lang` above is correct for the first paint but frozen after it —
+            a shared layout does not re-render on client-side navigation. */}
+        <HtmlLangSync />
         {isAdmin ? (
           // Admin — no Navbar or Footer, AdminLayout handles its own chrome
           <>{children}</>

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { siteConfig } from '@/config/site'
 import { mainNav, desktopNav, isCurrent, sectionIsCurrent, type NavItem } from '@/config/navigation'
+import { langFromPathname, stripLangPrefix, localizeHref } from '@/lib/i18n'
 import { Logo } from '@/components/brand/Logo'
 import { ThemeToggle } from './ThemeToggle'
 import { LanguageSwitch } from './LanguageSwitch'
@@ -19,8 +20,18 @@ const OPEN_DELAY_MS  = 110
 const CLOSE_DELAY_MS = 220
 
 export function Navbar() {
-  const pathname = usePathname() ?? ''
+  const rawPath = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
+
+  /* The reader's current language, and the two things it changes.
+     `href` — every chrome link is pointed into this language, so following the
+     nav from /hi keeps you in Hindi instead of dropping you back into English.
+     `pathname` — current-page marking compares against the *bare* path, since
+     the nav config is written in English hrefs; without this, nothing in the
+     bar would ever be marked current while reading Hindi. */
+  const lang     = langFromPathname(rawPath)
+  const pathname = stripLangPrefix(rawPath)
+  const href     = useCallback((h: string) => localizeHref(h, lang), [lang])
 
   /* Desktop mega-menu: which section's panel is open, or null. */
   const [mega, setMega] = useState<NavItem | null>(null)
@@ -123,7 +134,10 @@ export function Navbar() {
   }, [cancelHoverTimer, mega])
 
   // Close on route change, and clear any timer still pending on unmount.
-  useEffect(() => { setMenuOpen(false); setMega(null) }, [pathname])
+  // Keyed on the raw path, not the stripped one: crossing languages on the same
+  // page (/articles → /hi/articles) leaves the bare path identical, and the
+  // menu has to close for that too.
+  useEffect(() => { setMenuOpen(false); setMega(null) }, [rawPath])
   useEffect(() => () => clearTimeout(hoverTimer.current), [])
 
   useEffect(() => {
@@ -249,7 +263,7 @@ export function Navbar() {
           </button>
         ) : (
           <Link
-            href={item.href}
+            href={href(item.href)}
             className={className}
             data-live={item.isLive ? 'true' : undefined}
             aria-current={current ? 'page' : undefined}
@@ -276,7 +290,7 @@ export function Navbar() {
         {/* LOGO — mark + wordmark, no .org. Both inherit var(--white), so the
             mark is white in dark mode and near-black in light mode. */}
         <Link
-          href="/"
+          href={href('/')}
           className="press"
           aria-label={`${siteConfig.name} — home`}
           style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}
@@ -321,7 +335,7 @@ export function Navbar() {
                     onMouseLeave={scheduleClose}
                   >
                     <Link
-                      href={item.href}
+                      href={href(item.href)}
                       className="nav-bar__item press"
                       data-live={item.isLive ? 'true' : undefined}
                       data-open={open}
@@ -355,7 +369,7 @@ export function Navbar() {
                   </div>
                 ) : (
                   <Link
-                    href={item.href}
+                    href={href(item.href)}
                     className="nav-bar__item press"
                     data-live={item.isLive ? 'true' : undefined}
                     aria-current={sectionIsCurrent(pathname, item) ? 'page' : undefined}
@@ -421,6 +435,7 @@ export function Navbar() {
           <MegaMenu
             section={mega}
             pathname={pathname}
+            lang={lang}
             onSectionChange={setMega}
             onNavigate={closeMega}
             panelRef={megaRef}
@@ -456,7 +471,7 @@ export function Navbar() {
                   {/* The section's own landing page. A parent row drills in, so
                       this is how you still reach the section itself. */}
                   <Link
-                    href={panel.section.href}
+                    href={href(panel.section.href)}
                     className="nav-drawer__section"
                     aria-label={`${panel.section.label} — section overview`}
                     aria-current={isCurrent(pathname, panel.section.href) ? 'page' : undefined}

@@ -829,6 +829,32 @@ env vars are absent — unrelated to app code).
   the Devanagari-first stack via `langSans(code)`, since "हिन्दी" otherwise sits
   in a Latin-only stack on English pages.
 
+- ✅ **Language is sticky across navigation**: switching to Hindi and then using
+  the site chrome put you straight back into English — the nav, mega-menu and
+  footer all pointed at hardcoded English hrefs, so `/hi` → click "Articles" →
+  `/articles`. Every chrome link now runs through **`localizeHref(href, lang)`**
+  (`lib/i18n.ts`, unit-tested). It is deliberately *not* `counterpartPath`: the
+  two differ only in their fallback, and that difference is the point — an
+  untranslated section keeps **its own URL** (Live from `/hi` belongs on
+  `/live`, not back at `/hi`), whereas `counterpartPath` answers a different
+  question and falls back to the language home. Current-page marking compares
+  against the **bare** path (`stripLangPrefix`), since the nav config is written
+  in English hrefs; without that nothing in the bar would be marked current
+  while reading Hindi. The mega-menu's highlights are fetched **per language**
+  and cached per language, so crossing over doesn't serve titles cached before
+  the switch.
+
+  Two staleness bugs surfaced doing this, both from the same cause — **the App
+  Router does not re-render a shared layout on client-side navigation**, so
+  anything the root layout derives from `headers()` freezes at the first page
+  load. `Footer` took `lang` as a prop from the layout and kept the language the
+  session *started* in; it is now a client component reading `usePathname()`.
+  And `<html lang>` had the same defect (pre-existing): a client-side hop from
+  `/` to `/hi` left `lang="en"` on a page of Devanagari, telling a screen reader
+  to read Hindi in an English voice. `components/layout/HtmlLangSync` corrects
+  it after navigation while leaving the server-rendered value — the one
+  crawlers see — intact for the first paint.
+
 - ✅ **Click & navigation feedback indicators**: clicks worked but gave users no
   signal that the click registered or that a page was loading. Added (1) pressed
   `:active` states for `.btn`/`.card`/`.tag` plus an opt-in `.press` helper
