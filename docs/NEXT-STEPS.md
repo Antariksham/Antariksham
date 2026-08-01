@@ -24,8 +24,8 @@ for the design system and invariants. The two that break things most often:
 
 ```bash
 npx tsc --noEmit        # must be clean
-npm test                # 354 tests, all pure logic, must stay green
-npx next lint           # baseline is 8 warnings — do not let it grow
+npm test                # 361 tests, all pure logic, must stay green
+npx next lint           # baseline is 0 warnings — do not let it grow
 npm run build           # must reach "Compiled successfully"
 ```
 
@@ -99,8 +99,8 @@ The expensive part — translation storage, the language toggle, admin language
 tabs — is **done**. The discoverability layer is missing, so translated content
 is effectively unreachable and uncrawlable.
 
-`app/hi/` currently contains only `articles/`, `articles/[slug]/`,
-`learn/[slug]/` and `missions/[slug]/`. Needed:
+`app/hi/` currently contains only `articles/`, `article/[slug]/`,
+`learn/[slug]/` and `mission/[slug]/`. Needed:
 
 - `/hi` home, `/hi/learn` and `/hi/missions` listing pages (mirror the English
   ones; `lib/i18n.ts` already has `sectionHref`/`pathPrefix`).
@@ -112,7 +112,7 @@ is effectively unreachable and uncrawlable.
 
 ### 2.3 No component or route tests
 
-All 354 tests are pure logic. **Nothing exercises a React component or an API
+All 361 tests are pure logic. **Nothing exercises a React component or an API
 route**, so the light/dark rule (CLAUDE.md #2) is enforced only by a human
 looking at a preview.
 
@@ -238,3 +238,9 @@ session does not redo any of it:
 *Keep this file current. When you finish something, move it to §5 and record the
 reasoning in `ENGINEERING.md` §2 — that is where future sessions look for "why",
 and this file is only ever "what next".*
+
+- **Listing URLs are plural, detail URLs are singular** — `/articles` browses,
+  `/article/:slug` reads one; same for `/missions` → `/mission/:slug`. The
+  mapping lives only in `DETAIL_SEGMENT` in `lib/i18n.ts`; don't hardcode either
+  form at a call site. `/our-mission` is the about page (it used to be
+  `/mission`, which now belongs to mission detail).

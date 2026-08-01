@@ -5,9 +5,13 @@
 // article (same slug, same shared view counter). Add a language here + write
 // its translations in the admin — no schema change required.
 //
-// URL model: English is unprefixed (`/articles/:slug`); every other language is
-// path-prefixed by its code (`/hi/articles/:slug`). `pathPrefix` centralises
+// URL model: English is unprefixed (`/article/:slug`); every other language is
+// path-prefixed by its code (`/hi/article/:slug`). `pathPrefix` centralises
 // that so links and routes stay consistent.
+//
+// Listing and detail use *different* segments: the plural browses (`/articles`),
+// the singular reads one (`/article/:slug`) — the same split NASA and most
+// publishers use. `DETAIL_SEGMENT` below is the only place that mapping lives.
 
 export type LanguageCode = 'en' | 'hi'
 
@@ -47,9 +51,31 @@ export function langPrefix(code: string): string {
   return getLanguage(code).pathPrefix
 }
 
-/** Build a detail URL for any section: `/articles/x`, `/hi/learn/x`, … */
+/**
+ * Detail-route segment for a section whose listing is named differently.
+ *
+ * A listing is plural because it holds many (`/articles`); a detail page is
+ * singular because it is one (`/article/water-on-the-moon`). Sections absent
+ * from this map use their own name for both — `learn` is a mass noun with no
+ * singular to move to, and `authors` has no listing page at all.
+ *
+ * Everything downstream — links, canonicals, hreflang, JSON-LD, the sitemap —
+ * routes through `sectionHref`, so this map is the single edit point if a
+ * section is ever renamed again.
+ */
+const DETAIL_SEGMENT: Record<string, string> = {
+  articles: 'article',
+  missions: 'mission',
+}
+
+/** Detail-route segment for a section: `articles` → `article`, `learn` → `learn`. */
+export function detailSegment(section: string): string {
+  return DETAIL_SEGMENT[section] ?? section
+}
+
+/** Build a detail URL for any section: `/article/x`, `/hi/learn/x`, … */
 export function sectionHref(section: string, slug: string, code: string): string {
-  return `${langPrefix(code)}/${section}/${slug}`
+  return `${langPrefix(code)}/${detailSegment(section)}/${slug}`
 }
 
 /** Build a section listing URL: `/articles`, `/hi/missions`, … */
@@ -57,7 +83,7 @@ export function sectionListHref(section: string, code: string): string {
   return `${langPrefix(code)}/${section}`
 }
 
-/** Build an article URL for a given language: `/articles/x` or `/hi/articles/x`. */
+/** Build an article URL for a given language: `/article/x` or `/hi/article/x`. */
 export function articleHref(slug: string, code: string): string {
   return sectionHref('articles', slug, code)
 }

@@ -101,7 +101,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
           }, siteConfig),
           buildBreadcrumbs([
             { name: 'Missions', path: '/missions' },
-            { name: mission.name, path: `/missions/${mission.slug}` },
+            { name: mission.name, path: `/mission/${mission.slug}` },
           ], siteConfig),
         ]) }}
       />

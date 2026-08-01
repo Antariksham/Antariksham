@@ -15,7 +15,7 @@ export type LinkKind = 'article' | 'mission' | 'learn' | 'author'
 export interface LinkTarget {
   kind:        LinkKind
   title:       string
-  href:        string        // root-relative, e.g. /articles/water-on-the-moon
+  href:        string        // root-relative, e.g. /article/water-on-the-moon
   slug:        string
   categories?: string[]
   tags?:       string[]

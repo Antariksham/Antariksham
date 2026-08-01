@@ -12,8 +12,8 @@ import {
 } from './internalLinks.ts'
 
 const targets: LinkTarget[] = [
-  { kind: 'article', title: 'Water Ice on the Moon', href: '/articles/water-ice', slug: 'water-ice', categories: ['NASA'], tags: ['moon'] },
-  { kind: 'mission', title: 'Artemis II', href: '/missions/artemis-ii', slug: 'artemis-ii' },
+  { kind: 'article', title: 'Water Ice on the Moon', href: '/article/water-ice', slug: 'water-ice', categories: ['NASA'], tags: ['moon'] },
+  { kind: 'mission', title: 'Artemis II', href: '/mission/artemis-ii', slug: 'artemis-ii' },
   { kind: 'learn',   title: 'What Is a Lunar Orbit', href: '/learn/lunar-orbit', slug: 'lunar-orbit' },
   { kind: 'author',  title: 'Jane Doe', href: '/authors/jane-doe', slug: 'jane-doe' },
 ]
@@ -32,10 +32,10 @@ test('relevance: rewards matched title tokens + full-title + facet overlap', () 
 
 test('suggestLinks: ranks relevant targets, excludes self + already-linked', () => {
   const text = 'The Artemis II mission will study water ice and lunar orbit dynamics.'
-  const s = suggestLinks(text, targets, { selfHref: '/articles/water-ice', linkedHrefs: ['/missions/artemis-ii'] })
+  const s = suggestLinks(text, targets, { selfHref: '/article/water-ice', linkedHrefs: ['/mission/artemis-ii'] })
   const hrefs = s.map(x => x.target.href)
-  assert.equal(hrefs.includes('/articles/water-ice'), false) // self excluded
-  assert.equal(hrefs.includes('/missions/artemis-ii'), false) // already linked
+  assert.equal(hrefs.includes('/article/water-ice'), false) // self excluded
+  assert.equal(hrefs.includes('/mission/artemis-ii'), false) // already linked
   assert.equal(hrefs.includes('/learn/lunar-orbit'), true)    // "lunar orbit" matches
 })
 
@@ -46,32 +46,32 @@ test('suggestLinks: honours the limit and returns descending scores', () => {
 })
 
 test('searchTargets: substring match + linked flag', () => {
-  const res = searchTargets('artemis', targets, ['/missions/artemis-ii'])
+  const res = searchTargets('artemis', targets, ['/mission/artemis-ii'])
   assert.equal(res.length, 1)
   assert.equal(res[0].linked, true)
   assert.equal(searchTargets('', targets).length, 4)
 })
 
 test('extractInternalHrefs: only root-relative, de-duplicated', () => {
-  const html = '<p><a href="/articles/a">x</a> <a href="https://x.test">y</a> <a href="/articles/a">z</a> <a href="#top">t</a></p>'
-  assert.deepEqual(extractInternalHrefs(html), ['/articles/a'])
+  const html = '<p><a href="/article/a">x</a> <a href="https://x.test">y</a> <a href="/article/a">z</a> <a href="#top">t</a></p>'
+  assert.deepEqual(extractInternalHrefs(html), ['/article/a'])
 })
 
 test('findBrokenLinks: internal links not among the known targets', () => {
-  const html = '<a href="/articles/water-ice">ok</a> <a href="/articles/missing">bad</a> <a href="/missions/artemis-ii?x=1">ok2</a>'
+  const html = '<a href="/article/water-ice">ok</a> <a href="/article/missing">bad</a> <a href="/mission/artemis-ii?x=1">ok2</a>'
   const broken = findBrokenLinks(html, targets.map(t => t.href))
-  assert.deepEqual(broken, ['/articles/missing'])
+  assert.deepEqual(broken, ['/article/missing'])
 })
 
 test('computeOrphans: pages nothing links to', () => {
   const nodes = [
-    { href: '/articles/a', outbound: ['/articles/b'] },
-    { href: '/articles/b', outbound: [] },
-    { href: '/articles/c', outbound: ['/articles/b'] }, // c is orphan (no inbound)
+    { href: '/article/a', outbound: ['/article/b'] },
+    { href: '/article/b', outbound: [] },
+    { href: '/article/c', outbound: ['/article/b'] }, // c is orphan (no inbound)
   ]
-  assert.deepEqual(computeOrphans(nodes).sort(), ['/articles/a', '/articles/c'])
+  assert.deepEqual(computeOrphans(nodes).sort(), ['/article/a', '/article/c'])
 })
 
 test('buildLinkHtml: escaped internal anchor', () => {
-  assert.equal(buildLinkHtml('/articles/a', 'Read <this>'), '<a href="/articles/a">Read &lt;this&gt;</a>')
+  assert.equal(buildLinkHtml('/article/a', 'Read <this>'), '<a href="/article/a">Read &lt;this&gt;</a>')
 })

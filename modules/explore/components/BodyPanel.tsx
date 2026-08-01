@@ -41,7 +41,7 @@ export function BodyPanel({ body, missions }: Props) {
           {shown.map(m => {
             const { color } = statusMeta(m.status)
             return (
-              <Link key={m.slug} href={`/missions/${m.slug}`} className="body-mission press">
+              <Link key={m.slug} href={`/mission/${m.slug}`} className="body-mission press">
                 <span className="body-mission-dot" style={{ background: color }} aria-hidden />
                 <span className="body-mission-name">{m.name}</span>
                 {m.launchDate && (

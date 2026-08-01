@@ -49,8 +49,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   const dynamicRoutes: MetadataRoute.Sitemap = [
-    ...articleSlugs.map(slug => ({ url: `${base}/articles/${slug}`, lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.8 })),
-    ...missionSlugs.map(slug => ({ url: `${base}/missions/${slug}`, lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.6 })),
+    ...articleSlugs.map(slug => ({ url: `${base}/article/${slug}`, lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.8 })),
+    ...missionSlugs.map(slug => ({ url: `${base}/mission/${slug}`, lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.6 })),
     ...learnSlugs.map(slug  => ({ url: `${base}/learn/${slug}`,     lastModified: now, changeFrequency: 'monthly' as const, priority: 0.6 })),
     ...authorSlugs.map(slug => ({ url: `${base}/authors/${slug}`,   lastModified: now, changeFrequency: 'weekly'  as const, priority: 0.4 })),
   ]

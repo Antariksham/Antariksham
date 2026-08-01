@@ -25,14 +25,14 @@ export async function GET() {
         .eq('status', 'published')
         .limit(2000)
       ;(data || []).forEach((r: any) => targets.push({
-        kind: 'article', title: r.title, slug: r.slug, href: `/articles/${r.slug}`,
+        kind: 'article', title: r.title, slug: r.slug, href: `/article/${r.slug}`,
         categories: (r.article_categories || []).map((ac: any) => ac.categories?.name).filter(Boolean),
         tags: (r.article_tags || []).map((at: any) => at.tags?.name).filter(Boolean),
       }))
     }),
     safe(async () => {
       const { data } = await db.from('missions').select('slug, name').limit(1000)
-      ;(data || []).forEach((r: any) => r.slug && targets.push({ kind: 'mission', title: r.name, slug: r.slug, href: `/missions/${r.slug}` }))
+      ;(data || []).forEach((r: any) => r.slug && targets.push({ kind: 'mission', title: r.name, slug: r.slug, href: `/mission/${r.slug}` }))
     }),
     safe(async () => {
       const { data } = await db.from('knowledge_articles').select('slug, title').limit(2000)

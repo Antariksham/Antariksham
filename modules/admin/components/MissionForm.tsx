@@ -245,7 +245,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
 
         {/* Slug */}
         <div>
-          <FieldLabel hint={`/missions/${form.slug || '…'}`}>Slug</FieldLabel>
+          <FieldLabel hint={`/mission/${form.slug || '…'}`}>Slug</FieldLabel>
           <input
             value={form.slug}
             onChange={e => { setSlugEdited(true); set('slug', e.target.value.toLowerCase().replace(/\s+/g, '-')) }}
@@ -504,7 +504,7 @@ export function MissionForm({ mode, mission, agencies }: Props) {
             </button>
             {mode === 'edit' && mission?.slug && (
               <a
-                href={`/missions/${mission.slug}`}
+                href={`/mission/${mission.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ ...btnStyle({}), textDecoration: 'none', textAlign: 'center' as const, justifyContent: 'center' }}

@@ -46,6 +46,34 @@ Every change builds (`next build` compiles; the only build error is a
 pre-existing `supabaseUrl is required` during page-data collection when Supabase
 env vars are absent — unrelated to app code).
 
+- ✅ **Listing and detail URLs split plural/singular.** Browsing stays plural
+  (`/articles`, `/missions`); reading one is now singular — `/article/:slug` and
+  `/mission/:slug`, plus `/hi/article/:slug` and `/hi/mission/:slug`. This is the
+  pattern NASA and most publishers use, and it reads correctly: the plural holds
+  many, the singular is one.
+  - **`lib/i18n.ts` is the single edit point.** A `DETAIL_SEGMENT` map
+    (`articles → article`, `missions → mission`) is consumed by `sectionHref`,
+    and `localizedAlternates` already builds canonicals and hreflang from that —
+    so links, JSON-LD, OG, the sitemap and the language toggle all followed with
+    no per-call-site knowledge. `sectionListHref` keeps the plural. Sections not
+    in the map are unchanged by design: `learn` is a mass noun with no singular
+    to move to, and `authors` has no listing page.
+  - **The about page moved `/mission` → `/our-mission`**, which had to happen
+    first since `/mission` is now the mission detail route. It also removes a
+    real confusion — `/mission` and `/missions` were one character apart and held
+    completely unrelated content.
+  - **Deliberately no redirects.** The site is pre-launch: no domain attached,
+    nothing in Search Console, no sitemap submitted, and the current rows are
+    development data to be wiped before the first real article. With no link
+    equity to preserve, old paths simply 404 rather than carrying permanent
+    redirects forever. The one pre-existing `/news/:slug` rule was repointed at
+    `/article/:slug` so it does not dangle. **If these URLs ever move again after
+    launch that calculus reverses** — 301s become mandatory.
+  - `app/article/not-found.tsx` moved with the detail route it belongs to (the
+    listing never calls `notFound()`). Admin routes (`/admin/articles`,
+    `/api/admin/…`) are untouched; only the "View live" links inside the admin
+    editors were repointed.
+
 - ✅ **Lint clean — the eight-warning baseline is gone.** `next build` had carried
   eight ESLint warnings ever since `eslint.dirs` first pointed the linter at
   `modules/`. They were noise that would hide the next real warning, so they are
@@ -196,7 +224,7 @@ env vars are absent — unrelated to app code).
   (0.40→0.78 dark, 0.32→0.85 light) — the token is only used by the homepage hero,
   so nothing else is affected. Headline/excerpt stay legible in both themes.
 - ✅ **Article hero image broken on the reading page**: the article detail page
-  (`app/articles/[slug]`) was the only place still using `next/image`. With an empty
+  (`app/article/[slug]`) was the only place still using `next/image`. With an empty
   `next.config.js` (no `images.remotePatterns`), the Next optimizer returns 400
   for any external host, so the featured image and author avatar broke — while the
   cards (plain `<img>`) worked. Converted both to plain `<img>` (the site's house
@@ -630,8 +658,8 @@ env vars are absent — unrelated to app code).
   published-only, no anon writes). Translations are fetched in a **separate,
   tolerant lookup**, never embedded in the core read, so content still renders if
   a translation table is absent (deploy order doesn't matter). English is
-  unprefixed; other languages are path-prefixed (`/hi/articles/:slug`,
-  `/hi/learn/:slug`, `/hi/missions/:slug`) with an on-page language toggle
+  unprefixed; other languages are path-prefixed (`/hi/article/:slug`,
+  `/hi/learn/:slug`, `/hi/mission/:slug`) with an on-page language toggle
   (`components/LanguageToggle`), `hreflang`/canonical alternates, `lang`
   attributes, and a Devanagari system-font stack. Untranslated items fall back to
   English (`/hi` fallback page = `canonical→EN` + `noindex`). **All detail routes
@@ -1229,7 +1257,7 @@ env vars are absent — unrelated to app code).
     Supabase **lazily inside its try/catch**, so the page renders (with empty
     cross-links) even with no DB env — it never 500s like DB-required pages.
     Cross-links per body to `/search?q=…`, `/live/deep-space`, `/lunar-sim`,
-    `/live/iss-tracker`, `/missions/:slug`.
+    `/live/iss-tracker`, `/mission/:slug`.
   - **Design-system compliant**: chips/panel/facts use the standard tokens
     (both themes verified in a headless browser); the orrery canvas itself is
     pinned dark via new `--space-*` tokens (it depicts space — same rationale
@@ -1701,7 +1729,7 @@ reading column) · `.tag` / `.tags-row` (filters/chips) · `.hero-badge`.
 - **Sans** (`var(--font-sans)`, Segoe UI stack) for UI, headings, card titles,
   labels. Headings are **bold sans**.
 - **Merriweather serif** (`var(--font-serif)`) **only** for the *reading body* of
-  article (`app/articles/[slug]`) and learn pages. Nowhere else.
+  article (`app/article/[slug]`) and learn pages. Nowhere else.
 - **DM Sans** (`var(--font-mono)` — misnamed; it's the label face) for
   eyebrows/meta/labels.
 
@@ -1718,7 +1746,7 @@ reading column) · `.tag` / `.tags-row` (filters/chips) · `.hero-badge`.
 5. **SEO discipline (Plan §8)** — non-negotiable for the eventual cutover:
    - Keep URLs stable; any changed URL gets a **permanent 301** (never JS redirect).
    - Carry forward/improve **meta description, OG tags, canonical URL, JSON-LD**
-     on every migrated page (the `app/articles/[slug]` route is the proven pattern).
+     on every migrated page (the `app/article/[slug]` route is the proven pattern).
    - Keep `sitemap.xml` in sync; preserve `robots.txt` (admin stays disallowed).
    - Roll out **one page at a time** behind the `vercel.json` rewrite; watch
      Search Console 1–2 weeks before the next. Never gut page content.

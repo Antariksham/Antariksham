@@ -24,7 +24,7 @@ const SITE: SiteInfo = {
 test('buildBreadcrumbs: numbers positions from 1 and makes every item absolute', () => {
   const bc = buildBreadcrumbs([
     { name: 'Articles', path: '/articles' },
-    { name: 'A Story',  path: '/articles/a-story' },
+    { name: 'A Story',  path: '/article/a-story' },
   ], SITE) as any
 
   assert.equal(bc['@type'], 'BreadcrumbList')
@@ -103,7 +103,8 @@ test('buildMissionJsonLd: core fields, destination as a Place, agency as sponsor
   assert.equal(ld.about['@type'], 'Place')
   assert.equal(ld.about.name, 'Mars')
   assert.equal(ld.sponsor.name, 'NASA')
-  assert.match(ld.url, /\/missions\/perseverance$/)
+  // Singular `/mission/:slug` is the detail route; `/missions` is the listing.
+  assert.match(ld.url, /\/mission\/perseverance$/)
 })
 
 test('buildMissionJsonLd: summary wins over description, and sameAs collects real links only', () => {

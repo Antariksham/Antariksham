@@ -91,7 +91,7 @@ export default async function AuthorProfilePage(
         ) : (
           <div className="grid-3">
             {articles.map(article => (
-              <a key={article.id} href={`/articles/${article.slug}`} className="card">
+              <a key={article.id} href={`/article/${article.slug}`} className="card">
                 {article.featuredImage
                   ? <SmartImage className="card-image" src={article.featuredImage} alt={article.title}
                     width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />

@@ -54,8 +54,10 @@ const nextConfig = {
     // The articles section was renamed from /news → /articles. Keep the old
     // URLs alive with permanent (301) redirects so links and SEO equity survive.
     return [
-      { source: '/news',       destination: '/articles',       permanent: true },
-      { source: '/news/:slug', destination: '/articles/:slug', permanent: true },
+      { source: '/news',       destination: '/articles',      permanent: true },
+      // Repointed when the detail route became `/article/:slug` — not a new
+      // redirect, just this existing one kept off a route that no longer exists.
+      { source: '/news/:slug', destination: '/article/:slug', permanent: true },
     ]
   },
 }

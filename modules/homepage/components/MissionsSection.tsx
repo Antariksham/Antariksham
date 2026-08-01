@@ -37,7 +37,7 @@ export function MissionsSection({ missions }: Props) {
           {missions.map(mission => {
             const statusColor = STATUS_COLOR[mission.status] || 'var(--text-muted)'
             return (
-              <Link key={mission.id} href={`/missions/${mission.slug}`} className="card">
+              <Link key={mission.id} href={`/mission/${mission.slug}`} className="card">
                 {mission.featuredImage
                   ? <SmartImage className="card-image" src={mission.featuredImage} alt={mission.name}
                     width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />

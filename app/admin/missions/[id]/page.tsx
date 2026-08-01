@@ -49,7 +49,7 @@ export default async function EditMissionPage({ params }: { params: { id: string
           </span>
           )})()}
           <a
-            href={`/missions/${mission.slug}`}
+            href={`/mission/${mission.slug}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontFamily: 'var(--font-mono)', fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', textDecoration: 'none', padding: '5px 12px', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '5px' }}

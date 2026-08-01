@@ -151,7 +151,7 @@ export interface MissionSeoInput {
  * `about` carries the destination so the page states what it is about.
  */
 export function buildMissionJsonLd(m: MissionSeoInput, site: SiteInfo): JsonLd {
-  const url = abs(site, `/missions/${m.slug}`)
+  const url = abs(site, `/mission/${m.slug}`)
   const sameAs = [m.website, m.wikipedia].filter((u): u is string => Boolean(u))
 
   return {

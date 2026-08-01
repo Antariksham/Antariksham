@@ -7,7 +7,7 @@ import { mainNav } from '@/config/navigation'
  * The site-wide 404.
  *
  * Renders inside the root layout, so it inherits the nav, the footer and the
- * theme toggle — the thing Next's built-in 404 has none of. `app/articles/not-found.tsx`
+ * theme toggle — the thing Next's built-in 404 has none of. `app/article/not-found.tsx`
  * still handles a missing article specifically; this catches everything else,
  * including mistyped URLs and dead inbound links, which on a site inheriting
  * search traffic is a page real people land on.
