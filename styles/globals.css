@@ -19,6 +19,18 @@
   --font-serif: 'Merriweather', Georgia, serif;                   /* article body prose */
   --font-mono:  'DM Sans', system-ui, sans-serif;                 /* labels / eyebrows / meta (the system has no true mono face) */
 
+  /* Devanagari counterparts, for Hindi. Prepended to — not replacing — the
+     Latin stacks above, so a Hindi page keeps identical Latin rendering for the
+     numerals, dates, agency acronyms and mission names that stay in Latin
+     script mid-sentence. Every target platform ships one of these faces
+     (Android/ChromeOS: Noto; Windows: Nirmala UI, Mangal; Apple: Devanagari
+     Sangam MN), so no webfont is downloaded — matching the project's
+     system-font convention.
+     These tokens are the single definition: lib/i18n.ts references them rather
+     than repeating the stacks. */
+  --font-sans-hi:  'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', var(--font-sans);
+  --font-serif-hi: 'Noto Serif Devanagari', 'Tiro Devanagari Hindi', 'Devanagari Sangam MN', 'Nirmala UI', var(--font-serif);
+
   /* Surfaces — one navy family, five depth levels in the same hue */
   --black:      #0a0a0f;   /* → --bg-primary   */
   --deep:       #0f0f17;
