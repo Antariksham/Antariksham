@@ -93,22 +93,36 @@ nothing. Every visit is terminal.
   (`supabase/migrations/20260726120000_article_scheduling.sql` runs pg_cron).
   Start with the capture form + table + double opt-in; sending can come later.
 
-### 2.2 Hindi is a half-open door
+### 2.2 Hindi — the door is open; the rooms need furnishing
 
-The expensive part — translation storage, the language toggle, admin language
-tabs — is **done**. The discoverability layer is missing, so translated content
-is effectively unreachable and uncrawlable.
+The discoverability layer is **done**. Every public route has a `/hi` twin
+(`app/routeParity.test.ts` fails the build if one goes missing), the language
+switch is site chrome in the nav rather than article furniture, `/hi` URLs are
+in the sitemap with hreflang, and `:lang(hi)` in `styles/globals.css` undoes the
+Latin-tuned letter-spacing and line-heights that break Devanagari.
 
-`app/hi/` currently contains only `articles/`, `article/[slug]/`,
-`learn/[slug]/` and `mission/[slug]/`. Needed:
+**The scope decision changed**: site chrome and labels are now translated too,
+not English-only as previously planned. `lib/dictionaries/` holds the strings,
+and `hi.ts` is typed against `en.ts`, so a label added without its Hindi
+counterpart fails `next build` and names the key.
 
-- `/hi` home, `/hi/learn` and `/hi/missions` listing pages (mirror the English
-  ones; `lib/i18n.ts` already has `sectionHref`/`pathPrefix`).
-- A **language switch in the nav** — today the only entry point is the toggle on
-  an individual English article, so a Hindi reader cannot stay in Hindi.
-- **`/hi/*` URLs in `app/sitemap.ts` with `hreflang` alternates.** Right now no
-  translated page is in the sitemap at all, so none of it is indexed.
-- Scope is content-only by design: site chrome and labels stay English.
+What remains:
+
+- **Page-body copy.** Nav, footer and per-page metadata are translated. The
+  bodies of the twins re-export the English route, so their prose is still
+  English — the intended fallback, but the bulk of the remaining work. Roughly
+  190 strings across ~30 components. Translate a page, then give its twin a
+  real body with `lang` instead of the re-export.
+- **The fallback marker.** Cards already report which language they rendered in
+  (`ArticleCard.language` and friends, set from the translation overlay at no
+  extra query cost); nothing displays it yet. A Hindi reader currently cannot
+  tell a translated card from an English fallback.
+- **Per-request metadata on four twins.** `/hi/live/apod`, `/hi/authors/[slug]`,
+  `/hi/explore/topics/[slug]` and `/hi/live/deep-space/[id]` re-export
+  `generateMetadata` from the English route, so they emit the English title and
+  canonical. They render correctly; only their metadata is wrong.
+- **A native Hindi review of `lib/dictionaries/hi.ts`.** The strings are
+  serviceable but were not written by a native speaker.
 
 ### 2.3 No component or route tests
 

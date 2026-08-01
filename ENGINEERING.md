@@ -1985,17 +1985,24 @@ the `/admin/tags` screen):**
   middleware-level role checks are wanted later.
 
 **Internationalization follow-ups:**
-- Bilingual **Articles, Learn & Missions** shipped (§2) — detail pages + toggle
-  + admin language tabs. Remaining discoverability/expansion:
-  - **`/hi` listing pages** (`/hi/articles` exists; add `/hi/learn`, `/hi/missions`)
-    and a **global language switch in the nav** + a `/hi` home, so Hindi readers
-    can enter and stay in Hindi site-wide (today the entry point is the toggle on
-    an individual English page). Current scope is **content only** — site
-    chrome/labels stay English by design.
+- Site-wide Hindi shipped. Every public route has a `/hi` twin, the language
+  switch lives in the nav on every page, chrome + per-page metadata come from
+  `lib/dictionaries/`, `/hi` URLs are in the sitemap with hreflang, and
+  `:lang(hi)` in `styles/globals.css` fixes the Devanagari typography. Scope was
+  widened from content-only to **chrome and labels too**. Remaining:
+  - **Page-body copy** — the twins re-export the English route body, so their
+    prose is still English (~190 strings across ~30 components). Translate a
+    page, then replace its twin's re-export with a real body taking `lang`.
+  - **The fallback marker** — `ArticleCard.language` / `MissionCard.language` /
+    `KnowledgeArticleCard.language` already say whether a card rendered
+    translated text or fell back to English. Nothing displays it yet.
+  - **Per-request metadata on four twins** — `/hi/live/apod`,
+    `/hi/authors/[slug]`, `/hi/explore/topics/[slug]` and
+    `/hi/live/deep-space/[id]` re-export `generateMetadata`, so they emit the
+    English title and canonical.
   - **Mission `timeline`** entries (structured JSON) are not yet translated —
     only name + description are. Can be added without a schema change.
-  - When a sitemap is added, include the `/hi/*` detail URLs for translated items
-    with `hreflang` alternates.
+  - **A native Hindi review** of `lib/dictionaries/hi.ts`.
 
 **Editor experience follow-ups (Phase 1 upgrade shipped — see §2):**
 - Per-article SEO overrides (custom SEO title / meta description / social image /
