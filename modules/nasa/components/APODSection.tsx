@@ -1,4 +1,5 @@
 import type { NASAApod } from '@/types/api'
+import { SmartImage } from '@/components/ui/SmartImage'
 
 interface Props {
   apod: NASAApod | null
@@ -58,10 +59,17 @@ export function APODSection({ apod }: Props) {
             borderRadius: '16px', overflow: 'hidden', marginBottom: '36px',
             background: 'var(--panel)',
           }}>
-            <img
+            {/* The page's LCP image, so `priority`. NASA's own host is not on
+                the optimiser allow-list, so SmartImage renders the same plain
+                <img> as before today — but the day APOD is mirrored to Supabase
+                or Cloudinary it starts emitting a srcset with no edit here. */}
+            <SmartImage
               src={apod.hdurl || apod.url}
               alt={apod.title}
-              decoding="async"
+              width={1600}
+              height={900}
+              sizes="(max-width: 900px) 100vw, 900px"
+              priority
               style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }}
             />
           </div>

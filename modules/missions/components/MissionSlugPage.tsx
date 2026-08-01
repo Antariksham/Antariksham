@@ -8,6 +8,7 @@ import { typeLabel } from '@/modules/missions/services/missionClassification'
 import { timelineStatusMeta, timelineImportanceMeta } from '@/modules/missions/services/missionTimeline'
 import { launchTargetTimestamp, launchSuccessMeta, isLaunchEmpty } from '@/modules/missions/services/missionLaunch'
 import { LanguageToggle } from '@/components/LanguageToggle'
+import { SmartImage } from '@/components/ui/SmartImage'
 import { sectionHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
 import { buildMissionJsonLd, buildBreadcrumbs } from '@/modules/seo/jsonLd'
 import { siteConfig } from '@/config/site'
@@ -108,10 +109,18 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
       {/* ── Hero image ──────────────────────────────── */}
       {mission.featuredImage && (
         <div style={{ width: '100%', height: 'clamp(240px,40vw,480px)', overflow: 'hidden', position: 'relative' }}>
-          <img
+          {/* The page's LCP image, so `priority`. Editors can point this at any
+              host, which is exactly what SmartImage exists for: allow-listed
+              hosts get a srcset, the rest fall back to the plain <img> this
+              used to be. The width/height are intrinsic hints only — the
+              clamped box above still decides the rendered size. */}
+          <SmartImage
             src={mission.featuredImage}
             alt={media.hero.alt || mission.name}
-            loading="eager"
+            width={1920}
+            height={640}
+            sizes="100vw"
+            priority
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
           {/* Gradient fade to black at bottom */}

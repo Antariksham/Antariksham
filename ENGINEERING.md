@@ -46,6 +46,41 @@ Every change builds (`next build` compiles; the only build error is a
 pre-existing `supabaseUrl is required` during page-data collection when Supabase
 env vars are absent — unrelated to app code).
 
+- ✅ **Lint clean — the eight-warning baseline is gone.** `next build` had carried
+  eight ESLint warnings ever since `eslint.dirs` first pointed the linter at
+  `modules/`. They were noise that would hide the next real warning, so they are
+  now **zero**: `next lint --max-warnings=0` passes. Fixed rather than blanket-
+  suppressed, and the split is the point:
+  - **Three were real defects.** `AdminSidebar` imported lucide's `Image` glyph
+    under that name, so `jsx-a11y/alt-text` demanded an `alt` a glyph does not
+    take — aliased to `ImageIcon`. `LinkAssistant`'s exhaustive-deps suppression
+    was written **one line below** the `useMemo` it was meant to cover, so it
+    suppressed nothing; that snapshot moved to a lazy `useState` initialiser,
+    which is also more correct — React treats a memo as a hint it may discard,
+    and a "snapshot on open" that silently recomputes is a bug waiting to happen.
+    `ISSTracker`'s mount-only effect read `initialPosition` only to seed the
+    trail, so the seed moved into `useState` and the dependency disappeared
+    honestly; listing it instead would have torn down the 5s polling interval
+    every time the server handed over a new prop object. Hydration-safe — a
+    one-point trail draws no segments, so the SSR markup is byte-identical.
+  - **Two images became `SmartImage`**: the mission hero and the APOD hero, each
+    its page's LCP, both now `priority` with a `sizes` hint. APOD's host is not
+    allow-listed so it still renders a plain `<img>` today; the value is that it
+    starts optimising the day APOD is mirrored, with no edit at the call site.
+  - **Three stay raw `<img>`**, with a scoped `eslint-disable` and the reason
+    written next to it: the `AuthorsAdmin` 36px avatar (its `onError` → initials
+    fallback is the whole component, and next/image saves nothing at 36px), the
+    admin `MediaGrid` thumbnails (already the provider's own thumbnail, admin-
+    only — matching the disables its two sibling previews already carried), and
+    `ISSTracker`'s world map (a same-origin **SVG**, see next point).
+  - **A latent 400 closed on the way past.** `isOptimizableImage` returned true
+    for *any* same-origin path including `.svg`, but `next.config.js` sets
+    `dangerouslyAllowSVG: false`, so the optimiser answers **400** for an SVG
+    from any origin — precisely the failure `SmartImage` exists to prevent. It
+    now excludes SVG everywhere, query strings and hashes included, and
+    `config/images.test.ts` pins the rules that must hold in any deployment
+    (361 tests green).
+
 - ✅ **Cut loose from the cancelled migration — the site is independent.** The
   repo used to be organised around reskinning this engine and launching it under
   another project's domain. That is off; Antariksham ships as itself at
@@ -232,11 +267,12 @@ env vars are absent — unrelated to app code).
       host was correctly refused with 400, which is exactly why the fallback
       exists. The rendered tag carries a 10-entry `srcSet` (256w–3840w) plus the
       `sizes` hint.
-    - Note the lint count is unchanged at 8: the card files already carried
-      `eslint-disable` comments for their raw `<img>`, so converting them moved
-      nothing. Those stale suppressions were removed. The five remaining
-      `no-img-element` warnings are admin panels and the three runtime images
-      whose hosts are not allow-listed.
+    - Note the lint count was unchanged at 8 by this step: the card files already
+      carried `eslint-disable` comments for their raw `<img>`, so converting them
+      moved nothing. Those stale suppressions were removed. The five remaining
+      `no-img-element` warnings were admin panels and the three runtime images
+      whose hosts are not allow-listed — **all eight are cleared now**, see the
+      lint-clean entry at the top of this section.
   - **Layout shift from images fixed at its real sources.** An earlier note in
     docs/NEXT-STEPS.md claimed "layout shift on every image on the site" because
     no `<img>` declared width/height. **That was wrong** and worth recording:
@@ -262,13 +298,15 @@ env vars are absent — unrelated to app code).
       CSS and a 640px column, an unsized image reserves **0px** before load and
       the same image with `width="1600" height="900"` reserves **360px**. Also
       confirmed the sanitizer round-trips all four attributes.
-    - **Still open**, and deliberately not decided here: no `next/image`, so
-      there is still no `srcset` or format negotiation, and the five
-      `@next/next/no-img-element` lint warnings remain (dimensions do not clear
-      that rule — only `next/image` does). Enabling it needs either a Cloudinary
+    - **Left open at the time**, and deliberately not decided there: no
+      `next/image`, so no `srcset` or format negotiation, and five
+      `@next/next/no-img-element` warnings stood (dimensions do not clear that
+      rule — only `next/image` does). Enabling it needs either a Cloudinary
       loader or `remotePatterns`, and a wildcard pattern turns the site into an
       open image proxy billed to Vercel — a cost/security call for the owner, not
-      a silent default. The `/gallery` masonry also still shifts: it is a column
+      a silent default. **Both have since been settled**: `SmartImage` with an
+      env-derived allow-list (entry above), then the lint sweep at the top of
+      this section. The `/gallery` masonry also still shifts: it is a column
       layout whose heights come from the images, and NASA's search API does not
       return dimensions to reserve space with.
   - **Structured data closed out** (`modules/seo/jsonLd.ts`). Coverage was
@@ -1370,8 +1408,9 @@ both now shut:
   on every commit lints the whole tree**. Enabling it surfaced one genuine
   error — an unescaped `'`/`—` in `AuthorsAdmin.tsx`'s delete dialog — fixed
   here, because an ESLint error fails `next build` and would have blocked
-  deploys. Eight warnings (mostly `no-img-element`) remain and do not fail
-  builds; see §10.
+  deploys. It also surfaced eight warnings (mostly `no-img-element`), which did
+  not fail builds and have since been cleared — the build is now warning-free at
+  `--max-warnings=0` (§2).
 - **The 27 colocated `*.test.ts` suites (294 tests) had no runner.** No `test`
   script, no CI, so they ran only when someone remembered to type `node --test`.
   `package.json` gained `lint`, `test` and `test:watch`; `.github/workflows/ci.yml`
@@ -1947,16 +1986,11 @@ the `/admin/tags` screen):**
   `META.image`.
 - Learn: wire real thumbnails after running the migration.
 
-**Eight ESLint warnings**, surfaced when `eslint.dirs` first pointed the linter
-at `modules/` (§2). They do not fail the build, but they were invisible until
-now and are worth clearing:
-- `@next/next/no-img-element` ×5 — raw `<img>` in `AuthorsAdmin`, `MediaGrid`,
-  `ISSTracker`, `MissionSlugPage`, `APODSection`. Ties into the "media blur
-  placeholders / `next/image`" item above; fixing that fixes these.
-- `jsx-a11y/alt-text` ×1 — `AdminSidebar.tsx:37` image has no `alt`.
-- `react-hooks/exhaustive-deps` ×2 — `LinkAssistant` (`useMemo`, missing
-  `getText`) and `ISSTracker` (`useEffect`, missing `initialPosition`). Check
-  these two by hand rather than autofixing; a missing dep can be deliberate.
+~~**Eight ESLint warnings**~~ — **cleared** (§2). `next lint --max-warnings=0`
+passes, so the baseline is now zero and the next warning to appear is a real
+signal. **Keep it there**: the remaining raw `<img>` tags each carry a scoped
+`eslint-disable-next-line` with the reason next to it, so a new bare `<img>`
+shows up as a warning rather than blending into a running count.
 
 **No component or route tests.** All 27 suites cover pure logic (naming,
 scheduling, citations, search, analytics). Nothing exercises a React component

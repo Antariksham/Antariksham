@@ -69,6 +69,11 @@ function Avatar({ src, name, size = 36 }: { src: string | null; name: string; si
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
   if (src && !failed) {
     return (
+      // Raw <img> on purpose. A 36px avatar in an admin list has nothing for
+      // next/image to save, and the `onError` fallback to initials is the point
+      // of this component — an avatar URL an editor typed can be anything, and
+      // a broken-image glyph is worse than the initials.
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={src}
         alt={name}

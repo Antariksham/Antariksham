@@ -16,7 +16,17 @@ const MAX_TRAIL = 80
 
 export function ISSTracker({ initialPosition, crew }: Props) {
   const [position, setPosition]     = useState<ISSPosition | null>(initialPosition)
-  const [trail, setTrail]           = useState<{ x: number; y: number }[]>([])
+  // Seeded here rather than in the effect below so the effect stops reading
+  // `initialPosition` at all — it is a mount-only effect that owns a 5s polling
+  // interval, and listing the prop as a dependency would tear the interval down
+  // and wipe the trail every time the server handed us a new object. Rendering
+  // the first point during SSR is hydration-safe: the map only draws a segment
+  // between two points, so a one-point trail emits the same markup as none.
+  const [trail, setTrail]           = useState<{ x: number; y: number }[]>(
+    () => initialPosition
+      ? [latLngToSVG(initialPosition.latitude, initialPosition.longitude, MAP_W, MAP_H)]
+      : [],
+  )
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
   const [isLive, setIsLive]         = useState(true)
   const [crewList, setCrewList]     = useState<ISSCrew[]>(crew)
@@ -25,11 +35,6 @@ export function ISSTracker({ initialPosition, crew }: Props) {
   const busyRef                     = useRef(false)
 
   useEffect(() => {
-    if (initialPosition) {
-      const pt = latLngToSVG(initialPosition.latitude, initialPosition.longitude, MAP_W, MAP_H)
-      setTrail([pt])
-    }
-
     const tick = async () => {
       // Skip if a previous request is still in flight (the endpoint can take a
       // few seconds), so slow responses don't pile up on the 5s interval.
@@ -109,7 +114,13 @@ export function ISSTracker({ initialPosition, crew }: Props) {
         {/* World Map Tracker */}
         <div style={{ width: '100%', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(var(--ink),0.1)', marginBottom: '28px', background: 'var(--black)', position: 'relative' }}>
 
-          {/* World map — <img> behind SVG so CSS filter works on all browsers including mobile */}
+          {/* World map — <img> behind SVG so CSS filter works on all browsers
+              including mobile. Stays a raw <img> on purpose: it is a static
+              same-origin SVG, and the optimiser is configured
+              `dangerouslyAllowSVG: false`, so routing it through next/image
+              would answer 400. Nothing to optimise anyway — SVG has no
+              resolution to pick between. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/world-map.svg"
             alt=""

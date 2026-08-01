@@ -162,6 +162,11 @@ function MediaCard({
         }}
       >
         {item.kind === 'image' ? (
+          // Raw <img>, like the sibling previews in MediaDetailDrawer and
+          // MediaMetadataDialog: `thumbUrl` is already the provider's own
+          // thumbnail, and this grid is admin-only, so there is no LCP or
+          // crawl budget for next/image to protect.
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={item.thumbUrl || item.url}
             alt={item.name}

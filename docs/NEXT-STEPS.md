@@ -181,11 +181,16 @@ Ordered by payoff, not effort. Any of these is a reasonable single session.
 
 Not urgent, but do not rediscover these as if they were new.
 
-- **8 ESLint warnings** is the baseline. Five `no-img-element` (admin panels plus
-  three runtime images on hosts outside the optimiser allow-list), one
-  `jsx-a11y/alt-text` on `AdminSidebar.tsx:37`, two `react-hooks/exhaustive-deps`
-  in `LinkAssistant` and `ISSTracker` — check those two by hand, a missing dep
-  can be deliberate.
+- **0 ESLint warnings** is the baseline — `next lint --max-warnings=0` passes
+  (it used to be 8; see ENGINEERING.md §2). Treat any new warning as a real
+  signal and clear it, rather than letting a running count grow back. The raw
+  `<img>` tags that remain are deliberate and each carries a scoped
+  `eslint-disable-next-line` with the reason written beside it, so a bare `<img>`
+  added by mistake still warns.
+- **SVG never goes through `next/image`.** `dangerouslyAllowSVG: false` means the
+  optimiser answers 400 for an SVG from *any* origin, same-origin included, so
+  `isOptimizableImage` excludes it and `SmartImage` renders a plain `<img>`.
+  Don't "fix" that as an oversight.
 - **Existing article images have no `width`/`height`.** The editor now writes
   them on insert (`modules/admin/editor/imageDimensions.ts`), but content written
   before that still shifts. A backfill would have to fetch each image to measure
