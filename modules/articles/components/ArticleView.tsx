@@ -1,5 +1,4 @@
 import { articleHref, articlesListHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
-import { LanguageToggle } from '@/components/LanguageToggle'
 import { ArticleBody, countWords, type ArticleRenderModel } from './ArticleBody'
 import { TableOfContents } from './TableOfContents'
 import { buildToc, tocCount } from '../services/toc'
@@ -119,13 +118,6 @@ export function ArticleView({
             padding:   'clamp(32px, 6vw, 64px) clamp(20px, 5vw, 40px)',
           }}
         >
-
-          {/* Language switch — only shows when a translation exists */}
-          <LanguageToggle
-            current={article.language}
-            available={article.availableLanguages}
-            hrefFor={c => articleHref(article.slug, c)}
-          />
 
           {/* Reading column (shared with the admin preview) */}
           <ArticleBody model={toRenderModel(article)} lang={lang} />

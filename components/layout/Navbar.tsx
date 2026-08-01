@@ -2,13 +2,24 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { swapLangPath, pathLanguage } from '@/lib/i18n'
+import { translator } from '@/lib/dictionaries'
 import { siteConfig } from '@/config/site'
 import { mainNav } from '@/config/navigation'
 import { Logo } from '@/components/brand/Logo'
 import { ThemeToggle } from './ThemeToggle'
+import { LanguageToggle } from './LanguageToggle'
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+
+  // Derived from the live pathname rather than passed in from the layout: the
+  // root layout does not re-render on a client-side navigation, so a prop
+  // would go stale the moment a reader moved between pages.
+  const pathname = usePathname() || '/'
+  const lang     = pathLanguage(pathname)
+  const t        = translator(lang)
 
   return (
     <>
@@ -19,7 +30,7 @@ export function Navbar() {
         {/* LOGO — mark + wordmark, no .org. Both inherit var(--white), so the
             mark is white in dark mode and near-black in light mode. */}
         <Link
-          href="/"
+          href={swapLangPath('/', lang)}
           className="press"
           aria-label={`${siteConfig.name} — home`}
           style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}
@@ -38,11 +49,11 @@ export function Navbar() {
         <ul style={{ display: 'flex', alignItems: 'center', gap: '36px', listStyle: 'none', margin: 0, padding: 0 }} className="desktop-nav">
           {mainNav.map((item) => (
             <li key={item.href}>
-              <Link href={item.href} className="press" style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', color: item.isLive ? '#2ecc71' : 'var(--white)', display: 'flex', alignItems: 'center', gap: '7px', opacity: item.isLive ? 1 : 0.9 }}>
+              <Link href={swapLangPath(item.href, lang)} className="press" style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', color: item.isLive ? '#2ecc71' : 'var(--white)', display: 'flex', alignItems: 'center', gap: '7px', opacity: item.isLive ? 1 : 0.9 }}>
                 {item.isLive && (
                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2ecc71', boxShadow: '0 0 8px #2ecc71', display: 'inline-block', flexShrink: 0, animation: 'blink 2s infinite' }} />
                 )}
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             </li>
           ))}
@@ -50,10 +61,11 @@ export function Navbar() {
 
         {/* DESKTOP RIGHT — search bar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="desktop-nav">
-          <Link href="/search" className="press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: '1px solid rgba(var(--ink),0.2)', borderRadius: '6px', background: 'rgba(var(--ink),0.05)', color: 'rgba(var(--ink),0.75)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', textDecoration: 'none' }}>
+          <Link href={swapLangPath('/search', lang)} className="press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: '1px solid rgba(var(--ink),0.2)', borderRadius: '6px', background: 'rgba(var(--ink),0.05)', color: 'rgba(var(--ink),0.75)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', textDecoration: 'none' }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            Search
+            {t('nav.search')}
           </Link>
+          <LanguageToggle />
           <ThemeToggle />
         </div>
 
@@ -63,10 +75,10 @@ export function Navbar() {
             above the 24px minimum touch target. */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }} className="mobile-nav">
           <ThemeToggle size={36} />
-          <Link href="/search" aria-label="Search" className="press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', flexShrink: 0, border: '1px solid rgba(var(--ink),0.15)', borderRadius: '6px', background: 'rgba(var(--ink),0.04)', color: 'var(--white)', textDecoration: 'none' }}>
+          <Link href={swapLangPath('/search', lang)} aria-label={t('nav.search')} className="press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', flexShrink: 0, border: '1px solid rgba(var(--ink),0.15)', borderRadius: '6px', background: 'rgba(var(--ink),0.04)', color: 'var(--white)', textDecoration: 'none' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', flexShrink: 0, background: 'none', border: '1px solid rgba(var(--ink),0.15)', borderRadius: '6px', cursor: 'pointer', padding: 0 }}>
+          <button onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? t('nav.closeMenu') : t('nav.openMenu')} aria-expanded={menuOpen} style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', flexShrink: 0, background: 'none', border: '1px solid rgba(var(--ink),0.15)', borderRadius: '6px', cursor: 'pointer', padding: 0 }}>
             <span style={{ width: '16px', height: '1.5px', background: 'var(--white)', display: 'block', transition: 'all 0.2s', transform: menuOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none' }} />
             <span style={{ width: '16px', height: '1.5px', background: 'var(--white)', display: 'block', opacity: menuOpen ? 0 : 1 }} />
             <span style={{ width: '16px', height: '1.5px', background: 'var(--white)', display: 'block', transition: 'all 0.2s', transform: menuOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none' }} />
@@ -79,11 +91,18 @@ export function Navbar() {
       {menuOpen && (
         <div className="nav-menu" style={{ position: 'fixed', top: '64px', left: 0, right: 0, bottom: 0, zIndex: 49, background: 'var(--nav-bg)', backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
           {mainNav.map((item) => (
-            <Link key={item.href} href={item.href} className="press" onClick={() => setMenuOpen(false)} style={{ fontFamily: 'var(--font-sans)', fontSize: '32px', fontWeight: 700, color: item.isLive ? '#2ecc71' : 'var(--white)', textDecoration: 'none', padding: '16px 0', borderBottom: '1px solid rgba(var(--ink),0.08)', display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <Link key={item.href} href={swapLangPath(item.href, lang)} className="press" onClick={() => setMenuOpen(false)} style={{ fontFamily: 'var(--font-sans)', fontSize: '32px', fontWeight: 700, color: item.isLive ? '#2ecc71' : 'var(--white)', textDecoration: 'none', padding: '16px 0', borderBottom: '1px solid rgba(var(--ink),0.08)', display: 'flex', alignItems: 'center', gap: '14px' }}>
               {item.isLive && <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2ecc71', boxShadow: '0 0 8px #2ecc71', display: 'inline-block', flexShrink: 0 }} />}
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           ))}
+
+          {/* Language lives in the drawer, not the top bar. The mobile control
+              cluster is tuned to fit the full wordmark at 320px (see the note
+              above); a fourth control there would push it back off. */}
+          <div style={{ padding: '24px 0 8px', display: 'flex', justifyContent: 'flex-start' }}>
+            <LanguageToggle variant="full" />
+          </div>
         </div>
       )}
 

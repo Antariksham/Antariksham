@@ -2349,3 +2349,85 @@ textarea.cite-input { resize: vertical; font-family: var(--font-mono); }
 @media (prefers-reduced-motion: reduce) {
   .apod-promo { transition: none; }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   DEVANAGARI (HINDI)
+
+   Latin-tuned type rules do specific, visible damage to Devanagari, so
+   they are undone here once, centrally, rather than in ~300 components.
+   `<html lang>` is set from the request path in app/layout.tsx, so every
+   rule below activates automatically on /hi and nowhere else.
+
+   Scoped to :lang(hi) — NOT to a wrapper class — so it also covers a
+   Devanagari run inside an otherwise English page (a Hindi article title
+   in a search result, say) via an inner lang="hi".
+   ───────────────────────────────────────────────────────────── */
+
+/* 1. FONT. Devanagari faces first, Latin stack behind them, so numerals,
+      dates and agency acronyms mid-sentence match the English pages. */
+:lang(hi) {
+  font-family: var(--font-sans-hi);
+}
+:lang(hi) .font-serif,
+:lang(hi) .prose,
+:lang(hi) .article-body {
+  font-family: var(--font-serif-hi);
+}
+:lang(hi) .font-mono,
+:lang(hi) .card-category,
+:lang(hi) .section-eyebrow {
+  font-family: var(--font-sans-hi);
+}
+
+/* 2. LETTER-SPACING — the most damaging one. The site tracks out labels,
+      eyebrows and nav items (`letter-spacing: 0.08em`–`0.28em`), which is
+      right for Latin small-caps and wrong for Devanagari: it splits
+      conjuncts (क्ष, त्र, ज्ञ) and pushes matras off the base glyph they
+      belong to. Normal spacing everywhere Devanagari renders. */
+:lang(hi) {
+  letter-spacing: normal;
+}
+
+/* 3. TEXT-TRANSFORM. Devanagari is unicameral — uppercase is a no-op, but
+      leaving it set invites more tracking to be added alongside it. Off. */
+:lang(hi) .card-category,
+:lang(hi) .section-eyebrow,
+:lang(hi) .page-title,
+:lang(hi) .tag,
+:lang(hi) .btn,
+:lang(hi) .footer-link {
+  text-transform: none;
+}
+
+/* 4. VERTICAL ROOM. Matras stack above the शिरोरेखा and below the baseline,
+      so a line box sized for Latin x-height clips them. Headings are the
+      usual casualty: they run tightest (1.1) and largest, so the clipping
+      is most visible exactly where it hurts most. */
+:lang(hi) {
+  line-height: 1.7;
+}
+:lang(hi) h1, :lang(hi) h2, :lang(hi) h3,
+:lang(hi) h4, :lang(hi) h5, :lang(hi) h6,
+:lang(hi) .page-title,
+:lang(hi) .card-title,
+:lang(hi) .section-title {
+  line-height: 1.4;
+}
+
+/* 5. LONG COMPOUNDS. Hindi builds long unbroken compounds that overflow a
+      narrow card or table cell. Devanagari has no hyphenation dictionary
+      in most browsers, so break-word is the honest fallback. */
+:lang(hi) .card-title,
+:lang(hi) .page-title,
+:lang(hi) .card-excerpt,
+:lang(hi) .page-lede {
+  overflow-wrap: break-word;
+  word-break:    normal;
+}
+
+/* 6. FAUX BOLD. Several bundled Devanagari faces ship regular only, and
+      the synthesised bold smears conjuncts badly at small sizes. Ask for
+      a real weight and let the browser skip synthesis where none exists. */
+:lang(hi) {
+  font-synthesis-weight: none;
+}

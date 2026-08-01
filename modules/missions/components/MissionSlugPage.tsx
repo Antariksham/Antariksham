@@ -7,7 +7,6 @@ import { formatDate } from '@/lib/utils'
 import { typeLabel } from '@/modules/missions/services/missionClassification'
 import { timelineStatusMeta, timelineImportanceMeta } from '@/modules/missions/services/missionTimeline'
 import { launchTargetTimestamp, launchSuccessMeta, isLaunchEmpty } from '@/modules/missions/services/missionLaunch'
-import { LanguageToggle } from '@/components/LanguageToggle'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { sectionHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
 import { buildMissionJsonLd, buildBreadcrumbs } from '@/modules/seo/jsonLd'
@@ -143,9 +142,6 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
         )}
-
-        {/* Language switch — only shows when a translation exists */}
-        <LanguageToggle current={mission.language} available={mission.availableLanguages} hrefFor={c => sectionHref('missions', mission.slug, c)} />
 
         {/* Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.1em' }}>

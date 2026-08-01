@@ -2,6 +2,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LogoMark } from '@/components/brand/Logo'
 import { mainNav } from '@/config/navigation'
+import { translator } from '@/lib/dictionaries'
+import { DEFAULT_LANGUAGE } from '@/lib/i18n'
+
+// not-found renders for paths that matched no route, so there is no reliable
+// language to read from the URL — it stays in the default language.
+const enT = translator(DEFAULT_LANGUAGE)
 
 /**
  * The site-wide 404.
@@ -74,7 +80,7 @@ export default function NotFound() {
               here automatically instead of silently going missing. */}
           {mainNav.map(item => (
             <Link key={item.href} href={item.href} className="btn btn-outline press">
-              {item.label}
+              {enT(item.labelKey)}
             </Link>
           ))}
         </nav>

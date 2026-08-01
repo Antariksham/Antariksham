@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import katex from 'katex'
 import type { KnowledgeArticle, DifficultyLevel } from '@/types/knowledge'
-import { LanguageToggle } from '@/components/LanguageToggle'
 import { sectionHref, HI_SANS, HI_SERIF, type LanguageCode } from '@/lib/i18n'
 import { buildLearnJsonLd, buildBreadcrumbs } from '@/modules/seo/jsonLd'
 import { siteConfig } from '@/config/site'
@@ -64,9 +63,6 @@ export function LearnArticlePage({ article, lang = 'en' }: Props) {
         >
           ← Back to Learn
         </Link>
-        <div style={{ marginBottom: '-24px' }}>
-          <LanguageToggle current={article.language} available={article.availableLanguages} hrefFor={c => sectionHref('learn', article.slug, c)} />
-        </div>
       </div>
 
       {/* ── Article header ─────────────────────────────────── */}

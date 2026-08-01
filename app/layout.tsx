@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import { siteConfig } from '@/config/site'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { pathLanguage } from '@/lib/i18n'
 import { NavProgress } from '@/components/layout/NavProgress'
 import '@/styles/globals.css'
 import '@/styles/responsive.css'
@@ -66,8 +67,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // Middleware sets x-pathname on every request
   const pathname = headers().get('x-pathname') || ''
   const isAdmin  = pathname.startsWith('/admin')
-  // Language-prefixed routes (/hi/…) render in that language.
-  const htmlLang = (pathname === '/hi' || pathname.startsWith('/hi/')) ? 'hi' : 'en'
+  // Language-prefixed routes (/hi/…) render in that language. Derived through
+  // pathLanguage so adding a language to LANGUAGES is all it takes — and so the
+  // segment matching is shared with the switch, keeping '/history' English.
+  const htmlLang = pathLanguage(pathname)
 
   return (
     <html
@@ -102,7 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <>
             <Navbar />
             <main>{children}</main>
-            <Footer />
+            <Footer lang={htmlLang} />
           </>
         )}
       </body>
