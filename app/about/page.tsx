@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 }
 
 const LINKS = [
-  { label: 'Our Mission',      href: '/mission'          },
+  { label: 'Our Mission',      href: '/our-mission'          },
   { label: 'Editorial Policy', href: '/editorial-policy' },
   { label: 'Sources',          href: '/sources'          },
   { label: 'Contact',          href: '/contact'          },

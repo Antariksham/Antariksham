@@ -8,7 +8,10 @@ import {
   FileText,
   Rocket,
   Globe,
-  Image,
+  // Aliased: the a11y linter treats any element named `Image` as an image and
+  // demands an `alt` prop, which a lucide glyph does not take. The alias also
+  // keeps the name clear of `next/image`.
+  Image as ImageIcon,
   Search,
   LogOut,
   ChevronRight,
@@ -40,7 +43,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Space Agencies',   href: '/admin/agencies',  icon: <Building2       size={15} /> },
   { label: 'Homepage',         href: '/admin/homepage',  icon: <Globe           size={15} /> },
   { label: 'Launches',         href: '/admin/launches',  icon: <Rocket          size={15} /> },
-  { label: 'Media Library',    href: '/admin/media',     icon: <Image           size={15} /> },
+  { label: 'Media Library',    href: '/admin/media',     icon: <ImageIcon       size={15} /> },
   { label: 'SEO Center',       href: '/admin/seo',       icon: <Search          size={15} /> },
 ]
 

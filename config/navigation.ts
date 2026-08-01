@@ -35,6 +35,6 @@ export const footerNav = {
     { label: 'Editorial Policy', href: '/editorial-policy' },
     { label: 'Sources',          href: '/sources' },
     { label: 'Contact',          href: '/contact' },
-    { label: 'Our Mission',      href: '/mission' },
+    { label: 'Our Mission',      href: '/our-mission' },
   ],
 }

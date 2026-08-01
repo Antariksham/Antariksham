@@ -180,7 +180,7 @@ export function StatusBadge({ status }: { status: string }) {
 // ── Grid card ─────────────────────────────────────────────────
 function MissionGridCard({ mission }: { mission: MissionCard }) {
   return (
-    <a href={`/missions/${mission.slug}`} className="card">
+    <a href={`/mission/${mission.slug}`} className="card">
       {mission.featuredImage
         ? <SmartImage className="card-image" src={mission.featuredImage} alt={mission.name}
                     width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />

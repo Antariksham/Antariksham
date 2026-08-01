@@ -24,8 +24,8 @@ for the design system and invariants. The two that break things most often:
 
 ```bash
 npx tsc --noEmit        # must be clean
-npm test                # 354 tests, all pure logic, must stay green
-npx next lint           # baseline is 8 warnings — do not let it grow
+npm test                # 361 tests, all pure logic, must stay green
+npx next lint           # baseline is 0 warnings — do not let it grow
 npm run build           # must reach "Compiled successfully"
 ```
 
@@ -99,8 +99,8 @@ The expensive part — translation storage, the language toggle, admin language
 tabs — is **done**. The discoverability layer is missing, so translated content
 is effectively unreachable and uncrawlable.
 
-`app/hi/` currently contains only `articles/`, `articles/[slug]/`,
-`learn/[slug]/` and `missions/[slug]/`. Needed:
+`app/hi/` currently contains only `articles/`, `article/[slug]/`,
+`learn/[slug]/` and `mission/[slug]/`. Needed:
 
 - `/hi` home, `/hi/learn` and `/hi/missions` listing pages (mirror the English
   ones; `lib/i18n.ts` already has `sectionHref`/`pathPrefix`).
@@ -112,7 +112,7 @@ is effectively unreachable and uncrawlable.
 
 ### 2.3 No component or route tests
 
-All 354 tests are pure logic. **Nothing exercises a React component or an API
+All 361 tests are pure logic. **Nothing exercises a React component or an API
 route**, so the light/dark rule (CLAUDE.md #2) is enforced only by a human
 looking at a preview.
 
@@ -181,11 +181,16 @@ Ordered by payoff, not effort. Any of these is a reasonable single session.
 
 Not urgent, but do not rediscover these as if they were new.
 
-- **8 ESLint warnings** is the baseline. Five `no-img-element` (admin panels plus
-  three runtime images on hosts outside the optimiser allow-list), one
-  `jsx-a11y/alt-text` on `AdminSidebar.tsx:37`, two `react-hooks/exhaustive-deps`
-  in `LinkAssistant` and `ISSTracker` — check those two by hand, a missing dep
-  can be deliberate.
+- **0 ESLint warnings** is the baseline — `next lint --max-warnings=0` passes
+  (it used to be 8; see ENGINEERING.md §2). Treat any new warning as a real
+  signal and clear it, rather than letting a running count grow back. The raw
+  `<img>` tags that remain are deliberate and each carries a scoped
+  `eslint-disable-next-line` with the reason written beside it, so a bare `<img>`
+  added by mistake still warns.
+- **SVG never goes through `next/image`.** `dangerouslyAllowSVG: false` means the
+  optimiser answers 400 for an SVG from *any* origin, same-origin included, so
+  `isOptimizableImage` excludes it and `SmartImage` renders a plain `<img>`.
+  Don't "fix" that as an oversight.
 - **Existing article images have no `width`/`height`.** The editor now writes
   them on insert (`modules/admin/editor/imageDimensions.ts`), but content written
   before that still shifts. A backfill would have to fetch each image to measure
@@ -233,3 +238,9 @@ session does not redo any of it:
 *Keep this file current. When you finish something, move it to §5 and record the
 reasoning in `ENGINEERING.md` §2 — that is where future sessions look for "why",
 and this file is only ever "what next".*
+
+- **Listing URLs are plural, detail URLs are singular** — `/articles` browses,
+  `/article/:slug` reads one; same for `/missions` → `/mission/:slug`. The
+  mapping lives only in `DETAIL_SEGMENT` in `lib/i18n.ts`; don't hardcode either
+  form at a call site. `/our-mission` is the about page (it used to be
+  `/mission`, which now belongs to mission detail).

@@ -43,16 +43,29 @@ export const OPTIMIZABLE_HOSTS: string[] = (() => {
  * Same-origin paths always can. Absolute URLs only if their host is on the
  * list. Everything else — `data:`, `blob:`, an admin-entered URL on some
  * agency's CDN — returns false and gets a plain `<img>`.
+ *
+ * SVG is excluded regardless of host. `next.config.js` sets
+ * `dangerouslyAllowSVG: false`, so the optimiser answers 400 for an SVG even
+ * from an allow-listed origin — and a same-origin `/something.svg` would
+ * otherwise pass the first check above. There is nothing to gain either way:
+ * SVG is already resolution-independent and needs no srcset.
  */
+function isSvg(pathname: string): boolean {
+  return pathname.toLowerCase().endsWith('.svg')
+}
+
 export function isOptimizableImage(src: string | null | undefined): boolean {
   if (!src) return false
 
   // Relative to this site: no allow-list involved.
-  if (src.startsWith('/') && !src.startsWith('//')) return true
+  if (src.startsWith('/') && !src.startsWith('//')) {
+    return !isSvg(src.split(/[?#]/)[0])
+  }
 
   try {
     const url = new URL(src)
     if (url.protocol !== 'https:' && url.protocol !== 'http:') return false
+    if (isSvg(url.pathname)) return false
     return OPTIMIZABLE_HOSTS.includes(url.host)
   } catch {
     return false

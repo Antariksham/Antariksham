@@ -50,14 +50,14 @@ const nextConfig = {
     // Listing the real source roots closes that gap in the build we already run.
     dirs: ['app', 'components', 'modules', 'lib', 'utils', 'config', 'actions', 'types'],
   },
-  async redirects() {
-    // The articles section was renamed from /news → /articles. Keep the old
-    // URLs alive with permanent (301) redirects so links and SEO equity survive.
-    return [
-      { source: '/news',       destination: '/articles',       permanent: true },
-      { source: '/news/:slug', destination: '/articles/:slug', permanent: true },
-    ]
-  },
+  // No `redirects()`. The `/news → /articles` 301s that used to live here were
+  // written for link equity the site never had — it is pre-launch, with no
+  // domain attached, nothing in Search Console and no sitemap submitted, so no
+  // old URL was ever reachable to preserve. Permanent redirects are permanent;
+  // carrying them for URLs nobody visited is cost with no benefit.
+  //
+  // This reasoning expires at launch. Once real URLs are indexed, moving one
+  // means a 301 here — see ENGINEERING.md §6.
 }
 
 module.exports = nextConfig

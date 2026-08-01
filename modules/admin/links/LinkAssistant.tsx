@@ -33,8 +33,13 @@ export function LinkAssistant({
   const [query, setQuery] = useState('')
   const [linked, setLinked] = useState<Set<string>>(() => new Set(extractInternalHrefs(getHtml())))
 
-  const text = useMemo(() => getText(), []) // snapshot the draft text on open
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Snapshot the draft text once, when the modal opens — suggestions should not
+  // re-rank under the editor's cursor while they are being read. A lazy
+  // `useState` initialiser, not `useMemo([])`: React treats a memo as a hint it
+  // may discard, so a "compute once" that must actually happen once belongs in
+  // state. It also drops the exhaustive-deps suppression this line used to
+  // carry, which was written one line too low and so suppressed nothing.
+  const [text] = useState(() => getText())
 
   useEffect(() => {
     let alive = true

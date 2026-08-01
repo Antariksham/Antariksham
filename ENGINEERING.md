@@ -46,6 +46,70 @@ Every change builds (`next build` compiles; the only build error is a
 pre-existing `supabaseUrl is required` during page-data collection when Supabase
 env vars are absent — unrelated to app code).
 
+- ✅ **Listing and detail URLs split plural/singular.** Browsing stays plural
+  (`/articles`, `/missions`); reading one is now singular — `/article/:slug` and
+  `/mission/:slug`, plus `/hi/article/:slug` and `/hi/mission/:slug`. This is the
+  pattern NASA and most publishers use, and it reads correctly: the plural holds
+  many, the singular is one.
+  - **`lib/i18n.ts` is the single edit point.** A `DETAIL_SEGMENT` map
+    (`articles → article`, `missions → mission`) is consumed by `sectionHref`,
+    and `localizedAlternates` already builds canonicals and hreflang from that —
+    so links, JSON-LD, OG, the sitemap and the language toggle all followed with
+    no per-call-site knowledge. `sectionListHref` keeps the plural. Sections not
+    in the map are unchanged by design: `learn` is a mass noun with no singular
+    to move to, and `authors` has no listing page.
+  - **The about page moved `/mission` → `/our-mission`**, which had to happen
+    first since `/mission` is now the mission detail route. It also removes a
+    real confusion — `/mission` and `/missions` were one character apart and held
+    completely unrelated content.
+  - **Deliberately no redirects.** The site is pre-launch: no domain attached,
+    nothing in Search Console, no sitemap submitted, and the current rows are
+    development data to be wiped before the first real article. With no link
+    equity to preserve, old paths simply 404 rather than carrying permanent
+    redirects forever. The pre-existing `/news → /articles` 301s were removed on
+    the same reasoning — they were written for link equity the site never had —
+    so `next.config.js` now declares **no `redirects()` at all**. **This expires
+    at launch:** once real URLs are indexed, moving one means a 301.
+  - `app/article/not-found.tsx` moved with the detail route it belongs to (the
+    listing never calls `notFound()`). Admin routes (`/admin/articles`,
+    `/api/admin/…`) are untouched; only the "View live" links inside the admin
+    editors were repointed.
+
+- ✅ **Lint clean — the eight-warning baseline is gone.** `next build` had carried
+  eight ESLint warnings ever since `eslint.dirs` first pointed the linter at
+  `modules/`. They were noise that would hide the next real warning, so they are
+  now **zero**: `next lint --max-warnings=0` passes. Fixed rather than blanket-
+  suppressed, and the split is the point:
+  - **Three were real defects.** `AdminSidebar` imported lucide's `Image` glyph
+    under that name, so `jsx-a11y/alt-text` demanded an `alt` a glyph does not
+    take — aliased to `ImageIcon`. `LinkAssistant`'s exhaustive-deps suppression
+    was written **one line below** the `useMemo` it was meant to cover, so it
+    suppressed nothing; that snapshot moved to a lazy `useState` initialiser,
+    which is also more correct — React treats a memo as a hint it may discard,
+    and a "snapshot on open" that silently recomputes is a bug waiting to happen.
+    `ISSTracker`'s mount-only effect read `initialPosition` only to seed the
+    trail, so the seed moved into `useState` and the dependency disappeared
+    honestly; listing it instead would have torn down the 5s polling interval
+    every time the server handed over a new prop object. Hydration-safe — a
+    one-point trail draws no segments, so the SSR markup is byte-identical.
+  - **Two images became `SmartImage`**: the mission hero and the APOD hero, each
+    its page's LCP, both now `priority` with a `sizes` hint. APOD's host is not
+    allow-listed so it still renders a plain `<img>` today; the value is that it
+    starts optimising the day APOD is mirrored, with no edit at the call site.
+  - **Three stay raw `<img>`**, with a scoped `eslint-disable` and the reason
+    written next to it: the `AuthorsAdmin` 36px avatar (its `onError` → initials
+    fallback is the whole component, and next/image saves nothing at 36px), the
+    admin `MediaGrid` thumbnails (already the provider's own thumbnail, admin-
+    only — matching the disables its two sibling previews already carried), and
+    `ISSTracker`'s world map (a same-origin **SVG**, see next point).
+  - **A latent 400 closed on the way past.** `isOptimizableImage` returned true
+    for *any* same-origin path including `.svg`, but `next.config.js` sets
+    `dangerouslyAllowSVG: false`, so the optimiser answers **400** for an SVG
+    from any origin — precisely the failure `SmartImage` exists to prevent. It
+    now excludes SVG everywhere, query strings and hashes included, and
+    `config/images.test.ts` pins the rules that must hold in any deployment
+    (361 tests green).
+
 - ✅ **Cut loose from the cancelled migration — the site is independent.** The
   repo used to be organised around reskinning this engine and launching it under
   another project's domain. That is off; Antariksham ships as itself at
@@ -72,9 +136,10 @@ env vars are absent — unrelated to app code).
     the other `.cd-*` classes were **left alone** because there `cd` means
     *countdown* (they are scoped under `.article-body .countdown`), not the old
     brand — a blind rename would have broken the countdown block.
-  - Left untouched on purpose: the `/news → /articles` 301s in `next.config.js`
-    (Antariksham's own URL history) and `styles/themes/antariksham-black.css`
-    (frozen archive, §8 — its one mention is accurate history).
+  - Left untouched on purpose: `styles/themes/antariksham-black.css` (frozen
+    archive, §8 — its one mention is accurate history). The `/news → /articles`
+    301s were also left alone at the time; they have since been removed with the
+    rest of the pre-launch redirect machinery (§2).
 
 **Foundation — complete:**
 - ✅ **Design tokens & full colour system.** Every hardcoded colour across ~50
@@ -161,7 +226,7 @@ env vars are absent — unrelated to app code).
   (0.40→0.78 dark, 0.32→0.85 light) — the token is only used by the homepage hero,
   so nothing else is affected. Headline/excerpt stay legible in both themes.
 - ✅ **Article hero image broken on the reading page**: the article detail page
-  (`app/articles/[slug]`) was the only place still using `next/image`. With an empty
+  (`app/article/[slug]`) was the only place still using `next/image`. With an empty
   `next.config.js` (no `images.remotePatterns`), the Next optimizer returns 400
   for any external host, so the featured image and author avatar broke — while the
   cards (plain `<img>`) worked. Converted both to plain `<img>` (the site's house
@@ -232,11 +297,12 @@ env vars are absent — unrelated to app code).
       host was correctly refused with 400, which is exactly why the fallback
       exists. The rendered tag carries a 10-entry `srcSet` (256w–3840w) plus the
       `sizes` hint.
-    - Note the lint count is unchanged at 8: the card files already carried
-      `eslint-disable` comments for their raw `<img>`, so converting them moved
-      nothing. Those stale suppressions were removed. The five remaining
-      `no-img-element` warnings are admin panels and the three runtime images
-      whose hosts are not allow-listed.
+    - Note the lint count was unchanged at 8 by this step: the card files already
+      carried `eslint-disable` comments for their raw `<img>`, so converting them
+      moved nothing. Those stale suppressions were removed. The five remaining
+      `no-img-element` warnings were admin panels and the three runtime images
+      whose hosts are not allow-listed — **all eight are cleared now**, see the
+      lint-clean entry at the top of this section.
   - **Layout shift from images fixed at its real sources.** An earlier note in
     docs/NEXT-STEPS.md claimed "layout shift on every image on the site" because
     no `<img>` declared width/height. **That was wrong** and worth recording:
@@ -262,13 +328,15 @@ env vars are absent — unrelated to app code).
       CSS and a 640px column, an unsized image reserves **0px** before load and
       the same image with `width="1600" height="900"` reserves **360px**. Also
       confirmed the sanitizer round-trips all four attributes.
-    - **Still open**, and deliberately not decided here: no `next/image`, so
-      there is still no `srcset` or format negotiation, and the five
-      `@next/next/no-img-element` lint warnings remain (dimensions do not clear
-      that rule — only `next/image` does). Enabling it needs either a Cloudinary
+    - **Left open at the time**, and deliberately not decided there: no
+      `next/image`, so no `srcset` or format negotiation, and five
+      `@next/next/no-img-element` warnings stood (dimensions do not clear that
+      rule — only `next/image` does). Enabling it needs either a Cloudinary
       loader or `remotePatterns`, and a wildcard pattern turns the site into an
       open image proxy billed to Vercel — a cost/security call for the owner, not
-      a silent default. The `/gallery` masonry also still shifts: it is a column
+      a silent default. **Both have since been settled**: `SmartImage` with an
+      env-derived allow-list (entry above), then the lint sweep at the top of
+      this section. The `/gallery` masonry also still shifts: it is a column
       layout whose heights come from the images, and NASA's search API does not
       return dimensions to reserve space with.
   - **Structured data closed out** (`modules/seo/jsonLd.ts`). Coverage was
@@ -581,7 +649,9 @@ env vars are absent — unrelated to app code).
 - ✅ **Renamed the news section to "Articles"**: `/news` → `/articles` (route,
   nav, page header, all internal links, sitemap) with permanent **301 redirects**
   from `/news` and `/news/:slug` in `next.config.js`. Code moved to
-  `modules/articles/` (`ArticlesPage`, `getArticles`).
+  `modules/articles/` (`ArticlesPage`, `getArticles`). *(Those redirects were
+  later removed — the site was still pre-launch, so no `/news` URL had ever been
+  reachable to preserve. See §2.)*
 
 - ✅ **Bilingual content (Hindi, extensible) — Articles, Learn & Missions**: any
   of these can be read in English or a hand-written translation **without
@@ -592,8 +662,8 @@ env vars are absent — unrelated to app code).
   published-only, no anon writes). Translations are fetched in a **separate,
   tolerant lookup**, never embedded in the core read, so content still renders if
   a translation table is absent (deploy order doesn't matter). English is
-  unprefixed; other languages are path-prefixed (`/hi/articles/:slug`,
-  `/hi/learn/:slug`, `/hi/missions/:slug`) with an on-page language toggle
+  unprefixed; other languages are path-prefixed (`/hi/article/:slug`,
+  `/hi/learn/:slug`, `/hi/mission/:slug`) with an on-page language toggle
   (`components/LanguageToggle`), `hreflang`/canonical alternates, `lang`
   attributes, and a Devanagari system-font stack. Untranslated items fall back to
   English (`/hi` fallback page = `canonical→EN` + `noindex`). **All detail routes
@@ -1191,7 +1261,7 @@ env vars are absent — unrelated to app code).
     Supabase **lazily inside its try/catch**, so the page renders (with empty
     cross-links) even with no DB env — it never 500s like DB-required pages.
     Cross-links per body to `/search?q=…`, `/live/deep-space`, `/lunar-sim`,
-    `/live/iss-tracker`, `/missions/:slug`.
+    `/live/iss-tracker`, `/mission/:slug`.
   - **Design-system compliant**: chips/panel/facts use the standard tokens
     (both themes verified in a headless browser); the orrery canvas itself is
     pinned dark via new `--space-*` tokens (it depicts space — same rationale
@@ -1370,8 +1440,9 @@ both now shut:
   on every commit lints the whole tree**. Enabling it surfaced one genuine
   error — an unescaped `'`/`—` in `AuthorsAdmin.tsx`'s delete dialog — fixed
   here, because an ESLint error fails `next build` and would have blocked
-  deploys. Eight warnings (mostly `no-img-element`) remain and do not fail
-  builds; see §10.
+  deploys. It also surfaced eight warnings (mostly `no-img-element`), which did
+  not fail builds and have since been cleared — the build is now warning-free at
+  `--max-warnings=0` (§2).
 - **The 27 colocated `*.test.ts` suites (294 tests) had no runner.** No `test`
   script, no CI, so they ran only when someone remembered to type `node --test`.
   `package.json` gained `lint`, `test` and `test:watch`; `.github/workflows/ci.yml`
@@ -1662,7 +1733,7 @@ reading column) · `.tag` / `.tags-row` (filters/chips) · `.hero-badge`.
 - **Sans** (`var(--font-sans)`, Segoe UI stack) for UI, headings, card titles,
   labels. Headings are **bold sans**.
 - **Merriweather serif** (`var(--font-serif)`) **only** for the *reading body* of
-  article (`app/articles/[slug]`) and learn pages. Nowhere else.
+  article (`app/article/[slug]`) and learn pages. Nowhere else.
 - **DM Sans** (`var(--font-mono)` — misnamed; it's the label face) for
   eyebrows/meta/labels.
 
@@ -1679,7 +1750,7 @@ reading column) · `.tag` / `.tags-row` (filters/chips) · `.hero-badge`.
 5. **SEO discipline (Plan §8)** — non-negotiable for the eventual cutover:
    - Keep URLs stable; any changed URL gets a **permanent 301** (never JS redirect).
    - Carry forward/improve **meta description, OG tags, canonical URL, JSON-LD**
-     on every migrated page (the `app/articles/[slug]` route is the proven pattern).
+     on every migrated page (the `app/article/[slug]` route is the proven pattern).
    - Keep `sitemap.xml` in sync; preserve `robots.txt` (admin stays disallowed).
    - Roll out **one page at a time** behind the `vercel.json` rewrite; watch
      Search Console 1–2 weeks before the next. Never gut page content.
@@ -1770,8 +1841,11 @@ compiles but fails at page-data collection with `supabaseUrl is required`; that
 is expected locally and not an app bug.
 
 **When a public URL changes**, 301 the old path in `next.config.js` `redirects()`
-and keep the sitemap in sync — see §6. The `/news → /articles` redirects there
-are Antariksham's own history from renaming that section, and stay.
+and keep the sitemap in sync — see §6. There is currently **no `redirects()` key
+at all**: every rename so far happened pre-launch, with no domain, no Search
+Console and no submitted sitemap, so no old URL was ever reachable to preserve.
+**Add the key back the first time a URL moves after launch** — from that point
+the equity is real and dropping it is a permanent loss.
 
 ---
 
@@ -1947,16 +2021,11 @@ the `/admin/tags` screen):**
   `META.image`.
 - Learn: wire real thumbnails after running the migration.
 
-**Eight ESLint warnings**, surfaced when `eslint.dirs` first pointed the linter
-at `modules/` (§2). They do not fail the build, but they were invisible until
-now and are worth clearing:
-- `@next/next/no-img-element` ×5 — raw `<img>` in `AuthorsAdmin`, `MediaGrid`,
-  `ISSTracker`, `MissionSlugPage`, `APODSection`. Ties into the "media blur
-  placeholders / `next/image`" item above; fixing that fixes these.
-- `jsx-a11y/alt-text` ×1 — `AdminSidebar.tsx:37` image has no `alt`.
-- `react-hooks/exhaustive-deps` ×2 — `LinkAssistant` (`useMemo`, missing
-  `getText`) and `ISSTracker` (`useEffect`, missing `initialPosition`). Check
-  these two by hand rather than autofixing; a missing dep can be deliberate.
+~~**Eight ESLint warnings**~~ — **cleared** (§2). `next lint --max-warnings=0`
+passes, so the baseline is now zero and the next warning to appear is a real
+signal. **Keep it there**: the remaining raw `<img>` tags each carry a scoped
+`eslint-disable-next-line` with the reason next to it, so a new bare `<img>`
+shows up as a warning rather than blending into a running count.
 
 **No component or route tests.** All 27 suites cover pure logic (naming,
 scheduling, citations, search, analytics). Nothing exercises a React component

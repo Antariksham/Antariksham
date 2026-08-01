@@ -33,7 +33,7 @@ export function LatestArticlesSection({ articles }: Props) {
       ) : (
         <div className="grid-3">
           {items.map(a => (
-            <Link key={a.id} href={`/articles/${a.slug}`} className="card">
+            <Link key={a.id} href={`/article/${a.slug}`} className="card">
               {a.featuredImage
                 ? <SmartImage className="card-image" src={a.featuredImage} alt={a.title}
                     width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />

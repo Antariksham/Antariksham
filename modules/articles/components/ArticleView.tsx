@@ -97,7 +97,7 @@ export function ArticleView({
           buildArticleJsonLd(article),
           buildBreadcrumbs([
             { name: 'Articles', path: '/articles' },
-            { name: article.title, path: `/articles/${article.slug}` },
+            { name: article.title, path: `/article/${article.slug}` },
           ], siteConfig),
           buildFaqJsonLd(article.content || ''),
         ].filter(Boolean)) }}

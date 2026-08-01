@@ -78,7 +78,7 @@ export function TopicHub({ topic, content }: Props) {
           </div>
           <div className="grid-3">
             {articles.map(a => (
-              <Link key={a.id} href={`/articles/${a.slug}`} className="card">
+              <Link key={a.id} href={`/article/${a.slug}`} className="card">
                 {a.featuredImage
                   ? <SmartImage className="card-image" src={a.featuredImage} alt={a.title}
                     width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
@@ -107,7 +107,7 @@ export function TopicHub({ topic, content }: Props) {
           </div>
           <div className="grid-3">
             {missions.map(m => (
-              <Link key={m.id} href={`/missions/${m.slug}`} className="card">
+              <Link key={m.id} href={`/mission/${m.slug}`} className="card">
                 {m.featuredImage
                   ? <SmartImage className="card-image" src={m.featuredImage} alt={m.name}
                     width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />

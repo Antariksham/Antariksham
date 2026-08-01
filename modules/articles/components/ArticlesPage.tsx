@@ -174,7 +174,7 @@ export function ArticlesPage({
 // ── Grid card ─────────────────────────────────────────────────
 function GridCard({ article, base, lang }: { article: ArticleCard; base: string; lang: LanguageCode }) {
   return (
-    <a href={`${base}/articles/${article.slug}`} className="card">
+    <a href={`${base}/article/${article.slug}`} className="card">
       {article.featuredImage
         ? <SmartImage className="card-image" src={article.featuredImage} alt={article.title}
                     width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />

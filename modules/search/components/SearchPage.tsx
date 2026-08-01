@@ -70,7 +70,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 function ArticleCard({ result }: { result: SearchArticleResult }) {
   const [hovered, setHovered] = useState(false)
   return (
-    <Link href={`/articles/${result.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+    <Link href={`/article/${result.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -164,7 +164,7 @@ function MissionCard({ result }: { result: SearchMissionResult }) {
   const [hovered, setHovered] = useState(false)
   const statusColor = STATUS_COLORS[result.status] || 'rgba(var(--ink),0.45)'
   return (
-    <Link href={`/missions/${result.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+    <Link href={`/mission/${result.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
