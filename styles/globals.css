@@ -510,12 +510,29 @@ a { color: inherit; text-decoration: none; }
   background: var(--green); box-shadow: 0 0 8px var(--green);
   animation: blink 2s infinite;
 }
-.nav-bar__caret {
-  flex-shrink: 0; opacity: 0.55;
-  transition: transform 0.2s ease, opacity 0.15s ease;
+/* Label and caret are separate controls: the label navigates to the section,
+   the caret opens the panel. Hovering either opens it, so the pair behaves as
+   one target for a mouse while keeping two distinct click actions. */
+.nav-bar__group { display: flex; align-items: center; gap: 1px; }
+.nav-bar__group:hover .nav-bar__item { color: var(--accent); opacity: 1; }
+
+.nav-bar__caret-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  /* Padding, not size — the caret stays 13px but the hit area clears 24px
+     square, so the arrow is a comfortable target next to the label. */
+  padding: 6px;
+  border: 0; background: none; cursor: pointer;
+  color: var(--white); opacity: 0.5;
+  transition: color 0.15s ease, opacity 0.15s ease;
 }
-.nav-bar__item:hover .nav-bar__caret { opacity: 1; }
-.nav-bar__item[data-open='true'] .nav-bar__caret { transform: rotate(180deg); opacity: 1; }
+.nav-bar__group:hover .nav-bar__caret-btn { opacity: 0.9; }
+.nav-bar__caret-btn:hover,
+.nav-bar__caret-btn[data-open='true'] { color: var(--accent); opacity: 1; }
+.nav-bar__caret-btn[data-live='true'] { color: var(--green); }
+.nav-bar__caret-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 3px; }
+
+.nav-bar__caret { flex-shrink: 0; transition: transform 0.2s ease; }
+.nav-bar__caret-btn[data-open='true'] .nav-bar__caret { transform: rotate(180deg); }
 
 /* ═════════════════════════════════════════════════════════════════
    DESKTOP MEGA-MENU  (see components/layout/MegaMenu)
@@ -738,7 +755,7 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   .mega-wrap, .mega-wrap[data-open='true'] { transition: none; transform: none; }
   .mega__dot, .nav-bar__dot, .mega__skeleton-line { animation: none; }
-  .nav-bar__caret, .nav-bar__item[data-open='true'] .nav-bar__caret,
+  .nav-bar__caret, .nav-bar__caret-btn[data-open='true'] .nav-bar__caret,
   .mega__section-icon, .mega__title-go, .mega__link, .mega__link svg, .mega__all {
     transition: none; transform: none;
   }
