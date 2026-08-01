@@ -445,6 +445,244 @@ a { color: inherit; text-decoration: none; }
   .nav-progress.loading { transition: opacity 0.2s ease; }
 }
 
+/* ═════════════════════════════════════════════════════════════════
+   SITE NAV BAR  (see components/layout/Navbar)
+
+   These rules used to live in an inline <style>{`…`}</style> block
+   inside the component. They cannot go back: React escapes ", ' and
+   < inside such a block on the server but not on the client, so the
+   stylesheet text mismatched on every page load, hydration failed,
+   and React replaced the entire document. (It also silently broke
+   any rule using a "＞" child combinator, which is what the old
+   comment in there was warning about.) Keep nav CSS here.
+   ═════════════════════════════════════════════════════════════════ */
+
+/* 1100, not 900. The full desktop row is logo + wordmark + six links + the
+   search pill + the toggle; below about 1080px they collide — the wordmark ran
+   into "ARTICLES" and at 900px the toggle was clipped off the right edge. The
+   compact row handles that band comfortably, so it owns everything up to 1100.
+   !important because both rows carry an inline display. */
+@media (min-width: 1100px) {
+  .mobile-nav  { display: none !important; }
+  .desktop-nav { display: flex !important; }
+}
+@media (max-width: 1099px) {
+  .mobile-nav  { display: flex !important; }
+  .desktop-nav { display: none !important; }
+}
+
+/* The bar's horizontal padding. Below the desktop breakpoint it drops to 1.5rem
+   so the logo lines up exactly with .container (padding: 0 1.5rem), which is
+   what every page's content sits in. At 32px the logo was indented 8px further
+   than the headline beneath it, which read as the mark being pushed off the
+   left edge. (The drawer has its own matching gutter, below.) */
+.site-nav { padding: 0 32px; }
+@media (max-width: 1099px) {
+  .site-nav { padding: 0 1.5rem; }
+}
+
+/* The logo never shrinks below the space its siblings leave, and the wordmark
+   is never hidden — the name is part of the identity. Sizing is fluid (clamp)
+   instead, so the full lockup fits from 320px up. */
+.nav-logo { min-width: 0; }
+
+/* ═════════════════════════════════════════════════════════════════
+   MOBILE NAV DRAWER  (see components/layout/Navbar)
+
+   A two-panel drill-down, the shape phone users already know from
+   nasa.gov and every native app: panel 1 lists the top-level
+   sections, tapping one with sub-pages slides panel 2 in, and a
+   "Back" row slides it out again. Only the track moves — nothing
+   reflows, nothing accordions the list open beneath your thumb.
+
+   Type is compact on purpose: 17px rows instead of the 32px display
+   size this used to use, which cost ~75px per row and pushed the
+   six sections past the fold on any short phone. At 17px/13px the
+   whole list lands in ~300px.
+
+   Theme-aware throughout (tokens + rgba(var(--ink), a)); the slide
+   collapses to an instant swap under prefers-reduced-motion.
+   Stacking: nav=50, drawer=49 — it sits under the bar it belongs to.
+   ═════════════════════════════════════════════════════════════════ */
+.nav-drawer {
+  position: fixed;
+  top: var(--nav-height); left: 0; right: 0; bottom: 0;
+  z-index: 49;
+  background: var(--nav-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  /* Clips the off-screen panel. `clip`, not `hidden` — a `hidden` box is still
+     programmatically scrollable, so moving focus to "Back" inside the incoming
+     panel made the browser scroll the drawer sideways to reveal it, dragging
+     the whole track ~250px out of alignment. `clip` is not a scroll container,
+     so that cannot happen. `hidden` first as the fallback for browsers without
+     `clip`; those are covered by focus({ preventScroll: true }) in Navbar. */
+  overflow: hidden;
+  overflow: clip;
+  opacity: 0;
+  visibility: hidden;             /* also drops the whole drawer out of the tab order */
+  transform: translateY(-8px);
+  transition: opacity 0.2s ease, transform 0.22s ease, visibility 0s linear 0.22s;
+}
+.nav-drawer[data-open='true'] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.2s ease, transform 0.22s ease, visibility 0s;
+}
+/* The compact bar owns everything below 1100px (see Navbar's style block);
+   above it the drawer can never be opened, so take it out of the layout. */
+@media (min-width: 1100px) { .nav-drawer { display: none; } }
+
+/* Two panels side by side on a track that slides by exactly one panel. */
+.nav-drawer__track {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.nav-drawer__track[data-drilled='true'] { transform: translate3d(-50%, 0, 0); }
+
+.nav-drawer__panel {
+  flex: 0 0 50%;                  /* 50% of a 200% track = one viewport */
+  width: 50%;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* 1.5rem matches .container's gutter, so rows line up with page content. */
+  padding: 14px 1.5rem calc(24px + env(safe-area-inset-bottom));
+}
+/* The outgoing panel stays visible for the length of the slide, then leaves
+   the tab order entirely — otherwise Tab walks into off-screen links. */
+.nav-drawer__panel[aria-hidden='true']  { visibility: hidden; transition: visibility 0s linear 0.32s; }
+.nav-drawer__panel[aria-hidden='false'] { visibility: visible; transition: visibility 0s; }
+
+.nav-drawer__list { list-style: none; margin: 0; padding: 0; }
+
+/* One row. Shared by the <Link> leaves and the <button> parents so a section
+   that gains sub-pages does not change height or weight when it does. */
+.nav-drawer__row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%;
+  padding: 13px 2px;
+  border: 0;
+  border-bottom: 1px solid rgba(var(--ink), 0.09);
+  background: none;
+  color: var(--white);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;           /* 17px */
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.nav-drawer__list li:last-child .nav-drawer__row { border-bottom: 0; }
+.nav-drawer__row:hover                { color: var(--accent); }
+.nav-drawer__row[aria-current='page'] { color: var(--accent); }
+/* Live keeps its green in every state, including "you are here" — the green is
+   the section's identity in the desktop row and the footer too, and flipping it
+   to accent on /live would read as a bug. The pulsing dot still marks it, and
+   the accent underline is not the only current-page cue. Declared last on
+   purpose: it ties with [aria-current] on specificity, so order decides. */
+.nav-drawer__row[data-live='true']    { color: var(--green); }
+.nav-drawer__row:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Sub-items step down a size and a weight — the hierarchy carries the panel,
+   not an indent (there is no parent above them to indent from). */
+.nav-drawer__row--sub {
+  padding: 12px 2px;
+  font-size: 0.9375rem;           /* 15px */
+  font-weight: 500;
+  color: rgba(var(--ink), 0.82);
+}
+.nav-drawer__row--sub:hover,
+.nav-drawer__row--sub[aria-current='page'] { color: var(--accent); }
+
+.nav-drawer__label { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+.nav-drawer__chevron {
+  flex-shrink: 0;
+  color: rgba(var(--ink), 0.4);
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+.nav-drawer__row:hover .nav-drawer__chevron { color: var(--accent); transform: translateX(2px); }
+
+/* The live pip, same treatment as the desktop row. */
+.nav-drawer__dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: blink 2s infinite;
+}
+
+/* ── Sub-panel header: Back, then the section's own landing page ── */
+.nav-drawer__back {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 0 0 6px -6px;           /* optical: pulls the chevron to the gutter */
+  padding: 8px 10px 8px 6px;
+  border: 0; border-radius: var(--radius-sm);
+  background: none;
+  cursor: pointer;
+  color: rgba(var(--ink), 0.7);
+  font-family: var(--font-mono);
+  font-size: 11.5px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.nav-drawer__back:hover { color: var(--accent); background: rgba(var(--ink), 0.05); }
+.nav-drawer__back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.nav-drawer__section {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 2px 2px 14px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(var(--ink), 0.14);
+  color: var(--white);
+  text-decoration: none;
+  font-family: var(--font-sans);
+  font-size: 1.375rem;            /* 22px — the one display-size line per panel */
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  transition: color 0.15s ease;
+}
+.nav-drawer__section:hover,
+.nav-drawer__section[aria-current='page'] { color: var(--accent); }
+.nav-drawer__section:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.nav-drawer__section-go {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  /* Foreground ON the accent fill, not a surface — so it is literal white in
+     both themes, exactly like .btn-primary and .tag:hover. var(--white) would
+     turn this near-black on a blue pill in light mode. */
+  color: #ffffff;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.nav-drawer__section:hover .nav-drawer__section-go { background: var(--accent-hover); transform: translateX(2px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-drawer,
+  .nav-drawer[data-open='true'] { transition: none; transform: none; }
+  .nav-drawer__track { transition: none; }
+  .nav-drawer__panel[aria-hidden='true'] { transition: none; }
+  .nav-drawer__chevron,
+  .nav-drawer__row:hover .nav-drawer__chevron,
+  .nav-drawer__section:hover .nav-drawer__section-go { transition: none; transform: none; }
+  .nav-drawer__dot { animation: none; }
+}
+
 /* page header (inner-page pattern) */
 .page-header {
   background: var(--bg-secondary);

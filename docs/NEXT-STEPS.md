@@ -201,6 +201,13 @@ Not urgent, but do not rediscover these as if they were new.
   50,000 articles takes 166 ms. Fine for a long time; the measurements and the
   revisit threshold are in the migration header. **Do not "fix" it by truncating
   candidates**, which silently returns something other than the best matches.
+- **`--green` has no light-theme override**, so the "Live" nav link is `#2ecc71`
+  on a `#f0f4ff` ground — roughly 1.8:1, well under AA for text. Pre-existing and
+  site-wide (desktop row, mobile drawer, footer, every `LIVE` badge), which is
+  why the drawer rebuild left it alone: the fix is one `--green` value inside
+  `:root[data-theme="light"]`, but it repaints every green thing on the site and
+  wants checking in one pass rather than piecemeal. The nav no longer hardcodes
+  the hex, so that override is now all it would take.
 - **`.page-container` in `styles/responsive.css` is dead** — no component uses
   that class, so its mobile padding rules have never done anything. `.container`
   is the real one.
@@ -232,6 +239,7 @@ session does not redo any of it:
 | Structured data (FAQPage, breadcrumbs, missions, Learn, WebSite) | Done |
 | Image CLS + `next/image` behind a host allow-list | Done |
 | Mobile nav alignment and the desktop nav breakpoint | Done |
+| Mobile nav drawer — drill-down sub-menus, compact 17px rows | Done |
 
 ---
 

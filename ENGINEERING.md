@@ -46,6 +46,35 @@ Every change builds (`next build` compiles; the only build error is a
 pre-existing `supabaseUrl is required` during page-data collection when Supabase
 env vars are absent — unrelated to app code).
 
+- ✅ **Mobile nav drawer — drill-down sub-menus + compact type.** The hamburger
+  menu was a flat list of six 32px display-weight rows; at ~75px each it ran
+  past the fold on any short phone and put every sub-page (ISS Tracker, Sky
+  Tonight, Editorial Policy…) out of reach of the nav entirely.
+  - **Two panels on a sliding track** (`.nav-drawer__track`, `width: 200%`,
+    `translate3d(-50%)`), the nasa.gov shape: panel 1 lists the sections, tapping
+    one with sub-pages slides panel 2 in, "Back" slides it out. Only the track
+    moves — no accordion pushing the list around under the thumb.
+  - **17px rows instead of 32px** (sub-items 15px), padding 13px. The six
+    sections now end 377px down, so they fit a 320×568 phone with room to spare
+    (they used to need ~450px + gutters).
+  - **`children?: NavItem[]` in `config/navigation.ts`** drives it. Explore,
+    Live, Gallery and About have children; Articles and Learn have no sub-routes
+    so they stay direct links. **The desktop row ignores `children`** and keeps
+    its flat six links — drill-down is a drawer affordance. A parent is still a
+    real destination: its sub-panel header links to the section landing page.
+  - **State**: `section` (what panel 2 renders) is deliberately separate from
+    `drilled` (whether it is on screen), so the outgoing panel keeps its contents
+    through the slide instead of going blank mid-animation.
+  - **Accessibility**: `aria-current` marks the live section *and* the page
+    inside it; focus follows the panel (in → "Back", out → the row you came
+    from) with `preventScroll`; Escape steps out of a sub-panel before closing;
+    Tab is trapped across the bar + the on-screen panel; the off-screen panel is
+    `visibility: hidden` so it leaves the tab order once the slide ends; body
+    scroll is locked while open. `prefers-reduced-motion` collapses the slide.
+  - **Two real bugs fixed on the way** — both written up in §11: the inline
+    `<style>` block that was breaking hydration site-wide, and `overflow: hidden`
+    being scrollable enough to knock the track sideways when focus moved.
+
 - ✅ **Listing and detail URLs split plural/singular.** Browsing stays plural
   (`/articles`, `/missions`); reading one is now singular — `/article/:slug` and
   `/mission/:slug`, plus `/hi/article/:slug` and `/hi/mission/:slug`. This is the
@@ -2048,6 +2077,23 @@ still need a human on the Vercel preview URL.
   expected when Supabase env vars are missing; it is not an app bug.
 - **Two white forms exist:** `#ffffff` and `#fff`. When tokenizing, sweep both.
   Also check globals.css rules (`h1–h6`, `.card-title`) not just components.
+- **Never put CSS in an inline `<style>{\`…\`}</style>` in a component.** React
+  escapes `"`, `'` and `<` inside one when it renders on the server but not on
+  the client, so the stylesheet text mismatches, hydration fails, and React
+  throws away and re-renders the *entire document*. The Navbar did this on every
+  page load for months — the only visible symptom was a console warning
+  ("Text content did not match" → "The server HTML was replaced with client
+  content in #document"), which is easy to scroll past. It also silently broke
+  any rule using a `>` child combinator, which is what the old warning comment
+  in that block was really describing. All nav CSS now lives in globals.css.
+- **`overflow: hidden` is still programmatically scrollable** — it clips, but
+  the box remains a scroll container, so the browser will happily scroll it to
+  bring a focused descendant into view. Moving focus into the incoming drawer
+  panel scrolled the drawer sideways and dragged the whole track ~250px out of
+  alignment (the transform was correct the entire time; the *layout* position
+  was not — worth measuring both before theorising). Use **`overflow: clip`**,
+  which is not a scroll container, plus `focus({ preventScroll: true })` for
+  browsers without it.
 
 ---
 
