@@ -57,10 +57,13 @@ env vars are absent — unrelated to app code).
   - **The left column carries the full `mainNav`, not `desktopNav`.** The panel
     has vertical room the one-line bar does not, which is how Home and Missions
     became reachable from desktop chrome at all.
-  - **A section with children is a `<button>` trigger; one without is a link.**
-    Same rule as the drawer, so the two surfaces behave predictably. The
-    section's landing page is reached from the panel title (the accent → pill),
-    exactly as on nasa.gov.
+  - **The label and the caret are separate controls.** Every bar entry is a link
+    to its own page — clicking "EXPLORE" goes to `/explore`, it never merely
+    opens a menu. A section with children gets a small caret button beside it
+    that toggles the panel. Two hit areas, two accessible names ("Explore" /
+    "Explore submenu"), and hovering either opens the panel, so a mouse still
+    treats the pair as one target. This was a fix: making the whole label a
+    trigger took away the one thing a nav link is expected to do.
   - **`NavItem.description`** is the one-line summary under each title. For
     Home, Missions and Learn — no children — that line *is* the middle column,
     which is why a test asserts every section has one and that it fits two lines.
@@ -75,7 +78,8 @@ env vars are absent — unrelated to app code).
     in flight; the column degrades to a line of copy plus "All articles" if the
     request fails or nothing is published.
   - **Accessibility**: `aria-expanded`/`aria-haspopup`/`aria-controls` on the
-    triggers; click and Enter move focus into the panel, hover does not; Escape
+    caret buttons (not the labels — those are ordinary links); click and Enter
+    move focus into the panel, hover does not; Escape
     closes and hands focus back to the trigger; pointer or focus leaving both
     bar and panel closes it. **Focus deliberately does not re-point the middle
     column** — only hover and activation do. Tabbing through the left column

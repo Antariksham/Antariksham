@@ -295,9 +295,11 @@ export function Navbar() {
             and Missions are not on it. Both are in the mega-menu's left column,
             which is where the desktop finally reaches them.
 
-            A section with sub-pages is a trigger (button) that opens the panel;
-            one without is a plain link. Same rule as the mobile drawer, so the
-            two surfaces stay predictable. */}
+            Every section is a link that goes to its own page — clicking the
+            label navigates, it never just opens a menu. A section with
+            sub-pages gets a separate caret button beside it that toggles the
+            panel, so the two actions have their own hit areas and their own
+            accessible names. Hovering anywhere on the pair opens the panel. */}
         <ul ref={megaBarRef} style={{ display: 'flex', alignItems: 'center', gap: '36px', listStyle: 'none', margin: 0, padding: 0 }} className="desktop-nav">
           {desktopNav.map((item) => {
             const hasChildren = Boolean(item.children?.length)
@@ -306,30 +308,40 @@ export function Navbar() {
               <>
                 {item.isLive && <span className="nav-bar__dot" aria-hidden="true" />}
                 {item.label}
-                {hasChildren && (
-                  <ChevronDown className="nav-bar__caret" size={13} aria-hidden="true" />
-                )}
               </>
             )
 
             return (
               <li key={item.href}>
                 {hasChildren ? (
-                  <button
-                    type="button"
-                    className="nav-bar__item press"
-                    data-live={item.isLive ? 'true' : undefined}
-                    data-open={open}
-                    aria-current={sectionIsCurrent(pathname, item) ? 'page' : undefined}
-                    aria-expanded={open}
-                    aria-haspopup="true"
-                    aria-controls="site-mega"
+                  <div
+                    className="nav-bar__group"
                     onMouseEnter={() => scheduleOpen(item)}
                     onMouseLeave={scheduleClose}
-                    onClick={(e) => toggleMega(item, e.currentTarget)}
                   >
-                    {inner}
-                  </button>
+                    <Link
+                      href={item.href}
+                      className="nav-bar__item press"
+                      data-live={item.isLive ? 'true' : undefined}
+                      data-open={open}
+                      aria-current={sectionIsCurrent(pathname, item) ? 'page' : undefined}
+                    >
+                      {inner}
+                    </Link>
+                    <button
+                      type="button"
+                      className="nav-bar__caret-btn"
+                      data-live={item.isLive ? 'true' : undefined}
+                      data-open={open}
+                      aria-label={`${item.label} submenu`}
+                      aria-expanded={open}
+                      aria-haspopup="true"
+                      aria-controls="site-mega"
+                      onClick={(e) => toggleMega(item, e.currentTarget)}
+                    >
+                      <ChevronDown className="nav-bar__caret" size={13} aria-hidden="true" />
+                    </button>
+                  </div>
                 ) : (
                   <Link
                     href={item.href}
