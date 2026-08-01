@@ -66,9 +66,10 @@ env vars are absent — unrelated to app code).
     nothing in Search Console, no sitemap submitted, and the current rows are
     development data to be wiped before the first real article. With no link
     equity to preserve, old paths simply 404 rather than carrying permanent
-    redirects forever. The one pre-existing `/news/:slug` rule was repointed at
-    `/article/:slug` so it does not dangle. **If these URLs ever move again after
-    launch that calculus reverses** — 301s become mandatory.
+    redirects forever. The pre-existing `/news → /articles` 301s were removed on
+    the same reasoning — they were written for link equity the site never had —
+    so `next.config.js` now declares **no `redirects()` at all**. **This expires
+    at launch:** once real URLs are indexed, moving one means a 301.
   - `app/article/not-found.tsx` moved with the detail route it belongs to (the
     listing never calls `notFound()`). Admin routes (`/admin/articles`,
     `/api/admin/…`) are untouched; only the "View live" links inside the admin
@@ -135,9 +136,10 @@ env vars are absent — unrelated to app code).
     the other `.cd-*` classes were **left alone** because there `cd` means
     *countdown* (they are scoped under `.article-body .countdown`), not the old
     brand — a blind rename would have broken the countdown block.
-  - Left untouched on purpose: the `/news → /articles` 301s in `next.config.js`
-    (Antariksham's own URL history) and `styles/themes/antariksham-black.css`
-    (frozen archive, §8 — its one mention is accurate history).
+  - Left untouched on purpose: `styles/themes/antariksham-black.css` (frozen
+    archive, §8 — its one mention is accurate history). The `/news → /articles`
+    301s were also left alone at the time; they have since been removed with the
+    rest of the pre-launch redirect machinery (§2).
 
 **Foundation — complete:**
 - ✅ **Design tokens & full colour system.** Every hardcoded colour across ~50
@@ -647,7 +649,9 @@ env vars are absent — unrelated to app code).
 - ✅ **Renamed the news section to "Articles"**: `/news` → `/articles` (route,
   nav, page header, all internal links, sitemap) with permanent **301 redirects**
   from `/news` and `/news/:slug` in `next.config.js`. Code moved to
-  `modules/articles/` (`ArticlesPage`, `getArticles`).
+  `modules/articles/` (`ArticlesPage`, `getArticles`). *(Those redirects were
+  later removed — the site was still pre-launch, so no `/news` URL had ever been
+  reachable to preserve. See §2.)*
 
 - ✅ **Bilingual content (Hindi, extensible) — Articles, Learn & Missions**: any
   of these can be read in English or a hand-written translation **without
@@ -1837,8 +1841,11 @@ compiles but fails at page-data collection with `supabaseUrl is required`; that
 is expected locally and not an app bug.
 
 **When a public URL changes**, 301 the old path in `next.config.js` `redirects()`
-and keep the sitemap in sync — see §6. The `/news → /articles` redirects there
-are Antariksham's own history from renaming that section, and stay.
+and keep the sitemap in sync — see §6. There is currently **no `redirects()` key
+at all**: every rename so far happened pre-launch, with no domain, no Search
+Console and no submitted sitemap, so no old URL was ever reachable to preserve.
+**Add the key back the first time a URL moves after launch** — from that point
+the equity is real and dropping it is a permanent loss.
 
 ---
 
