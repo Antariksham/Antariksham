@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import Link from 'next/link'
-import { siteConfig } from '@/config/site'
 
-export const metadata: Metadata = {
-  title:       `Our Mission — ${siteConfig.name}`,
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/our-mission',
+  title:       'Our Mission',
   description: 'The philosophy and long-term vision behind Antariksham — why we built it, what we stand for, and where we are going.',
-}
+})
 
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',

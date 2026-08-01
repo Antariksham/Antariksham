@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 
-export const metadata: Metadata = {
-  title:       `Terms & Conditions — ${siteConfig.name}`,
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/terms',
+  title:       'Terms & Conditions',
   description: 'The terms and conditions governing your use of Antariksham.org.',
-}
+})
 
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',

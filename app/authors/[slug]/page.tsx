@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getAuthorBySlug, getAllAuthorSlugs } from '@/modules/authors/services/getAuthors'
 import { getArticles } from '@/modules/articles/services/getArticles'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
+import { ogCardPath } from '@/modules/seo/socialMeta'
 import { timeAgo } from '@/lib/utils'
 import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
@@ -17,16 +19,16 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const author = await getAuthorBySlug(params.slug)
   if (!author) return { title: 'Author Not Found' }
-  return {
+  return buildPageMetadata({
+    path:        `/authors/${author.slug}`,
     title:       author.name,
     description: author.bio || `Articles and analysis by ${author.name}.`,
-    openGraph: {
-      title:       author.name,
-      description: author.bio || undefined,
-      images:      author.avatar ? [author.avatar] : [],
-      type:        'profile',
-    },
-  }
+    // An avatar is square, so it reads badly cropped to 1.91:1 — and an author
+    // without one used to ship `images: []`, i.e. no card. A generated card
+    // naming the author works at both sizes.
+    fallbackImagePath: ogCardPath({ title: author.name, eyebrow: 'Author' }),
+    type:        'profile',
+  })
 }
 
 function initials(name: string) {

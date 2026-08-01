@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import { siteConfig } from '@/config/site'
 import { SolarSystemExplorer } from '@/modules/explore/components/SolarSystemExplorer'
 import { SOLAR_BODIES } from '@/modules/explore/services/solarSystemBodies'
@@ -10,29 +11,16 @@ import { getExploreMissions } from '@/modules/explore/services/getExploreMission
 // planetary motion).
 export const revalidate = 3600
 
-const TITLE = `Solar System Explorer — ${siteConfig.name}`
 const DESCRIPTION =
   'An interactive map of the Solar System: true planet positions for any date computed from JPL orbital elements, time travel through the orbits, and every world linked to its missions, facts and coverage.'
 
-export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
-  title: 'Solar System Explorer',
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/explore/solar-system',
+  // Bare page name — the root layout's titleTemplate appends
+  // "| Antariksham" and og:site_name carries the brand in the card.
+  title:       'Solar System Explorer',
   description: DESCRIPTION,
-  alternates: { canonical: '/explore/solar-system' },
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-    url: '/explore/solar-system',
-    siteName: siteConfig.name,
-    locale: siteConfig.locale,
-    type: 'website',
-  },
-  twitter: {
-    card: siteConfig.seo.twitterCard,
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-}
+})
 
 const jsonLd = [
   {

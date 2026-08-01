@@ -1,11 +1,13 @@
 import { getMissions, getFeaturedMissions } from '@/modules/missions/services/getMissions'
 import { MissionsPage } from '@/modules/missions/components/MissionsPage'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/missions',
   title:       'Space Missions',
   description: 'Active, upcoming, and historic space missions from NASA, ISRO, SpaceX, ESA and all major agencies — tracked in one place.',
-}
+})
 
 export const revalidate = 600
 

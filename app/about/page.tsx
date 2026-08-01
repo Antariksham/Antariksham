@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import Link from 'next/link'
-import { siteConfig } from '@/config/site'
 
-export const metadata: Metadata = {
-  title:       `About — ${siteConfig.name}`,
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/about',
+  title:       'About',
   description: 'Antariksham is an independent space intelligence and knowledge platform combining scientific journalism, live mission tracking, and deep educational content.',
-}
+})
 
 const LINKS = [
   { label: 'Our Mission',      href: '/our-mission'          },

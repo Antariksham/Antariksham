@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 
-export const metadata: Metadata = {
-  title:       `Editorial Policy — ${siteConfig.name}`,
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/editorial-policy',
+  title:       'Editorial Policy',
   description: 'Antariksham\'s editorial standards, sourcing policy, correction process, and publishing guidelines.',
-}
+})
 
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',

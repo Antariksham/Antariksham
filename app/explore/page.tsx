@@ -1,31 +1,19 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 import { Orbit, MoonStar, Compass } from 'lucide-react'
 
-const TITLE = `Explore — ${siteConfig.name}`
 const DESCRIPTION =
   'Interactive gateways to the cosmos — an explorable Solar System map with live planet positions, mission cross-links and more discovery tools on the way.'
 
-export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
-  title: 'Explore',
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/explore',
+  // Bare page name — the root layout's titleTemplate appends
+  // "| Antariksham" and og:site_name carries the brand in the card.
+  title:       'Explore',
   description: DESCRIPTION,
-  alternates: { canonical: '/explore' },
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-    url: '/explore',
-    siteName: siteConfig.name,
-    locale: siteConfig.locale,
-    type: 'website',
-  },
-  twitter: {
-    card: siteConfig.seo.twitterCard,
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-}
+})
 
 const jsonLd = {
   '@context': 'https://schema.org',

@@ -1,22 +1,25 @@
 import { getArticles, getFeaturedArticles } from '@/modules/articles/services/getArticles'
 import { getCategories } from '@/modules/articles/services/getCategories'
 import { ArticlesPage } from '@/modules/articles/components/ArticlesPage'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import type { Metadata } from 'next'
 
 const LANG = 'hi' as const
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/hi/articles',
   title:       'लेख',
   description: 'नासा, इसरो, स्पेसएक्स, ईएसए और अन्य से अंतरिक्ष लेख, मिशन अपडेट और वैज्ञानिक खोजें।',
-  alternates: {
-    canonical: '/hi/articles',
-    languages: {
-      en:          '/articles',
-      hi:          '/hi/articles',
-      'x-default': '/articles',
-    },
+  locale:      'hi_IN',
+  languages: {
+    en:          '/articles',
+    hi:          '/hi/articles',
+    'x-default': '/articles',
   },
-}
+  // No fallbackImagePath: the generated card's bundled font is Latin-only, so
+  // a Devanagari headline would rasterise as empty boxes. The brand card, which
+  // carries no page text, is the right default here.
+})
 
 export const revalidate = 300
 

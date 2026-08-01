@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { siteConfig } from '@/config/site'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
+import { ogCardPath } from '@/modules/seo/socialMeta'
 import { TOPICS, getTopic } from '@/modules/explore/services/topics'
 import { getTopicContent } from '@/modules/explore/services/topicContent'
 import { TopicHub } from '@/modules/explore/components/TopicHub'
@@ -17,28 +19,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!topic) return { title: 'Topic not found' }
 
   const title = `${topic.name} — Topic Hub`
-  const description = `${topic.tagline} ${topic.description}`.slice(0, 300)
-  const url = `/explore/topics/${topic.slug}`
 
-  return {
+  return buildPageMetadata({
+    path: `/explore/topics/${topic.slug}`,
     // Plain name — the root layout's titleTemplate appends "| Antariksham".
     title,
-    description,
-    alternates: { canonical: url },
-    openGraph: {
-      title: `${topic.name} — ${siteConfig.name}`,
-      description,
-      url,
-      siteName: siteConfig.name,
-      locale: siteConfig.locale,
-      type: 'website',
-    },
-    twitter: {
-      card: siteConfig.seo.twitterCard,
-      title: `${topic.name} — ${siteConfig.name}`,
-      description,
-    },
-  }
+    description: `${topic.tagline} ${topic.description}`,
+    // A hub has no image of its own, so it gets a card carrying its name
+    // rather than the generic site card every hub would otherwise share.
+    fallbackImagePath: ogCardPath({ title: topic.name, eyebrow: 'Topic Hub' }),
+  })
 }
 
 export default async function TopicHubPage({ params }: { params: { slug: string } }) {

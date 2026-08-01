@@ -1,12 +1,13 @@
 import type { Metadata }      from 'next'
-import { siteConfig }         from '@/config/site'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import { getDeepSpaceProbes } from '@/modules/deepspace/services/getDeepSpace'
 import { DeepSpaceTracker }   from '@/modules/deepspace/components/DeepSpaceTracker'
 
-export const metadata: Metadata = {
-  title:       `Deep Space Tracker — ${siteConfig.name}`,
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/live/deep-space',
+  title:       'Deep Space Tracker',
   description: 'Live telemetry for Voyager 1, Voyager 2, Parker Solar Probe, Europa Clipper and Lucy.',
-}
+})
 
 export default function DeepSpacePage() {
   const { probes, updatedAt } = getDeepSpaceProbes()

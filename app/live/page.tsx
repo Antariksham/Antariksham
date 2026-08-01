@@ -1,14 +1,15 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import Link              from 'next/link'
-import { siteConfig }   from '@/config/site'
 import { Satellite, Rocket, Camera, Globe, Moon } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title:       `Live — ${siteConfig.name}`,
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/live',
+  title:       'Live',
   description: 'Live space intelligence systems — ISS tracker, launch countdowns, NASA APOD and deep space telemetry.',
-}
+})
 
 const LIVE_PAGES = [
   {

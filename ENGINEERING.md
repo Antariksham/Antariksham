@@ -361,7 +361,9 @@ env vars are absent — unrelated to app code).
     that hardcoded `images: [siteConfig.seo.defaultImage]` had that line removed
     so they inherit it, and the root layout gained the `openGraph`/`twitter`
     defaults it never had — previously the homepage shared as a bare link with
-    no image, no `og:site_name` and no card type.
+    no image, no `og:site_name` and no card type. (Superseded in part: file
+    inheritance only reaches pages that set no `openGraph` of their own, which
+    is what the share-card work below fixes.)
   - **Installable PWA + iOS home screen** — `app/manifest.ts` (served at
     `/manifest.webmanifest`) with name/description from `siteConfig`,
     `display: standalone` and a dark `theme_color`, since a manifest gets one
@@ -1721,6 +1723,68 @@ have a colour. All four are closed:
   agencies affordance.
 - 7 new `node:test` cases (**325 total**).
 
+### Share cards / Open Graph — one builder for every route
+
+Sharing any page produced a poor preview, and it was never a per-page bug —
+three site-wide mechanics were fighting each other. Next replaces `openGraph`
+and `twitter` **per segment** rather than merging them with the root layout, so:
+
+1. **~20 routes set no `openGraph` at all** (`/articles`, `/learn`, `/live/*`,
+   `/missions`, `/about`, `/search`, `/sources`, the policy pages) and inherited
+   the root layout's, which hardcoded the site title, the site description and
+   `url: siteConfig.url`. Every one of them shared as "Antariksham — Space
+   Intelligence & Knowledge Platform" pointing at the **homepage**.
+2. **~8 routes that did set `openGraph`** (`/explore*`, `/gallery*`,
+   `/lunar-sim`) thereby suppressed the file-convention `app/opengraph-image.tsx`
+   — it is only merged when a segment's own metadata has no `openGraph` key — so
+   they shipped with **no `og:image` element whatsoever**.
+3. **Content routes passed `images: featured ? [featured] : []`.** An empty
+   array is still an override, so any article, mission or author without an
+   image had no card either.
+
+On top of that no route emitted `og:image:width`/`height`/`alt` (which is what
+makes WhatsApp, Facebook and LinkedIn render a *large* card on first scrape
+instead of a thumbnail), and the root layout pinned `twitter:title` /
+`twitter:description` to the site defaults — blocking Next's per-page
+inheritance, which is why **every** shared article showed the generic site title
+on X. Several pages also passed `Learn — Antariksham` as `title` under a
+`'%s | Antariksham'` template and rendered `Learn — Antariksham | Antariksham`.
+
+- **`modules/seo/socialMeta.ts`** — the pure core: absolute-URL resolution, card
+  image selection with dimensions/alt/MIME, description clamping to 300 chars on
+  a word boundary, and the Latin-script guard. Isomorphic and free of the `@/`
+  alias, like `jsonLd.ts` beside it, so it runs under the bare node runner
+  (**39 new cases, 400 total**).
+- **`modules/seo/pageMetadata.ts`** — `buildPageMetadata()`, the one way a public
+  page declares metadata. **Every public route now goes through it** (directly or
+  via `articleMetadata` / `missionMetadata` / `knowledgeMetadata`), so the full
+  set of tags is always emitted and a page only states what makes it different.
+- **`app/og/route.tsx` + `modules/seo/ogCard.tsx`** — a generated editorial card
+  (masthead, accent stripe, headline, footer) for pages with no image of their
+  own, replacing the empty `images: []`. A **route handler taking query params**,
+  not a per-segment `opengraph-image.tsx`, because that convention receives only
+  `params` — an article card would have to re-read the row on every scraper hit,
+  and `getArticleBySlug` increments the view counter, so previews would inflate
+  it. It lives at `/og`, **not** `/api/og`, because `app/robots.ts` disallows
+  `/api/` and both Twitter and Google honour robots.txt when fetching cards.
+  Headline type steps down by length (Satori has no `text-overflow`), and
+  non-Latin text falls back to the brand card — `next/og` bundles a Latin-only
+  Noto Sans, so a Devanagari headline would rasterise as empty boxes.
+- Articles additionally gained `article:published_time`, `article:modified_time`,
+  `article:author`, `article:section` and `article:tag`.
+
+Verified against the live site before and after: every route in the audit list
+now emits `og:url` (its own), `og:site_name`, `og:type`, `og:locale`, an
+`og:image` with `width`/`height`/`alt`/`type`, and per-page `twitter:title` /
+`twitter:description`. All four card variants render as 1200×630 PNGs (brand,
+editorial, long-headline step-down, Devanagari fallback).
+
+**Open, needs a decision (not code):** `antariksham.org` **308-redirects to
+`www.antariksham.org`**, but `siteConfig.url` is the apex — so every canonical,
+`og:url`, sitemap entry and card URL points at a host that redirects. Pick one:
+change `config/site.ts` to the `www` host, or flip the DNS/host config to make
+the apex primary. See §9.
+
 Verified: 325/325 tests pass, `next build` compiles, and both sides were driven in
 headless Chromium in light and dark. Admin: create with derived slug and colour,
 the reserved name refused **with no request issued**, a CSS-injection-shaped
@@ -1940,6 +2004,21 @@ Changing the domain should mean changing that one constant. `public/robots.txt`
 used to keep a second copy and had already drifted out of sync with it; it was
 deleted in favour of `app/robots.ts`. **Do not reintroduce a second copy.**
 
+> ⚠️ **Apex vs `www` — currently mismatched, and it needs a human decision.**
+> `https://antariksham.org/…` answers **308 → `https://www.antariksham.org/…`**
+> (verified on `/`, `/opengraph-image` and article URLs), so the host is
+> configured with `www` as primary while `siteConfig.url` above is the apex.
+> Every canonical, `og:url`, `og:image` and sitemap URL therefore points at a
+> host that immediately redirects. Google resolves this, but it wastes crawl
+> budget and adds a hop that some link-preview scrapers handle poorly. Fix it in
+> **one** of two places — never both:
+>
+> 1. **Keep `www` as the site** → change the constant to
+>    `https://www.antariksham.org`. One-line change; every derived URL follows.
+> 2. **Keep the apex as the site** (better fit for the brand and the shorter
+>    `.org`) → in the Vercel dashboard set `antariksham.org` as the primary
+>    domain and redirect `www` → apex. No code change at all.
+
 Environment variables live in the Vercel project settings — Supabase URL and
 keys, `NASA_API_KEY`, optional Cloudinary. Absent Supabase env vars, `next build`
 compiles but fails at page-data collection with `supabaseUrl is required`; that
@@ -2106,7 +2185,22 @@ the `/admin/tags` screen):**
 - Per-article SEO overrides (custom SEO title / meta description / social image /
   robots) currently derive from the article's title/excerpt/featuredImage (what
   actually ships); persisting independent overrides would need columns or a link
-  to the existing `seo_metadata` table.
+  to the existing `seo_metadata` table. The plumbing is ready — everything
+  routes through `buildPageMetadata()` (§2), so an override only has to reach
+  that one call.
+
+**Share-card follow-ups (the builder shipped — see §2):**
+- **Resolve the apex-vs-`www` mismatch** — a one-line config change or a Vercel
+  domain setting, but it needs a human to choose. See the callout in §9. This is
+  the last thing standing between the cards and a clean, redirect-free scrape.
+- **A Devanagari card.** `next/og` bundles a Latin-only Noto Sans, so `/hi/*`
+  falls back to the brand card rather than rendering a Hindi headline as tofu.
+  Fixing it means shipping a Devanagari `.ttf` and passing it to `ImageResponse`
+  via its `fonts` option — worth doing once Hindi coverage grows.
+- **Re-scrape after deploying.** Facebook, LinkedIn and X cache the old card
+  indefinitely. Old shares only refresh through each network's debugger
+  (`developers.facebook.com/tools/debug`, `cards-dev.twitter.com/validator`,
+  `linkedin.com/post-inspector`); new shares are correct immediately.
 - Autosave sends the full payload only when something changed (no redundant
   saves); a true partial/field-level PATCH would need an API change.
 - Editor niceties: block drag-to-reorder, inline image upload-on-drop (today

@@ -1,14 +1,16 @@
 import type { Metadata }       from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import { siteConfig }          from '@/config/site'
 import { HomePage }            from '@/modules/homepage/components/HomePage'
 import { getLatestArticles }   from '@/modules/articles/services/getArticles'
 import { getActiveMissions }   from '@/modules/missions/services/getMissions'
 import { buildWebSiteJsonLd, buildOrganizationJsonLd } from '@/modules/seo/jsonLd'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/',
   title:       siteConfig.seo.defaultTitle,
   description: siteConfig.description,
-}
+})
 
 export const revalidate = 300
 
