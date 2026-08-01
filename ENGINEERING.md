@@ -1779,11 +1779,14 @@ now emits `og:url` (its own), `og:site_name`, `og:type`, `og:locale`, an
 `twitter:description`. All four card variants render as 1200×630 PNGs (brand,
 editorial, long-headline step-down, Devanagari fallback).
 
-**Open, needs a decision (not code):** `antariksham.org` **308-redirects to
-`www.antariksham.org`**, but `siteConfig.url` is the apex — so every canonical,
-`og:url`, sitemap entry and card URL points at a host that redirects. Pick one:
-change `config/site.ts` to the `www` host, or flip the DNS/host config to make
-the apex primary. See §9.
+**Host/canonical alignment — resolved, no code change needed.** This was flagged
+during the work because `antariksham.org` was answering 308 → `www`, which would
+have pointed every canonical, `og:url`, sitemap entry and card URL at a
+redirecting host. The Vercel project now has the **apex as Production**, with
+`www.antariksham.org` and `antariksham.vercel.app` both 308 → apex. That matches
+`siteConfig.url` exactly, so every derived URL resolves in one hop. Re-verified
+live: `/`, `/explore`, `/learn`, `/sitemap.xml`, `/robots.txt` and an article URL
+all return 200 with `num_redirects=0`. See §9.
 
 Verified: 325/325 tests pass, `next build` compiles, and both sides were driven in
 headless Chromium in light and dark. Admin: create with derived slug and colour,
@@ -2004,20 +2007,25 @@ Changing the domain should mean changing that one constant. `public/robots.txt`
 used to keep a second copy and had already drifted out of sync with it; it was
 deleted in favour of `app/robots.ts`. **Do not reintroduce a second copy.**
 
-> ⚠️ **Apex vs `www` — currently mismatched, and it needs a human decision.**
-> `https://antariksham.org/…` answers **308 → `https://www.antariksham.org/…`**
-> (verified on `/`, `/opengraph-image` and article URLs), so the host is
-> configured with `www` as primary while `siteConfig.url` above is the apex.
-> Every canonical, `og:url`, `og:image` and sitemap URL therefore points at a
-> host that immediately redirects. Google resolves this, but it wastes crawl
-> budget and adds a hop that some link-preview scrapers handle poorly. Fix it in
-> **one** of two places — never both:
->
-> 1. **Keep `www` as the site** → change the constant to
->    `https://www.antariksham.org`. One-line change; every derived URL follows.
-> 2. **Keep the apex as the site** (better fit for the brand and the shorter
->    `.org`) → in the Vercel dashboard set `antariksham.org` as the primary
->    domain and redirect `www` → apex. No code change at all.
+**The apex is the canonical host, and the Vercel config agrees with the constant
+above.** In the project's Domains settings:
+
+| Domain | Role |
+| --- | --- |
+| `antariksham.org` | **Production** — serves 200 directly |
+| `www.antariksham.org` | 308 → `antariksham.org` |
+| `antariksham.vercel.app` | 308 → `antariksham.org` |
+
+That is the arrangement `siteConfig.url` assumes, so every canonical, `og:url`,
+`og:image` and sitemap URL resolves in **one hop, no redirect**. Verified live on
+`/`, `/explore`, `/learn`, `/sitemap.xml`, `/robots.txt` and an article URL
+(`num_redirects=0` on all).
+
+> ⚠️ **If the constant and the Vercel primary ever disagree, fix it in exactly
+> one place — never both, or you get a redirect loop.** Whichever host is
+> Production in Vercel is the one `config/site.ts` must name. A mismatch is not
+> fatal (Google follows the redirect) but it wastes crawl budget and adds a hop
+> that some link-preview scrapers handle poorly.
 
 Environment variables live in the Vercel project settings — Supabase URL and
 keys, `NASA_API_KEY`, optional Cloudinary. Absent Supabase env vars, `next build`
@@ -2190,9 +2198,9 @@ the `/admin/tags` screen):**
   that one call.
 
 **Share-card follow-ups (the builder shipped — see §2):**
-- **Resolve the apex-vs-`www` mismatch** — a one-line config change or a Vercel
-  domain setting, but it needs a human to choose. See the callout in §9. This is
-  the last thing standing between the cards and a clean, redirect-free scrape.
+- ~~Resolve the apex-vs-`www` mismatch~~ **done** — the Vercel project has the
+  apex as Production with `www` and `.vercel.app` both 308 → apex, which is what
+  `siteConfig.url` already names. Cards and canonicals scrape in one hop. See §9.
 - **A Devanagari card.** `next/og` bundles a Latin-only Noto Sans, so `/hi/*`
   falls back to the brand card rather than rendering a Hindi headline as tofu.
   Fixing it means shipping a Devanagari `.ttf` and passing it to `ImageResponse`
