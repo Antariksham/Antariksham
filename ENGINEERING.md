@@ -50,24 +50,52 @@ env vars are absent — unrelated to app code).
   menu was a flat list of six 32px display-weight rows; at ~75px each it ran
   past the fold on any short phone and put every sub-page (ISS Tracker, Sky
   Tonight, Editorial Policy…) out of reach of the nav entirely.
-  - **Two panels on a sliding track** (`.nav-drawer__track`, `width: 200%`,
-    `translate3d(-50%)`), the nasa.gov shape: panel 1 lists the sections, tapping
-    one with sub-pages slides panel 2 in, "Back" slides it out. Only the track
-    moves — no accordion pushing the list around under the thumb.
-  - **17px rows instead of 32px** (sub-items 15px), padding 13px. The six
-    sections now end 377px down, so they fit a 320×568 phone with room to spare
-    (they used to need ~450px + gutters).
-  - **`children?: NavItem[]` in `config/navigation.ts`** drives it. Explore,
-    Live, Gallery and About have children; Articles and Learn have no sub-routes
-    so they stay direct links. **The desktop row ignores `children`** and keeps
-    its flat six links — drill-down is a drawer affordance. A parent is still a
-    real destination: its sub-panel header links to the section landing page.
-  - **State**: `section` (what panel 2 renders) is deliberately separate from
-    `drilled` (whether it is on screen), so the outgoing panel keeps its contents
-    through the slide instead of going blank mid-animation.
-  - **Accessibility**: `aria-current` marks the live section *and* the page
-    inside it; focus follows the panel (in → "Back", out → the row you came
-    from) with `preventScroll`; Escape steps out of a sub-panel before closing;
+  - **A stack of panels on a sliding track**, the nasa.gov shape: panel 0 lists
+    the sections, tapping one with sub-pages slides the next panel in, "Back"
+    slides it out. Only the track moves — no accordion pushing the list around
+    under the thumb. **Depth is open-ended**: Explore → Topic Hubs → the nine
+    hubs is three levels.
+  - **The track's geometry is two numbers.** The component sets `--panels`
+    (how many are rendered) and `--depth` (which is on screen) on the track;
+    width, panel size and offset all derive from them in `globals.css`
+    (`width: calc(var(--panels) * 100%)`,
+    `transform: translate3d(calc(var(--depth) * -100% / var(--panels)), 0, 0)`).
+    So arbitrary depth costs no extra CSS and no computed inline styles.
+  - **17px rows instead of 32px** (sub-items 15px), padding 13px. The eight
+    sections end 477px down — they fit a 320×568 phone without scrolling, where
+    the old six needed ~450px + gutters and overflowed.
+  - **`config/navigation.ts` is the whole map.** `children?: NavItem[]` nests to
+    any depth and the topic hubs are generated from the `TOPICS` registry that
+    renders the hub pages, so a new hub appears in the nav with no second edit.
+    A section never repeats its own landing page in its children — the sub-panel
+    header already links there. Rows with children drill (`›`); rows without
+    navigate (`→`), so the two read differently at a glance.
+  - **`desktopHidden`** keeps Home and Missions out of the desktop row, which is
+    one line with no width left (six links + logo + search + toggle already
+    collide below ~1080px). The drawer and the 404 page have vertical space and
+    show everything. `desktopNav` is the filtered export the bar consumes.
+  - **What the drawer now reaches** that it did not before: Home, Missions
+    (a homepage section and a 0.8-priority sitemap entry that was footer-only),
+    the nine topic hubs, Privacy, Terms, and the Hindi article listing — which
+    had no route into it from anywhere in the site chrome. Search stays an
+    always-visible icon in the bar rather than a row; it is one tap either way.
+  - **State**: `stack` (the drilled path that is rendered) is deliberately
+    separate from `depth` (how far along it is shown), so a panel being left
+    keeps its contents through the slide instead of going blank halfway.
+    Drilling truncates `stack` at the current depth, so switching branches
+    resizes the track rather than growing it.
+  - **`config/navigation.test.ts`** (10 tests) pins the parts that fail silently:
+    **every href in the tree resolves to a real `page.tsx` under `app/`** —
+    CLAUDE.md's "nothing may navigate to a 404" made executable by walking the
+    route directories, dynamic segments included — plus the prefix-matching traps
+    (`/` vs everything, `/live` vs `/lunar-sim`, `/articles` vs `/article/:slug`)
+    and the three-level current-section walk. `config/navigation.ts` imports
+    `TOPICS` relatively with the `.ts` extension so `node --test` can load it,
+    the same reason `modules/admin/*` import `../../../lib/utils.ts`.
+  - **Accessibility**: `aria-current` marks the section *and* the page inside it
+    at any depth; focus follows the panel (in → "Back", out → the row you came
+    from) with `preventScroll`; Escape steps back one level at a time, then
+    closes;
     Tab is trapped across the bar + the on-screen panel; the off-screen panel is
     `visibility: hidden` so it leaves the tab order once the slide ends; body
     scroll is locked while open. `prefers-reduced-motion` collapses the slide.

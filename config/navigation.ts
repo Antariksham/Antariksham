@@ -1,33 +1,69 @@
+// Relative, with the extension, so `node --test` can load this file directly —
+// the same reason modules/admin/* import ../../../lib/utils.ts. `topics.ts` is
+// pure data with no imports of its own, so nothing else comes along with it.
+import { TOPICS } from '../modules/explore/services/topics.ts'
+
 export type NavItem = {
   label: string
   href:  string
   isLive?: boolean
   isFuture?: boolean
   /**
-   * Sub-sections for the mobile drawer's drill-down panel.
+   * Kept out of the desktop row, which is a single horizontal line with no
+   * room left — logo + wordmark + six links + the search pill + the toggle
+   * already collide below ~1080px (see the breakpoint note in globals.css).
+   * The mobile drawer and the 404 page have vertical space and show it.
+   */
+  desktopHidden?: boolean
+  /**
+   * Sub-sections for the mobile drawer's drill-down panels. Nests to any
+   * depth — Explore → Topic Hubs → the nine hubs is three levels.
    *
-   * A parent with `children` is still a real destination — `href` stays its
-   * landing page and the sub-panel links back to it, so nothing here is a
-   * dead toggle. The desktop row ignores `children` entirely and keeps its
-   * flat six links; only the mobile drawer drills.
-   *
-   * Every entry mirrors a route that actually exists (nothing on this site may
-   * navigate to a 404), which is why `Articles` and `Learn` have no children:
-   * they have no sub-routes yet, only `/article/:slug` and `/learn/:slug`
-   * detail pages.
+   * A parent with `children` is still a real destination: `href` stays its
+   * landing page and each sub-panel's header links back to it, so nothing
+   * here is a dead toggle. Every entry mirrors a route that actually exists
+   * (nothing on this site may navigate to a 404).
    */
   children?: NavItem[]
 }
 
+/** The nine curated hubs, straight from the registry that renders them, so a
+ *  new hub appears in the nav without a second edit. */
+const topicHubs: NavItem[] = TOPICS.map((topic) => ({
+  label: topic.name,
+  href:  `/explore/topics/${topic.slug}`,
+}))
+
+/**
+ * The site's sections, in reading order. Drives the desktop row (minus
+ * `desktopHidden`), the mobile drawer (all of it, with drill-down) and the
+ * 404 page's section list.
+ *
+ * A section's own landing page is never repeated in its `children` — the
+ * sub-panel header already links there.
+ */
 export const mainNav: NavItem[] = [
-  { label: 'Articles', href: '/articles' },
+  { label: 'Home', href: '/', desktopHidden: true },
+  {
+    label: 'Articles',
+    href:  '/articles',
+    children: [
+      // The Hindi listing exists and had no route into it from anywhere in the
+      // site chrome. Not the full language switch — that needs /hi home,
+      // /hi/learn and /hi/missions first (docs/NEXT-STEPS.md §2.2).
+      { label: 'हिन्दी (Hindi)', href: '/hi/articles' },
+    ],
+  },
+  // A first-class section on the homepage, in the sitemap at priority 0.8, and
+  // until now reachable only from the footer.
+  { label: 'Missions', href: '/missions', desktopHidden: true },
   {
     label: 'Explore',
     href:  '/explore',
     children: [
       { label: 'Solar System Explorer', href: '/explore/solar-system' },
       { label: 'Sky Tonight',           href: '/explore/sky-tonight'  },
-      { label: 'Topic Hubs',            href: '/explore/topics'       },
+      { label: 'Topic Hubs',            href: '/explore/topics', children: topicHubs },
     ],
   },
   {
@@ -35,14 +71,14 @@ export const mainNav: NavItem[] = [
     href:  '/live',
     isLive: true,
     children: [
-      { label: 'ISS Tracker',               href: '/live/iss-tracker' },
-      { label: 'Launch Tracker',            href: '/live/launches'    },
-      { label: 'NASA APOD',                 href: '/live/apod'        },
-      { label: 'Deep Space',                href: '/live/deep-space'  },
-      { label: 'Lunar Landing Simulator',   href: '/lunar-sim'        },
+      { label: 'ISS Tracker',             href: '/live/iss-tracker' },
+      { label: 'Launch Tracker',          href: '/live/launches'    },
+      { label: 'NASA APOD',               href: '/live/apod'        },
+      { label: 'Deep Space',              href: '/live/deep-space'  },
+      { label: 'Lunar Landing Simulator', href: '/lunar-sim'        },
     ],
   },
-  { label: 'Learn',   href: '/learn' },
+  { label: 'Learn', href: '/learn' },
   {
     label: 'Gallery',
     href:  '/gallery',
@@ -58,9 +94,36 @@ export const mainNav: NavItem[] = [
       { label: 'Editorial Policy', href: '/editorial-policy' },
       { label: 'Sources',          href: '/sources'          },
       { label: 'Contact',          href: '/contact'          },
+      { label: 'Privacy Policy',   href: '/privacy'          },
+      { label: 'Terms',            href: '/terms'            },
     ],
   },
 ]
+
+/** What the desktop bar can actually fit on one line. */
+export const desktopNav: NavItem[] = mainNav.filter((item) => !item.desktopHidden)
+
+/**
+ * Is `href` the page being viewed, or an ancestor of it?
+ *
+ * Home is the exception: every path starts with "/", so it would otherwise
+ * match everything. Note this is prefix matching on whole segments — `/live`
+ * covers `/live/launches` but not `/lunar-sim`, and `/articles` does not cover
+ * `/article/:slug` (the listing/detail split in lib/i18n.ts).
+ */
+export function isCurrent(pathname: string, href: string): boolean {
+  if (href === '/') return pathname === '/'
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
+
+/** Current for its own page, its sub-pages, or any descendant's — so a section
+ *  stays marked while you are anywhere inside it, at any nesting depth. */
+export function sectionIsCurrent(pathname: string, item: NavItem): boolean {
+  return (
+    isCurrent(pathname, item.href) ||
+    (item.children?.some((child) => sectionIsCurrent(pathname, child)) ?? false)
+  )
+}
 
 export const footerNav = {
   platform: [

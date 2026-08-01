@@ -69,9 +69,11 @@ export default function NotFound() {
         </form>
 
         <nav aria-label="Main sections" style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/" className="btn btn-outline press">Home</Link>
           {/* Driven by the same config the navbar uses, so a new section shows up
-              here automatically instead of silently going missing. */}
+              here automatically instead of silently going missing. `mainNav`,
+              not `desktopNav` — this list wraps, so it has room for the entries
+              the one-line desktop bar cannot fit (Home included, which is why
+              there is no hardcoded Home button here). */}
           {mainNav.map(item => (
             <Link key={item.href} href={item.href} className="btn btn-outline press">
               {item.label}

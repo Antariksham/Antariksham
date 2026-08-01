@@ -5,63 +5,67 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { siteConfig } from '@/config/site'
-import { mainNav, type NavItem } from '@/config/navigation'
+import { mainNav, desktopNav, isCurrent, sectionIsCurrent, type NavItem } from '@/config/navigation'
 import { Logo } from '@/components/brand/Logo'
 import { ThemeToggle } from './ThemeToggle'
-
-/** A link is "current" for its own page and for anything nested under it. */
-function isCurrent(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
-/** A section is current for its landing page, its sub-pages, or any child. */
-function sectionIsCurrent(pathname: string, item: NavItem) {
-  return (
-    isCurrent(pathname, item.href) ||
-    (item.children?.some((child) => isCurrent(pathname, child.href)) ?? false)
-  )
-}
 
 export function Navbar() {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
 
-  /* The drawer is a two-panel drill-down. `section` is what the sub-panel
-     renders, `drilled` is whether it is on screen — they are separate so the
-     sub-panel keeps its contents while it slides back out instead of going
-     blank mid-animation. */
-  const [section, setSection] = useState<NavItem | null>(null)
-  const [drilled, setDrilled] = useState(false)
+  /* The drawer is a stack of panels on a sliding track, nesting as deep as the
+     config does (Explore → Topic Hubs → the nine hubs is three levels).
+     `stack` is the drilled path that is *rendered*; `depth` is how far along it
+     we are *showing*. They are separate on purpose: on the way back out, the
+     panel being left keeps its contents through the slide instead of going
+     blank halfway. */
+  const [stack, setStack] = useState<NavItem[]>([])
+  const [depth, setDepth] = useState(0)
 
-  const backRef = useRef<HTMLButtonElement>(null)
-  const returnFocusRef = useRef<HTMLElement | null>(null)
+  const drawerRef = useRef<HTMLDivElement>(null)
+  /* The row that opened each level, so stepping back returns focus to it. */
+  const openerRefs = useRef<(HTMLElement | null)[]>([])
+
+  // Panel 0 is the top-level list; every panel after it is one drilled section.
+  const panels = [{ section: null as NavItem | null, items: mainNav }].concat(
+    stack.map((section) => ({ section, items: section.children ?? [] })),
+  )
 
   const closeMenu = useCallback(() => setMenuOpen(false), [])
+
+  /** Move focus into the panel that is now on screen, without letting the
+   *  browser scroll the drawer sideways to "reveal" an off-screen target. */
+  const focusVisiblePanelBack = useCallback(() => {
+    requestAnimationFrame(() => {
+      drawerRef.current
+        ?.querySelector<HTMLElement>('.nav-drawer__panel[aria-hidden="false"] .nav-drawer__back')
+        ?.focus({ preventScroll: true })
+    })
+  }, [])
 
   const toggleMenu = useCallback(() => {
     const next = !menuOpen
     setMenuOpen(next)
-    // Reopening always lands on the top-level list. Done on open (not close)
-    // so the sub-panel does not flicker away behind the closing drawer.
-    if (next) setDrilled(false)
+    // Reopening always lands on the top-level list. Done on open (not close) so
+    // the drilled panel does not flicker away behind the closing drawer.
+    if (next) setDepth(0)
   }, [menuOpen])
 
   const drillInto = useCallback((item: NavItem) => {
-    returnFocusRef.current = document.activeElement as HTMLElement | null
-    setSection(item)
-    setDrilled(true)
-    // Focus follows the panel, so a keyboard or screen-reader user lands on
-    // "Back" rather than being stranded on a row that just slid off screen.
-    // preventScroll matters: the target is off-screen at this instant, and
-    // scrolling it into view would slide the drawer sideways under the track.
-    requestAnimationFrame(() => backRef.current?.focus({ preventScroll: true }))
-  }, [])
+    openerRefs.current[depth] = document.activeElement as HTMLElement | null
+    // Truncate at the current depth first: drilling into a different section
+    // after stepping back replaces the old branch rather than growing the track.
+    setStack((prev) => [...prev.slice(0, depth), item])
+    setDepth(depth + 1)
+    focusVisiblePanelBack()
+  }, [depth, focusVisiblePanelBack])
 
   const drillBack = useCallback(() => {
-    const returnTo = returnFocusRef.current
-    setDrilled(false)
-    requestAnimationFrame(() => returnTo?.focus({ preventScroll: true }))
-  }, [])
+    if (depth === 0) return
+    const opener = openerRefs.current[depth - 1]
+    setDepth(depth - 1)
+    requestAnimationFrame(() => opener?.focus({ preventScroll: true }))
+  }, [depth])
 
   // Close the drawer whenever the route changes.
   useEffect(() => { setMenuOpen(false) }, [pathname])
@@ -70,9 +74,9 @@ export function Navbar() {
     if (!menuOpen) return
 
     const onKey = (e: KeyboardEvent) => {
-      // Escape steps back out of a sub-panel first, then closes the drawer.
+      // Escape steps back one level at a time, then closes the drawer.
       if (e.key === 'Escape') {
-        if (drilled) drillBack()
+        if (depth > 0) drillBack()
         else setMenuOpen(false)
         return
       }
@@ -82,8 +86,8 @@ export function Navbar() {
          scroll, so tabbing past the last link used to drop focus into page
          content nobody can see. The cycle is the bar (logo, theme, search,
          hamburger) then the on-screen panel — so "close" is always one Tab
-         away, and the off-screen panel never appears because it is
-         visibility:hidden and its links report no offsetParent. */
+         away, and off-screen panels never appear because they are
+         visibility:hidden and their links report no offsetParent. */
       const bar = document.querySelector('.site-nav')
       const panel = document.querySelector('.nav-drawer__panel[aria-hidden="false"]')
       if (!bar || !panel) return
@@ -112,7 +116,7 @@ export function Navbar() {
 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [menuOpen, drilled, drillBack])
+  }, [menuOpen, depth, drillBack])
 
   // The drawer covers the viewport — don't let the page scroll behind it.
   useEffect(() => {
@@ -121,6 +125,56 @@ export function Navbar() {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = previous }
   }, [menuOpen])
+
+  /** One drawer row. Level 0 rows are the section type; deeper rows step down a
+   *  size. A row with children drills (button + chevron); one without
+   *  navigates (link + arrow), so the two read differently at a glance. */
+  const renderRow = (item: NavItem, level: number, panelIndex: number) => {
+    const hasChildren = Boolean(item.children?.length)
+    const className = level === 0 ? 'nav-drawer__row' : 'nav-drawer__row nav-drawer__row--sub'
+    const current = hasChildren
+      ? sectionIsCurrent(pathname, item)
+      : isCurrent(pathname, item.href)
+
+    const label = (
+      <span className="nav-drawer__label">
+        {item.isLive && <span className="nav-drawer__dot" aria-hidden="true" />}
+        {item.label}
+      </span>
+    )
+    const Icon = hasChildren ? ChevronRight : ArrowRight
+    const icon = <Icon className="nav-drawer__chevron" size={level === 0 ? 18 : 16} aria-hidden="true" />
+
+    return (
+      <li key={item.href}>
+        {hasChildren ? (
+          <button
+            type="button"
+            className={className}
+            data-live={item.isLive ? 'true' : undefined}
+            aria-current={current ? 'page' : undefined}
+            aria-expanded={depth > panelIndex && stack[panelIndex]?.href === item.href}
+            aria-controls={`site-menu-panel-${panelIndex + 1}`}
+            onClick={() => drillInto(item)}
+          >
+            {label}
+            {icon}
+          </button>
+        ) : (
+          <Link
+            href={item.href}
+            className={className}
+            data-live={item.isLive ? 'true' : undefined}
+            aria-current={current ? 'page' : undefined}
+            onClick={closeMenu}
+          >
+            {label}
+            {icon}
+          </Link>
+        )}
+      </li>
+    )
+  }
 
   return (
     <>
@@ -150,10 +204,13 @@ export function Navbar() {
           />
         </Link>
 
-        {/* DESKTOP NAV — deliberately flat. Sub-sections are a mobile-drawer
-            affordance; on desktop each section's own page lists them. */}
+        {/* DESKTOP NAV — `desktopNav`, not `mainNav`: this is one horizontal
+            line with no room to spare, so Home (the logo already goes there)
+            and Missions are drawer-and-404 only. Deliberately flat, too —
+            drill-down is a drawer affordance and each section's own page
+            already lists its sub-pages. */}
         <ul style={{ display: 'flex', alignItems: 'center', gap: '36px', listStyle: 'none', margin: 0, padding: 0 }} className="desktop-nav">
-          {mainNav.map((item) => (
+          {desktopNav.map((item) => (
             <li key={item.href}>
               <Link href={item.href} className="press" style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', color: item.isLive ? 'var(--green)' : 'var(--white)', display: 'flex', alignItems: 'center', gap: '7px', opacity: item.isLive ? 1 : 0.9 }}>
                 {item.isLive && (
@@ -177,7 +234,8 @@ export function Navbar() {
         {/* MOBILE RIGHT — theme toggle + search icon + hamburger.
             36px rather than 38 and a 6px gap: that reclaims 10px for the logo,
             which is what lets the full wordmark fit at 320px. Still comfortably
-            above the 24px minimum touch target. */}
+            above the 24px minimum touch target. Search stays an always-visible
+            icon here rather than a drawer row — it is one tap either way. */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }} className="mobile-nav">
           <ThemeToggle size={36} />
           <Link href="/search" aria-label="Search" className="press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', flexShrink: 0, border: '1px solid rgba(var(--ink),0.15)', borderRadius: '6px', background: 'rgba(var(--ink),0.04)', color: 'var(--white)', textDecoration: 'none' }}>
@@ -192,106 +250,53 @@ export function Navbar() {
 
       </nav>
 
-      {/* MOBILE DRAWER — two panels on a sliding track. Always mounted (hidden
-          by CSS) so opening AND closing animate, and so `aria-controls` on the
-          hamburger always resolves. Styles: .nav-drawer* in globals.css. */}
-      <div className="nav-drawer" id="site-menu" data-open={menuOpen} aria-hidden={!menuOpen}>
-        <div className="nav-drawer__track" data-drilled={drilled}>
+      {/* MOBILE DRAWER — a stack of panels on a sliding track. Always mounted
+          (hidden by CSS) so opening AND closing animate, and so `aria-controls`
+          on the hamburger always resolves. Styles: .nav-drawer* in globals.css.
+          The track's geometry is the only thing that cannot be static CSS: two
+          numbers drive width, panel size and offset through custom properties. */}
+      <div className="nav-drawer" id="site-menu" ref={drawerRef} data-open={menuOpen} aria-hidden={!menuOpen}>
+        <div
+          className="nav-drawer__track"
+          style={{ '--panels': panels.length, '--depth': depth } as React.CSSProperties}
+        >
+          {panels.map((panel, i) => (
+            <nav
+              key={panel.section ? `${i}-${panel.section.href}` : 'root'}
+              className="nav-drawer__panel"
+              id={`site-menu-panel-${i}`}
+              aria-label={panel.section ? `${panel.section.label} section` : 'Main'}
+              aria-hidden={i !== depth}
+            >
+              {panel.section && (
+                <>
+                  <button type="button" className="nav-drawer__back" onClick={drillBack}>
+                    <ChevronLeft size={15} aria-hidden="true" />
+                    Back
+                  </button>
 
-          {/* PANEL 1 — the top-level sections */}
-          <nav className="nav-drawer__panel" aria-label="Main" aria-hidden={drilled}>
-            <ul className="nav-drawer__list">
-              {mainNav.map((item) => {
-                const current = sectionIsCurrent(pathname, item)
-                const label = (
-                  <span className="nav-drawer__label">
-                    {item.isLive && <span className="nav-drawer__dot" aria-hidden="true" />}
-                    {item.label}
-                  </span>
-                )
+                  {/* The section's own landing page. A parent row drills in, so
+                      this is how you still reach the section itself. */}
+                  <Link
+                    href={panel.section.href}
+                    className="nav-drawer__section"
+                    aria-label={`${panel.section.label} — section overview`}
+                    aria-current={isCurrent(pathname, panel.section.href) ? 'page' : undefined}
+                    onClick={closeMenu}
+                  >
+                    {panel.section.label}
+                    <span className="nav-drawer__section-go" aria-hidden="true">
+                      <ArrowRight size={15} />
+                    </span>
+                  </Link>
+                </>
+              )}
 
-                return (
-                  <li key={item.href}>
-                    {item.children?.length ? (
-                      <button
-                        type="button"
-                        className="nav-drawer__row"
-                        data-live={item.isLive ? 'true' : undefined}
-                        aria-current={current ? 'page' : undefined}
-                        aria-expanded={drilled && section?.href === item.href}
-                        aria-controls="site-menu-section"
-                        onClick={() => drillInto(item)}
-                      >
-                        {label}
-                        <ChevronRight className="nav-drawer__chevron" size={18} aria-hidden="true" />
-                      </button>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        className="nav-drawer__row"
-                        data-live={item.isLive ? 'true' : undefined}
-                        aria-current={current ? 'page' : undefined}
-                        onClick={closeMenu}
-                      >
-                        {label}
-                        <ChevronRight className="nav-drawer__chevron" size={18} aria-hidden="true" />
-                      </Link>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          </nav>
-
-          {/* PANEL 2 — whichever section was drilled into. Its contents persist
-              after `drilled` flips back to false so the slide-out is not blank. */}
-          <nav
-            className="nav-drawer__panel"
-            id="site-menu-section"
-            aria-label={section ? `${section.label} section` : 'Section'}
-            aria-hidden={!drilled}
-          >
-            {section && (
-              <>
-                <button type="button" ref={backRef} className="nav-drawer__back" onClick={drillBack}>
-                  <ChevronLeft size={15} aria-hidden="true" />
-                  Back
-                </button>
-
-                {/* The section's own landing page — a parent row drills in, so
-                    this is how you still reach the section itself. */}
-                <Link
-                  href={section.href}
-                  className="nav-drawer__section"
-                  aria-label={`${section.label} — section overview`}
-                  aria-current={isCurrent(pathname, section.href) ? 'page' : undefined}
-                  onClick={closeMenu}
-                >
-                  {section.label}
-                  <span className="nav-drawer__section-go" aria-hidden="true">
-                    <ArrowRight size={15} />
-                  </span>
-                </Link>
-
-                <ul className="nav-drawer__list">
-                  {section.children?.map((child) => (
-                    <li key={child.href}>
-                      <Link
-                        href={child.href}
-                        className="nav-drawer__row nav-drawer__row--sub"
-                        aria-current={isCurrent(pathname, child.href) ? 'page' : undefined}
-                        onClick={closeMenu}
-                      >
-                        <span className="nav-drawer__label">{child.label}</span>
-                        <ArrowRight className="nav-drawer__chevron" size={16} aria-hidden="true" />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </nav>
-
+              <ul className="nav-drawer__list">
+                {panel.items.map((item) => renderRow(item, i, i))}
+              </ul>
+            </nav>
+          ))}
         </div>
       </div>
     </>
