@@ -325,6 +325,16 @@ export function Navbar() {
                       data-live={item.isLive ? 'true' : undefined}
                       data-open={open}
                       aria-current={sectionIsCurrent(pathname, item) ? 'page' : undefined}
+                      /* A click on the label is a navigation, not a menu
+                         interaction. Without this the hover timer still fires
+                         on the way to the click and the panel sits open for the
+                         whole client-side transition — ~850ms of menu the user
+                         never asked for, closing only once the route lands.
+                         pointerDown, not click: the timer would otherwise fire
+                         in the gap between pressing and releasing. onClick
+                         covers keyboard activation, which has no pointer. */
+                      onPointerDown={closeMega}
+                      onClick={closeMega}
                     >
                       {inner}
                     </Link>
@@ -349,6 +359,9 @@ export function Navbar() {
                     data-live={item.isLive ? 'true' : undefined}
                     aria-current={sectionIsCurrent(pathname, item) ? 'page' : undefined}
                     onMouseEnter={scheduleClose}
+                    // A section with no panel of its own: clicking it should not
+                    // leave a neighbour's panel hanging for the grace period.
+                    onPointerDown={closeMega}
                   >
                     {inner}
                   </Link>

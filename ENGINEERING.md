@@ -64,6 +64,12 @@ env vars are absent — unrelated to app code).
     "Explore submenu"), and hovering either opens the panel, so a mouse still
     treats the pair as one target. This was a fix: making the whole label a
     trigger took away the one thing a nav link is expected to do.
+  - **Clicking a label closes the panel on `pointerdown`.** Hover-open plus
+    click-to-navigate collide by default: moving the pointer onto a label to
+    click it starts the open timer, so the panel opened and then sat there for
+    the entire client-side transition — measured at ~850ms — closing only when
+    the route landed. `pointerdown` rather than `click` because the timer would
+    otherwise fire in the gap between pressing and releasing.
   - **`NavItem.description`** is the one-line summary under each title. For
     Home, Missions and Learn — no children — that line *is* the middle column,
     which is why a test asserts every section has one and that it fits two lines.
