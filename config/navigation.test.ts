@@ -105,6 +105,18 @@ test('desktopNav drops the entries the one-line bar cannot fit', () => {
   )
 })
 
+test('every top-level section has a description for the mega-menu', () => {
+  // For Home, Missions and Learn this line IS the mega-menu's middle column —
+  // they have no children — so a missing one leaves a visibly empty panel.
+  for (const item of mainNav) {
+    assert.ok(item.description, `"${item.label}" has no description`)
+    assert.ok(
+      item.description!.length <= 130,
+      `"${item.label}" description is ${item.description!.length} chars; it has to fit two lines`,
+    )
+  }
+})
+
 test('isCurrent: Home matches only the home page', () => {
   assert.equal(isCurrent('/', '/'), true)
   assert.equal(isCurrent('/articles', '/'), false)

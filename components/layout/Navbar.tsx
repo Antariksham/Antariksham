@@ -3,15 +3,31 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { siteConfig } from '@/config/site'
 import { mainNav, desktopNav, isCurrent, sectionIsCurrent, type NavItem } from '@/config/navigation'
 import { Logo } from '@/components/brand/Logo'
 import { ThemeToggle } from './ThemeToggle'
+import { MegaMenu } from './MegaMenu'
+
+/** How long the pointer must rest on a trigger before the panel opens, and how
+ *  long it may be outside both trigger and panel before it closes. The close
+ *  delay is the one that matters: it is the grace period for moving diagonally
+ *  from a trigger down into the panel without cutting the corner. */
+const OPEN_DELAY_MS  = 110
+const CLOSE_DELAY_MS = 220
 
 export function Navbar() {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
+
+  /* Desktop mega-menu: which section's panel is open, or null. */
+  const [mega, setMega] = useState<NavItem | null>(null)
+  const megaRef = useRef<HTMLDivElement>(null)
+  const megaBarRef = useRef<HTMLUListElement>(null)
+  const hoverTimer = useRef<ReturnType<typeof setTimeout>>()
+  /* The trigger that opened the panel, so Escape can hand focus back. */
+  const megaTriggerRef = useRef<HTMLElement | null>(null)
 
   /* The drawer is a stack of panels on a sliding track, nesting as deep as the
      config does (Explore → Topic Hubs → the nine hubs is three levels).
@@ -67,8 +83,78 @@ export function Navbar() {
     requestAnimationFrame(() => opener?.focus({ preventScroll: true }))
   }, [depth])
 
+  /* ── Desktop mega-menu ─────────────────────────────────────────────────
+     Hover and click both open it, as does Enter/Space on a trigger. Hover uses
+     timers so brushing past a trigger on the way to another does not flash the
+     panel open, and so the pointer can cut the corner from trigger to panel. */
+
+  const cancelHoverTimer = useCallback(() => clearTimeout(hoverTimer.current), [])
+
+  const closeMega = useCallback(() => {
+    cancelHoverTimer()
+    setMega(null)
+  }, [cancelHoverTimer])
+
+  const scheduleOpen = useCallback((item: NavItem) => {
+    cancelHoverTimer()
+    // Already open on some section: re-point immediately, since the panel is
+    // on screen and waiting would just feel laggy.
+    hoverTimer.current = setTimeout(() => setMega(item), mega ? 0 : OPEN_DELAY_MS)
+  }, [cancelHoverTimer, mega])
+
+  const scheduleClose = useCallback(() => {
+    cancelHoverTimer()
+    hoverTimer.current = setTimeout(() => setMega(null), CLOSE_DELAY_MS)
+  }, [cancelHoverTimer])
+
+  /** Click/keyboard open — unlike hover, this moves focus into the panel. */
+  const toggleMega = useCallback((item: NavItem, trigger: HTMLElement) => {
+    cancelHoverTimer()
+    if (mega?.href === item.href) {
+      setMega(null)
+      return
+    }
+    megaTriggerRef.current = trigger
+    setMega(item)
+    requestAnimationFrame(() => {
+      megaRef.current?.querySelector<HTMLElement>('.mega__title')?.focus()
+    })
+  }, [cancelHoverTimer, mega])
+
+  // Close on route change, and clear any timer still pending on unmount.
+  useEffect(() => { setMenuOpen(false); setMega(null) }, [pathname])
+  useEffect(() => () => clearTimeout(hoverTimer.current), [])
+
+  useEffect(() => {
+    if (!mega) return
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      closeMega()
+      megaTriggerRef.current?.focus()
+    }
+
+    /* Pointer or focus leaving both the bar and the panel closes it. Focus is
+       the important half for keyboards: tabbing out of the last link in the
+       panel should not leave it hanging open behind the page. */
+    const onOutside = (e: Event) => {
+      const target = e.target as Node | null
+      if (!target) return
+      if (megaRef.current?.contains(target) || megaBarRef.current?.contains(target)) return
+      closeMega()
+    }
+
+    window.addEventListener('keydown', onKey)
+    document.addEventListener('pointerdown', onOutside)
+    document.addEventListener('focusin', onOutside)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('pointerdown', onOutside)
+      document.removeEventListener('focusin', onOutside)
+    }
+  }, [mega, closeMega])
+
   // Close the drawer whenever the route changes.
-  useEffect(() => { setMenuOpen(false) }, [pathname])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -206,20 +292,58 @@ export function Navbar() {
 
         {/* DESKTOP NAV — `desktopNav`, not `mainNav`: this is one horizontal
             line with no room to spare, so Home (the logo already goes there)
-            and Missions are drawer-and-404 only. Deliberately flat, too —
-            drill-down is a drawer affordance and each section's own page
-            already lists its sub-pages. */}
-        <ul style={{ display: 'flex', alignItems: 'center', gap: '36px', listStyle: 'none', margin: 0, padding: 0 }} className="desktop-nav">
-          {desktopNav.map((item) => (
-            <li key={item.href}>
-              <Link href={item.href} className="press" style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', color: item.isLive ? 'var(--green)' : 'var(--white)', display: 'flex', alignItems: 'center', gap: '7px', opacity: item.isLive ? 1 : 0.9 }}>
-                {item.isLive && (
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--green)', boxShadow: '0 0 8px var(--green)', display: 'inline-block', flexShrink: 0, animation: 'blink 2s infinite' }} />
-                )}
+            and Missions are not on it. Both are in the mega-menu's left column,
+            which is where the desktop finally reaches them.
+
+            A section with sub-pages is a trigger (button) that opens the panel;
+            one without is a plain link. Same rule as the mobile drawer, so the
+            two surfaces stay predictable. */}
+        <ul ref={megaBarRef} style={{ display: 'flex', alignItems: 'center', gap: '36px', listStyle: 'none', margin: 0, padding: 0 }} className="desktop-nav">
+          {desktopNav.map((item) => {
+            const hasChildren = Boolean(item.children?.length)
+            const open = mega?.href === item.href
+            const inner = (
+              <>
+                {item.isLive && <span className="nav-bar__dot" aria-hidden="true" />}
                 {item.label}
-              </Link>
-            </li>
-          ))}
+                {hasChildren && (
+                  <ChevronDown className="nav-bar__caret" size={13} aria-hidden="true" />
+                )}
+              </>
+            )
+
+            return (
+              <li key={item.href}>
+                {hasChildren ? (
+                  <button
+                    type="button"
+                    className="nav-bar__item press"
+                    data-live={item.isLive ? 'true' : undefined}
+                    data-open={open}
+                    aria-current={sectionIsCurrent(pathname, item) ? 'page' : undefined}
+                    aria-expanded={open}
+                    aria-haspopup="true"
+                    aria-controls="site-mega"
+                    onMouseEnter={() => scheduleOpen(item)}
+                    onMouseLeave={scheduleClose}
+                    onClick={(e) => toggleMega(item, e.currentTarget)}
+                  >
+                    {inner}
+                  </button>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="nav-bar__item press"
+                    data-live={item.isLive ? 'true' : undefined}
+                    aria-current={sectionIsCurrent(pathname, item) ? 'page' : undefined}
+                    onMouseEnter={scheduleClose}
+                  >
+                    {inner}
+                  </Link>
+                )}
+              </li>
+            )
+          })}
         </ul>
 
         {/* DESKTOP RIGHT — search bar */}
@@ -249,6 +373,29 @@ export function Navbar() {
         </div>
 
       </nav>
+
+      {/* DESKTOP MEGA-MENU — sits directly under the bar, hidden below 1100px
+          where the drawer takes over. Rendered outside <nav> so it can span the
+          full viewport width, and after it in the DOM so Tab flows bar → panel.
+          Kept mounted only while open: unlike the drawer it has no closing
+          animation to wait for, and it fetches on mount. */}
+      <div
+        id="site-mega"
+        className="mega-wrap"
+        data-open={Boolean(mega)}
+        onMouseEnter={cancelHoverTimer}
+        onMouseLeave={scheduleClose}
+      >
+        {mega && (
+          <MegaMenu
+            section={mega}
+            pathname={pathname}
+            onSectionChange={setMega}
+            onNavigate={closeMega}
+            panelRef={megaRef}
+          />
+        )}
+      </div>
 
       {/* MOBILE DRAWER — a stack of panels on a sliding track. Always mounted
           (hidden by CSS) so opening AND closing animate, and so `aria-controls`

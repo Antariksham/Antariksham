@@ -46,6 +46,44 @@ Every change builds (`next build` compiles; the only build error is a
 pre-existing `supabaseUrl is required` during page-data collection when Supabase
 env vars are absent — unrelated to app code).
 
+- ✅ **Desktop mega-menu** (`components/layout/MegaMenu.tsx`) — the wide panel
+  under the bar, in the nasa.gov arrangement. Hovering or clicking a bar section
+  opens it; the desktop nav was six flat links to six landing pages before.
+  - **Three columns**: every section down the left (the open one marked), that
+    section's sub-pages in the middle under a big title that links to the
+    section itself, and **HIGHLIGHTS** — the three latest articles — on the
+    right. Hovering a left-column entry re-points the middle column without
+    closing the panel.
+  - **The left column carries the full `mainNav`, not `desktopNav`.** The panel
+    has vertical room the one-line bar does not, which is how Home and Missions
+    became reachable from desktop chrome at all.
+  - **A section with children is a `<button>` trigger; one without is a link.**
+    Same rule as the drawer, so the two surfaces behave predictably. The
+    section's landing page is reached from the panel title (the accent → pill),
+    exactly as on nasa.gov.
+  - **`NavItem.description`** is the one-line summary under each title. For
+    Home, Missions and Learn — no children — that line *is* the middle column,
+    which is why a test asserts every section has one and that it fits two lines.
+  - **Hover timing**: 110ms to open (so brushing past a trigger on the way to
+    another does not flash the panel), 220ms to close (the grace period for
+    cutting the corner from trigger down into the panel). Re-pointing while
+    already open is instant.
+  - **Highlights are lazy and cached at module scope**, fetched from the
+    existing `/api/articles` proxy on first open. Not SSR'd: the bar is in the
+    root layout, so server-rendering this would add an articles query to every
+    page load site-wide to fill a panel most visits never open. Skeletons while
+    in flight; the column degrades to a line of copy plus "All articles" if the
+    request fails or nothing is published.
+  - **Accessibility**: `aria-expanded`/`aria-haspopup`/`aria-controls` on the
+    triggers; click and Enter move focus into the panel, hover does not; Escape
+    closes and hands focus back to the trigger; pointer or focus leaving both
+    bar and panel closes it. **Focus deliberately does not re-point the middle
+    column** — only hover and activation do. Tabbing through the left column
+    would otherwise swap the detail out from under a keyboard user, stranding
+    them so they could never tab from the section they opened to its own links.
+  - Below 1100px the panel is `display: none` and the drawer owns navigation.
+    Stacking: bar=50, drawer=49, mega=48; the last two never coexist.
+
 - ✅ **Mobile nav drawer — drill-down sub-menus + compact type.** The hamburger
   menu was a flat list of six 32px display-weight rows; at ~75px each it ran
   past the fold on any short phone and put every sub-page (ISS Tracker, Sky
@@ -2114,6 +2152,15 @@ still need a human on the Vercel preview URL.
   content in #document"), which is easy to scroll past. It also silently broke
   any rule using a `>` child combinator, which is what the old warning comment
   in that block was really describing. All nav CSS now lives in globals.css.
+- **A "have I fetched?" ref plus an abort-on-cleanup is a trap.** React
+  StrictMode mounts, unmounts and remounts every component in development on
+  purpose. The ref survives that (same instance), so the sequence is: mount →
+  set `fetched = true`, start request → cleanup aborts it → remount sees
+  `fetched` and declines to retry. The data never arrives, and only in dev, so
+  it looks like an environment problem. The mega-menu's highlights hit this
+  exactly. Cache the *promise* at module scope instead — the double-mount
+  becomes harmless, concurrent opens dedupe, and the result is reused across
+  the page's lifetime.
 - **`overflow: hidden` is still programmatically scrollable** — it clips, but
   the box remains a scroll container, so the browser will happily scroll it to
   bring a focused descendant into view. Moving focus into the incoming drawer

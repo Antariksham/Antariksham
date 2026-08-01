@@ -253,6 +253,7 @@ session does not redo any of it:
 | Mobile nav alignment and the desktop nav breakpoint | Done |
 | Mobile nav drawer — drill-down sub-menus, compact 17px rows | Done |
 | Every section reachable from the nav (Missions, hubs, Privacy/Terms, `/hi`) | Done |
+| Desktop mega-menu — three columns, hover/click, article highlights | Done |
 
 ---
 
