@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 
-export const metadata: Metadata = {
-  title:       `Privacy Policy — ${siteConfig.name}`,
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/privacy',
+  title:       'Privacy Policy',
   description: 'Antariksham\'s privacy policy — what data we collect, how we use it, and your rights.',
-}
+})
 
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',

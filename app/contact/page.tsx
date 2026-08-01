@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 
-export const metadata: Metadata = {
-  title:       `Contact — ${siteConfig.name}`,
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/contact',
+  title:       'Contact',
   description: 'Get in touch with the Antariksham team — for corrections, tips, collaborations, or general enquiries.',
-}
+})
 
 const prose: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',

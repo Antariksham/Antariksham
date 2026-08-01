@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import { siteConfig } from '@/config/site'
 import { SkyTonightPage } from '@/modules/explore/components/SkyTonightPage'
 
@@ -6,29 +7,16 @@ import { SkyTonightPage } from '@/modules/explore/components/SkyTonightPage'
 // after mount, so an hour-stale shell is imperceptible.
 export const revalidate = 3600
 
-const TITLE = `Sky Tonight — ${siteConfig.name}`
 const DESCRIPTION =
   'What is above you right now — tonight’s Moon phase, which planets are visible in the evening or morning sky, and upcoming ISS passes computed for your location, in your browser.'
 
-export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
-  title: 'Sky Tonight',
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/explore/sky-tonight',
+  // Bare page name — the root layout's titleTemplate appends
+  // "| Antariksham" and og:site_name carries the brand in the card.
+  title:       'Sky Tonight',
   description: DESCRIPTION,
-  alternates: { canonical: '/explore/sky-tonight' },
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-    url: '/explore/sky-tonight',
-    siteName: siteConfig.name,
-    locale: siteConfig.locale,
-    type: 'website',
-  },
-  twitter: {
-    card: siteConfig.seo.twitterCard,
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-}
+})
 
 const jsonLd = [
   {

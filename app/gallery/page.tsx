@@ -1,30 +1,18 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import { siteConfig } from '@/config/site'
 import { GalleryPage } from '@/modules/gallery/components/GalleryPage'
 
-const TITLE = `Gallery — ${siteConfig.name}`
 const DESCRIPTION =
   'A window on the cosmos — browse and search hundreds of thousands of images from the NASA Image and Video Library: nebulae, galaxies, Mars, the Moon, launches, astronauts and more.'
 
-export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
-  title: 'Gallery',
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/gallery',
+  // Bare page name — the root layout's titleTemplate appends
+  // "| Antariksham" and og:site_name carries the brand in the card.
+  title:       'Gallery',
   description: DESCRIPTION,
-  alternates: { canonical: '/gallery' },
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-    url: '/gallery',
-    siteName: siteConfig.name,
-    locale: siteConfig.locale,
-    type: 'website',
-  },
-  twitter: {
-    card: siteConfig.seo.twitterCard,
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-}
+})
 
 const jsonLd = {
   '@context': 'https://schema.org',

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 import { ApodArchive } from '@/modules/gallery/components/ApodArchive'
@@ -8,29 +9,16 @@ import { APOD_EPOCH, latestWindow } from '@/modules/nasa/services/apodArchive'
 // A new picture appears daily; an hour-stale first page is fine.
 export const revalidate = 3600
 
-const TITLE = `APOD Archive — ${siteConfig.name}`
 const DESCRIPTION =
   'Browse NASA’s Astronomy Picture of the Day archive — every image and video since 16 June 1995, with the original explanation, credits and a link to each day’s page.'
 
-export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
-  title: 'APOD Archive',
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/gallery/apod',
+  // Bare page name — the root layout's titleTemplate appends
+  // "| Antariksham" and og:site_name carries the brand in the card.
+  title:       'APOD Archive',
   description: DESCRIPTION,
-  alternates: { canonical: '/gallery/apod' },
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-    url: '/gallery/apod',
-    siteName: siteConfig.name,
-    locale: siteConfig.locale,
-    type: 'website',
-  },
-  twitter: {
-    card: siteConfig.seo.twitterCard,
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-}
+})
 
 export default async function ApodArchivePage() {
   // Open-ended newest window: NASA 400s on an end_date past its latest entry

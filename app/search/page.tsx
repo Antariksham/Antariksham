@@ -1,11 +1,13 @@
 import { Suspense }   from 'react'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import { SearchPage } from '@/modules/search/components/SearchPage'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/search',
   title:       'Search',
   description: 'Search articles, missions, and space science topics on Antariksham.',
-}
+})
 
 // SearchPage uses useSearchParams — must be wrapped in Suspense
 export default function Page() {

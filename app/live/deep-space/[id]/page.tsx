@@ -1,6 +1,7 @@
 import type { Metadata }      from 'next'
 import { notFound }           from 'next/navigation'
-import { siteConfig }         from '@/config/site'
+import { buildPageMetadata }  from '@/modules/seo/pageMetadata'
+import { ogCardPath }         from '@/modules/seo/socialMeta'
 import { getDeepSpaceProbes } from '@/modules/deepspace/services/getDeepSpace'
 import { ProbeDetailPage }    from '@/modules/deepspace/components/ProbeDetailPage'
 
@@ -12,10 +13,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { probes } = getDeepSpaceProbes()
   const probe = probes.find(p => p.id === params.id)
   if (!probe) return { title: 'Probe Not Found' }
-  return {
-    title:       `${probe.name} — Deep Space Tracker | ${siteConfig.name}`,
+  return buildPageMetadata({
+    path:        `/live/deep-space/${probe.id}`,
+    // Bare name — the root layout's titleTemplate appends "| Antariksham", so
+    // the old title rendered it twice.
+    title:       `${probe.name} — Deep Space Tracker`,
     description: `Live telemetry for ${probe.name}: distance, velocity and signal delay from NASA Horizons.`,
-  }
+    fallbackImagePath: ogCardPath({ title: probe.name, eyebrow: 'Deep Space Tracker' }),
+  })
 }
 
 export default function ProbePage({ params }: Props) {

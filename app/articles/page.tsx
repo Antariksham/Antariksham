@@ -2,11 +2,13 @@ import { getArticles, getFeaturedArticles } from '@/modules/articles/services/ge
 import { getCategories } from '@/modules/articles/services/getCategories'
 import { ArticlesPage } from '@/modules/articles/components/ArticlesPage'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/articles',
   title:       'Articles',
   description: 'Space articles, mission updates, and scientific discoveries from NASA, ISRO, SpaceX, ESA and beyond.',
-}
+})
 
 export const revalidate = 300
 

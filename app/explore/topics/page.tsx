@@ -1,31 +1,19 @@
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 import { TOPICS } from '@/modules/explore/services/topics'
 
-const TITLE = `Topic Hubs — ${siteConfig.name}`
 const DESCRIPTION =
   'Curated gateways to the subjects that matter most in spaceflight and astronomy — Mars, the Moon, black holes, exoplanets and more, each gathering every article, mission, guide and live tool on the topic in one place.'
 
-export const metadata: Metadata = {
-  // Plain name — the root layout's titleTemplate appends "| Antariksham".
-  title: 'Topic Hubs',
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/explore/topics',
+  // Bare page name — the root layout's titleTemplate appends
+  // "| Antariksham" and og:site_name carries the brand in the card.
+  title:       'Topic Hubs',
   description: DESCRIPTION,
-  alternates: { canonical: '/explore/topics' },
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-    url: '/explore/topics',
-    siteName: siteConfig.name,
-    locale: siteConfig.locale,
-    type: 'website',
-  },
-  twitter: {
-    card: siteConfig.seo.twitterCard,
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-}
+})
 
 const jsonLd = [
   {

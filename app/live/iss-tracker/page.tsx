@@ -1,10 +1,12 @@
 import { ISSTracker } from '@/modules/iss/components/ISSTracker'
 import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/modules/seo/pageMetadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
+  path:        '/live/iss-tracker',
   title:       'ISS Live Tracker',
   description: 'Track the International Space Station in real-time. Live position, altitude, velocity and current crew.',
-}
+})
 
 // Static shell (SSR-fallback → client-refresh pattern, ENGINEERING.md §4). The live
 // position and crew stream in client-side from the /api/iss proxy, so the server

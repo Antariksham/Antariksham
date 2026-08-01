@@ -33,25 +33,28 @@ export const metadata: Metadata = {
     template: siteConfig.seo.titleTemplate,
   },
   description: siteConfig.description,
-  // Social defaults every route inherits. Individual pages override only what
-  // differs (title, description, url); the card image itself comes from
-  // app/opengraph-image.tsx by file convention, so it is deliberately not set
-  // here — naming it would pin every page to one image and defeat per-route
-  // cards later.
+  // Social defaults for anything that does not go through
+  // modules/seo/pageMetadata.ts — the error and not-found shells, essentially.
+  // Next replaces `openGraph` and `twitter` per segment rather than merging
+  // them, so what is here is a floor, not a base every page builds on.
+  //
+  // Deliberately absent: `openGraph.url` (it used to be hardcoded to the site
+  // root, so every page that set no openGraph of its own advertised itself as
+  // the homepage) and `twitter.title`/`twitter.description` (pinning them here
+  // blocked Next's per-page inheritance, which is why every shared article
+  // showed the generic site title on X). The card image is not named here
+  // either: app/opengraph-image.tsx supplies it by file convention.
   openGraph: {
     type:        'website',
     siteName:    siteConfig.name,
     locale:      siteConfig.locale,
     title:       siteConfig.seo.defaultTitle,
     description: siteConfig.description,
-    url:         siteConfig.url,
   },
   twitter: {
-    card:        siteConfig.seo.twitterCard,
-    site:        siteConfig.twitter,
-    creator:     siteConfig.twitter,
-    title:       siteConfig.seo.defaultTitle,
-    description: siteConfig.description,
+    card:    siteConfig.seo.twitterCard,
+    site:    siteConfig.twitter,
+    creator: siteConfig.twitter,
   },
 }
 
