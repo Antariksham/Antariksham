@@ -321,4 +321,6 @@ export interface MissionCard {
   featuredImage: string | null
   destination:   string | null
   description:   string
+  /** Language this card's text rendered in — see ArticleCard.language. */
+  language:      LanguageCode
 }

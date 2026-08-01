@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMissions } from '@/modules/missions/services/getMissions'
+import { DEFAULT_LANGUAGE, isLanguageCode } from '@/lib/i18n'
 import type { MissionStatus } from '@/types/mission'
 
 // Dynamic (reads searchParams), but public read-only data — cache it at the CDN
@@ -14,6 +15,12 @@ export async function GET(req: NextRequest) {
   const perPage = Math.min(24, Math.max(1, parseInt(req.nextUrl.searchParams.get('perPage') || '12', 10) || 12))
   const status  = req.nextUrl.searchParams.get('status') || undefined
 
-  const { missions, total } = await getMissions({ page, perPage, status: status as MissionStatus | undefined })
+  // Later pages must come back in the SAME language the first page was
+  // rendered in, or a Hindi reader's infinite scroll flips to English at the
+  // page boundary.
+  const langParam = req.nextUrl.searchParams.get('lang') || ''
+  const lang = isLanguageCode(langParam) ? langParam : DEFAULT_LANGUAGE
+
+  const { missions, total } = await getMissions({ page, perPage, status: status as MissionStatus | undefined, lang })
   return NextResponse.json({ missions, total, page }, { headers: { 'Cache-Control': CACHE } })
 }

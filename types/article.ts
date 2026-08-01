@@ -90,4 +90,11 @@ export interface ArticleCard {
   categories:    ArticleCategory[]
   categoryColors?: Record<string, string>
   featured:      boolean
+  /**
+   * The language this card's TEXT actually rendered in — not the language that
+   * was requested. On a /hi listing, a card whose article has no published
+   * Hindi translation falls back to English and reports 'en' here, so the UI
+   * can mark it rather than leaving the reader to wonder why it is English.
+   */
+  language:      LanguageCode
 }

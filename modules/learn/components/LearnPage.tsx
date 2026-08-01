@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { LearnThumb } from './LearnThumb'
 import type { KnowledgeArticleCard, DifficultyLevel } from '@/types/knowledge'
+import { sectionHref, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
 
 type FilterOption = DifficultyLevel | 'all'
 
@@ -25,9 +26,10 @@ const FILTERS: FilterOption[] = ['all', 'beginner', 'intermediate', 'advanced']
 
 interface Props {
   articles: KnowledgeArticleCard[]
+  lang?:    LanguageCode
 }
 
-export function LearnPage({ articles }: Props) {
+export function LearnPage({ articles, lang = DEFAULT_LANGUAGE }: Props) {
   const [activeFilter, setActiveFilter] = useState<FilterOption>('all')
 
   const filtered = useMemo(() =>
@@ -93,7 +95,7 @@ export function LearnPage({ articles }: Props) {
       ) : (
         <div className="grid-3">
           {filtered.map(article => (
-            <ArticleCard key={article.id} article={article} />
+            <ArticleCard key={article.id} article={article} lang={lang} />
           ))}
         </div>
       )}
@@ -102,12 +104,12 @@ export function LearnPage({ articles }: Props) {
   )
 }
 
-function ArticleCard({ article }: { article: KnowledgeArticleCard }) {
+function ArticleCard({ article, lang }: { article: KnowledgeArticleCard; lang: LanguageCode }) {
   const diffColor = DIFFICULTY_COLORS[article.difficultyLevel] ?? 'var(--accent)'
   const diffLabel = DIFFICULTY_LABELS[article.difficultyLevel] ?? article.difficultyLevel
 
   return (
-    <Link href={`/learn/${article.slug}`} className="card">
+    <Link href={sectionHref('learn', article.slug, lang)} className="card">
       <LearnThumb icon={article.icon} seed={article.slug} image={article.thumbnail} />
       <div className="card-body">
         {/* Difficulty + featured badges */}

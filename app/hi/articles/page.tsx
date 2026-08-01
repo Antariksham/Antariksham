@@ -2,21 +2,20 @@ import { getArticles, getFeaturedArticles } from '@/modules/articles/services/ge
 import { getCategories } from '@/modules/articles/services/getCategories'
 import { ArticlesPage } from '@/modules/articles/components/ArticlesPage'
 import type { Metadata } from 'next'
+import { localizedMetadata } from '@/lib/pageMetadata'
+import { translator } from '@/lib/dictionaries'
 
 const LANG = 'hi' as const
+const t = translator(LANG)
 
-export const metadata: Metadata = {
-  title:       'लेख',
-  description: 'नासा, इसरो, स्पेसएक्स, ईएसए और अन्य से अंतरिक्ष लेख, मिशन अपडेट और वैज्ञानिक खोजें।',
-  alternates: {
-    canonical: '/hi/articles',
-    languages: {
-      en:          '/articles',
-      hi:          '/hi/articles',
-      'x-default': '/articles',
-    },
-  },
-}
+// Was a hand-written alternates block. Built from the path now, so this route
+// cannot drift out of step with the other Hindi twins, and picks up og:locale.
+export const metadata: Metadata = localizedMetadata({
+  path:        '/articles',
+  lang:        LANG,
+  title:       t('page.articles.title'),
+  description: t('page.articles.desc'),
+})
 
 export const revalidate = 300
 

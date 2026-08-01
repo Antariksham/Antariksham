@@ -32,4 +32,6 @@ export interface KnowledgeArticleCard {
   icon:            string
   featured:        boolean
   thumbnail?:      string | null
+  /** Language this card's text rendered in — see ArticleCard.language. */
+  language:        LanguageCode
 }

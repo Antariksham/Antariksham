@@ -37,8 +37,34 @@ const FULL_SELECT_NO_THUMB = `
   featured, seo_id, created_at, updated_at
 `
 
+// Card overlay (title/excerpt) for a set of knowledge articles, in one
+// language. Mirrors fetchCardTranslations in the articles service: one extra
+// query for the whole page, keyed by id. Tolerant — on any error the caller
+// still renders English.
+async function fetchKnowledgeCardTranslations(
+  ids: string[], lang: LanguageCode,
+): Promise<Map<string, { title: string; excerpt: string | null }>> {
+  const map = new Map<string, { title: string; excerpt: string | null }>()
+  if (lang === DEFAULT_LANGUAGE || ids.length === 0) return map
+
+  const { data, error } = await supabase
+    .from('knowledge_translations')
+    .select('knowledge_article_id, title, excerpt')
+    .in('knowledge_article_id', ids)
+    .eq('language_code', lang)
+    .eq('is_published', true)
+
+  if (error || !data) return map
+  for (const r of data as any[]) {
+    map.set(r.knowledge_article_id, { title: r.title, excerpt: r.excerpt })
+  }
+  return map
+}
+
 // ── All articles (card shape) ─────────────────────────────────
-export async function getKnowledgeArticles(): Promise<KnowledgeArticleCard[]> {
+export async function getKnowledgeArticles(
+  lang: LanguageCode = DEFAULT_LANGUAGE,
+): Promise<KnowledgeArticleCard[]> {
   let { data, error }: { data: any[] | null; error: any } = await supabase
     .from('knowledge_articles')
     .select(CARD_SELECT)
@@ -57,7 +83,19 @@ export async function getKnowledgeArticles(): Promise<KnowledgeArticleCard[]> {
     return []
   }
 
-  return (data || []).map(normalizeCard)
+  const rows    = data || []
+  const overlay = await fetchKnowledgeCardTranslations(rows.map(r => r.id), lang)
+
+  return rows.map(row => {
+    const t    = overlay.get(row.id)
+    const card = normalizeCard(row)
+    return {
+      ...card,
+      title:    t?.title || card.title,
+      excerpt:  (t?.excerpt ?? card.excerpt) || '',
+      language: t ? lang : DEFAULT_LANGUAGE,
+    }
+  })
 }
 
 // ── Single article by slug ────────────────────────────────────
@@ -108,6 +146,9 @@ function normalizeCard(row: any): KnowledgeArticleCard {
     icon:            row.icon || '🔭',
     featured:        row.featured || false,
     thumbnail:       row.thumbnail ?? null,
+    // Base row is always English; getKnowledgeArticles overrides this when a
+    // published translation overlays the card.
+    language:        DEFAULT_LANGUAGE,
   }
 }
 

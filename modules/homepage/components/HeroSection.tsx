@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { supabaseAdmin }       from '@/lib/supabase'
 import { getHeroConfigPublic } from '@/modules/admin/services/adminHomepage'
+import {
+  sectionHref, articlesListHref, swapLangPath, DEFAULT_LANGUAGE, type LanguageCode,
+} from '@/lib/i18n'
 
 async function getFeaturedArticle() {
   const { data, error } = await supabaseAdmin()
@@ -16,7 +19,7 @@ async function getFeaturedArticle() {
   return data
 }
 
-export async function HeroSection() {
+export async function HeroSection({ lang = DEFAULT_LANGUAGE }: { lang?: LanguageCode }) {
   const [hero, featuredArticle] = await Promise.all([
     getHeroConfigPublic(),
     getFeaturedArticle(),
@@ -29,7 +32,9 @@ export async function HeroSection() {
   const articleSlug = hero?.articleSlug || featuredArticle?.slug         || ''
   const imageUrl    = hero?.imageUrl    || featuredArticle?.featured_image || ''
 
-  const primaryHref = articleSlug ? `/article/${articleSlug}` : '/articles'
+  const primaryHref = articleSlug
+    ? sectionHref('articles', articleSlug, lang)
+    : articlesListHref(lang)
 
   return (
     <section
@@ -72,7 +77,7 @@ export async function HeroSection() {
             <Link href={primaryHref} className="btn btn-primary">
               {articleSlug ? 'Read Full Story' : 'Read Latest'}
             </Link>
-            <Link href="/live" className="btn btn-outline">
+            <Link href={swapLangPath('/live', lang)} className="btn btn-outline">
               <span
                 style={{
                   width: '7px', height: '7px', borderRadius: '50%',

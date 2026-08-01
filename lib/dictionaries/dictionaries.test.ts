@@ -56,7 +56,24 @@ test('no Hindi value is identical to its English source', () => {
 })
 
 test('keys are dot-namespaced, so the parity check names a real namespace', () => {
+  // Two segments for flat labels ('nav.articles'), three for per-page metadata
+  // ('page.about.title').
   for (const key of Object.keys(en)) {
-    assert.match(key, /^[a-z]+\.[A-Za-z]+$/, `key "${key}" is not <namespace>.<name>`)
+    assert.match(key, /^[a-z]+(\.[A-Za-z]+){1,2}$/, `key "${key}" is not <namespace>.<name>`)
+  }
+})
+
+test('every page.* namespace has both a title and a description', () => {
+  // A twin route that asks for a description key which does not exist would
+  // fail to compile; this catches the likelier slip of adding the title only
+  // and never wiring the description.
+  const pages = new Set(
+    Object.keys(en)
+      .filter(k => k.startsWith('page.'))
+      .map(k => k.split('.')[1]),
+  )
+  for (const page of pages) {
+    assert.ok(`page.${page}.title` in en, `page.${page} has no title`)
+    assert.ok(`page.${page}.desc`  in en, `page.${page} has no description`)
   }
 })

@@ -21,15 +21,23 @@ export interface Language {
   label:  string
   /** Endonym — how the language names itself, for the visible toggle. */
   native: string
+  /**
+   * Two-or-three character form for the desktop nav, where the full endonym
+   * would crowd six nav items plus search and the theme toggle. Still in the
+   * language's own script, so a Hindi reader recognises it at a glance.
+   */
+  short:  string
   /** URL segment: '' for the default language, '/<code>' otherwise. */
   pathPrefix: string
+  /** OpenGraph locale, for og:locale and og:locale:alternate. */
+  ogLocale: string
 }
 
 export const DEFAULT_LANGUAGE: LanguageCode = 'en'
 
 export const LANGUAGES: Record<LanguageCode, Language> = {
-  en: { code: 'en', label: 'English', native: 'English',  pathPrefix: ''    },
-  hi: { code: 'hi', label: 'Hindi',   native: 'हिन्दी',    pathPrefix: '/hi' },
+  en: { code: 'en', label: 'English', native: 'English', short: 'EN',  pathPrefix: '',    ogLocale: 'en_US' },
+  hi: { code: 'hi', label: 'Hindi',   native: 'हिन्दी',   short: 'हिं', pathPrefix: '/hi', ogLocale: 'hi_IN' },
 }
 
 export const LANGUAGE_LIST: Language[] = Object.values(LANGUAGES)

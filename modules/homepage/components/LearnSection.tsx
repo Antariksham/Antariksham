@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { supabaseAdmin } from '@/lib/supabase'
 import { LearnCard }    from './LearnCard'
+import { sectionListHref, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
 
 async function getLearnPreview() {
   const db = supabaseAdmin()
@@ -24,7 +25,7 @@ async function getLearnPreview() {
   return data || []
 }
 
-export async function LearnSection() {
+export async function LearnSection({ lang = DEFAULT_LANGUAGE }: { lang?: LanguageCode }) {
   const topics = await getLearnPreview()
 
   return (
@@ -34,7 +35,7 @@ export async function LearnSection() {
           <h2 className="section-title">Learn Space Science</h2>
           <span className="section-eyebrow">Knowledge layer</span>
         </div>
-        <Link href="/learn" className="btn btn-outline">Explore all topics</Link>
+        <Link href={sectionListHref('learn', lang)} className="btn btn-outline">Explore all topics</Link>
       </div>
 
       {topics.length === 0 ? (
@@ -42,7 +43,7 @@ export async function LearnSection() {
       ) : (
         <div className="grid-3">
           {topics.map(topic => (
-            <LearnCard key={topic.id} topic={topic} />
+            <LearnCard key={topic.id} topic={topic} lang={lang} />
           ))}
         </div>
       )}

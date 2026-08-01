@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { swapLangPath, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
 
 const STATS = [
   { num: '47',   label: 'Missions tracked' },
@@ -6,7 +7,7 @@ const STATS = [
   { num: 'Trust', label: 'First, always' },
 ]
 
-export function AboutSection() {
+export function AboutSection({ lang = DEFAULT_LANGUAGE }: { lang?: LanguageCode }) {
   return (
     <section className="section" style={{ paddingTop: 0 }}>
       <div
@@ -30,7 +31,7 @@ export function AboutSection() {
             An independent platform committed to scientific accuracy, editorial integrity, and building the most
             credible space knowledge ecosystem on the web. Not a news portal. Not a blog. A space intelligence organization.
           </p>
-          <Link href="/about" className="btn btn-outline">About us</Link>
+          <Link href={swapLangPath('/about', lang)} className="btn btn-outline">About us</Link>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>

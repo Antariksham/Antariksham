@@ -35,6 +35,30 @@ async function fetchMissionTranslations(missionId: string): Promise<MissionTrans
   return data as MissionTranslation[]
 }
 
+// Card overlay (name/description) for a set of missions, in one language.
+// Mirrors fetchCardTranslations in the articles service: one extra query for
+// the whole page, keyed by id. Tolerant — on any error the caller renders
+// English.
+async function fetchMissionCardTranslations(
+  ids: string[], lang: LanguageCode,
+): Promise<Map<string, { name: string; description: string | null }>> {
+  const map = new Map<string, { name: string; description: string | null }>()
+  if (lang === DEFAULT_LANGUAGE || ids.length === 0) return map
+
+  const { data, error } = await supabase
+    .from('mission_translations')
+    .select('mission_id, name, description')
+    .in('mission_id', ids)
+    .eq('language_code', lang)
+    .eq('is_published', true)
+
+  if (error || !data) return map
+  for (const r of data as any[]) {
+    map.set(r.mission_id, { name: r.name, description: r.description })
+  }
+  return map
+}
+
 const MISSION_CARD_SELECT = `
   id, name, slug, description, status, launch_date,
   mission_type, featured_image, destination, featured,
@@ -54,11 +78,13 @@ export async function getMissions({
   perPage = 12,
   status,
   type,
+  lang    = DEFAULT_LANGUAGE,
 }: {
   page?    : number
   perPage? : number
   status?  : MissionStatus
   type?    : MissionType
+  lang?    : LanguageCode
 } = {}) {
   const from = (page - 1) * perPage
   const to   = from + perPage - 1
@@ -80,13 +106,15 @@ export async function getMissions({
   }
 
   return {
-    missions:   normalizeCards(data || []),
+    missions:   await normalizeCards(data || [], lang),
     total:      count || 0,
     totalPages: Math.ceil((count || 0) / perPage),
   }
 }
 
-export async function getFeaturedMissions(limit = 4): Promise<MissionCard[]> {
+export async function getFeaturedMissions(
+  limit = 4, lang: LanguageCode = DEFAULT_LANGUAGE,
+): Promise<MissionCard[]> {
   const { data, error } = await supabase
     .from('missions')
     .select(MISSION_CARD_SELECT)
@@ -95,7 +123,7 @@ export async function getFeaturedMissions(limit = 4): Promise<MissionCard[]> {
     .limit(limit)
 
   if (error) return []
-  return normalizeCards(data || [])
+  return normalizeCards(data || [], lang)
 }
 
 // Homepage "Active & Upcoming Missions" grid. Driven by status, NOT the
@@ -105,7 +133,9 @@ export async function getFeaturedMissions(limit = 4): Promise<MissionCard[]> {
 // featured for the hero. Active/upcoming missions come first; if there aren't
 // enough to fill the grid, it tops up with the most recent missions of any
 // status so the section never looks sparse.
-export async function getActiveMissions(limit = 4): Promise<MissionCard[]> {
+export async function getActiveMissions(
+  limit = 4, lang: LanguageCode = DEFAULT_LANGUAGE,
+): Promise<MissionCard[]> {
   const { data, error } = await supabase
     .from('missions')
     .select(MISSION_CARD_SELECT)
@@ -115,7 +145,7 @@ export async function getActiveMissions(limit = 4): Promise<MissionCard[]> {
 
   if (error) return []
   const primary = data || []
-  if (primary.length >= limit) return normalizeCards(primary)
+  if (primary.length >= limit) return normalizeCards(primary, lang)
 
   // Top up with the most recent missions of any other status.
   const excludeIds = primary.map((m: any) => m.id)
@@ -128,7 +158,7 @@ export async function getActiveMissions(limit = 4): Promise<MissionCard[]> {
   if (excludeIds.length) fill = fill.not('id', 'in', `(${excludeIds.join(',')})`)
 
   const { data: extra } = await fill
-  return normalizeCards([...primary, ...(extra || [])])
+  return normalizeCards([...primary, ...(extra || [])], lang)
 }
 
 // Wrapped in cache() so the page's generateMetadata + body share one read.
@@ -217,38 +247,40 @@ export async function getRelatedMissions(
     .limit(limit)
 
   if (error) return []
-  const cards = normalizeCards(data || [])
-  if (lang === DEFAULT_LANGUAGE || cards.length === 0) return cards
-
-  // Overlay translated names (tolerant — English on any failure).
-  const { data: tr } = await supabase
-    .from('mission_translations')
-    .select('mission_id, name')
-    .in('mission_id', cards.map(c => c.id))
-    .eq('language_code', lang)
-    .eq('is_published', true)
-  if (!tr) return cards
-  const names = new Map((tr as any[]).map(r => [r.mission_id, r.name]))
-  return cards.map(c => ({ ...c, name: names.get(c.id) || c.name }))
+  // Translation overlay now lives in normalizeCards, so the related rail picks
+  // up translated descriptions and the fallback marker too — previously it
+  // overlaid only the name.
+  return normalizeCards(data || [], lang)
 }
 
 // ── Normalizers ───────────────────────────────────────────────
 
-function normalizeCards(rows: any[]): MissionCard[] {
-  return rows.map(row => ({
-    id:            row.id,
-    name:          row.name,
-    slug:          row.slug,
-    description:   row.description || '',
-    status:        row.status,
-    launchDate:    row.launch_date || null,
-    missionType:   row.mission_type,
-    featuredImage: row.featured_image || null,
-    destination:   row.destination || null,
-    agency:        row.space_agencies
-      ? { name: row.space_agencies.name, shortName: row.space_agencies.short_name }
-      : null,
-  }))
+// Async because it overlays translations for the whole batch in one query.
+// Every listing goes through here, so a mission's name is translated the same
+// way on the homepage grid, the listing, and the related rail.
+async function normalizeCards(
+  rows: any[], lang: LanguageCode = DEFAULT_LANGUAGE,
+): Promise<MissionCard[]> {
+  const overlay = await fetchMissionCardTranslations(rows.map(r => r.id), lang)
+
+  return rows.map(row => {
+    const t = overlay.get(row.id)
+    return {
+      id:            row.id,
+      name:          t?.name || row.name,
+      slug:          row.slug,
+      description:   (t?.description ?? row.description) || '',
+      status:        row.status,
+      launchDate:    row.launch_date || null,
+      missionType:   row.mission_type,
+      featuredImage: row.featured_image || null,
+      destination:   row.destination || null,
+      agency:        row.space_agencies
+        ? { name: row.space_agencies.name, shortName: row.space_agencies.short_name }
+        : null,
+      language:      t ? lang : DEFAULT_LANGUAGE,
+    }
+  })
 }
 
 function normalizeFull(

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { swapLangPath, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
 
 interface StripData {
   issSpeed:        string
@@ -14,7 +15,7 @@ const FALLBACK: StripData = {
   voyagerStatus:   'Interstellar · 46 yrs',
 }
 
-export function StatusStrip() {
+export function StatusStrip({ lang = DEFAULT_LANGUAGE }: { lang?: LanguageCode }) {
   const [data, setData] = useState<StripData>(FALLBACK)
   const fetchRef        = useRef<() => void>()
 
@@ -106,7 +107,7 @@ export function StatusStrip() {
         {items.map((item, i) => (
           <a
             key={item.label}
-            href={item.href}
+            href={swapLangPath(item.href, lang)}
             style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '14px', padding: '20px 28px 20px 0', marginRight: '28px', borderRight: i < items.length - 1 ? '1px solid rgba(var(--ink),0.08)' : 'none', whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(var(--ink),0.06)', border: '1px solid rgba(var(--ink),0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '19px', flexShrink: 0 }}>

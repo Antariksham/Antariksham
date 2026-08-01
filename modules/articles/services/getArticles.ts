@@ -246,6 +246,10 @@ async function toCards(rows: any[], lang: LanguageCode): Promise<ArticleCard[]> 
       categories:    (row.article_categories || []).map((ac: any) => ac.categories?.name).filter(Boolean),
       categoryColors: categoryColorsFrom(row),
       featured:      row.featured || false,
+      // An overlay hit means a published translation exists for `lang`; a miss
+      // means this card fell back to the English base row. The Map already
+      // holds the answer, so marking untranslated cards costs no extra query.
+      language:      t ? lang : DEFAULT_LANGUAGE,
     }
   })
 }
