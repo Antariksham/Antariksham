@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
+import { sectionHref, sectionListHref, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
 import type { MissionCard } from '@/types/mission'
 import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
@@ -17,9 +18,9 @@ const TYPE_LABEL: Record<string, string> = {
   lander: 'Lander', rover: 'Rover', 'sample-return': 'Sample Return', telescope: 'Telescope',
 }
 
-interface Props { missions: MissionCard[] }
+interface Props { missions: MissionCard[]; lang?: LanguageCode }
 
-export function MissionsSection({ missions }: Props) {
+export function MissionsSection({ missions, lang = DEFAULT_LANGUAGE }: Props) {
   return (
     <section className="section" style={{ paddingTop: 0 }}>
       <div className="section-head">
@@ -27,7 +28,7 @@ export function MissionsSection({ missions }: Props) {
           <h2 className="section-title">Active &amp; Upcoming Missions</h2>
           <span className="section-eyebrow">Mission tracking</span>
         </div>
-        <Link href="/missions" className="btn btn-outline">All missions</Link>
+        <Link href={sectionListHref('missions', lang)} className="btn btn-outline">All missions</Link>
       </div>
 
       {missions.length === 0 ? (
@@ -37,7 +38,7 @@ export function MissionsSection({ missions }: Props) {
           {missions.map(mission => {
             const statusColor = STATUS_COLOR[mission.status] || 'var(--text-muted)'
             return (
-              <Link key={mission.id} href={`/mission/${mission.slug}`} className="card">
+              <Link key={mission.id} href={sectionHref('missions', mission.slug, lang)} className="card">
                 {mission.featuredImage
                   ? <SmartImage className="card-image" src={mission.featuredImage} alt={mission.name}
                     width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
@@ -47,8 +48,8 @@ export function MissionsSection({ missions }: Props) {
                     {mission.agency?.shortName || 'Mission'}
                     {mission.destination ? ` · ${mission.destination}` : ''}
                   </p>
-                  <h3 className="card-title">{mission.name}</h3>
-                  {mission.description && <p className="card-excerpt">{mission.description}</p>}
+                  <h3 className="card-title" lang={lang}>{mission.name}</h3>
+                  {mission.description && <p className="card-excerpt" lang={lang}>{mission.description}</p>}
                   <div className="card-meta">
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: statusColor, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: statusColor, display: 'inline-block' }} />

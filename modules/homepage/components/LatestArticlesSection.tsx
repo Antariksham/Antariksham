@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { timeAgo } from '@/lib/utils'
+import { articleHref, articlesListHref, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
 import type { ArticleCard } from '@/types/article'
 import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
@@ -13,9 +14,9 @@ const TYPE_LABEL: Record<string, string> = {
   'mission-update':     'Mission',
 }
 
-interface Props { articles: ArticleCard[] }
+interface Props { articles: ArticleCard[]; lang?: LanguageCode }
 
-export function LatestArticlesSection({ articles }: Props) {
+export function LatestArticlesSection({ articles, lang = DEFAULT_LANGUAGE }: Props) {
   const items = articles.slice(0, 6)
 
   return (
@@ -25,7 +26,7 @@ export function LatestArticlesSection({ articles }: Props) {
           <h2 className="section-title">Latest Articles</h2>
           <span className="section-eyebrow">Space intelligence &amp; journalism</span>
         </div>
-        <Link href="/articles" className="btn btn-outline">View all</Link>
+        <Link href={articlesListHref(lang)} className="btn btn-outline">View all</Link>
       </div>
 
       {items.length === 0 ? (
@@ -33,15 +34,15 @@ export function LatestArticlesSection({ articles }: Props) {
       ) : (
         <div className="grid-3">
           {items.map(a => (
-            <Link key={a.id} href={`/article/${a.slug}`} className="card">
+            <Link key={a.id} href={articleHref(a.slug, lang)} className="card">
               {a.featuredImage
                 ? <SmartImage className="card-image" src={a.featuredImage} alt={a.title}
                     width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
                 : <div className="card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', opacity: 0.25 }}>🪐</div>}
               <div className="card-body">
                 <p className="card-category">{a.categories?.[0] || 'Space'}</p>
-                <h3 className="card-title">{a.title}</h3>
-                {a.excerpt && <p className="card-excerpt">{a.excerpt}</p>}
+                <h3 className="card-title" lang={lang}>{a.title}</h3>
+                {a.excerpt && <p className="card-excerpt" lang={lang}>{a.excerpt}</p>}
                 <div className="card-meta">
                   <span>{a.readingTime ? `${a.readingTime} min read` : timeAgo(a.publishedAt || '')}</span>
                   {a.articleType && TYPE_LABEL[a.articleType] && (

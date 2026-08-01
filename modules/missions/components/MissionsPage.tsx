@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import type { MissionCard, MissionStatus } from '@/types/mission'
 import { formatDate } from '@/lib/utils'
 import { statusMeta, legacyStatusFor } from '@/modules/missions/services/missionClassification'
+import { sectionHref, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
 import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
 const STATUSES: { value: MissionStatus | 'all'; label: string }[] = [
@@ -20,15 +21,20 @@ interface Props {
   missions: MissionCard[]
   featured: MissionCard[]
   total:    number
+  /** Language of the listing — English by default; 'hi' for the /hi listing. */
+  lang?:    LanguageCode
 }
 
-function buildQuery(page: number, status: MissionStatus | 'all') {
+function buildQuery(page: number, status: MissionStatus | 'all', lang: LanguageCode) {
   const params = new URLSearchParams({ page: String(page), perPage: String(PER_PAGE) })
   if (status !== 'all') params.set('status', status)
+  if (lang !== DEFAULT_LANGUAGE) params.set('lang', lang)
   return params.toString()
 }
 
-export function MissionsPage({ missions: initialMissions, total: initialTotal }: Props) {
+export function MissionsPage({
+  missions: initialMissions, total: initialTotal, lang = DEFAULT_LANGUAGE,
+}: Props) {
   const [activeStatus, setActiveStatus] = useState<MissionStatus | 'all'>('all')
 
   // Infinite scroll seeded with the SSR'd first page; the status filter is
@@ -51,7 +57,7 @@ export function MissionsPage({ missions: initialMissions, total: initialTotal }:
     setLoading(true)
     setMissions([])
     setPage(1)
-    fetch(`/api/missions?${buildQuery(1, activeStatus)}`)
+    fetch(`/api/missions?${buildQuery(1, activeStatus, lang)}`)
       .then(r => (r.ok ? r.json() : null))
       .then(data => {
         if (cancelled || !data) return
@@ -60,14 +66,14 @@ export function MissionsPage({ missions: initialMissions, total: initialTotal }:
       })
       .finally(() => { if (!cancelled) { loadingRef.current = false; setLoading(false) } })
     return () => { cancelled = true }
-  }, [activeStatus])
+  }, [activeStatus, lang])
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || missions.length >= total) return
     loadingRef.current = true
     setLoading(true)
     try {
-      const res = await fetch(`/api/missions?${buildQuery(page + 1, activeStatus)}`)
+      const res = await fetch(`/api/missions?${buildQuery(page + 1, activeStatus, lang)}`)
       if (res.ok) {
         const data = await res.json()
         const incoming: MissionCard[] = data.missions || []
@@ -84,7 +90,7 @@ export function MissionsPage({ missions: initialMissions, total: initialTotal }:
       loadingRef.current = false
       setLoading(false)
     }
-  }, [missions.length, total, page, activeStatus])
+  }, [missions.length, total, page, activeStatus, lang])
 
   useEffect(() => {
     const el = sentinelRef.current
@@ -139,7 +145,7 @@ export function MissionsPage({ missions: initialMissions, total: initialTotal }:
         ) : (
           <>
             <div className="grid-3">
-              {missions.map(mission => <MissionGridCard key={mission.id} mission={mission} />)}
+              {missions.map(mission => <MissionGridCard key={mission.id} mission={mission} lang={lang} />)}
             </div>
 
             {/* Infinite scroll: sentinel triggers the next page while more remain */}
@@ -178,9 +184,9 @@ export function StatusBadge({ status }: { status: string }) {
 }
 
 // ── Grid card ─────────────────────────────────────────────────
-function MissionGridCard({ mission }: { mission: MissionCard }) {
+function MissionGridCard({ mission, lang }: { mission: MissionCard; lang: LanguageCode }) {
   return (
-    <a href={`/mission/${mission.slug}`} className="card">
+    <a href={sectionHref('missions', mission.slug, lang)} className="card">
       {mission.featuredImage
         ? <SmartImage className="card-image" src={mission.featuredImage} alt={mission.name}
                     width={CARD_IMAGE_W} height={CARD_IMAGE_H} sizes={CARD_IMAGE_SIZES} />
@@ -189,8 +195,8 @@ function MissionGridCard({ mission }: { mission: MissionCard }) {
         <p className="card-category">
           {mission.agency?.shortName || 'Mission'}{mission.destination ? ` · ${mission.destination}` : ''}
         </p>
-        <h3 className="card-title">{mission.name}</h3>
-        {mission.description && <p className="card-excerpt">{mission.description}</p>}
+        <h3 className="card-title" lang={lang}>{mission.name}</h3>
+        {mission.description && <p className="card-excerpt" lang={lang}>{mission.description}</p>}
         <div className="card-meta" style={{ justifyContent: 'space-between' }}>
           <StatusBadge status={mission.status} />
           {mission.launchDate && <span>{formatDate(mission.launchDate)}</span>}

@@ -784,6 +784,27 @@ env vars are absent — unrelated to app code).
   `20260722180000_article_translations.sql`, `20260723090000_knowledge_translations.sql`,
   `20260723091000_mission_translations.sql`.**
 
+- ✅ **Hindi listing pages + `/hi` home**: the translated detail pages above were
+  only reachable from an English page's toggle — `/hi` , `/hi/learn` and
+  `/hi/missions` did not exist, so a Hindi reader had nowhere to browse to.
+  All three now render, which makes `/hi/*` a section rather than a set of
+  orphans. The listing services grew the same **tolerant card overlay** the
+  detail pages use (`fetchMissionCardTranslations`, `fetchKnowledgeCardTranslations`,
+  batched by id, English on any failure), so translated names/titles/excerpts
+  appear on cards and untranslated items silently stay English.
+  `getMissions`/`getFeaturedMissions`/`getActiveMissions`/`getKnowledgeArticles`
+  take `lang`; `getRelatedMissions` was folded onto the shared helper (it had
+  been duplicating the query and overlaying only `name`, so related-mission
+  descriptions stayed English). `/api/missions` accepts `lang` so infinite
+  scroll doesn't revert to English on page 2. `LearnPage`, `MissionsPage`,
+  `HomePage` and the homepage sections take `lang` and build every href through
+  `sectionHref`/`articleHref`/`sectionListHref`. **Links are prefixed only where
+  a Hindi counterpart exists** — `StatusStrip` (`/live`) and `AboutSection`
+  (`/about`) stay unprefixed rather than pointing at a 404. The `/hi` home
+  deliberately omits the WebSite/Organization JSON-LD: both describe the site as
+  a whole and are declared once at the canonical root; repeating them per
+  language would assert two sites instead of one site in two languages.
+
 - ✅ **Click & navigation feedback indicators**: clicks worked but gave users no
   signal that the click registered or that a page was loading. Added (1) pressed
   `:active` states for `.btn`/`.card`/`.tag` plus an opt-in `.press` helper
@@ -2179,11 +2200,19 @@ the `/admin/tags` screen):**
 **Internationalization follow-ups:**
 - Bilingual **Articles, Learn & Missions** shipped (§2) — detail pages + toggle
   + admin language tabs. Remaining discoverability/expansion:
-  - **`/hi` listing pages** (`/hi/articles` exists; add `/hi/learn`, `/hi/missions`)
-    and a **global language switch in the nav** + a `/hi` home, so Hindi readers
-    can enter and stay in Hindi site-wide (today the entry point is the toggle on
-    an individual English page). Current scope is **content only** — site
-    chrome/labels stay English by design.
+  - ~~**`/hi` listing pages** and a `/hi` home~~ **done** — see §2. Still to do:
+    a **global language switch in the nav**, so a reader can cross between the
+    two languages from anywhere rather than only from an article's own toggle.
+  - **Language-aware back links.** `LearnArticlePage` and `MissionSlugPage` still
+    hardcode `href="/learn"` / `href="/missions"`, so a Hindi reader clicking
+    "← Back to Learn" is dropped into English. Both listings now exist in Hindi,
+    so these can move to `sectionListHref(section, lang)`.
+  - **Site chrome is still English** on `/hi/*` — nav, footer, section headings,
+    filter chips, "Read article →". Translating the ~30 shared UI strings lifts
+    every Hindi page at once and is the largest remaining experience gap.
+  - **Reciprocal `hreflang`.** The `/hi/*` pages point at their English twins,
+    but `/`, `/articles`, `/learn` and `/missions` don't point back. Google
+    ignores a one-directional annotation, so the pairs aren't yet honoured.
   - **Mission `timeline`** entries (structured JSON) are not yet translated —
     only name + description are. Can be added without a schema change.
   - When a sitemap is added, include the `/hi/*` detail URLs for translated items

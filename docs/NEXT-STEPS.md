@@ -96,23 +96,30 @@ nothing. Every visit is terminal.
 ### 2.2 Hindi is a half-open door
 
 The expensive part — translation storage, the language toggle, admin language
-tabs — is **done**. The discoverability layer is missing, so translated content
-is effectively unreachable and uncrawlable.
+tabs — is **done**, and `app/hi/` now has its listings: `page.tsx` (home),
+`articles/`, `learn/`, `missions/` plus the three detail routes. A Hindi reader
+can browse rather than land on one page and dead-end. What is still missing is
+the layer that lets them *arrive* and *stay*:
 
-`app/hi/` currently contains only `articles/`, `article/[slug]/`,
-`learn/[slug]/` and `mission/[slug]/`. Needed:
-
-- `/hi` home, `/hi/learn` and `/hi/missions` listing pages (mirror the English
-  ones; `lib/i18n.ts` already has `sectionHref`/`pathPrefix`).
-- A **language switch in the nav**. Partly unblocked: the mobile drawer now has
-  a **हिन्दी (Hindi)** row under Articles pointing at `/hi/articles`, so the
-  listing is no longer an orphan. That is an entry point, not a switch — it is
-  one fixed link rather than "the Hindi version of the page you are on", it is
-  drawer-only, and there is still nowhere to go from `/hi/articles` except back
-  into English. The real switch still needs the listing pages below.
-- **`/hi/*` URLs in `app/sitemap.ts` with `hreflang` alternates.** Right now no
-  translated page is in the sitemap at all, so none of it is indexed.
-- Scope is content-only by design: site chrome and labels stay English.
+- **A language switch in the nav.** The mobile drawer has one fixed
+  **हिन्दी (Hindi)** row under Articles pointing at `/hi/articles`. That is an
+  entry point, not a switch — it is one hardcoded link rather than "the Hindi
+  version of the page you are on", and it is drawer-only. Now unblocked: every
+  section it would switch into exists.
+- **Language-aware back links.** `LearnArticlePage.tsx` and `MissionSlugPage.tsx`
+  still hardcode `href="/learn"` / `href="/missions"`, so "← Back to Learn" from
+  a Hindi article lands in English. `ArticleView` already does this right via
+  `articlesListHref(lang)` — copy that with `sectionListHref(section, lang)`.
+  Both targets now exist in Hindi, so this is safe to change.
+- **Site chrome is still English** on `/hi/*` — nav, footer, section headings,
+  filter chips, "Read article →", the difficulty labels. This is the biggest
+  remaining experience gap: one ~30-string dictionary lifts every Hindi page at
+  once, rather than one page at a time.
+- **`/hi/*` URLs in `app/sitemap.ts` with `hreflang` alternates.** No translated
+  page is in the sitemap at all, so none of it is indexed. Related: the `/hi/*`
+  pages declare `hreflang` back to English, but `/`, `/articles`, `/learn` and
+  `/missions` do not declare it forward — and Google ignores a one-directional
+  annotation, so no pair is currently honoured.
 
 ### 2.3 No component or route tests
 

@@ -18,6 +18,29 @@ async function fetchKnowledgeTranslations(articleId: string): Promise<KnowledgeT
   return data as KnowledgeTranslation[]
 }
 
+interface KnowledgeCardTranslation { title: string; excerpt: string | null }
+
+// Card overlay (title/excerpt) for the whole listing, for one language. Same
+// tolerance as above: any failure resolves to "no translation" and the English
+// cards render unchanged.
+async function fetchKnowledgeCardTranslations(
+  ids: string[], lang: LanguageCode,
+): Promise<Map<string, KnowledgeCardTranslation>> {
+  const map = new Map<string, KnowledgeCardTranslation>()
+  if (lang === DEFAULT_LANGUAGE || ids.length === 0) return map
+
+  const { data, error } = await supabase
+    .from('knowledge_translations')
+    .select('knowledge_article_id, title, excerpt')
+    .in('knowledge_article_id', ids)
+    .eq('language_code', lang)
+    .eq('is_published', true)
+
+  if (error || !data) return map
+  for (const r of data as any[]) map.set(r.knowledge_article_id, { title: r.title, excerpt: r.excerpt })
+  return map
+}
+
 const CARD_SELECT = `
   id, title, slug, excerpt, difficulty_level, related_topics, icon, featured, thumbnail
 `
@@ -38,7 +61,9 @@ const FULL_SELECT_NO_THUMB = `
 `
 
 // ── All articles (card shape) ─────────────────────────────────
-export async function getKnowledgeArticles(): Promise<KnowledgeArticleCard[]> {
+export async function getKnowledgeArticles(
+  lang: LanguageCode = DEFAULT_LANGUAGE,
+): Promise<KnowledgeArticleCard[]> {
   let { data, error }: { data: any[] | null; error: any } = await supabase
     .from('knowledge_articles')
     .select(CARD_SELECT)
@@ -57,7 +82,15 @@ export async function getKnowledgeArticles(): Promise<KnowledgeArticleCard[]> {
     return []
   }
 
-  return (data || []).map(normalizeCard)
+  const cards = (data || []).map(normalizeCard)
+  if (lang === DEFAULT_LANGUAGE || cards.length === 0) return cards
+
+  const overlay = await fetchKnowledgeCardTranslations(cards.map(c => c.id), lang)
+  if (overlay.size === 0) return cards
+  return cards.map(c => {
+    const t = overlay.get(c.id)
+    return t ? { ...c, title: t.title, excerpt: t.excerpt ?? c.excerpt } : c
+  })
 }
 
 // ── Single article by slug ────────────────────────────────────
