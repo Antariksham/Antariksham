@@ -3,6 +3,7 @@ import { Merriweather, DM_Sans } from 'next/font/google'
 import { headers } from 'next/headers'
 import { Suspense } from 'react'
 import { siteConfig } from '@/config/site'
+import { langFromPathname } from '@/lib/i18n'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { NavProgress } from '@/components/layout/NavProgress'
@@ -69,8 +70,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // Middleware sets x-pathname on every request
   const pathname = headers().get('x-pathname') || ''
   const isAdmin  = pathname.startsWith('/admin')
-  // Language-prefixed routes (/hi/…) render in that language.
-  const htmlLang = (pathname === '/hi' || pathname.startsWith('/hi/')) ? 'hi' : 'en'
+  // Language-prefixed routes (/hi/…) render in that language. Shared with the
+  // nav's language switch, so the two can't disagree about what /hi means.
+  const htmlLang = langFromPathname(pathname)
 
   return (
     <html

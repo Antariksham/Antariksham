@@ -9,7 +9,7 @@ import { timelineStatusMeta, timelineImportanceMeta } from '@/modules/missions/s
 import { launchTargetTimestamp, launchSuccessMeta, isLaunchEmpty } from '@/modules/missions/services/missionLaunch'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { SmartImage } from '@/components/ui/SmartImage'
-import { sectionHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
+import { sectionHref, sectionListHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
 import { buildMissionJsonLd, buildBreadcrumbs } from '@/modules/seo/jsonLd'
 import { siteConfig } from '@/config/site'
 
@@ -99,9 +99,12 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
             website:       mission.identity.website || undefined,
             wikipedia:     mission.identity.wikipedia || undefined,
           }, siteConfig),
+          // Language-aware: on /hi/mission/:slug the crumbs have to describe
+          // the Hindi URLs, or the structured data contradicts the page's own
+          // canonical.
           buildBreadcrumbs([
-            { name: 'Missions', path: '/missions' },
-            { name: mission.name, path: `/mission/${mission.slug}` },
+            { name: 'Missions', path: sectionListHref('missions', lang) },
+            { name: mission.name, path: sectionHref('missions', mission.slug, lang) },
           ], siteConfig),
         ]) }}
       />
@@ -149,7 +152,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
 
         {/* Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.1em' }}>
-          <a href="/missions" style={{ color: '#4f8ef7', textDecoration: 'none' }}>Missions</a>
+          <a href={sectionListHref('missions', lang)} style={{ color: '#4f8ef7', textDecoration: 'none' }}>Missions</a>
           <span>/</span>
           <span>{mission.name}</span>
         </div>
@@ -551,7 +554,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
 
         {/* Back link */}
         <div style={{ paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>
-          <a href="/missions" style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
+          <a href={sectionListHref('missions', lang)} style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
             ← All Missions
           </a>
         </div>

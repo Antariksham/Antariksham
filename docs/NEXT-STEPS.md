@@ -101,16 +101,10 @@ tabs — is **done**, and `app/hi/` now has its listings: `page.tsx` (home),
 can browse rather than land on one page and dead-end. What is still missing is
 the layer that lets them *arrive* and *stay*:
 
-- **A language switch in the nav.** The mobile drawer has one fixed
-  **हिन्दी (Hindi)** row under Articles pointing at `/hi/articles`. That is an
-  entry point, not a switch — it is one hardcoded link rather than "the Hindi
-  version of the page you are on", and it is drawer-only. Now unblocked: every
-  section it would switch into exists.
-- **Language-aware back links.** `LearnArticlePage.tsx` and `MissionSlugPage.tsx`
-  still hardcode `href="/learn"` / `href="/missions"`, so "← Back to Learn" from
-  a Hindi article lands in English. `ArticleView` already does this right via
-  `articlesListHref(lang)` — copy that with `sectionListHref(section, lang)`.
-  Both targets now exist in Hindi, so this is safe to change.
+- ~~A language switch in the nav~~ and ~~language-aware back links~~ **done** —
+  `components/layout/LanguageSwitch` (desktop pill + drawer row) crosses to the
+  counterpart of the page you are on, and the Learn/Mission back links and all
+  three breadcrumb trails are language-aware. See §2.
 - **Site chrome is still English** on `/hi/*` — nav, footer, section headings,
   filter chips, "Read article →", the difficulty labels. This is the biggest
   remaining experience gap: one ~30-string dictionary lifts every Hindi page at

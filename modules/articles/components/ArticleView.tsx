@@ -95,9 +95,12 @@ export function ArticleView({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify([
           buildArticleJsonLd(article),
+          // Language-aware: on /hi/article/:slug the crumbs have to describe
+          // the Hindi URLs, or the structured data contradicts the page's own
+          // canonical.
           buildBreadcrumbs([
-            { name: 'Articles', path: '/articles' },
-            { name: article.title, path: `/article/${article.slug}` },
+            { name: 'Articles', path: articlesListHref(lang) },
+            { name: article.title, path: articleHref(article.slug, lang) },
           ], siteConfig),
           buildFaqJsonLd(article.content || ''),
         ].filter(Boolean)) }}

@@ -805,6 +805,30 @@ env vars are absent — unrelated to app code).
   a whole and are declared once at the canonical root; repeating them per
   language would assert two sites instead of one site in two languages.
 
+- ✅ **Site-wide language switch + language-aware links**: crossing between
+  languages used to mean finding an article that happened to have a translation
+  and using its on-page toggle — the only other route in was one hardcoded
+  **हिन्दी (Hindi)** row in the mobile drawer that always went to
+  `/hi/articles` no matter where you were. `components/layout/LanguageSwitch`
+  replaces it: a desktop pill beside Search and a drawer row, both pointing at
+  **the counterpart of the current page**. The mapping is
+  `counterpartPath(pathname, target)` in `lib/i18n.ts`, unit-tested in
+  `lib/i18n.test.ts` — translated sections map straight across; everything else
+  (`/live/*`, `/explore/*`, `/about`, …) falls back to that language's **home**
+  rather than the control vanishing on some routes, and it can never 404.
+  Detail URLs map across even when the item is untranslated: the route already
+  handles the miss deliberately (English text, `canonical → EN`, `noindex`), and
+  chrome can't know what's translated without a per-page read — the on-page
+  `LanguageToggle`, which does know, remains the precise control. `app/layout`
+  now derives `<html lang>` from the same `langFromPathname`, so the two can't
+  disagree. Also fixed here: `LearnArticlePage` and `MissionSlugPage` hardcoded
+  `/learn` and `/missions`, dropping Hindi readers into English on "← Back to
+  Learn" / "← All Missions"; and **all three** detail pages emitted English
+  breadcrumb JSON-LD on `/hi/*`, contradicting their own canonical. Both now go
+  through `sectionListHref`/`sectionHref` with `lang`. The endonym renders in
+  the Devanagari-first stack via `langSans(code)`, since "हिन्दी" otherwise sits
+  in a Latin-only stack on English pages.
+
 - ✅ **Click & navigation feedback indicators**: clicks worked but gave users no
   signal that the click registered or that a page was loading. Added (1) pressed
   `:active` states for `.btn`/`.card`/`.tag` plus an opt-in `.press` helper
@@ -2200,13 +2224,8 @@ the `/admin/tags` screen):**
 **Internationalization follow-ups:**
 - Bilingual **Articles, Learn & Missions** shipped (§2) — detail pages + toggle
   + admin language tabs. Remaining discoverability/expansion:
-  - ~~**`/hi` listing pages** and a `/hi` home~~ **done** — see §2. Still to do:
-    a **global language switch in the nav**, so a reader can cross between the
-    two languages from anywhere rather than only from an article's own toggle.
-  - **Language-aware back links.** `LearnArticlePage` and `MissionSlugPage` still
-    hardcode `href="/learn"` / `href="/missions"`, so a Hindi reader clicking
-    "← Back to Learn" is dropped into English. Both listings now exist in Hindi,
-    so these can move to `sectionListHref(section, lang)`.
+  - ~~**`/hi` listing pages** and a `/hi` home~~, ~~a **global language switch in
+    the nav**~~ and ~~**language-aware back links**~~ **done** — see §2.
   - **Site chrome is still English** on `/hi/*` — nav, footer, section headings,
     filter chips, "Read article →". Translating the ~30 shared UI strings lifts
     every Hindi page at once and is the largest remaining experience gap.

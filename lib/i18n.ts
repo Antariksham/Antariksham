@@ -88,6 +88,61 @@ export function articleHref(slug: string, code: string): string {
   return sectionHref('articles', slug, code)
 }
 
+// ── Crossing between languages ────────────────────────────────
+//
+// The sections that exist in every language — both their listing and their
+// detail segment, so `/articles` and `/article/:slug` both resolve. Derived
+// from DETAIL_SEGMENT rather than hand-listed, so translating a new section
+// means adding it here once and nowhere else.
+const LOCALIZED_SECTIONS = ['articles', 'learn', 'missions'] as const
+
+const LOCALIZED_ROOTS: Set<string> = new Set(
+  LOCALIZED_SECTIONS.flatMap(s => [s, detailSegment(s)]),
+)
+
+/** Language a path renders in, read from its prefix: `/hi/…` → 'hi', else 'en'. */
+export function langFromPathname(pathname: string): LanguageCode {
+  for (const l of TRANSLATION_LANGUAGES) {
+    if (pathname === l.pathPrefix || pathname.startsWith(`${l.pathPrefix}/`)) return l.code
+  }
+  return DEFAULT_LANGUAGE
+}
+
+/** Strip a path's language prefix: `/hi/learn/x` → `/learn/x`, `/hi` → `/`. */
+export function stripLangPrefix(pathname: string): string {
+  const prefix = langPrefix(langFromPathname(pathname))
+  if (!prefix) return pathname || '/'
+  return pathname.slice(prefix.length) || '/'
+}
+
+/**
+ * The same page in another language.
+ *
+ * Only the sections above are translated, so anything else — `/live/*`,
+ * `/explore/*`, `/gallery/*`, `/about` — has no counterpart to point at. Those
+ * fall back to the target language's **home page** rather than the switch
+ * disappearing: chrome that vanishes on some routes is worse than a control
+ * that always means "read this site in Hindi", and it can never 404.
+ *
+ * A detail URL maps straight across even when that item has no translation
+ * yet. The route exists and already handles the miss deliberately — it serves
+ * the English text under `canonical → EN` + `noindex` (see
+ * `localizedAlternates`). Global chrome cannot know what is translated without
+ * a per-page read; the on-page `LanguageToggle`, which does know, stays the
+ * precise control.
+ */
+export function counterpartPath(pathname: string, target: string): string {
+  const bare       = stripLangPrefix(pathname)
+  const targetHome = langPrefix(target) || '/'
+
+  if (bare === '/') return targetHome
+
+  const root = bare.split('/')[1] ?? ''
+  if (!LOCALIZED_ROOTS.has(root)) return targetHome
+
+  return `${langPrefix(target)}${bare}`
+}
+
 /** Build the articles listing URL for a given language. */
 export function articlesListHref(code: string): string {
   return sectionListHref('articles', code)
@@ -98,6 +153,16 @@ export function articlesListHref(code: string): string {
 // webfont download, matching the project's system-font convention.
 export const HI_SANS  = "'Noto Sans Devanagari','Nirmala UI','Mangal',var(--font-sans)"
 export const HI_SERIF = "'Noto Serif Devanagari','Tiro Devanagari Hindi','Nirmala UI',var(--font-serif)"
+
+/**
+ * Sans stack for a language, for chrome that renders one language's name
+ * inside another language's page — the nav switch shows "हिन्दी" on English
+ * pages, where the surrounding stack has no Devanagari and the browser would
+ * pick whatever it happens to fall back to.
+ */
+export function langSans(code: string): string {
+  return code === 'hi' ? HI_SANS : 'var(--font-sans)'
+}
 
 // Shared hreflang / canonical logic for a localized detail page. `servedLang`
 // is what actually rendered (may fall back to the default), `requestedLang` is

@@ -147,13 +147,14 @@ test('sectionIsCurrent: a section stays marked from any depth below it', () => {
 })
 
 test('sectionIsCurrent: a child on a different path still marks its parent', () => {
-  // /hi/articles sits under Articles in the tree but nowhere near it in the URL
-  // space, so only the recursive walk can find it.
-  const articles = mainNav.find((item) => item.label === 'Articles')!
-  assert.equal(sectionIsCurrent('/hi/articles', articles), true)
-
+  // /lunar-sim sits under Live in the tree but nowhere near it in the URL
+  // space, so only the recursive walk can find it. (This used to be checked
+  // with /hi/articles under Articles; that child was a stopgap Hindi link and
+  // is gone — LanguageSwitch replaced it — so Live carries the case now.)
   const live = mainNav.find((item) => item.label === 'Live')!
   assert.equal(sectionIsCurrent('/lunar-sim', live), true)
+  assert.equal(sectionIsCurrent('/live/launches', live), true)
+  assert.equal(sectionIsCurrent('/learn', live), false)
 })
 
 test('the topic hubs come from the registry, not a hand-written copy', () => {

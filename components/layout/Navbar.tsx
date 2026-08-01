@@ -8,6 +8,7 @@ import { siteConfig } from '@/config/site'
 import { mainNav, desktopNav, isCurrent, sectionIsCurrent, type NavItem } from '@/config/navigation'
 import { Logo } from '@/components/brand/Logo'
 import { ThemeToggle } from './ThemeToggle'
+import { LanguageSwitch } from './LanguageSwitch'
 import { MegaMenu } from './MegaMenu'
 
 /** How long the pointer must rest on a trigger before the panel opens, and how
@@ -371,8 +372,13 @@ export function Navbar() {
           })}
         </ul>
 
-        {/* DESKTOP RIGHT — search bar */}
+        {/* DESKTOP RIGHT — language switch, search bar, theme.
+            The switch sits here rather than in the nav row: it is a setting for
+            the whole site, like the theme toggle beside it, not another section
+            to visit. It replaces the one hardcoded "हिन्दी (Hindi)" drawer link
+            that always went to /hi/articles no matter where you were. */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="desktop-nav">
+          <LanguageSwitch />
           <Link href="/search" className="press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: '1px solid rgba(var(--ink),0.2)', borderRadius: '6px', background: 'rgba(var(--ink),0.05)', color: 'rgba(var(--ink),0.75)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', textDecoration: 'none' }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             Search
@@ -466,6 +472,10 @@ export function Navbar() {
 
               <ul className="nav-drawer__list">
                 {panel.items.map((item) => renderRow(item, i, i))}
+                {/* Top-level panel only — a site-wide setting, not a section,
+                    so it sits below the sections rather than inside one (which
+                    is where the old hardcoded Hindi link was stranded). */}
+                {i === 0 && <LanguageSwitch variant="drawer" onNavigate={closeMenu} />}
               </ul>
             </nav>
           ))}

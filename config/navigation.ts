@@ -56,16 +56,15 @@ export const mainNav: NavItem[] = [
     desktopHidden: true,
     description: 'The front page — latest coverage, active missions and live space intelligence.',
   },
+  // No children: the lone "हिन्दी (Hindi)" row that used to live here was a
+  // stopgap route into /hi/articles, and `components/layout/LanguageSwitch`
+  // now does that job properly from every page. Articles is a plain link on
+  // the desktop bar as a result — the mega-menu's highlights column renders
+  // for whichever section is open, so nothing is lost with the caret.
   {
     label: 'Articles',
     href:  '/articles',
     description: 'Space journalism, mission updates and scientific discoveries from NASA, ISRO, SpaceX, ESA and beyond.',
-    children: [
-      // The Hindi listing exists and had no route into it from anywhere in the
-      // site chrome. Not the full language switch — that needs /hi home,
-      // /hi/learn and /hi/missions first (docs/NEXT-STEPS.md §2.2).
-      { label: 'हिन्दी (Hindi)', href: '/hi/articles' },
-    ],
   },
   // A first-class section on the homepage, in the sitemap at priority 0.8, and
   // until now reachable only from the footer.
