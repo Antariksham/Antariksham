@@ -1,4 +1,5 @@
 import { articleHref, articlesListHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
+import { strings } from '@/lib/ui'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { ArticleBody, countWords, type ArticleRenderModel } from './ArticleBody'
 import { TableOfContents } from './TableOfContents'
@@ -58,6 +59,7 @@ export function ArticleView({
 }) {
   const isHi     = lang === 'hi'
   const sansFont = isHi ? HI_SANS : 'var(--font-sans)'
+  const ui       = strings(lang)
 
   // Desktop Table-of-Contents rail (mobile uses the inline panel inside
   // ArticleBody). Computed from the same buildToc as the reader, so the rail's
@@ -136,7 +138,7 @@ export function ArticleView({
           {/* Back link */}
           <div style={{ marginTop: '48px', paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>
             <a href={articlesListHref(lang)} style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
-              ← Back to Articles
+              {ui('articles.back')}
             </a>
           </div>
         </article>
@@ -159,7 +161,7 @@ export function ArticleView({
         <div style={{ borderTop: '1px solid rgba(var(--ink),0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
-              Related Stories
+              {ui('articles.related')}
             </span>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: '16px' }}>
               {related.map(r => (
@@ -177,7 +179,7 @@ export function ArticleView({
                       {r.title}
                     </h3>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.1em' }}>
-                      {r.readingTime} min read
+                      {ui('chrome.minRead', { n: r.readingTime })}
                     </span>
                   </div>
                 </a>

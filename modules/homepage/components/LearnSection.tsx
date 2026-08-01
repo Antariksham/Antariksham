@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { supabaseAdmin } from '@/lib/supabase'
 import { LearnCard }    from './LearnCard'
 import { sectionListHref, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
+import { strings } from '@/lib/ui'
 
 async function getLearnPreview(lang: LanguageCode) {
   const db = supabaseAdmin()
@@ -44,19 +45,20 @@ async function getLearnPreview(lang: LanguageCode) {
 
 export async function LearnSection({ lang = DEFAULT_LANGUAGE }: { lang?: LanguageCode } = {}) {
   const topics = await getLearnPreview(lang)
+  const ui     = strings(lang)
 
   return (
     <section className="section" style={{ paddingTop: 0 }}>
       <div className="section-head">
         <div>
-          <h2 className="section-title">Learn Space Science</h2>
-          <span className="section-eyebrow">Knowledge layer</span>
+          <h2 className="section-title">{ui('home.learnTitle')}</h2>
+          <span className="section-eyebrow">{ui('home.learnEyebrow')}</span>
         </div>
-        <Link href={sectionListHref('learn', lang)} className="btn btn-outline">Explore all topics</Link>
+        <Link href={sectionListHref('learn', lang)} className="btn btn-outline">{ui('home.exploreTopics')}</Link>
       </div>
 
       {topics.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No topics published yet.</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{ui('home.noTopics')}</p>
       ) : (
         <div className="grid-3">
           {topics.map(topic => (

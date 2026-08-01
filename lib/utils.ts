@@ -2,18 +2,26 @@ export function cn(...classes: (string | undefined | null | boolean)[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export function formatDate(dateString: string): string {
+// Locale for a language code. A date on a Hindi page must read in Hindi —
+// "1 सितंबर 2026", not "September 1, 2026" — and Intl already knows how, so
+// this only has to hand it the right locale. Admin screens pass nothing and
+// stay on en-US, which is what their English-only chrome expects.
+function localeFor(lang?: string): string {
+  return lang === 'hi' ? 'hi-IN' : 'en-US'
+}
+
+export function formatDate(dateString: string, lang?: string): string {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(localeFor(lang), {
     year:  'numeric',
     month: 'long',
     day:   'numeric',
   })
 }
 
-export function formatDateShort(dateString: string): string {
+export function formatDateShort(dateString: string, lang?: string): string {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(localeFor(lang), {
     month: 'short',
     day:   'numeric',
     year:  'numeric',

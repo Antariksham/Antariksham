@@ -5,14 +5,15 @@ import type { MissionCard, MissionStatus } from '@/types/mission'
 import { formatDate } from '@/lib/utils'
 import { statusMeta, legacyStatusFor } from '@/modules/missions/services/missionClassification'
 import { sectionHref, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
+import { strings, tCount, type UIKey } from '@/lib/ui'
 import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
-const STATUSES: { value: MissionStatus | 'all'; label: string }[] = [
-  { value: 'all',            label: 'All'           },
-  { value: 'active',         label: 'Active'        },
-  { value: 'upcoming',       label: 'Upcoming'      },
-  { value: 'in-development', label: 'In Development'},
-  { value: 'completed',      label: 'Completed'     },
+const STATUSES: { value: MissionStatus | 'all'; key: UIKey }[] = [
+  { value: 'all',            key: 'missions.filterAll'       },
+  { value: 'active',         key: 'missions.filterActive'    },
+  { value: 'upcoming',       key: 'missions.filterUpcoming'  },
+  { value: 'in-development', key: 'missions.filterDev'       },
+  { value: 'completed',      key: 'missions.filterCompleted' },
 ]
 
 const PER_PAGE = 12
@@ -35,6 +36,7 @@ function buildQuery(page: number, status: MissionStatus | 'all', lang: LanguageC
 export function MissionsPage({
   missions: initialMissions, total: initialTotal, lang = DEFAULT_LANGUAGE,
 }: Props) {
+  const ui = strings(lang)
   const [activeStatus, setActiveStatus] = useState<MissionStatus | 'all'>('all')
 
   // Infinite scroll seeded with the SSR'd first page; the status filter is
@@ -111,10 +113,10 @@ export function MissionsPage({
       {/* Page header */}
       <header className="page-header">
         <div className="container">
-          <p className="card-category" style={{ marginBottom: '0.6rem' }}>Mission Tracking</p>
-          <h1 className="page-title">Space Missions</h1>
+          <p className="card-category" style={{ marginBottom: '0.6rem' }}>{ui('missions.eyebrow')}</p>
+          <h1 className="page-title">{ui('missions.title')}</h1>
           <p className="page-lede">
-            Active, upcoming, and historic missions across all major space agencies — tracked in one place.
+            {ui('missions.lede')}
           </p>
 
           <div className="tags-row" style={{ marginTop: '1.25rem' }}>
@@ -124,7 +126,7 @@ export function MissionsPage({
                 className={`tag ${activeStatus === s.value ? 'active' : ''}`}
                 onClick={() => setActiveStatus(activeStatus === s.value ? 'all' : s.value)}
               >
-                {s.label}
+                {ui(s.key)}
               </button>
             ))}
           </div>
@@ -134,12 +136,12 @@ export function MissionsPage({
       {/* Content */}
       <main className="container section">
         {switching ? (
-          <p style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontSize: '0.9rem', letterSpacing: '0.05em' }}>Loading…</p>
+          <p style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontSize: '0.9rem', letterSpacing: '0.05em' }}>{ui('common.loading')}</p>
         ) : missions.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛸</div>
             <p style={{ color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
-              {activeStatus === 'all' ? 'No missions found.' : 'No missions with this status.'}
+              {ui(activeStatus === 'all' ? 'missions.empty' : 'missions.emptyStatus')}
             </p>
           </div>
         ) : (
@@ -153,12 +155,12 @@ export function MissionsPage({
 
             {loading && (
               <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
-                Loading more…
+                {ui('common.loadingMore')}
               </p>
             )}
             {reachedEnd && (
               <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
-                You&rsquo;ve reached the end · {total} mission{total !== 1 ? 's' : ''}
+                {tCount(total, 'missions.endOne', 'missions.endMany', lang)}
               </p>
             )}
           </>
@@ -172,8 +174,8 @@ export function MissionsPage({
 // Renders any status value — legacy base-column values (on cards) or the
 // extended 15-stage lifecycle values (on the detail page) — via the shared
 // taxonomy, so labels + colors stay consistent everywhere.
-export function StatusBadge({ status }: { status: string }) {
-  const { label, color } = statusMeta(status)
+export function StatusBadge({ status, lang }: { status: string; lang?: LanguageCode }) {
+  const { label, color } = statusMeta(status, lang)
   const isPulse = legacyStatusFor(status) === 'active'
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color }}>
@@ -198,8 +200,8 @@ function MissionGridCard({ mission, lang }: { mission: MissionCard; lang: Langua
         <h3 className="card-title" lang={lang}>{mission.name}</h3>
         {mission.description && <p className="card-excerpt" lang={lang}>{mission.description}</p>}
         <div className="card-meta" style={{ justifyContent: 'space-between' }}>
-          <StatusBadge status={mission.status} />
-          {mission.launchDate && <span>{formatDate(mission.launchDate)}</span>}
+          <StatusBadge status={mission.status} lang={lang} />
+          {mission.launchDate && <span>{formatDate(mission.launchDate, lang)}</span>}
         </div>
       </div>
     </a>

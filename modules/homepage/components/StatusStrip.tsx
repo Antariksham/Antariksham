@@ -1,20 +1,30 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { langFromPathname } from '@/lib/i18n'
+import { strings } from '@/lib/ui'
 
+// Raw numbers rather than formatted English: the units and the "Interstellar"
+// label are chrome, so they have to be rendered in the reader's language, not
+// baked in when the data is fetched.
 interface StripData {
-  issSpeed:        string
-  voyagerDistance: string
-  voyagerStatus:   string
+  issSpeedKmh:     number
+  voyagerBillionKm: string
+  voyagerKmS:      number | null
 }
 
 const FALLBACK: StripData = {
-  issSpeed:        '27,600 km/h',
-  voyagerDistance: '23.6 billion km',
-  voyagerStatus:   'Interstellar · 46 yrs',
+  issSpeedKmh:      27600,
+  voyagerBillionKm: '23.6',
+  voyagerKmS:       null,
 }
 
 export function StatusStrip() {
+  // Reads the language itself for the same reason Footer does — a shared
+  // layout does not re-render on client-side navigation, so a prop from the
+  // root layout would freeze at whichever language the session started in.
+  const ui = strings(langFromPathname(usePathname() ?? ''))
   const [data, setData] = useState<StripData>(FALLBACK)
   const fetchRef        = useRef<() => void>()
 
@@ -30,7 +40,7 @@ export function StatusStrip() {
       if (issRes.status === 'fulfilled' && issRes.value.ok) {
         const iss = await issRes.value.json()
         if (iss?.velocity) {
-          next.issSpeed = `${Math.round(iss.velocity).toLocaleString()} km/h`
+          next.issSpeedKmh = Math.round(iss.velocity)
         }
       }
 
@@ -38,12 +48,9 @@ export function StatusStrip() {
         const ds = await dsRes.value.json()
         const v1 = Array.isArray(ds) ? ds.find((p: any) => p.id === 'voyager-1') : null
         if (v1?.distanceFromSun) {
-          const au  = parseFloat(v1.distanceFromSun)
-          const bkm = (au * 149597870.7 / 1e9).toFixed(1)
-          next.voyagerDistance = `${bkm} billion km`
-          next.voyagerStatus   = v1.velocity
-            ? `Interstellar · ${Math.round(v1.velocity)} km/s`
-            : 'Interstellar · 46 yrs'
+          const au = parseFloat(v1.distanceFromSun)
+          next.voyagerBillionKm = (au * 149597870.7 / 1e9).toFixed(1)
+          next.voyagerKmS = v1.velocity ? Math.round(v1.velocity) : null
         }
       }
 
@@ -60,41 +67,43 @@ export function StatusStrip() {
   const items = [
     {
       icon:      '🛸',
-      label:     'ISS Position',
-      value:     data.issSpeed,
-      sub:       '● Live tracking',
+      label:     ui('strip.issPosition'),
+      value:     ui('strip.kmh', { n: data.issSpeedKmh.toLocaleString() }),
+      sub:       ui('strip.liveTracking'),
       subColor:  '#2ecc71',
       href:      '/live/iss-tracker',   // ← fixed: was missing
     },
     {
       icon:      '🚀',
-      label:     'Next Launch',
-      value:     'View Schedule',
-      sub:       'Launch Library 2',
+      label:     ui('strip.nextLaunch'),
+      value:     ui('strip.viewSchedule'),
+      sub:       'Launch Library 2',   // the data source's own name
       subColor:  'rgba(var(--ink),0.6)',
       href:      '/live/launches',
     },
     {
       icon:      '🌌',
-      label:     'NASA APOD',
-      value:     "Today's Image",
-      sub:       'Updated daily',
+      label:     ui('strip.apod'),
+      value:     ui('strip.todaysImage'),
+      sub:       ui('strip.updatedDaily'),
       subColor:  'rgba(var(--ink),0.6)',
       href:      '/live/apod',
     },
     {
       icon:      '🛰️',
-      label:     'Voyager 1',
-      value:     data.voyagerDistance,
-      sub:       data.voyagerStatus,
+      label:     ui('strip.voyager'),
+      value:     ui('strip.billionKm', { n: data.voyagerBillionKm }),
+      sub:       data.voyagerKmS != null
+        ? ui('strip.interstellarKms', { n: data.voyagerKmS })
+        : ui('strip.interstellar'),
       subColor:  'rgba(var(--ink),0.6)',
       href:      '/live/deep-space/voyager-1',
     },
     {
       icon:      '🌍',
-      label:     'Deep Space',
-      value:     '5 Probes',
-      sub:       'Live telemetry',
+      label:     ui('strip.deepSpace'),
+      value:     ui('strip.probes', { n: 5 }),
+      sub:       ui('strip.telemetry'),
       subColor:  'rgba(var(--ink),0.6)',
       href:      '/live/deep-space',
     },

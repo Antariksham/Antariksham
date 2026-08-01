@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { supabaseAdmin }       from '@/lib/supabase'
 import { getHeroConfigPublic } from '@/modules/admin/services/adminHomepage'
 import { articleHref, articlesListHref, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
+import { strings } from '@/lib/ui'
 
 async function getFeaturedArticle(lang: LanguageCode) {
   const db = supabaseAdmin()
@@ -36,7 +37,9 @@ export async function HeroSection({ lang = DEFAULT_LANGUAGE }: { lang?: Language
     getFeaturedArticle(lang),
   ])
 
-  const badge       = hero?.badge       || 'Featured Story'
+  const ui = strings(lang)
+
+  const badge       = hero?.badge       || ui('home.featuredStory')
   const title       = hero?.title       || featuredArticle?.title       || 'Exploring the Universe Through Knowledge, Research & Discovery'
   const excerpt     = hero?.excerpt     || featuredArticle?.excerpt     || 'Scientific journalism, live mission tracking, deep-space telemetry, and an educational knowledge engine — all in one independent platform.'
   const category    = hero?.category    || featuredArticle?.article_type || 'Space Intelligence'
@@ -84,7 +87,7 @@ export async function HeroSection({ lang = DEFAULT_LANGUAGE }: { lang?: Language
           <p>{excerpt}</p>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <Link href={primaryHref} className="btn btn-primary">
-              {articleSlug ? 'Read Full Story' : 'Read Latest'}
+              {articleSlug ? ui('home.readFullStory') : ui('home.readLatest')}
             </Link>
             <Link href="/live" className="btn btn-outline">
               <span
@@ -94,7 +97,7 @@ export async function HeroSection({ lang = DEFAULT_LANGUAGE }: { lang?: Language
                   display: 'inline-block',
                 }}
               />
-              View Live Systems
+              {ui('home.viewLive')}
             </Link>
           </div>
           <p

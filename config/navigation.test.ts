@@ -105,6 +105,31 @@ test('desktopNav drops the entries the one-line bar cannot fit', () => {
   )
 })
 
+test('every nav entry a reader can see carries a Hindi label', () => {
+  // The nav is the one place a missing translation is most visible: a Hindi
+  // reader sees an English word sitting between two Devanagari ones. Topic
+  // hubs are excluded — their labels come from the TOPICS registry, which is
+  // English-only content, not chrome (see §2.2 in docs/NEXT-STEPS.md).
+  const hubHrefs = new Set(
+    (mainNav
+      .find((i) => i.label === 'Explore')?.children
+      ?.find((c) => c.label === 'Topic Hubs')?.children ?? []
+    ).map((h) => h.href),
+  )
+
+  const missing: string[] = []
+  const walk = (items: NavItem[]) => {
+    for (const item of items) {
+      if (!hubHrefs.has(item.href) && !item.labels?.hi) missing.push(`${item.label} (${item.href})`)
+      if (item.children) walk(item.children)
+    }
+  }
+  walk(mainNav)
+  for (const list of Object.values(footerNav)) walk(list as NavItem[])
+
+  assert.deepEqual(missing, [], `nav entries with no Hindi label: ${missing.join(', ')}`)
+})
+
 test('every top-level section has a description for the mega-menu', () => {
   // For Home, Missions and Learn this line IS the mega-menu's middle column —
   // they have no children — so a missing one leaves a visibly empty panel.

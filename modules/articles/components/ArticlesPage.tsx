@@ -5,6 +5,7 @@ import type { ArticleCard, ArticleCategory } from '@/types/article'
 import type { PublicCategory } from '@/modules/articles/services/getCategories'
 import { timeAgo } from '@/lib/utils'
 import { langPrefix, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
+import { strings, tCount, t } from '@/lib/ui'
 import { SmartImage, CARD_IMAGE_SIZES, CARD_IMAGE_W, CARD_IMAGE_H } from '@/components/ui/SmartImage'
 
 const PER_PAGE = 12
@@ -31,6 +32,7 @@ export function ArticlesPage({
   articles: initialArticles, total: initialTotal, categories = [], lang = DEFAULT_LANGUAGE,
 }: Props) {
   const base = langPrefix(lang)
+  const ui   = strings(lang)
   const [activeCategory, setActiveCategory] = useState<ArticleCategory | 'all'>('all')
 
   // Infinite scroll seeded with the SSR'd first page; the category filter is
@@ -107,15 +109,15 @@ export function ArticlesPage({
       {/* Page header */}
       <header className="page-header">
         <div className="container">
-          <p className="card-category" style={{ marginBottom: '0.6rem' }}>Space Intelligence</p>
-          <h1 className="page-title">Articles</h1>
+          <p className="card-category" style={{ marginBottom: '0.6rem' }}>{ui('articles.eyebrow')}</p>
+          <h1 className="page-title">{ui('articles.title')}</h1>
           <p className="page-lede">
-            Scientific journalism, mission updates, and discoveries from across the space industry.
+            {ui('articles.lede')}
           </p>
 
           {/* Category filter */}
           <div className="tags-row" style={{ marginTop: '1.25rem' }}>
-            <button className={`tag ${activeCategory === 'all' ? 'active' : ''}`} onClick={() => setActiveCategory('all')}>All</button>
+            <button className={`tag ${activeCategory === 'all' ? 'active' : ''}`} onClick={() => setActiveCategory('all')}>{ui('missions.filterAll')}</button>
             {categories.map(cat => (
               <button
                 key={cat.slug || cat.name}
@@ -132,16 +134,16 @@ export function ArticlesPage({
       {/* Content */}
       <main className="container section">
         {switching ? (
-          <p style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontSize: '0.9rem', letterSpacing: '0.05em' }}>Loading…</p>
+          <p style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)', fontSize: '0.9rem', letterSpacing: '0.05em' }}>{ui('common.loading')}</p>
         ) : articles.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>📡</div>
             <p style={{ color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
-              {activeCategory === 'all' ? 'No articles published yet.' : 'No articles in this category yet.'}
+              {ui(activeCategory === 'all' ? 'articles.empty' : 'articles.emptyCat')}
             </p>
             {activeCategory === 'all' && (
               <p style={{ color: 'var(--text-muted)', marginTop: '8px', fontSize: '0.9rem' }}>
-                Articles published from the admin panel will appear here.
+                {ui('articles.emptyHint')}
               </p>
             )}
           </div>
@@ -156,12 +158,12 @@ export function ArticlesPage({
 
             {loading && (
               <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
-                Loading more…
+                {ui('common.loadingMore')}
               </p>
             )}
             {reachedEnd && (
               <p style={{ textAlign: 'center', marginTop: '2.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
-                You&rsquo;ve reached the end · {total} article{total !== 1 ? 's' : ''}
+                {tCount(total, 'articles.endOne', 'articles.endMany', lang)}
               </p>
             )}
           </>
@@ -190,7 +192,7 @@ function GridCard({ article, base, lang }: { article: ArticleCard; base: string;
         {article.excerpt && <p className="card-excerpt" lang={lang}>{article.excerpt}</p>}
         <div className="card-meta">
           {article.publishedAt && <span>{timeAgo(article.publishedAt)}</span>}
-          {article.readingTime ? <span>{article.readingTime} min read</span> : null}
+          {article.readingTime ? <span>{t('chrome.minRead', lang, { n: article.readingTime })}</span> : null}
         </div>
       </div>
     </a>

@@ -855,6 +855,36 @@ env vars are absent — unrelated to app code).
   it after navigation while leaving the server-rendered value — the one
   crawlers see — intact for the first paint.
 
+- ✅ **The chrome speaks the reader's language**: a Hindi article used to sit
+  inside an English shell — English nav, English footer, "Read article →",
+  "3 min read", "September 1, 2026". **`lib/ui.ts`** is now the one table of
+  fixed UI strings, keyed and typed so that `satisfies Record<string, Entry>`
+  makes a missing translation a **compile error**, not a silent English string.
+  `t(key, lang, vars)` interpolates `{n}` placeholders, `strings(lang)` binds
+  the language once per component, and `tCount` picks singular/plural (English
+  inflects at one; Hindi uses a single form). Covered: nav + mega-menu +
+  drawer + footer, the home hero/status-strip/section headings/about block, all
+  three listing headers and filter chips, empty and end-of-list states, back
+  links, related-item headings, and the reader's own chrome.
+
+  Two things deliberately live outside the table. **Nav labels** stay in
+  `config/navigation.ts` beside their hrefs (`labels: { hi: 'लेख' }`) — that
+  tree is data, and a label read apart from the href it names is harder to keep
+  honest; `navLabel()` does the lookup and falls back to English. **Mission
+  status and type** stay in `missionClassification.ts` for the same reason, with
+  `statusMeta(value, lang)` / `typeLabel(value, lang)` defaulting to English so
+  the English-only admin is untouched. Dates go through
+  `formatDate(iso, lang)` → `hi-IN`, so a Hindi page reads *1 सितंबर 2026*.
+
+  A `config/navigation.test.ts` case walks the whole tree and fails if any
+  reader-visible entry lacks a Hindi label; `lib/ui.test.ts` catches the things
+  types cannot — a Hindi value left as a copy of the English, Devanagari leaking
+  into an English string, and a `{n}` placeholder surviving into the output.
+
+  **Not yet translated: the mission detail page's field labels** (`ROLE_LABEL`,
+  the 17 `SPEC_ROWS`, objective groups, launch-information rows). That is a
+  mission-domain vocabulary rather than site chrome — see §10.
+
 - ✅ **Click & navigation feedback indicators**: clicks worked but gave users no
   signal that the click registered or that a page was loading. Added (1) pressed
   `:active` states for `.btn`/`.card`/`.tag` plus an opt-in `.press` helper

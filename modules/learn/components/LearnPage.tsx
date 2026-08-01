@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { LearnThumb } from './LearnThumb'
 import { sectionHref, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
+import { strings, tCount, type UIKey } from '@/lib/ui'
 import type { KnowledgeArticleCard, DifficultyLevel } from '@/types/knowledge'
 
 type FilterOption = DifficultyLevel | 'all'
@@ -15,11 +16,11 @@ const DIFFICULTY_COLORS: Record<FilterOption, string> = {
   advanced:     'var(--red)',
 }
 
-const DIFFICULTY_LABELS: Record<FilterOption, string> = {
-  all:          'All',
-  beginner:     'Beginner',
-  intermediate: 'Intermediate',
-  advanced:     'Advanced',
+const DIFFICULTY_KEYS: Record<FilterOption, UIKey> = {
+  all:          'learn.filterAll',
+  beginner:     'learn.beginner',
+  intermediate: 'learn.intermediate',
+  advanced:     'learn.advanced',
 }
 
 const FILTERS: FilterOption[] = ['all', 'beginner', 'intermediate', 'advanced']
@@ -31,6 +32,7 @@ interface Props {
 }
 
 export function LearnPage({ articles, lang = DEFAULT_LANGUAGE }: Props) {
+  const ui = strings(lang)
   const [activeFilter, setActiveFilter] = useState<FilterOption>('all')
 
   const filtered = useMemo(() =>
@@ -46,13 +48,13 @@ export function LearnPage({ articles, lang = DEFAULT_LANGUAGE }: Props) {
       {/* ── Header ─────────────────────────────────────────── */}
       <div style={{ marginBottom: '48px' }}>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '12px' }}>
-          Knowledge Layer
+          {ui('learn.eyebrow')}
         </div>
         <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 800, color: 'var(--white)', margin: '0 0 16px', lineHeight: 1.1 }}>
-          Learn Space Science
+          {ui('learn.title')}
         </h1>
         <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', color: 'rgba(var(--ink),0.9)', margin: 0, maxWidth: '560px', lineHeight: 1.75 }}>
-          Deep-dive articles on orbital mechanics, astrophysics, and the mathematics powering space exploration. From beginner introductions to advanced physics.
+          {ui('learn.lede')}
         </p>
       </div>
 
@@ -79,24 +81,24 @@ export function LearnPage({ articles, lang = DEFAULT_LANGUAGE }: Props) {
                 transition:    'all 0.15s',
               }}
             >
-              {DIFFICULTY_LABELS[level]}
+              {ui(DIFFICULTY_KEYS[level])}
             </button>
           )
         })}
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em', color: 'rgba(var(--ink),0.55)', alignSelf: 'center', marginLeft: '8px' }}>
-          {filtered.length} {filtered.length === 1 ? 'article' : 'articles'}
+          {tCount(filtered.length, 'learn.countOne', 'learn.countMany', lang)}
         </span>
       </div>
 
       {/* ── Article Grid ────────────────────────────────────── */}
       {filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(var(--ink),0.55)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.15em' }}>
-          NO ARTICLES YET
+          {ui('learn.empty')}
         </div>
       ) : (
         <div className="grid-3">
           {filtered.map(article => (
-            <ArticleCard key={article.id} article={article} lang={lang} />
+            <ArticleCard key={article.id} article={article} lang={lang} ui={ui} />
           ))}
         </div>
       )}
@@ -105,9 +107,12 @@ export function LearnPage({ articles, lang = DEFAULT_LANGUAGE }: Props) {
   )
 }
 
-function ArticleCard({ article, lang }: { article: KnowledgeArticleCard; lang: LanguageCode }) {
+function ArticleCard({ article, lang, ui }: {
+  article: KnowledgeArticleCard; lang: LanguageCode; ui: ReturnType<typeof strings>
+}) {
   const diffColor = DIFFICULTY_COLORS[article.difficultyLevel] ?? 'var(--accent)'
-  const diffLabel = DIFFICULTY_LABELS[article.difficultyLevel] ?? article.difficultyLevel
+  const diffKey   = DIFFICULTY_KEYS[article.difficultyLevel]
+  const diffLabel = diffKey ? ui(diffKey) : article.difficultyLevel
 
   return (
     <Link href={sectionHref('learn', article.slug, lang)} className="card">
@@ -117,7 +122,7 @@ function ArticleCard({ article, lang }: { article: KnowledgeArticleCard; lang: L
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '0.6rem' }}>
           <span className="card-category" style={{ color: diffColor, margin: 0 }}>{diffLabel}</span>
           {article.featured && (
-            <span className="card-category" style={{ color: 'var(--gold)', margin: 0 }}>· Featured</span>
+            <span className="card-category" style={{ color: 'var(--gold)', margin: 0 }}>· {ui('learn.featured')}</span>
           )}
         </div>
 
@@ -136,7 +141,7 @@ function ArticleCard({ article, lang }: { article: KnowledgeArticleCard; lang: L
         )}
 
         <div className="card-meta">
-          <span style={{ color: diffColor, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, fontSize: '0.78rem' }}>Read article →</span>
+          <span style={{ color: diffColor, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, fontSize: '0.78rem' }}>{ui('learn.readArticle')}</span>
         </div>
       </div>
     </Link>

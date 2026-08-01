@@ -10,6 +10,7 @@ import {
   localizeHref, articleHref, articlesListHref,
   DEFAULT_LANGUAGE, type LanguageCode,
 } from '@/lib/i18n'
+import { strings, navLabel } from '@/lib/ui'
 
 /** The shape the /api/articles proxy returns, narrowed to what a card needs. */
 type Highlight = {
@@ -114,6 +115,7 @@ export function MegaMenu({
 
   const children = section.children ?? []
   const href = (h: string) => localizeHref(h, lang)
+  const ui   = strings(lang)
 
   return (
     <div className="mega" ref={panelRef}>
@@ -124,7 +126,7 @@ export function MegaMenu({
             *focusing* one deliberately does not: tabbing through the list would
             then swap the detail column out from under a keyboard user, so they
             could never tab from the section they opened to its own links. */}
-        <ul className="mega__sections" aria-label="Sections">
+        <ul className="mega__sections" aria-label={ui('chrome.sections')}>
           {mainNav.map((item) => {
             const open = item.href === section.href
             const hasChildren = Boolean(item.children?.length)
@@ -144,7 +146,7 @@ export function MegaMenu({
                     onClick={() => onSectionChange(item)}
                   >
                     {item.isLive && <span className="mega__dot" aria-hidden="true" />}
-                    {item.label}
+                    {navLabel(item, lang)}
                     <ChevronRight className="mega__section-icon" size={15} aria-hidden="true" />
                   </button>
                 ) : (
@@ -158,7 +160,7 @@ export function MegaMenu({
                     onClick={onNavigate}
                   >
                     {item.isLive && <span className="mega__dot" aria-hidden="true" />}
-                    {item.label}
+                    {navLabel(item, lang)}
                     <ArrowRight className="mega__section-icon" size={15} aria-hidden="true" />
                   </Link>
                 )}
@@ -172,11 +174,11 @@ export function MegaMenu({
           <Link
             href={href(section.href)}
             className="mega__title"
-            aria-label={`${section.label} — section overview`}
+            aria-label={`${navLabel(section, lang)} — section overview`}
             aria-current={isCurrent(pathname, section.href) ? 'page' : undefined}
             onClick={onNavigate}
           >
-            {section.label}
+            {navLabel(section, lang)}
             <span className="mega__title-go" aria-hidden="true"><ArrowRight size={16} /></span>
           </Link>
 
@@ -192,7 +194,7 @@ export function MegaMenu({
                     aria-current={isCurrent(pathname, child.href) ? 'page' : undefined}
                     onClick={onNavigate}
                   >
-                    <span>{child.label}</span>
+                    <span>{navLabel(child, lang)}</span>
                     <ArrowRight size={15} aria-hidden="true" />
                   </Link>
                 </li>
@@ -203,7 +205,7 @@ export function MegaMenu({
 
         {/* ── COLUMN 3 — highlights ── */}
         <div className="mega__highlights">
-          <div className="mega__eyebrow">Highlights</div>
+          <div className="mega__eyebrow">{ui('chrome.highlights')}</div>
 
           {/* Skeletons while in flight; the whole column simply goes away if
               the request failed or there is nothing published yet. */}
@@ -243,8 +245,8 @@ export function MegaMenu({
                   </div>
                   <div className="mega__card-body">
                     <div className="mega__card-meta">
-                      {article.readingTime > 0 && <span>{article.readingTime} min read</span>}
-                      {article.publishedAt && <span>{formatDateShort(article.publishedAt)}</span>}
+                      {article.readingTime > 0 && <span>{ui('chrome.minRead', { n: article.readingTime })}</span>}
+                      {article.publishedAt && <span>{formatDateShort(article.publishedAt, lang)}</span>}
                     </div>
                     <div className="mega__card-title" lang={lang}>{article.title}</div>
                   </div>
@@ -254,11 +256,11 @@ export function MegaMenu({
           )}
 
           {(failed || highlights?.length === 0) && (
-            <p className="mega__desc">Fresh coverage lands on the articles page.</p>
+            <p className="mega__desc">{ui('chrome.noHighlights')}</p>
           )}
 
           <Link href={articlesListHref(lang)} className="mega__all" onClick={onNavigate}>
-            All articles
+            {ui('chrome.allArticles')}
             <ArrowRight size={14} aria-hidden="true" />
           </Link>
         </div>

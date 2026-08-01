@@ -102,10 +102,14 @@ picks Hindi now *stays* in Hindi: every chrome link (nav, mega-menu, footer,
 logo) is routed through `localizeHref`, so following the site never silently
 drops them back into English. What is still missing:
 
-- **Site chrome is still English** on `/hi/*` — nav, footer, section headings,
-  filter chips, "Read article →", the difficulty labels. This is the biggest
-  remaining experience gap: one ~30-string dictionary lifts every Hindi page at
-  once, rather than one page at a time.
+- ~~Site chrome is still English on `/hi/*`~~ **done** — `lib/ui.ts` holds the
+  chrome strings, nav labels sit beside their hrefs in `config/navigation.ts`,
+  and dates/mission taxonomy render per language. See §2. **One page still has
+  English chrome: the mission detail page's field labels** — `ROLE_LABEL`,
+  `SPEC_ROWS` (17 specification rows), the objective group headings, and the
+  launch-information rows in `MissionSlugPage.tsx`. That is a mission-domain
+  vocabulary (~40 entries) rather than site chrome; the dictionary and the
+  `lang` plumbing are already there, so it is now mechanical.
 - **`/hi/*` URLs in `app/sitemap.ts` with `hreflang` alternates.** No translated
   page is in the sitemap at all, so none of it is indexed. Related: the `/hi/*`
   pages declare `hreflang` back to English, but `/`, `/articles`, `/learn` and

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Link2, Check, Bookmark, BookmarkCheck, Type } from 'lucide-react'
 import { useReader } from './ReaderContext'
 import { buildShareTargets } from './shareLinks'
+import { t } from '@/lib/ui'
 import { SHARE_ICONS } from './shareIcons'
 import { sendEvent } from '../analytics/beacon'
 
@@ -35,8 +36,8 @@ export function ShareRail() {
   }
 
   return (
-    <div className="reader-share" role="group" aria-label="Share this article">
-      <span className="reader-share__label">Share</span>
+    <div className="reader-share" role="group" aria-label={t('articles.shareGroup', meta.lang)}>
+      <span className="reader-share__label">{t('articles.share', meta.lang)}</span>
 
       {targets.map(t => {
         const Icon = SHARE_ICONS[t.key]

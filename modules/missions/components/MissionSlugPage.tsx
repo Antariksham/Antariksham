@@ -10,6 +10,7 @@ import { launchTargetTimestamp, launchSuccessMeta, isLaunchEmpty } from '@/modul
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { sectionHref, sectionListHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
+import { strings } from '@/lib/ui'
 import { buildMissionJsonLd, buildBreadcrumbs } from '@/modules/seo/jsonLd'
 import { siteConfig } from '@/config/site'
 
@@ -41,6 +42,7 @@ interface Props {
 
 export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
   const isHi = lang === 'hi'
+  const ui   = strings(lang)
   const id   = mission.identity        // enhanced identity (Feature 1); always present
   const cls  = mission.classification  // rich classification (Feature 2); always present
   const spec = mission.specifications  // specifications (Feature 3); always present
@@ -60,7 +62,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
   const launch = mission.launch
   const hasLaunch = !isLaunchEmpty(launch) || !!mission.launchDate
   const launchRows: [string, string][] = ([
-    ['Launch Date', mission.launchDate ? formatDate(mission.launchDate) : ''],
+    ['Launch Date', mission.launchDate ? formatDate(mission.launchDate, lang) : ''],
     ['Launch Time', launch.time],
     ['Launch Site', launch.site],
     ['Launch Pad', launch.pad],
@@ -152,7 +154,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
 
         {/* Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(var(--ink),0.55)', letterSpacing: '0.1em' }}>
-          <a href={sectionListHref('missions', lang)} style={{ color: '#4f8ef7', textDecoration: 'none' }}>Missions</a>
+          <a href={sectionListHref('missions', lang)} style={{ color: '#4f8ef7', textDecoration: 'none' }}>{ui('missions.crumb')}</a>
           <span>/</span>
           <span>{mission.name}</span>
         </div>
@@ -171,10 +173,10 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
           )}
           {cls.types.map(t => (
             <span key={t} style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', border: '1px solid rgba(var(--ink),0.1)', borderRadius: '3px', padding: '2px 8px' }}>
-              {typeLabel(t)}
+              {typeLabel(t, lang)}
             </span>
           ))}
-          <StatusBadge status={cls.status} />
+          <StatusBadge status={cls.status} lang={lang} />
         </div>
 
         {/* Mission name */}
@@ -206,7 +208,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         {/* Meta row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', paddingBottom: '28px', borderBottom: '1px solid rgba(var(--ink),0.08)', marginBottom: '36px' }}>
           {mission.launchDate && (
-            <span>Launch: {formatDate(mission.launchDate)}</span>
+            <span>Launch: {formatDate(mission.launchDate, lang)}</span>
           )}
           {mission.agency?.country && (
             <span>{mission.agency.country}</span>
@@ -555,7 +557,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         {/* Back link */}
         <div style={{ paddingTop: '28px', borderTop: '1px solid rgba(var(--ink),0.08)' }}>
           <a href={sectionListHref('missions', lang)} style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#4f8ef7', textDecoration: 'none' }}>
-            ← All Missions
+            {ui('missions.back')}
           </a>
         </div>
       </article>
@@ -565,7 +567,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         <div style={{ borderTop: '1px solid rgba(var(--ink),0.08)', padding: 'clamp(40px,6vw,64px) clamp(20px,5vw,48px)' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
-              Related Missions
+              {ui('missions.related')}
             </span>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px,1fr))', gap: '16px' }}>
               {related.map(r => (
@@ -582,7 +584,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
                     <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 400, color: 'var(--white)', lineHeight: 1.3, margin: '0 0 12px' }}>
                       {r.name}
                     </h3>
-                    <StatusBadge status={r.status} />
+                    <StatusBadge status={r.status} lang={lang} />
                   </div>
                 </a>
               ))}

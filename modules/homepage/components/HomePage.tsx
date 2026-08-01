@@ -28,7 +28,7 @@ export function HomePage({ articles, missions, lang = DEFAULT_LANGUAGE }: Props)
         <LatestArticlesSection articles={articles} lang={lang} />
         <MissionsSection   missions={missions} lang={lang} />
         <LearnSection lang={lang} />
-        <AboutSection />
+        <AboutSection lang={lang} />
       </main>
     </>
   )

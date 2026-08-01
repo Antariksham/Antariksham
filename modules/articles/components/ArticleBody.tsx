@@ -1,5 +1,6 @@
 import { formatDate } from '@/lib/utils'
 import { articlesListHref, HI_SANS, HI_SERIF, type LanguageCode } from '@/lib/i18n'
+import { t } from '@/lib/ui'
 import type { ArticleType, FeaturedImageMeta } from '@/types/article'
 import { buildToc, tocCount } from '../services/toc'
 import { TableOfContents } from './TableOfContents'
@@ -155,12 +156,12 @@ export function ArticleBody({
           </div>
         ))}
         {model.publishedAt
-          ? <span>{formatDate(model.publishedAt)}</span>
+          ? <span>{formatDate(model.publishedAt, lang)}</span>
           : preview && <span title="Estimated — article is not published yet">{formatDate(new Date().toISOString())} · est.</span>}
-        <span>{model.readingTime} min read</span>
+        <span>{t('chrome.minRead', lang, { n: model.readingTime })}</span>
         {preview
           ? <span>{countWords(model.content)} words</span>
-          : model.views != null && <span>{model.views} views</span>}
+          : model.views != null && <span>{t('articles.views', lang, { n: model.views })}</span>}
       </div>
 
       {/* Hero image — proper aspect ratio, rounded, contained. Uses the
