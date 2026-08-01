@@ -234,6 +234,27 @@ export async function getAllMissionSlugs(): Promise<string[]> {
   return (data || []).map((r: any) => r.slug)
 }
 
+/**
+ * Slugs that have a PUBLISHED translation in `lang` — the sitemap's source for
+ * which /hi mission URLs are real content rather than English fallback.
+ *
+ * Listing an untranslated slug would advertise a page that serves English under
+ * a Hindi URL and canonicals away to the English one: a soft-duplicate signal
+ * that costs crawl budget and earns nothing.
+ */
+export async function getTranslatedMissionSlugs(lang: LanguageCode): Promise<string[]> {
+  if (lang === DEFAULT_LANGUAGE) return getAllMissionSlugs()
+
+  const { data, error } = await supabase
+    .from('mission_translations')
+    .select('is_published, missions!inner ( slug )')
+    .eq('language_code', lang)
+    .eq('is_published', true)
+
+  if (error || !data) return []
+  return (data as any[]).map(r => r.missions?.slug).filter(Boolean)
+}
+
 export async function getRelatedMissions(
   missionId: string,
   limit = 3,

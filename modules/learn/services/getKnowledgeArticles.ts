@@ -134,6 +134,23 @@ export async function getAllKnowledgeSlugs(): Promise<string[]> {
   return (data || []).map((r: any) => r.slug)
 }
 
+/**
+ * Slugs with a PUBLISHED translation in `lang` — see getTranslatedMissionSlugs
+ * for why the sitemap lists only these and not every slug under /hi.
+ */
+export async function getTranslatedKnowledgeSlugs(lang: LanguageCode): Promise<string[]> {
+  if (lang === DEFAULT_LANGUAGE) return getAllKnowledgeSlugs()
+
+  const { data, error } = await supabase
+    .from('knowledge_translations')
+    .select('is_published, knowledge_articles!inner ( slug )')
+    .eq('language_code', lang)
+    .eq('is_published', true)
+
+  if (error || !data) return []
+  return (data as any[]).map(r => r.knowledge_articles?.slug).filter(Boolean)
+}
+
 // ── Normalizers ───────────────────────────────────────────────
 function normalizeCard(row: any): KnowledgeArticleCard {
   return {
