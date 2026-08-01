@@ -46,6 +46,101 @@ Every change builds (`next build` compiles; the only build error is a
 pre-existing `supabaseUrl is required` during page-data collection when Supabase
 env vars are absent — unrelated to app code).
 
+- ✅ **Desktop mega-menu** (`components/layout/MegaMenu.tsx`) — the wide panel
+  under the bar, in the nasa.gov arrangement. Hovering or clicking a bar section
+  opens it; the desktop nav was six flat links to six landing pages before.
+  - **Three columns**: every section down the left (the open one marked), that
+    section's sub-pages in the middle under a big title that links to the
+    section itself, and **HIGHLIGHTS** — the three latest articles — on the
+    right. Hovering a left-column entry re-points the middle column without
+    closing the panel.
+  - **The left column carries the full `mainNav`, not `desktopNav`.** The panel
+    has vertical room the one-line bar does not, which is how Home and Missions
+    became reachable from desktop chrome at all.
+  - **A section with children is a `<button>` trigger; one without is a link.**
+    Same rule as the drawer, so the two surfaces behave predictably. The
+    section's landing page is reached from the panel title (the accent → pill),
+    exactly as on nasa.gov.
+  - **`NavItem.description`** is the one-line summary under each title. For
+    Home, Missions and Learn — no children — that line *is* the middle column,
+    which is why a test asserts every section has one and that it fits two lines.
+  - **Hover timing**: 110ms to open (so brushing past a trigger on the way to
+    another does not flash the panel), 220ms to close (the grace period for
+    cutting the corner from trigger down into the panel). Re-pointing while
+    already open is instant.
+  - **Highlights are lazy and cached at module scope**, fetched from the
+    existing `/api/articles` proxy on first open. Not SSR'd: the bar is in the
+    root layout, so server-rendering this would add an articles query to every
+    page load site-wide to fill a panel most visits never open. Skeletons while
+    in flight; the column degrades to a line of copy plus "All articles" if the
+    request fails or nothing is published.
+  - **Accessibility**: `aria-expanded`/`aria-haspopup`/`aria-controls` on the
+    triggers; click and Enter move focus into the panel, hover does not; Escape
+    closes and hands focus back to the trigger; pointer or focus leaving both
+    bar and panel closes it. **Focus deliberately does not re-point the middle
+    column** — only hover and activation do. Tabbing through the left column
+    would otherwise swap the detail out from under a keyboard user, stranding
+    them so they could never tab from the section they opened to its own links.
+  - Below 1100px the panel is `display: none` and the drawer owns navigation.
+    Stacking: bar=50, drawer=49, mega=48; the last two never coexist.
+
+- ✅ **Mobile nav drawer — drill-down sub-menus + compact type.** The hamburger
+  menu was a flat list of six 32px display-weight rows; at ~75px each it ran
+  past the fold on any short phone and put every sub-page (ISS Tracker, Sky
+  Tonight, Editorial Policy…) out of reach of the nav entirely.
+  - **A stack of panels on a sliding track**, the nasa.gov shape: panel 0 lists
+    the sections, tapping one with sub-pages slides the next panel in, "Back"
+    slides it out. Only the track moves — no accordion pushing the list around
+    under the thumb. **Depth is open-ended**: Explore → Topic Hubs → the nine
+    hubs is three levels.
+  - **The track's geometry is two numbers.** The component sets `--panels`
+    (how many are rendered) and `--depth` (which is on screen) on the track;
+    width, panel size and offset all derive from them in `globals.css`
+    (`width: calc(var(--panels) * 100%)`,
+    `transform: translate3d(calc(var(--depth) * -100% / var(--panels)), 0, 0)`).
+    So arbitrary depth costs no extra CSS and no computed inline styles.
+  - **17px rows instead of 32px** (sub-items 15px), padding 13px. The eight
+    sections end 477px down — they fit a 320×568 phone without scrolling, where
+    the old six needed ~450px + gutters and overflowed.
+  - **`config/navigation.ts` is the whole map.** `children?: NavItem[]` nests to
+    any depth and the topic hubs are generated from the `TOPICS` registry that
+    renders the hub pages, so a new hub appears in the nav with no second edit.
+    A section never repeats its own landing page in its children — the sub-panel
+    header already links there. Rows with children drill (`›`); rows without
+    navigate (`→`), so the two read differently at a glance.
+  - **`desktopHidden`** keeps Home and Missions out of the desktop row, which is
+    one line with no width left (six links + logo + search + toggle already
+    collide below ~1080px). The drawer and the 404 page have vertical space and
+    show everything. `desktopNav` is the filtered export the bar consumes.
+  - **What the drawer now reaches** that it did not before: Home, Missions
+    (a homepage section and a 0.8-priority sitemap entry that was footer-only),
+    the nine topic hubs, Privacy, Terms, and the Hindi article listing — which
+    had no route into it from anywhere in the site chrome. Search stays an
+    always-visible icon in the bar rather than a row; it is one tap either way.
+  - **State**: `stack` (the drilled path that is rendered) is deliberately
+    separate from `depth` (how far along it is shown), so a panel being left
+    keeps its contents through the slide instead of going blank halfway.
+    Drilling truncates `stack` at the current depth, so switching branches
+    resizes the track rather than growing it.
+  - **`config/navigation.test.ts`** (10 tests) pins the parts that fail silently:
+    **every href in the tree resolves to a real `page.tsx` under `app/`** —
+    CLAUDE.md's "nothing may navigate to a 404" made executable by walking the
+    route directories, dynamic segments included — plus the prefix-matching traps
+    (`/` vs everything, `/live` vs `/lunar-sim`, `/articles` vs `/article/:slug`)
+    and the three-level current-section walk. `config/navigation.ts` imports
+    `TOPICS` relatively with the `.ts` extension so `node --test` can load it,
+    the same reason `modules/admin/*` import `../../../lib/utils.ts`.
+  - **Accessibility**: `aria-current` marks the section *and* the page inside it
+    at any depth; focus follows the panel (in → "Back", out → the row you came
+    from) with `preventScroll`; Escape steps back one level at a time, then
+    closes;
+    Tab is trapped across the bar + the on-screen panel; the off-screen panel is
+    `visibility: hidden` so it leaves the tab order once the slide ends; body
+    scroll is locked while open. `prefers-reduced-motion` collapses the slide.
+  - **Two real bugs fixed on the way** — both written up in §11: the inline
+    `<style>` block that was breaking hydration site-wide, and `overflow: hidden`
+    being scrollable enough to knock the track sideways when focus moved.
+
 - ✅ **Listing and detail URLs split plural/singular.** Browsing stays plural
   (`/articles`, `/missions`); reading one is now singular — `/article/:slug` and
   `/mission/:slug`, plus `/hi/article/:slug` and `/hi/mission/:slug`. This is the
@@ -2048,6 +2143,32 @@ still need a human on the Vercel preview URL.
   expected when Supabase env vars are missing; it is not an app bug.
 - **Two white forms exist:** `#ffffff` and `#fff`. When tokenizing, sweep both.
   Also check globals.css rules (`h1–h6`, `.card-title`) not just components.
+- **Never put CSS in an inline `<style>{\`…\`}</style>` in a component.** React
+  escapes `"`, `'` and `<` inside one when it renders on the server but not on
+  the client, so the stylesheet text mismatches, hydration fails, and React
+  throws away and re-renders the *entire document*. The Navbar did this on every
+  page load for months — the only visible symptom was a console warning
+  ("Text content did not match" → "The server HTML was replaced with client
+  content in #document"), which is easy to scroll past. It also silently broke
+  any rule using a `>` child combinator, which is what the old warning comment
+  in that block was really describing. All nav CSS now lives in globals.css.
+- **A "have I fetched?" ref plus an abort-on-cleanup is a trap.** React
+  StrictMode mounts, unmounts and remounts every component in development on
+  purpose. The ref survives that (same instance), so the sequence is: mount →
+  set `fetched = true`, start request → cleanup aborts it → remount sees
+  `fetched` and declines to retry. The data never arrives, and only in dev, so
+  it looks like an environment problem. The mega-menu's highlights hit this
+  exactly. Cache the *promise* at module scope instead — the double-mount
+  becomes harmless, concurrent opens dedupe, and the result is reused across
+  the page's lifetime.
+- **`overflow: hidden` is still programmatically scrollable** — it clips, but
+  the box remains a scroll container, so the browser will happily scroll it to
+  bring a focused descendant into view. Moving focus into the incoming drawer
+  panel scrolled the drawer sideways and dragged the whole track ~250px out of
+  alignment (the transform was correct the entire time; the *layout* position
+  was not — worth measuring both before theorising). Use **`overflow: clip`**,
+  which is not a scroll container, plus `focus({ preventScroll: true })` for
+  browsers without it.
 
 ---
 

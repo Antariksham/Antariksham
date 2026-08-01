@@ -104,8 +104,12 @@ is effectively unreachable and uncrawlable.
 
 - `/hi` home, `/hi/learn` and `/hi/missions` listing pages (mirror the English
   ones; `lib/i18n.ts` already has `sectionHref`/`pathPrefix`).
-- A **language switch in the nav** — today the only entry point is the toggle on
-  an individual English article, so a Hindi reader cannot stay in Hindi.
+- A **language switch in the nav**. Partly unblocked: the mobile drawer now has
+  a **हिन्दी (Hindi)** row under Articles pointing at `/hi/articles`, so the
+  listing is no longer an orphan. That is an entry point, not a switch — it is
+  one fixed link rather than "the Hindi version of the page you are on", it is
+  drawer-only, and there is still nowhere to go from `/hi/articles` except back
+  into English. The real switch still needs the listing pages below.
 - **`/hi/*` URLs in `app/sitemap.ts` with `hreflang` alternates.** Right now no
   translated page is in the sitemap at all, so none of it is indexed.
 - Scope is content-only by design: site chrome and labels stay English.
@@ -201,6 +205,21 @@ Not urgent, but do not rediscover these as if they were new.
   50,000 articles takes 166 ms. Fine for a long time; the measurements and the
   revisit threshold are in the migration header. **Do not "fix" it by truncating
   candidates**, which silently returns something other than the best matches.
+- **`/explore` overflows horizontally by ~9px at 320px.** Its `.card` grid items
+  measure 324px against a 320px viewport, which gives the whole document a
+  329px scroll width — and because `position: fixed` resolves against the layout
+  viewport, that visibly stretches the nav bar and drawer too. Confirmed to be
+  the page, not the chrome: removing both `.site-nav` and `.nav-drawer` at
+  runtime leaves 329px, and `/gallery`, `/about` and `/learn` all measure
+  exactly 320. Only `/explore` was checked — worth sweeping the other card grids
+  at 320px in the same pass.
+- **`--green` has no light-theme override**, so the "Live" nav link is `#2ecc71`
+  on a `#f0f4ff` ground — roughly 1.8:1, well under AA for text. Pre-existing and
+  site-wide (desktop row, mobile drawer, footer, every `LIVE` badge), which is
+  why the drawer rebuild left it alone: the fix is one `--green` value inside
+  `:root[data-theme="light"]`, but it repaints every green thing on the site and
+  wants checking in one pass rather than piecemeal. The nav no longer hardcodes
+  the hex, so that override is now all it would take.
 - **`.page-container` in `styles/responsive.css` is dead** — no component uses
   that class, so its mobile padding rules have never done anything. `.container`
   is the real one.
@@ -232,6 +251,9 @@ session does not redo any of it:
 | Structured data (FAQPage, breadcrumbs, missions, Learn, WebSite) | Done |
 | Image CLS + `next/image` behind a host allow-list | Done |
 | Mobile nav alignment and the desktop nav breakpoint | Done |
+| Mobile nav drawer — drill-down sub-menus, compact 17px rows | Done |
+| Every section reachable from the nav (Missions, hubs, Privacy/Terms, `/hi`) | Done |
+| Desktop mega-menu — three columns, hover/click, article highlights | Done |
 
 ---
 
