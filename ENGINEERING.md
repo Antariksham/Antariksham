@@ -885,6 +885,42 @@ env vars are absent — unrelated to app code).
   the 17 `SPEC_ROWS`, objective groups, launch-information rows). That is a
   mission-domain vocabulary rather than site chrome — see §10.
 
+- ✅ **Hindi typography — real Devanagari type, not a fallback**: the words were
+  Hindi but the rendering was not. The stacks named *locally-installed* faces
+  (`Nirmala UI`, `Mangal`) and hoped the device shipped one, and the design's
+  heavy tracking — 76 `letter-spacing` rules here plus inline styles on most
+  labels — was cutting the **shirorekha**, the bar along the top of a Devanagari
+  word, into pieces: `आईएसएस` rendered as `आ ई ए स ए स`.
+
+  **Noto Sans / Noto Serif Devanagari** now load through `next/font/google`
+  (`app/layout.tsx`), published as `--font-hi-sans` / `--font-hi-serif` on every
+  page — not only `/hi`, since the language switch is a client-side navigation
+  and the faces have to be declared before `/hi` paints. **Every weight the UI
+  asks for is loaded (400–800)**: a weight the browser lacks it *synthesises*,
+  and faux-bolding Devanagari smears the shirorekha and closes the matras. Both
+  `devanagari` and `latin` subsets, because Hindi copy is full of Latin runs
+  (NASA, ISRO, JWST, dates) that would otherwise drop out of the face
+  mid-sentence.
+
+  The CSS is one block at the end of `styles/globals.css`, scoped entirely
+  behind **`:lang(hi)`** so it cannot reach an English page. It works by
+  **redefining the three font tokens on `body:lang(hi)`** rather than restating
+  `font-family` on ~80 rules — every rule already reads `var(--font-sans|serif|
+  mono)`, so one edit moves the whole site and any component added later is
+  Hindi-correct for free. On `body`, not `:root`, because `app/layout.tsx` sets
+  `--font-serif`/`--font-mono` as *inline* styles on `<html>`, which no
+  stylesheet rule can outrank. Then: `letter-spacing: normal !important` on
+  `:lang(hi) *` (the `*` and the `!important` are both load-bearing — the values
+  being overridden are usually inline), a line-height floor of 1.35 on headings
+  and 1.7 on running text (display values run as tight as 1.1, which clips the
+  top matra off a headline), a small size bump on the tracked label classes, and
+  `lining-nums` so dates and counts stay Western Arabic.
+
+  Trade-off worth knowing: the tracking reset is blanket, so **Latin labels on a
+  Hindi page also lose their tracking** (`ISRO · MOON` renders untracked there).
+  CSS cannot select on script, and a broken shirorekha is far worse than an
+  untracked Latin label.
+
 - ✅ **Click & navigation feedback indicators**: clicks worked but gave users no
   signal that the click registered or that a page was loading. Added (1) pressed
   `:active` states for `.btn`/`.card`/`.tag` plus an opt-in `.press` helper

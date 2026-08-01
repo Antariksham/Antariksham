@@ -22,6 +22,8 @@ import {
   localizeHref,
   sectionHref,
   sectionListHref,
+  HI_SANS,
+  HI_SERIF,
 } from './i18n.ts'
 
 test('langFromPathname: reads the prefix, and only as a whole segment', () => {
@@ -111,4 +113,23 @@ test('counterpartPath: agrees with the href builders it has to match', () => {
   assert.equal(counterpartPath('/articles', 'hi'),  sectionListHref('articles', 'hi'))
   assert.equal(counterpartPath('/learn', 'hi'),     sectionListHref('learn', 'hi'))
   assert.equal(counterpartPath('/missions', 'hi'),  sectionListHref('missions', 'hi'))
+})
+
+test('the Hindi stacks lead with the loaded webfont, then degrade locally', () => {
+  // The regression this guards: someone "simplifies" these back to bare font
+  // names. `--font-hi-sans`/`--font-hi-serif` are the Noto Devanagari faces
+  // app/layout.tsx actually loads; without them the site silently returns to
+  // hoping the reader's device ships a Devanagari face, which is what made
+  // Hindi look like a fallback in the first place.
+  assert.ok(HI_SANS.startsWith('var(--font-hi-sans)'),  'HI_SANS must lead with the webfont')
+  assert.ok(HI_SERIF.startsWith('var(--font-hi-serif)'), 'HI_SERIF must lead with the webfont')
+
+  // …and still name a locally-installed face behind it, so a failed font load
+  // degrades to real Devanagari rather than to a Latin face rendering tofu.
+  assert.match(HI_SANS,  /Nirmala UI|Mangal/)
+  assert.match(HI_SERIF, /Tiro Devanagari|Nirmala UI/)
+
+  // The Latin token stays last as the final fallback.
+  assert.ok(HI_SANS.endsWith('var(--font-sans)'))
+  assert.ok(HI_SERIF.endsWith('var(--font-serif)'))
 })

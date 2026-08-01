@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Merriweather, DM_Sans } from 'next/font/google'
+import { Merriweather, DM_Sans, Noto_Sans_Devanagari, Noto_Serif_Devanagari } from 'next/font/google'
 import { headers } from 'next/headers'
 import { Suspense } from 'react'
 import { siteConfig } from '@/config/site'
@@ -25,6 +25,31 @@ const merriweather = Merriweather({
 const dmSans = DM_Sans({
   subsets: ['latin'],
   weight:  ['300', '400', '500', '600', '700'],
+  display: 'swap',
+})
+
+// Devanagari faces for /hi. Previously the Hindi stacks named system fonts
+// (Nirmala UI, Mangal) and hoped the device had one — which is why Hindi
+// rendered as a fallback rather than as type.
+//
+// Every weight the UI actually asks for is loaded. That is the point, not
+// thoroughness: a weight the browser does not have it **synthesises**, and
+// faux-bolding Devanagari smears the shirorekha and closes up the matras. The
+// Latin faces get away with 3–5 weights; Devanagari has to cover 400 through
+// 800 because `.page-title` and the Learn h1 ask for 800.
+//
+// `subsets` takes 'devanagari' AND 'latin': Hindi copy is full of Latin runs
+// (NASA, ISRO, JWST, dates, numerals), and without the Latin subset those fall
+// out of this face into the next one in the stack mid-sentence.
+const notoSansDeva = Noto_Sans_Devanagari({
+  subsets: ['devanagari', 'latin'],
+  weight:  ['400', '500', '600', '700', '800'],
+  display: 'swap',
+})
+
+const notoSerifDeva = Noto_Serif_Devanagari({
+  subsets: ['devanagari', 'latin'],
+  weight:  ['400', '500', '700'],
   display: 'swap',
 })
 
@@ -82,6 +107,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       style={{
         '--font-serif': merriweather.style.fontFamily,
         '--font-mono':  dmSans.style.fontFamily,
+        // Published on every page, not just /hi: the language switch is a
+        // client-side navigation, so the Hindi faces have to already be
+        // declared when /hi paints rather than arriving a request later.
+        '--font-hi-sans':  notoSansDeva.style.fontFamily,
+        '--font-hi-serif': notoSerifDeva.style.fontFamily,
       } as React.CSSProperties}
     >
       <head>

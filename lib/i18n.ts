@@ -164,11 +164,16 @@ export function articlesListHref(code: string): string {
   return sectionListHref('articles', code)
 }
 
-// Devanagari-first font stacks for Hindi. Prepend widely-installed Devanagari
-// faces (Android/Windows/Apple all ship one) ahead of the Latin stacks — no
-// webfont download, matching the project's system-font convention.
-export const HI_SANS  = "'Noto Sans Devanagari','Nirmala UI','Mangal',var(--font-sans)"
-export const HI_SERIF = "'Noto Serif Devanagari','Tiro Devanagari Hindi','Nirmala UI',var(--font-serif)"
+// Devanagari-first font stacks for Hindi.
+//
+// `--font-hi-sans` / `--font-hi-serif` are the real webfonts, declared once on
+// <html> in app/layout.tsx (Noto Sans / Noto Serif Devanagari, every weight the
+// UI asks for so nothing is faux-bolded). The locally-installed faces stay
+// behind them as the fallback for a failed font load — they are what the site
+// used to rely on outright, and they are still better than a Latin face
+// attempting Devanagari.
+export const HI_SANS  = "var(--font-hi-sans),'Nirmala UI','Mangal',var(--font-sans)"
+export const HI_SERIF = "var(--font-hi-serif),'Tiro Devanagari Hindi','Nirmala UI',var(--font-serif)"
 
 /**
  * Sans stack for a language, for chrome that renders one language's name
