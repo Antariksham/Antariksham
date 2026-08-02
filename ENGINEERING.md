@@ -895,9 +895,12 @@ env vars are absent — unrelated to app code).
   stay Latin; `navigation.test.ts` fails if any all-caps acronym in a label
   goes missing from its Hindi counterpart.
 
-  **Not yet translated: the mission detail page's field labels** (`ROLE_LABEL`,
-  the 17 `SPEC_ROWS`, objective groups, launch-information rows). That is a
-  mission-domain vocabulary rather than site chrome — see §10.
+  **The mission detail page** is covered too: its section headings, the three
+  collaborator roles, the 17 specification rows, the four objective groups, the
+  eight launch-information rows and the launch countdown all resolve through
+  the table. Those tuples now carry `UIKey`s rather than display strings, so a
+  row added without a translation is a compile error. JSON-LD breadcrumb names
+  follow the visible ones — Google renders them, so they cannot disagree.
 
 - ✅ **Hindi typography — real Devanagari type, not a fallback**: the words were
   Hindi but the rendering was not. The stacks named *locally-installed* faces

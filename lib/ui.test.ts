@@ -41,6 +41,22 @@ const KEYS: UIKey[] = [
   'missions.emptyStatus', 'missions.endOne', 'missions.endMany', 'missions.back',
   'missions.related', 'missions.crumb', 'missions.filterAll', 'missions.filterActive',
   'missions.filterUpcoming', 'missions.filterDev', 'missions.filterCompleted',
+  'mission.objectives', 'mission.significance', 'mission.launchInfo', 'mission.specs',
+  'mission.instruments', 'mission.media', 'mission.timeline', 'mission.agency',
+  'mission.partners', 'mission.videos', 'mission.documents', 'mission.watchVideo',
+  'mission.document', 'mission.rolePartner', 'mission.roleCommercial',
+  'mission.roleInstitution', 'mission.objSecondary', 'mission.objTech',
+  'mission.objQuestions', 'mission.objDiscoveries',
+  'mission.specSpacecraft', 'mission.specManufacturer', 'mission.specProgram',
+  'mission.specFamily', 'mission.specVehicle', 'mission.specOrbit',
+  'mission.specLaunchMass', 'mission.specDryMass', 'mission.specPayloadMass',
+  'mission.specDuration', 'mission.specLifetime', 'mission.specPowerSource',
+  'mission.specPowerOutput', 'mission.specComms', 'mission.specPrimaryLoad',
+  'mission.specSecondaryLoad', 'mission.specBudget',
+  'mission.launchDate', 'mission.launchedOn', 'mission.launchTime', 'mission.launchSite', 'mission.launchPad',
+  'mission.provider', 'mission.rocket', 'mission.country', 'mission.missionNumber',
+  'mission.toLaunch', 'mission.status', 'mission.launched',
+  'mission.days', 'mission.hrs', 'mission.min', 'mission.sec',
   'learn.eyebrow', 'learn.title', 'learn.lede', 'learn.empty', 'learn.countOne',
   'learn.countMany', 'learn.readArticle', 'learn.featured', 'learn.back', 'learn.allArticles',
   'learn.filterAll', 'learn.beginner', 'learn.intermediate', 'learn.advanced',
@@ -95,11 +111,14 @@ test('placeholders are substituted, and none survive into the output', () => {
   assert.equal(t('chrome.minRead', 'en', { n: 7 }), '7 min read')
   assert.equal(t('chrome.minRead', 'hi', { n: 7 }), '7 मिनट पढ़ें')
 
-  // The bug this catches: a caller passing the wrong variable name, leaving a
-  // literal "{n}" on the page.
+  // The bug this catches: a string using a variable no caller supplies, or a
+  // caller passing the wrong name — either way a literal "{n}" reaches the
+  // page. Every variable the table uses has to appear here, so introducing a
+  // new one without wiring it up fails rather than shipping.
+  const ALL_VARS = { n: 3, d: '14 July 2023' }
   for (const key of KEYS) {
     for (const { code } of LANGUAGE_LIST) {
-      const rendered = t(key, code, { n: 3 })
+      const rendered = t(key, code, ALL_VARS)
       assert.doesNotMatch(rendered, /\{[a-z]+\}/i, `"${key}" left a placeholder in ${code}`)
     }
   }

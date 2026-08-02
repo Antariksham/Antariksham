@@ -104,12 +104,8 @@ drops them back into English. What is still missing:
 
 - ~~Site chrome is still English on `/hi/*`~~ **done** — `lib/ui.ts` holds the
   chrome strings, nav labels sit beside their hrefs in `config/navigation.ts`,
-  and dates/mission taxonomy render per language. See §2. **One page still has
-  English chrome: the mission detail page's field labels** — `ROLE_LABEL`,
-  `SPEC_ROWS` (17 specification rows), the objective group headings, and the
-  launch-information rows in `MissionSlugPage.tsx`. That is a mission-domain
-  vocabulary (~40 entries) rather than site chrome; the dictionary and the
-  `lang` plumbing are already there, so it is now mechanical.
+  and dates/mission taxonomy render per language. The mission detail page's
+  field labels are covered as well. See §2.
 - ~~`/hi/*` URLs in `app/sitemap.ts` with `hreflang` alternates~~ **done** — see
   §2. The sitemap lists every Hindi URL that actually exists, both sides of each
   pair carry the same `alternates.languages` map, and the four English pages

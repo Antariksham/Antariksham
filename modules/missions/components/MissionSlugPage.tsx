@@ -10,28 +10,29 @@ import { launchTargetTimestamp, launchSuccessMeta, isLaunchEmpty } from '@/modul
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { sectionHref, sectionListHref, HI_SANS, type LanguageCode } from '@/lib/i18n'
-import { strings } from '@/lib/ui'
+import { strings, type UIKey } from '@/lib/ui'
 import { buildMissionJsonLd, buildBreadcrumbs } from '@/modules/seo/jsonLd'
 import { siteConfig } from '@/config/site'
 
-const ROLE_LABEL: Record<CollaboratorRole, string> = {
-  partner:     'Partner Agencies',
-  commercial:  'Commercial Partners',
-  institution: 'Scientific Institutions',
+const ROLE_KEY: Record<CollaboratorRole, UIKey> = {
+  partner:     'mission.rolePartner',
+  commercial:  'mission.roleCommercial',
+  institution: 'mission.roleInstitution',
 }
 const ROLE_ORDER: CollaboratorRole[] = ['partner', 'commercial', 'institution']
 
 // Specification rows shown on the public page, in order (blank fields skipped).
-const SPEC_ROWS: [keyof MissionSpecifications, string][] = [
-  ['spacecraftName', 'Spacecraft'], ['manufacturer', 'Manufacturer'],
-  ['program', 'Program'], ['missionFamily', 'Mission Family'],
-  ['launchVehicle', 'Launch Vehicle'], ['orbitType', 'Orbit'],
-  ['launchMass', 'Launch Mass'], ['dryMass', 'Dry Mass'], ['payloadMass', 'Payload Mass'],
-  ['missionDuration', 'Mission Duration'], ['expectedLifetime', 'Expected Lifetime'],
-  ['powerSource', 'Power Source'], ['powerOutput', 'Power Output'],
-  ['communicationSystem', 'Communications'],
-  ['primaryPayload', 'Primary Payload'], ['secondaryPayload', 'Secondary Payload'],
-  ['budget', 'Budget'],
+const SPEC_ROWS: [keyof MissionSpecifications, UIKey][] = [
+  ['spacecraftName', 'mission.specSpacecraft'], ['manufacturer', 'mission.specManufacturer'],
+  ['program', 'mission.specProgram'], ['missionFamily', 'mission.specFamily'],
+  ['launchVehicle', 'mission.specVehicle'], ['orbitType', 'mission.specOrbit'],
+  ['launchMass', 'mission.specLaunchMass'], ['dryMass', 'mission.specDryMass'],
+  ['payloadMass', 'mission.specPayloadMass'],
+  ['missionDuration', 'mission.specDuration'], ['expectedLifetime', 'mission.specLifetime'],
+  ['powerSource', 'mission.specPowerSource'], ['powerOutput', 'mission.specPowerOutput'],
+  ['communicationSystem', 'mission.specComms'],
+  ['primaryPayload', 'mission.specPrimaryLoad'], ['secondaryPayload', 'mission.specSecondaryLoad'],
+  ['budget', 'mission.specBudget'],
 ]
 
 interface Props {
@@ -50,27 +51,27 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
   const destinations = cls.destinations.length ? cls.destinations : (mission.destination ? [mission.destination] : [])
   const specRows = SPEC_ROWS.filter(([k]) => (spec[k] as string).trim())
   const hasSpecs = specRows.length > 0 || spec.instruments.length > 0
-  const objGroups: [string, string[]][] = [
-    ['Secondary Objectives', obj.secondary],
-    ['Technology Demonstrations', obj.technologyDemos],
-    ['Scientific Questions', obj.scientificQuestions],
-    ['Expected Discoveries', obj.expectedDiscoveries],
-  ].filter(([, items]) => (items as string[]).length > 0) as [string, string[]][]
+  const objGroups: [UIKey, string[]][] = ([
+    ['mission.objSecondary',   obj.secondary],
+    ['mission.objTech',        obj.technologyDemos],
+    ['mission.objQuestions',   obj.scientificQuestions],
+    ['mission.objDiscoveries', obj.expectedDiscoveries],
+  ] as [UIKey, string[]][]).filter(([, items]) => items.length > 0)
   const hasObjectives = objGroups.length > 0 || !!obj.significance.trim()
 
   // Launch information (Feature 6)
   const launch = mission.launch
   const hasLaunch = !isLaunchEmpty(launch) || !!mission.launchDate
-  const launchRows: [string, string][] = ([
-    ['Launch Date', mission.launchDate ? formatDate(mission.launchDate, lang) : ''],
-    ['Launch Time', launch.time],
-    ['Launch Site', launch.site],
-    ['Launch Pad', launch.pad],
-    ['Provider', launch.provider],
-    ['Rocket', launch.rocket],
-    ['Country', launch.country],
-    ['Mission Number', launch.missionNumber],
-  ] as [string, string][]).filter(([, v]) => v.trim())
+  const launchRows: [UIKey, string][] = ([
+    ['mission.launchDate',    mission.launchDate ? formatDate(mission.launchDate, lang) : ''],
+    ['mission.launchTime',    launch.time],
+    ['mission.launchSite',    launch.site],
+    ['mission.launchPad',     launch.pad],
+    ['mission.provider',      launch.provider],
+    ['mission.rocket',        launch.rocket],
+    ['mission.country',       launch.country],
+    ['mission.missionNumber', launch.missionNumber],
+  ] as [UIKey, string][]).filter(([, v]) => v.trim())
   const launchWindow = (launch.windowStart || launch.windowEnd)
     ? `${launch.windowStart.replace('T', ' ') || '…'} → ${launch.windowEnd.replace('T', ' ') || '…'}`
     : ''
@@ -105,7 +106,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
           // the Hindi URLs, or the structured data contradicts the page's own
           // canonical.
           buildBreadcrumbs([
-            { name: 'Missions', path: sectionListHref('missions', lang) },
+            { name: ui('missions.crumb'), path: sectionListHref('missions', lang) },
             { name: mission.name, path: sectionHref('missions', mission.slug, lang) },
           ], siteConfig),
         ]) }}
@@ -208,7 +209,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         {/* Meta row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'rgba(var(--ink),0.6)', paddingBottom: '28px', borderBottom: '1px solid rgba(var(--ink),0.08)', marginBottom: '36px' }}>
           {mission.launchDate && (
-            <span>Launch: {formatDate(mission.launchDate, lang)}</span>
+            <span>{ui('mission.launchedOn', { d: formatDate(mission.launchDate, lang) })}</span>
           )}
           {mission.agency?.country && (
             <span>{mission.agency.country}</span>
@@ -243,13 +244,13 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         {hasObjectives && (
           <div style={{ marginBottom: '48px' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '24px' }}>
-              Scientific Objectives
+              {ui('mission.objectives')}
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
               {objGroups.map(([label, items]) => (
                 <div key={label}>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '12px' }}>
-                    {label}
+                    {ui(label)}
                   </span>
                   <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {items.map((item, i) => (
@@ -263,7 +264,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
               {obj.significance.trim() && (
                 <div>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '12px' }}>
-                    Mission Significance
+                    {ui('mission.significance')}
                   </span>
                   <p style={{ fontFamily: isHi ? HI_SANS : 'var(--font-sans)', fontSize: '15px', color: 'rgba(var(--ink),0.9)', lineHeight: 1.8, margin: 0 }}>
                     {obj.significance}
@@ -288,7 +289,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
           <div style={{ marginBottom: '48px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '20px' }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7' }}>
-                Launch Information
+                {ui('mission.launchInfo')}
               </span>
               {launch.success !== 'unknown' && (
                 <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', color: launchSuccessMeta(launch.success).color }}>
@@ -297,13 +298,13 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
               )}
             </div>
 
-            {showCountdown && <LaunchCountdown target={launchTarget!} />}
+            {showCountdown && <LaunchCountdown target={launchTarget!} lang={lang} />}
 
             {launchRows.length > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1px', background: 'rgba(var(--ink),0.08)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '10px', overflow: 'hidden', marginBottom: launchWindow || launch.livestreamUrl ? '16px' : 0 }}>
                 {launchRows.map(([label, value]) => (
                   <div key={label} style={{ background: 'var(--panel)', padding: '14px 18px' }}>
-                    <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', marginBottom: '5px' }}>{label}</span>
+                    <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', marginBottom: '5px' }}>{ui(label)}</span>
                     <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'var(--white)' }}>{value}</span>
                   </div>
                 ))}
@@ -323,14 +324,14 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         {hasSpecs && (
           <div style={{ marginBottom: '56px' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '24px' }}>
-              Mission Specifications
+              {ui('mission.specs')}
             </span>
             {specRows.length > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1px', background: 'rgba(var(--ink),0.08)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '10px', overflow: 'hidden' }}>
                 {specRows.map(([key, label]) => (
                   <div key={key} style={{ background: 'var(--panel)', padding: '14px 18px' }}>
                     <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', marginBottom: '5px' }}>
-                      {label}
+                      {ui(label)}
                     </span>
                     <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', color: 'var(--white)', lineHeight: 1.4 }}>
                       {spec[key] as string}
@@ -342,7 +343,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
             {spec.instruments.length > 0 && (
               <div style={{ marginTop: '20px' }}>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '10px' }}>
-                  Scientific Instruments
+                  {ui('mission.instruments')}
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {spec.instruments.map(inst => (
@@ -360,7 +361,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         {hasMediaSection && (
           <div style={{ marginBottom: '56px' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '24px' }}>
-              Mission Media
+              {ui('mission.media')}
             </span>
 
             {media.banner.url && (
@@ -389,18 +390,18 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
 
             {media.videos.length > 0 && (
               <div style={{ marginBottom: media.documents.length ? '16px' : 0 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '10px' }}>Videos</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '10px' }}>{ui('mission.videos')}</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {media.videos.map((v, i) => <MissionLink key={i} href={v.url}>▶ {v.caption || 'Watch video'} ↗</MissionLink>)}
+                  {media.videos.map((v, i) => <MissionLink key={i} href={v.url}>▶ {v.caption || ui('mission.watchVideo')} ↗</MissionLink>)}
                 </div>
               </div>
             )}
 
             {media.documents.length > 0 && (
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '10px' }}>Documents</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '10px' }}>{ui('mission.documents')}</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {media.documents.map((d, i) => <MissionLink key={i} href={d.url}>▤ {d.caption || 'Document'} ↧</MissionLink>)}
+                  {media.documents.map((d, i) => <MissionLink key={i} href={d.url}>▤ {d.caption || ui('mission.document')} ↧</MissionLink>)}
                 </div>
               </div>
             )}
@@ -411,7 +412,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         {mission.timeline && mission.timeline.length > 0 && (
           <div style={{ marginBottom: '56px' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '28px' }}>
-              Mission Timeline
+              {ui('mission.timeline')}
             </span>
             <div style={{ position: 'relative', paddingLeft: '24px', borderLeft: '1px solid rgba(var(--ink),0.1)' }}>
               {mission.timeline.map((event, i) => {
@@ -490,7 +491,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         {mission.agency && (
           <div style={{ background: 'var(--panel)', border: '1px solid rgba(var(--ink),0.08)', borderRadius: '12px', padding: '24px', marginBottom: '48px' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.55)', display: 'block', marginBottom: '12px' }}>
-              Mission Agency
+              {ui('mission.agency')}
             </span>
             {media.agencyLogo.url && (
               /* eslint-disable-next-line @next/next/no-img-element */
@@ -521,7 +522,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
         {mission.collaborators.length > 0 && (
           <div style={{ marginBottom: '48px' }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#4f8ef7', display: 'block', marginBottom: '20px' }}>
-              Partners &amp; Collaborators
+              {ui('mission.partners')}
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {ROLE_ORDER.map(role => {
@@ -530,7 +531,7 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
                 return (
                   <div key={role}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', display: 'block', marginBottom: '10px' }}>
-                      {ROLE_LABEL[role]}
+                      {ui(ROLE_KEY[role])}
                     </span>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {inRole.map(({ agency }) => {
@@ -599,7 +600,8 @@ export function MissionSlugPage({ mission, related, lang = 'en' }: Props) {
 
 // Live launch countdown. Hydration-safe: renders a placeholder until mounted
 // (server + first client render agree), then ticks every second after mount.
-function LaunchCountdown({ target }: { target: number }) {
+function LaunchCountdown({ target, lang }: { target: number; lang: LanguageCode }) {
+  const ui = strings(lang)
   const [now, setNow] = useState<number | null>(null)
   useEffect(() => {
     setNow(Date.now())
@@ -607,17 +609,17 @@ function LaunchCountdown({ target }: { target: number }) {
     return () => clearInterval(id)
   }, [])
 
-  let units: { n: number; label: string }[] | null = null
-  let caption = 'To launch'
+  let units: { n: number; label: UIKey }[] | null = null
+  let caption: UIKey = 'mission.toLaunch'
   if (now !== null) {
     const diff = target - now
-    if (diff <= 0) { caption = 'Status'; units = null }
+    if (diff <= 0) { caption = 'mission.status'; units = null }
     else {
       units = [
-        { n: Math.floor(diff / 86400000),        label: 'Days' },
-        { n: Math.floor((diff % 86400000) / 3600000), label: 'Hrs' },
-        { n: Math.floor((diff % 3600000) / 60000),    label: 'Min' },
-        { n: Math.floor((diff % 60000) / 1000),       label: 'Sec' },
+        { n: Math.floor(diff / 86400000),             label: 'mission.days' },
+        { n: Math.floor((diff % 86400000) / 3600000), label: 'mission.hrs'  },
+        { n: Math.floor((diff % 3600000) / 60000),    label: 'mission.min'  },
+        { n: Math.floor((diff % 60000) / 1000),       label: 'mission.sec'  },
       ]
     }
   }
@@ -625,12 +627,12 @@ function LaunchCountdown({ target }: { target: number }) {
   return (
     <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '8px', padding: '16px 20px', marginBottom: '20px', background: 'var(--panel)', border: '1px solid rgba(79,142,247,0.3)', borderRadius: '12px' }}>
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#4f8ef7' }}>
-        {caption}
+        {ui(caption)}
       </span>
       {now === null ? (
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '20px', color: 'rgba(var(--ink),0.5)' }}>—</span>
       ) : units === null ? (
-        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', color: 'var(--green)' }}>Launched</span>
+        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', color: 'var(--green)' }}>{ui('mission.launched')}</span>
       ) : (
         <div style={{ display: 'flex', gap: '16px' }}>
           {units.map(u => (
@@ -639,7 +641,7 @@ function LaunchCountdown({ target }: { target: number }) {
                 {String(u.n).padStart(2, '0')}
               </div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.5)', marginTop: '5px' }}>
-                {u.label}
+                {ui(u.label)}
               </div>
             </div>
           ))}

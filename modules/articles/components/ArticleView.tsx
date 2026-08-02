@@ -101,7 +101,7 @@ export function ArticleView({
           // the Hindi URLs, or the structured data contradicts the page's own
           // canonical.
           buildBreadcrumbs([
-            { name: 'Articles', path: articlesListHref(lang) },
+            { name: ui('articles.title'), path: articlesListHref(lang) },
             { name: article.title, path: articleHref(article.slug, lang) },
           ], siteConfig),
           buildFaqJsonLd(article.content || ''),

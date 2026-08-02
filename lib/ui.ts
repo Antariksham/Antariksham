@@ -144,6 +144,76 @@ const UI = {
   'missions.filterDev':       { en: 'In Development', hi: 'विकासाधीन'      },
   'missions.filterCompleted': { en: 'Completed',      hi: 'पूर्ण'           },
 
+  // ── Mission detail page ──────────────────────────────────────
+  // A mission-domain vocabulary rather than site chrome, but it renders on the
+  // page as headings and field labels, so it belongs to the UI and lives here.
+  // The values these label are author-written and come from the translations
+  // table — this file only ever holds the label, never the value.
+  'mission.objectives':    { en: 'Scientific Objectives',  hi: 'वैज्ञानिक उद्देश्य'    },
+  'mission.significance':  { en: 'Mission Significance',   hi: 'मिशन का महत्व'        },
+  'mission.launchInfo':    { en: 'Launch Information',     hi: 'प्रक्षेपण जानकारी'     },
+  'mission.specs':         { en: 'Mission Specifications', hi: 'मिशन विनिर्देश'       },
+  'mission.instruments':   { en: 'Scientific Instruments', hi: 'वैज्ञानिक उपकरण'      },
+  'mission.media':         { en: 'Mission Media',          hi: 'मिशन मीडिया'         },
+  'mission.timeline':      { en: 'Mission Timeline',       hi: 'मिशन समयरेखा'         },
+  'mission.agency':        { en: 'Mission Agency',         hi: 'मिशन एजेंसी'          },
+  'mission.partners':      { en: 'Partners & Collaborators', hi: 'साझेदार और सहयोगी'  },
+  'mission.videos':        { en: 'Videos',                 hi: 'वीडियो'              },
+  'mission.documents':     { en: 'Documents',              hi: 'दस्तावेज़'            },
+  'mission.watchVideo':    { en: 'Watch video',            hi: 'वीडियो देखें'         },
+  'mission.document':      { en: 'Document',               hi: 'दस्तावेज़'            },
+
+  // Collaborator roles.
+  'mission.rolePartner':     { en: 'Partner Agencies',        hi: 'साझेदार एजेंसियाँ'   },
+  'mission.roleCommercial':  { en: 'Commercial Partners',     hi: 'व्यावसायिक साझेदार'  },
+  'mission.roleInstitution': { en: 'Scientific Institutions', hi: 'वैज्ञानिक संस्थान'   },
+
+  // Objective groups.
+  'mission.objSecondary':   { en: 'Secondary Objectives',      hi: 'द्वितीयक उद्देश्य'      },
+  'mission.objTech':        { en: 'Technology Demonstrations', hi: 'प्रौद्योगिकी प्रदर्शन'  },
+  'mission.objQuestions':   { en: 'Scientific Questions',      hi: 'वैज्ञानिक प्रश्न'       },
+  'mission.objDiscoveries': { en: 'Expected Discoveries',      hi: 'अपेक्षित खोजें'         },
+
+  // Specification rows.
+  'mission.specSpacecraft':    { en: 'Spacecraft',         hi: 'अंतरिक्ष यान'        },
+  'mission.specManufacturer':  { en: 'Manufacturer',       hi: 'निर्माता'            },
+  'mission.specProgram':       { en: 'Program',            hi: 'कार्यक्रम'           },
+  'mission.specFamily':        { en: 'Mission Family',     hi: 'मिशन श्रेणी'         },
+  'mission.specVehicle':       { en: 'Launch Vehicle',     hi: 'प्रक्षेपण यान'       },
+  'mission.specOrbit':         { en: 'Orbit',              hi: 'कक्षा'              },
+  'mission.specLaunchMass':    { en: 'Launch Mass',        hi: 'प्रक्षेपण द्रव्यमान'  },
+  'mission.specDryMass':       { en: 'Dry Mass',           hi: 'शुष्क द्रव्यमान'      },
+  'mission.specPayloadMass':   { en: 'Payload Mass',       hi: 'पेलोड द्रव्यमान'     },
+  'mission.specDuration':      { en: 'Mission Duration',   hi: 'मिशन अवधि'          },
+  'mission.specLifetime':      { en: 'Expected Lifetime',  hi: 'अपेक्षित आयु'        },
+  'mission.specPowerSource':   { en: 'Power Source',       hi: 'ऊर्जा स्रोत'          },
+  'mission.specPowerOutput':   { en: 'Power Output',       hi: 'ऊर्जा उत्पादन'       },
+  'mission.specComms':         { en: 'Communications',     hi: 'संचार'              },
+  'mission.specPrimaryLoad':   { en: 'Primary Payload',    hi: 'मुख्य पेलोड'         },
+  'mission.specSecondaryLoad': { en: 'Secondary Payload',  hi: 'द्वितीयक पेलोड'      },
+  'mission.specBudget':        { en: 'Budget',             hi: 'बजट'               },
+
+  // Launch-information rows.
+  'mission.launchDate':   { en: 'Launch Date',    hi: 'प्रक्षेपण तिथि'  },
+  // Inline in the hero meta row, so it carries its own colon.
+  'mission.launchedOn':   { en: 'Launch: {d}',    hi: 'प्रक्षेपण: {d}'  },
+  'mission.launchTime':   { en: 'Launch Time',    hi: 'प्रक्षेपण समय'   },
+  'mission.launchSite':   { en: 'Launch Site',    hi: 'प्रक्षेपण स्थल'  },
+  'mission.launchPad':    { en: 'Launch Pad',     hi: 'लॉन्च पैड'      },
+  'mission.provider':     { en: 'Provider',       hi: 'प्रदाता'        },
+  'mission.rocket':       { en: 'Rocket',         hi: 'रॉकेट'          },
+  'mission.country':      { en: 'Country',        hi: 'देश'           },
+  'mission.missionNumber':{ en: 'Mission Number', hi: 'मिशन संख्या'    },
+
+  // Launch countdown.
+  'mission.toLaunch': { en: 'To launch', hi: 'प्रक्षेपण तक' },
+  'mission.status':   { en: 'Status',    hi: 'स्थिति'       },
+  'mission.launched': { en: 'Launched',  hi: 'प्रक्षेपित'    },
+  'mission.days':     { en: 'Days',      hi: 'दिन'         },
+  'mission.hrs':      { en: 'Hrs',       hi: 'घंटे'         },
+  'mission.min':      { en: 'Min',       hi: 'मिनट'        },
+  'mission.sec':      { en: 'Sec',       hi: 'सेकंड'        },
+
   // ── Learn ────────────────────────────────────────────────────
   'learn.eyebrow':       { en: 'Knowledge Layer',   hi: 'ज्ञान परत'         },
   'learn.title':         { en: 'Learn Space Science', hi: 'अंतरिक्ष विज्ञान सीखें' },
