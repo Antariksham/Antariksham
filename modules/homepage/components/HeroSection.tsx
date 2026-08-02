@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import { supabaseAdmin }       from '@/lib/supabase'
 import { getHeroConfigPublic } from '@/modules/admin/services/adminHomepage'
+import { articleHref, articlesListHref, DEFAULT_LANGUAGE, type LanguageCode } from '@/lib/i18n'
+import { strings } from '@/lib/ui'
 
-async function getFeaturedArticle() {
-  const { data, error } = await supabaseAdmin()
+async function getFeaturedArticle(lang: LanguageCode) {
+  const db = supabaseAdmin()
+  const { data, error } = await db
     .from('articles')
-    .select('title, slug, excerpt, reading_time, article_type, featured_image')
+    .select('id, title, slug, excerpt, reading_time, article_type, featured_image')
     .eq('featured', true)
     .eq('status', 'published')
     .order('published_at', { ascending: false })
@@ -13,23 +16,37 @@ async function getFeaturedArticle() {
     .single()
 
   if (error || !data) return null
-  return data
+  if (lang === DEFAULT_LANGUAGE) return data
+
+  // The hero headline is the most prominent text on the page, so overlay the
+  // published translation when there is one. Tolerant: English on any failure.
+  const { data: t } = await db
+    .from('article_translations')
+    .select('title, excerpt')
+    .eq('article_id', data.id)
+    .eq('language_code', lang)
+    .eq('is_published', true)
+    .maybeSingle()
+
+  return t ? { ...data, title: t.title, excerpt: t.excerpt ?? data.excerpt } : data
 }
 
-export async function HeroSection() {
+export async function HeroSection({ lang = DEFAULT_LANGUAGE }: { lang?: LanguageCode } = {}) {
   const [hero, featuredArticle] = await Promise.all([
     getHeroConfigPublic(),
-    getFeaturedArticle(),
+    getFeaturedArticle(lang),
   ])
 
-  const badge       = hero?.badge       || 'Featured Story'
+  const ui = strings(lang)
+
+  const badge       = hero?.badge       || ui('home.featuredStory')
   const title       = hero?.title       || featuredArticle?.title       || 'Exploring the Universe Through Knowledge, Research & Discovery'
   const excerpt     = hero?.excerpt     || featuredArticle?.excerpt     || 'Scientific journalism, live mission tracking, deep-space telemetry, and an educational knowledge engine — all in one independent platform.'
   const category    = hero?.category    || featuredArticle?.article_type || 'Space Intelligence'
   const articleSlug = hero?.articleSlug || featuredArticle?.slug         || ''
   const imageUrl    = hero?.imageUrl    || featuredArticle?.featured_image || ''
 
-  const primaryHref = articleSlug ? `/article/${articleSlug}` : '/articles'
+  const primaryHref = articleSlug ? articleHref(articleSlug, lang) : articlesListHref(lang)
 
   return (
     <section
@@ -70,7 +87,7 @@ export async function HeroSection() {
           <p>{excerpt}</p>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <Link href={primaryHref} className="btn btn-primary">
-              {articleSlug ? 'Read Full Story' : 'Read Latest'}
+              {articleSlug ? ui('home.readFullStory') : ui('home.readLatest')}
             </Link>
             <Link href="/live" className="btn btn-outline">
               <span
@@ -80,7 +97,7 @@ export async function HeroSection() {
                   display: 'inline-block',
                 }}
               />
-              View Live Systems
+              {ui('home.viewLive')}
             </Link>
           </div>
           <p

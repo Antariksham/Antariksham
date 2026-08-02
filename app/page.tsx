@@ -10,6 +10,11 @@ export const metadata: Metadata = buildPageMetadata({
   path:        '/',
   title:       siteConfig.seo.defaultTitle,
   description: siteConfig.description,
+  languages: {
+    en:          '/',
+    hi:          '/hi',
+    'x-default': '/',
+  },
 })
 
 export const revalidate = 300

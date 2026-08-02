@@ -105,6 +105,58 @@ test('desktopNav drops the entries the one-line bar cannot fit', () => {
   )
 })
 
+test('every nav entry a reader can see carries a Hindi label', () => {
+  // The nav is the one place a missing translation is most visible: a Hindi
+  // reader sees an English word sitting between two Devanagari ones. Topic
+  // hubs are excluded — their labels come from the TOPICS registry, which is
+  // English-only content, not chrome (see §2.2 in docs/NEXT-STEPS.md).
+  const hubHrefs = new Set(
+    (mainNav
+      .find((i) => i.label === 'Explore')?.children
+      ?.find((c) => c.label === 'Topic Hubs')?.children ?? []
+    ).map((h) => h.href),
+  )
+
+  const missing: string[] = []
+  const walk = (items: NavItem[]) => {
+    for (const item of items) {
+      if (!hubHrefs.has(item.href) && !item.labels?.hi) missing.push(`${item.label} (${item.href})`)
+      if (item.children) walk(item.children)
+    }
+  }
+  walk(mainNav)
+  for (const list of Object.values(footerNav)) walk(list as NavItem[])
+
+  assert.deepEqual(missing, [], `nav entries with no Hindi label: ${missing.join(', ')}`)
+})
+
+test('an acronym in a label survives into the Hindi label', () => {
+  // Names are not translated — NASA, APOD, ISS are what these things are
+  // called, and respelling them in Devanagari (नासा एपीओडी) is transliteration,
+  // not translation: the same letters in another alphabet, harder to recognise
+  // and not what a reader would search for. Mixed labels are the correct
+  // outcome — `ISS ट्रैकर`, `APOD संग्रह`. See the policy note in lib/ui.ts.
+  const ACRONYM = /\b[A-Z]{2,}\b/g
+  const missing: string[] = []
+
+  const walk = (items: NavItem[]) => {
+    for (const item of items) {
+      const acronyms = item.label.match(ACRONYM) ?? []
+      const hi = item.labels?.hi
+      if (hi) {
+        for (const a of acronyms) {
+          if (!hi.includes(a)) missing.push(`"${item.label}" → "${hi}" drops ${a}`)
+        }
+      }
+      if (item.children) walk(item.children)
+    }
+  }
+  walk(mainNav)
+  for (const list of Object.values(footerNav)) walk(list as NavItem[])
+
+  assert.deepEqual(missing, [], `acronyms lost in translation: ${missing.join('; ')}`)
+})
+
 test('every top-level section has a description for the mega-menu', () => {
   // For Home, Missions and Learn this line IS the mega-menu's middle column —
   // they have no children — so a missing one leaves a visibly empty panel.
@@ -147,13 +199,14 @@ test('sectionIsCurrent: a section stays marked from any depth below it', () => {
 })
 
 test('sectionIsCurrent: a child on a different path still marks its parent', () => {
-  // /hi/articles sits under Articles in the tree but nowhere near it in the URL
-  // space, so only the recursive walk can find it.
-  const articles = mainNav.find((item) => item.label === 'Articles')!
-  assert.equal(sectionIsCurrent('/hi/articles', articles), true)
-
+  // /lunar-sim sits under Live in the tree but nowhere near it in the URL
+  // space, so only the recursive walk can find it. (This used to be checked
+  // with /hi/articles under Articles; that child was a stopgap Hindi link and
+  // is gone — LanguageSwitch replaced it — so Live carries the case now.)
   const live = mainNav.find((item) => item.label === 'Live')!
   assert.equal(sectionIsCurrent('/lunar-sim', live), true)
+  assert.equal(sectionIsCurrent('/live/launches', live), true)
+  assert.equal(sectionIsCurrent('/learn', live), false)
 })
 
 test('the topic hubs come from the registry, not a hand-written copy', () => {

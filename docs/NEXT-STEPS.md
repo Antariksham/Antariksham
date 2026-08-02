@@ -96,23 +96,20 @@ nothing. Every visit is terminal.
 ### 2.2 Hindi is a half-open door
 
 The expensive part — translation storage, the language toggle, admin language
-tabs — is **done**. The discoverability layer is missing, so translated content
-is effectively unreachable and uncrawlable.
+tabs — is **done**, and `app/hi/` now has its listings: `page.tsx` (home),
+`articles/`, `learn/`, `missions/` plus the three detail routes. A reader who
+picks Hindi now *stays* in Hindi: every chrome link (nav, mega-menu, footer,
+logo) is routed through `localizeHref`, so following the site never silently
+drops them back into English. What is still missing:
 
-`app/hi/` currently contains only `articles/`, `article/[slug]/`,
-`learn/[slug]/` and `mission/[slug]/`. Needed:
-
-- `/hi` home, `/hi/learn` and `/hi/missions` listing pages (mirror the English
-  ones; `lib/i18n.ts` already has `sectionHref`/`pathPrefix`).
-- A **language switch in the nav**. Partly unblocked: the mobile drawer now has
-  a **हिन्दी (Hindi)** row under Articles pointing at `/hi/articles`, so the
-  listing is no longer an orphan. That is an entry point, not a switch — it is
-  one fixed link rather than "the Hindi version of the page you are on", it is
-  drawer-only, and there is still nowhere to go from `/hi/articles` except back
-  into English. The real switch still needs the listing pages below.
-- **`/hi/*` URLs in `app/sitemap.ts` with `hreflang` alternates.** Right now no
-  translated page is in the sitemap at all, so none of it is indexed.
-- Scope is content-only by design: site chrome and labels stay English.
+- ~~Site chrome is still English on `/hi/*`~~ **done** — `lib/ui.ts` holds the
+  chrome strings, nav labels sit beside their hrefs in `config/navigation.ts`,
+  and dates/mission taxonomy render per language. The mission detail page's
+  field labels are covered as well. See §2.
+- ~~`/hi/*` URLs in `app/sitemap.ts` with `hreflang` alternates~~ **done** — see
+  §2. The sitemap lists every Hindi URL that actually exists, both sides of each
+  pair carry the same `alternates.languages` map, and the four English pages
+  that were silent now point back.
 
 ### 2.3 No component or route tests
 

@@ -8,6 +8,11 @@ export const metadata: Metadata = buildPageMetadata({
   path:        '/articles',
   title:       'Articles',
   description: 'Space articles, mission updates, and scientific discoveries from NASA, ISRO, SpaceX, ESA and beyond.',
+  languages: {
+    en:          '/articles',
+    hi:          '/hi/articles',
+    'x-default': '/articles',
+  },
 })
 
 export const revalidate = 300

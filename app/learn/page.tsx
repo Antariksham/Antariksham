@@ -9,6 +9,11 @@ export const metadata: Metadata = buildPageMetadata({
   path:        '/learn',
   title:       'Learn',
   description: 'Deep-dive articles on orbital mechanics, astrophysics, black holes, relativity and the mathematics powering space exploration.',
+  languages: {
+    en:          '/learn',
+    hi:          '/hi/learn',
+    'x-default': '/learn',
+  },
 })
 
 export default async function LearnRoute() {

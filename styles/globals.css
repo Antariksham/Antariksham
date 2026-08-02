@@ -2877,3 +2877,119 @@ textarea.cite-input { resize: vertical; font-family: var(--font-mono); }
 @media (prefers-reduced-motion: reduce) {
   .apod-promo { transition: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   HINDI TYPOGRAPHY  —  :lang(hi)
+   ───────────────────────────────────────────────────────────────
+   Scoped entirely behind `:lang(hi)`, which matches everything under
+   <html lang="hi"> (app/layout.tsx sets it server-side; HtmlLangSync keeps it
+   honest across client-side navigation). Nothing here can reach an English
+   page, so the Latin layout is untouched by construction.
+
+   Last in the file on purpose: these are overrides, and `:lang(hi)` carries
+   the same specificity as the `:root` and single-class rules it has to beat,
+   so source order is what decides.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 1 ─ The faces.
+
+   Redefining the three font tokens rather than restating `font-family` on
+   ~80 rules: every rule in this file already reads `var(--font-sans)`,
+   `var(--font-serif)` or `var(--font-mono)`, so pointing those at Devanagari
+   switches the whole site in one place — and a component added tomorrow that
+   uses the tokens is Hindi-correct with no extra work.
+
+   On `body`, not `:root`. app/layout.tsx sets --font-serif and --font-mono as
+   *inline* styles on <html>, which no stylesheet rule can outrank; declaring
+   them one level down means body's values shadow the inherited ones for the
+   entire document.
+
+   --font-mono is the labels/eyebrows face (DM Sans, Latin-only). It has to
+   move too, or every eyebrow on a Hindi page falls through to a fallback. */
+body:lang(hi) {
+  --font-sans:  var(--font-hi-sans),  'Nirmala UI', 'Mangal', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: var(--font-hi-serif), 'Tiro Devanagari Hindi', 'Nirmala UI', Georgia, serif;
+  --font-mono:  var(--font-hi-sans),  'Nirmala UI', 'Mangal', system-ui, sans-serif;
+
+  line-height: 1.7;
+}
+
+/* 2 ─ Letter-spacing.
+
+   The single most visible defect. Devanagari joins its letters along the
+   shirorekha — the horizontal bar across the top of a word — and any tracking
+   cuts that bar into disconnected pieces: "आईएसएस" renders as "आ ई ए स ए स".
+   The design leans on tracking heavily (76 rules here, plus inline styles on
+   most eyebrow/label components), so this has to be a blanket reset.
+
+   `!important` and `*` are both load-bearing: the values it overrides are
+   frequently inline `letterSpacing`, which outranks any selector. This is the
+   one place in the stylesheet where that is the correct tool rather than a
+   shortcut. */
+:lang(hi) * {
+  letter-spacing: normal !important;
+  word-spacing:   normal !important;
+}
+
+/* 3 ─ Line-height.
+
+   Devanagari stacks marks above and below the baseline — matras, the
+   chandrabindu, nuqtas, conjunct stacks. The display line-heights here run as
+   tight as 1.1, which is fine for Latin caps and clips the top matra off a
+   Hindi headline outright.
+
+   A floor, not a blanket value: 1.35 on headings (up from 1.1–1.2) and 1.7 on
+   running text. `!important` again because the tight values are inline. */
+:lang(hi) h1,
+:lang(hi) h2,
+:lang(hi) h3,
+:lang(hi) h4,
+:lang(hi) h5,
+:lang(hi) h6,
+:lang(hi) .page-title,
+:lang(hi) .section-title,
+:lang(hi) .card-title,
+:lang(hi) .hero-badge {
+  line-height: 1.35 !important;
+}
+
+:lang(hi) p,
+:lang(hi) li,
+:lang(hi) .page-lede,
+:lang(hi) .card-excerpt,
+:lang(hi) .prose {
+  line-height: 1.7 !important;
+}
+
+/* 4 ─ Size.
+
+   Devanagari sits smaller on the em than Latin at the same px — the base
+   glyphs occupy roughly the x-height band while the matras use the space
+   above and below. Matching Latin's *apparent* size therefore needs a small
+   bump, and the tiny 10–12px tracked labels are where the difference between
+   "small" and "unreadable" actually lands.
+
+   Deliberately only the label classes defined in this file. A blanket bump
+   would compound through nested elements and would not reach the explicit px
+   sizes components set inline anyway; after (2) those read cleanly at their
+   own size. */
+:lang(hi) .card-category,
+:lang(hi) .section-eyebrow,
+:lang(hi) .tag,
+:lang(hi) .footer-link--muted {
+  font-size: 0.82rem;
+}
+
+:lang(hi) .btn {
+  font-size: 0.95rem;
+}
+
+/* 5 ─ Numerals.
+
+   The faces ship Devanagari digits (१२३) and would otherwise use them for
+   `font-variant-numeric` contexts. Dates, view counts, launch numbers and the
+   stat tiles are all read as Western Arabic here — including by Hindi readers
+   — so pin them. */
+:lang(hi) {
+  font-variant-numeric: lining-nums;
+}

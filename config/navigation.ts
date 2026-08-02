@@ -5,6 +5,19 @@ import { TOPICS } from '../modules/explore/services/topics.ts'
 
 export type NavItem = {
   label: string
+  /**
+   * The label in each non-default language, keyed by code — `{ hi: 'लेख' }`.
+   *
+   * Deliberately here rather than in `lib/ui.ts` with the rest of the chrome
+   * strings: this tree is data, and a label read apart from the href it names
+   * is harder to keep honest, not easier. `navLabel()` in `lib/ui.ts` does the
+   * lookup and falls back to `label`, so a missing translation renders English
+   * instead of a gap.
+   *
+   * Typed loosely (plain string keys) to keep this file free of imports — see
+   * the note at the top; `navLabel` is where it meets `LanguageCode`.
+   */
+  labels?: Record<string, string>
   href:  string
   isLive?: boolean
   isFuture?: boolean
@@ -52,76 +65,83 @@ const topicHubs: NavItem[] = TOPICS.map((topic) => ({
 export const mainNav: NavItem[] = [
   {
     label: 'Home',
+    labels: { hi: 'होम' },
     href:  '/',
     desktopHidden: true,
     description: 'The front page — latest coverage, active missions and live space intelligence.',
   },
+  // No children: the lone "हिन्दी (Hindi)" row that used to live here was a
+  // stopgap route into /hi/articles, and `components/layout/LanguageSwitch`
+  // now does that job properly from every page. Articles is a plain link on
+  // the desktop bar as a result — the mega-menu's highlights column renders
+  // for whichever section is open, so nothing is lost with the caret.
   {
     label: 'Articles',
+    labels: { hi: 'लेख' },
     href:  '/articles',
     description: 'Space journalism, mission updates and scientific discoveries from NASA, ISRO, SpaceX, ESA and beyond.',
-    children: [
-      // The Hindi listing exists and had no route into it from anywhere in the
-      // site chrome. Not the full language switch — that needs /hi home,
-      // /hi/learn and /hi/missions first (docs/NEXT-STEPS.md §2.2).
-      { label: 'हिन्दी (Hindi)', href: '/hi/articles' },
-    ],
   },
   // A first-class section on the homepage, in the sitemap at priority 0.8, and
   // until now reachable only from the footer.
   {
     label: 'Missions',
+    labels: { hi: 'मिशन' },
     href:  '/missions',
     desktopHidden: true,
     description: 'Active, upcoming and historic missions from every major agency, tracked in one place.',
   },
   {
     label: 'Explore',
+    labels: { hi: 'अन्वेषण' },
     href:  '/explore',
     description: 'Interactive gateways to the cosmos — a live Solar System map, tonight\u2019s sky, and curated topic hubs.',
     children: [
-      { label: 'Solar System Explorer', href: '/explore/solar-system' },
-      { label: 'Sky Tonight',           href: '/explore/sky-tonight'  },
-      { label: 'Topic Hubs',            href: '/explore/topics', children: topicHubs },
+      { label: 'Solar System Explorer', labels: { hi: 'सौर मंडल एक्सप्लोरर' }, href: '/explore/solar-system' },
+      { label: 'Sky Tonight', labels: { hi: 'आज रात का आकाश' }, href: '/explore/sky-tonight'  },
+      { label: 'Topic Hubs', labels: { hi: 'विषय केंद्र' }, href: '/explore/topics', children: topicHubs },
     ],
   },
   {
     label: 'Live',
+    labels: { hi: 'लाइव' },
     href:  '/live',
     isLive: true,
     description: 'Real-time space intelligence — station tracking, launch countdowns and deep-space telemetry.',
     children: [
-      { label: 'ISS Tracker',             href: '/live/iss-tracker' },
-      { label: 'Launch Tracker',          href: '/live/launches'    },
-      { label: 'NASA APOD',               href: '/live/apod'        },
-      { label: 'Deep Space',              href: '/live/deep-space'  },
-      { label: 'Lunar Landing Simulator', href: '/lunar-sim'        },
+      { label: 'ISS Tracker', labels: { hi: 'ISS ट्रैकर' }, href: '/live/iss-tracker' },
+      { label: 'Launch Tracker', labels: { hi: 'लॉन्च ट्रैकर' }, href: '/live/launches'    },
+      { label: 'NASA APOD', labels: { hi: 'NASA APOD' }, href: '/live/apod'        },
+      { label: 'Deep Space', labels: { hi: 'गहन अंतरिक्ष' }, href: '/live/deep-space'  },
+      { label: 'Lunar Landing Simulator', labels: { hi: 'चंद्र लैंडिंग सिम्युलेटर' }, href: '/lunar-sim'        },
     ],
   },
   {
     label: 'Learn',
+    labels: { hi: 'सीखें' },
     href:  '/learn',
     description: 'Deep dives on orbital mechanics, astrophysics, relativity and the mathematics behind spaceflight.',
   },
   {
     label: 'Gallery',
+    labels: { hi: 'गैलरी' },
     href:  '/gallery',
     description: 'Imagery from NASA\u2019s archives — telescopes, spacecraft, launches and the Picture of the Day.',
     children: [
-      { label: 'APOD Archive', href: '/gallery/apod' },
+      { label: 'APOD Archive', labels: { hi: 'APOD संग्रह' }, href: '/gallery/apod' },
     ],
   },
   {
     label: 'About',
+    labels: { hi: 'परिचय' },
     href:  '/about',
     description: 'Who runs Antariksham, how it is edited, and where every fact comes from.',
     children: [
-      { label: 'Our Mission',      href: '/our-mission'      },
-      { label: 'Editorial Policy', href: '/editorial-policy' },
-      { label: 'Sources',          href: '/sources'          },
-      { label: 'Contact',          href: '/contact'          },
-      { label: 'Privacy Policy',   href: '/privacy'          },
-      { label: 'Terms',            href: '/terms'            },
+      { label: 'Our Mission', labels: { hi: 'हमारा मिशन' }, href: '/our-mission'      },
+      { label: 'Editorial Policy', labels: { hi: 'संपादकीय नीति' }, href: '/editorial-policy' },
+      { label: 'Sources', labels: { hi: 'स्रोत' }, href: '/sources'          },
+      { label: 'Contact', labels: { hi: 'संपर्क' }, href: '/contact'          },
+      { label: 'Privacy Policy', labels: { hi: 'गोपनीयता नीति' }, href: '/privacy'          },
+      { label: 'Terms', labels: { hi: 'नियम व शर्तें' }, href: '/terms'            },
     ],
   },
 ]
@@ -153,25 +173,25 @@ export function sectionIsCurrent(pathname: string, item: NavItem): boolean {
 
 export const footerNav = {
   platform: [
-    { label: 'Articles', href: '/articles' },
-    { label: 'Explore', href: '/explore' },
-    { label: 'Live',    href: '/live' },
-    { label: 'Learn',   href: '/learn' },
-    { label: 'Gallery', href: '/gallery' },
+    { label: 'Articles', labels: { hi: 'लेख' }, href: '/articles' },
+    { label: 'Explore', labels: { hi: 'अन्वेषण' }, href: '/explore' },
+    { label: 'Live', labels: { hi: 'लाइव' }, href: '/live' },
+    { label: 'Learn', labels: { hi: 'सीखें' }, href: '/learn' },
+    { label: 'Gallery', labels: { hi: 'गैलरी' }, href: '/gallery' },
   ],
   intelligence: [
-    { label: 'ISS Tracker',     href: '/live/iss-tracker' },
-    { label: 'Launch Schedule', href: '/live/launches' },
-    { label: 'Deep Space',      href: '/live/deep-space' },
-    { label: 'Lunar Lander Sim', href: '/lunar-sim' },
-    { label: 'NASA APOD',       href: '/live/apod' },
-    { label: 'All Missions',    href: '/missions' },
+    { label: 'ISS Tracker', labels: { hi: 'ISS ट्रैकर' }, href: '/live/iss-tracker' },
+    { label: 'Launch Schedule', labels: { hi: 'लॉन्च कार्यक्रम' }, href: '/live/launches' },
+    { label: 'Deep Space', labels: { hi: 'गहन अंतरिक्ष' }, href: '/live/deep-space' },
+    { label: 'Lunar Lander Sim', labels: { hi: 'चंद्र लैंडर सिम' }, href: '/lunar-sim' },
+    { label: 'NASA APOD', labels: { hi: 'NASA APOD' }, href: '/live/apod' },
+    { label: 'All Missions', labels: { hi: 'सभी मिशन' }, href: '/missions' },
   ],
   organization: [
-    { label: 'About',            href: '/about' },
-    { label: 'Editorial Policy', href: '/editorial-policy' },
-    { label: 'Sources',          href: '/sources' },
-    { label: 'Contact',          href: '/contact' },
-    { label: 'Our Mission',      href: '/our-mission' },
+    { label: 'About', labels: { hi: 'परिचय' }, href: '/about' },
+    { label: 'Editorial Policy', labels: { hi: 'संपादकीय नीति' }, href: '/editorial-policy' },
+    { label: 'Sources', labels: { hi: 'स्रोत' }, href: '/sources' },
+    { label: 'Contact', labels: { hi: 'संपर्क' }, href: '/contact' },
+    { label: 'Our Mission', labels: { hi: 'हमारा मिशन' }, href: '/our-mission' },
   ],
 }

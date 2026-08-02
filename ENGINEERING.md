@@ -814,6 +814,189 @@ env vars are absent — unrelated to app code).
   `20260722180000_article_translations.sql`, `20260723090000_knowledge_translations.sql`,
   `20260723091000_mission_translations.sql`.**
 
+- ✅ **Hindi listing pages + `/hi` home**: the translated detail pages above were
+  only reachable from an English page's toggle — `/hi` , `/hi/learn` and
+  `/hi/missions` did not exist, so a Hindi reader had nowhere to browse to.
+  All three now render, which makes `/hi/*` a section rather than a set of
+  orphans. The listing services grew the same **tolerant card overlay** the
+  detail pages use (`fetchMissionCardTranslations`, `fetchKnowledgeCardTranslations`,
+  batched by id, English on any failure), so translated names/titles/excerpts
+  appear on cards and untranslated items silently stay English.
+  `getMissions`/`getFeaturedMissions`/`getActiveMissions`/`getKnowledgeArticles`
+  take `lang`; `getRelatedMissions` was folded onto the shared helper (it had
+  been duplicating the query and overlaying only `name`, so related-mission
+  descriptions stayed English). `/api/missions` accepts `lang` so infinite
+  scroll doesn't revert to English on page 2. `LearnPage`, `MissionsPage`,
+  `HomePage` and the homepage sections take `lang` and build every href through
+  `sectionHref`/`articleHref`/`sectionListHref`. **Links are prefixed only where
+  a Hindi counterpart exists** — `StatusStrip` (`/live`) and `AboutSection`
+  (`/about`) stay unprefixed rather than pointing at a 404. The `/hi` home
+  deliberately omits the WebSite/Organization JSON-LD: both describe the site as
+  a whole and are declared once at the canonical root; repeating them per
+  language would assert two sites instead of one site in two languages.
+
+- ✅ **Site-wide language switch + language-aware links**: crossing between
+  languages used to mean finding an article that happened to have a translation
+  and using its on-page toggle — the only other route in was one hardcoded
+  **हिन्दी (Hindi)** row in the mobile drawer that always went to
+  `/hi/articles` no matter where you were. `components/layout/LanguageSwitch`
+  replaces it: a desktop pill beside Search and a drawer row, both pointing at
+  **the counterpart of the current page**. The mapping is
+  `counterpartPath(pathname, target)` in `lib/i18n.ts`, unit-tested in
+  `lib/i18n.test.ts` — translated sections map straight across; everything else
+  (`/live/*`, `/explore/*`, `/about`, …) falls back to that language's **home**
+  rather than the control vanishing on some routes, and it can never 404.
+  Detail URLs map across even when the item is untranslated: the route already
+  handles the miss deliberately (English text, `canonical → EN`, `noindex`), and
+  chrome can't know what's translated without a per-page read — the on-page
+  `LanguageToggle`, which does know, remains the precise control. `app/layout`
+  now derives `<html lang>` from the same `langFromPathname`, so the two can't
+  disagree. Also fixed here: `LearnArticlePage` and `MissionSlugPage` hardcoded
+  `/learn` and `/missions`, dropping Hindi readers into English on "← Back to
+  Learn" / "← All Missions"; and **all three** detail pages emitted English
+  breadcrumb JSON-LD on `/hi/*`, contradicting their own canonical. Both now go
+  through `sectionListHref`/`sectionHref` with `lang`. The endonym renders in
+  the Devanagari-first stack via `langSans(code)`, since "हिन्दी" otherwise sits
+  in a Latin-only stack on English pages.
+
+- ✅ **Language is sticky across navigation**: switching to Hindi and then using
+  the site chrome put you straight back into English — the nav, mega-menu and
+  footer all pointed at hardcoded English hrefs, so `/hi` → click "Articles" →
+  `/articles`. Every chrome link now runs through **`localizeHref(href, lang)`**
+  (`lib/i18n.ts`, unit-tested). It is deliberately *not* `counterpartPath`: the
+  two differ only in their fallback, and that difference is the point — an
+  untranslated section keeps **its own URL** (Live from `/hi` belongs on
+  `/live`, not back at `/hi`), whereas `counterpartPath` answers a different
+  question and falls back to the language home. Current-page marking compares
+  against the **bare** path (`stripLangPrefix`), since the nav config is written
+  in English hrefs; without that nothing in the bar would be marked current
+  while reading Hindi. The mega-menu's highlights are fetched **per language**
+  and cached per language, so crossing over doesn't serve titles cached before
+  the switch.
+
+  Two staleness bugs surfaced doing this, both from the same cause — **the App
+  Router does not re-render a shared layout on client-side navigation**, so
+  anything the root layout derives from `headers()` freezes at the first page
+  load. `Footer` took `lang` as a prop from the layout and kept the language the
+  session *started* in; it is now a client component reading `usePathname()`.
+  And `<html lang>` had the same defect (pre-existing): a client-side hop from
+  `/` to `/hi` left `lang="en"` on a page of Devanagari, telling a screen reader
+  to read Hindi in an English voice. `components/layout/HtmlLangSync` corrects
+  it after navigation while leaving the server-rendered value — the one
+  crawlers see — intact for the first paint.
+
+- ✅ **The chrome speaks the reader's language**: a Hindi article used to sit
+  inside an English shell — English nav, English footer, "Read article →",
+  "3 min read", "September 1, 2026". **`lib/ui.ts`** is now the one table of
+  fixed UI strings, keyed and typed so that `satisfies Record<string, Entry>`
+  makes a missing translation a **compile error**, not a silent English string.
+  `t(key, lang, vars)` interpolates `{n}` placeholders, `strings(lang)` binds
+  the language once per component, and `tCount` picks singular/plural (English
+  inflects at one; Hindi uses a single form). Covered: nav + mega-menu +
+  drawer + footer, the home hero/status-strip/section headings/about block, all
+  three listing headers and filter chips, empty and end-of-list states, back
+  links, related-item headings, and the reader's own chrome.
+
+  Two things deliberately live outside the table. **Nav labels** stay in
+  `config/navigation.ts` beside their hrefs (`labels: { hi: 'लेख' }`) — that
+  tree is data, and a label read apart from the href it names is harder to keep
+  honest; `navLabel()` does the lookup and falls back to English. **Mission
+  status and type** stay in `missionClassification.ts` for the same reason, with
+  `statusMeta(value, lang)` / `typeLabel(value, lang)` defaulting to English so
+  the English-only admin is untouched. Dates go through
+  `formatDate(iso, lang)` → `hi-IN`, so a Hindi page reads *1 सितंबर 2026*.
+
+  A `config/navigation.test.ts` case walks the whole tree and fails if any
+  reader-visible entry lacks a Hindi label; `lib/ui.test.ts` catches the things
+  types cannot — a Hindi value left as a copy of the English, Devanagari leaking
+  into an English string, and a `{n}` placeholder surviving into the output.
+
+  **Names are not translated.** `APOD`, `NASA`, `ISRO`, `ESA`, `ISS`, `JWST`,
+  `Voyager 1`, `CubeSat` stay in Latin script, because respelling them in
+  Devanagari (`नासा एपीओडी`, `वॉयेजर 1`) is *transliteration*, not translation —
+  the same letters in a different alphabet, harder to recognise, not what a
+  reader searches for, and it severs the label from the source it names. The
+  line is script, not language: a **loanword in ordinary Hindi use** is
+  correctly Devanagari (लाइव, गैलरी, ट्रैकर, रोवर, लैंडर, टेलीमेट्री), and
+  Latinising *those* would be the mirror-image mistake. Mixed labels are the
+  right outcome — `ISS ट्रैकर`, `APOD संग्रह`. Two tests hold the line:
+  `ui.test.ts` keeps an explicit allow-list of exempted proper nouns (so an
+  English string is a recorded decision, never an oversight) and asserts they
+  stay Latin; `navigation.test.ts` fails if any all-caps acronym in a label
+  goes missing from its Hindi counterpart.
+
+  **The mission detail page** is covered too: its section headings, the three
+  collaborator roles, the 17 specification rows, the four objective groups, the
+  eight launch-information rows and the launch countdown all resolve through
+  the table. Those tuples now carry `UIKey`s rather than display strings, so a
+  row added without a translation is a compile error. JSON-LD breadcrumb names
+  follow the visible ones — Google renders them, so they cannot disagree.
+
+- ✅ **Hindi typography — real Devanagari type, not a fallback**: the words were
+  Hindi but the rendering was not. The stacks named *locally-installed* faces
+  (`Nirmala UI`, `Mangal`) and hoped the device shipped one, and the design's
+  heavy tracking — 76 `letter-spacing` rules here plus inline styles on most
+  labels — was cutting the **shirorekha**, the bar along the top of a Devanagari
+  word, into pieces: `आईएसएस` rendered as `आ ई ए स ए स`.
+
+  **Noto Sans / Noto Serif Devanagari** now load through `next/font/google`
+  (`app/layout.tsx`), published as `--font-hi-sans` / `--font-hi-serif` on every
+  page — not only `/hi`, since the language switch is a client-side navigation
+  and the faces have to be declared before `/hi` paints. **Every weight the UI
+  asks for is loaded (400–800)**: a weight the browser lacks it *synthesises*,
+  and faux-bolding Devanagari smears the shirorekha and closes the matras. Both
+  `devanagari` and `latin` subsets, because Hindi copy is full of Latin runs
+  (NASA, ISRO, JWST, dates) that would otherwise drop out of the face
+  mid-sentence.
+
+  The CSS is one block at the end of `styles/globals.css`, scoped entirely
+  behind **`:lang(hi)`** so it cannot reach an English page. It works by
+  **redefining the three font tokens on `body:lang(hi)`** rather than restating
+  `font-family` on ~80 rules — every rule already reads `var(--font-sans|serif|
+  mono)`, so one edit moves the whole site and any component added later is
+  Hindi-correct for free. On `body`, not `:root`, because `app/layout.tsx` sets
+  `--font-serif`/`--font-mono` as *inline* styles on `<html>`, which no
+  stylesheet rule can outrank. Then: `letter-spacing: normal !important` on
+  `:lang(hi) *` (the `*` and the `!important` are both load-bearing — the values
+  being overridden are usually inline), a line-height floor of 1.35 on headings
+  and 1.7 on running text (display values run as tight as 1.1, which clips the
+  top matra off a headline), a small size bump on the tracked label classes, and
+  `lining-nums` so dates and counts stay Western Arabic.
+
+  Trade-off worth knowing: the tracking reset is blanket, so **Latin labels on a
+  Hindi page also lose their tracking** (`ISRO · MOON` renders untracked there).
+  CSS cannot select on script, and a broken shirorekha is far worse than an
+  untracked Latin label.
+
+- ✅ **The Hindi section is discoverable**: everything above was invisible to
+  search. `app/sitemap.ts` listed **zero** `/hi` URLs, and hreflang ran one way
+  — the `/hi/*` pages named their English twins while `/`, `/articles`,
+  `/learn` and `/missions` stayed silent. Google discards an annotation the
+  other side does not confirm, so **neither** half of any pair was clustered.
+
+  The sitemap now emits one entry per language a path exists in, each carrying
+  the **same** `alternates.languages` map naming all of them plus `x-default`.
+  Two rules do the work:
+
+  - **A Hindi detail URL is listed only when that item has a published
+    translation** (`getTranslatedArticleSlugs` / `…KnowledgeSlugs` /
+    `…MissionSlugs`). The route renders for any slug, but an untranslated one
+    serves the English text under `canonical → EN` + `noindex` — advertising
+    that in a sitemap asks Google to crawl a page whose own head tells it to go
+    away.
+  - **A single-language URL gets no annotation at all.** hreflang describes a
+    relationship; a set naming only the page itself states none.
+    `localizedAlternates` was emitting exactly that on every untranslated
+    article, so it now returns `languages: undefined` below two languages — the
+    page head and the sitemap have to agree, or one is telling Google something
+    the other denies.
+
+  The Hindi path comes from **`localizeHref`**, the same function the nav and
+  the language switch use, so the sitemap cannot drift from where the site
+  actually links; adding a section to `LOCALIZED_SECTIONS` brings it into the
+  sitemap with no edit. Verified by parsing the generated XML and walking every
+  annotation: **zero one-directional links**.
+
 - ✅ **Click & navigation feedback indicators**: clicks worked but gave users no
   signal that the click registered or that a page was loading. Added (1) pressed
   `:active` states for `.btn`/`.card`/`.tag` plus an opt-in `.press` helper
@@ -2209,11 +2392,14 @@ the `/admin/tags` screen):**
 **Internationalization follow-ups:**
 - Bilingual **Articles, Learn & Missions** shipped (§2) — detail pages + toggle
   + admin language tabs. Remaining discoverability/expansion:
-  - **`/hi` listing pages** (`/hi/articles` exists; add `/hi/learn`, `/hi/missions`)
-    and a **global language switch in the nav** + a `/hi` home, so Hindi readers
-    can enter and stay in Hindi site-wide (today the entry point is the toggle on
-    an individual English page). Current scope is **content only** — site
-    chrome/labels stay English by design.
+  - ~~**`/hi` listing pages** and a `/hi` home~~, ~~a **global language switch in
+    the nav**~~ and ~~**language-aware back links**~~ **done** — see §2.
+  - **Site chrome is still English** on `/hi/*` — nav, footer, section headings,
+    filter chips, "Read article →". Translating the ~30 shared UI strings lifts
+    every Hindi page at once and is the largest remaining experience gap.
+  - **Reciprocal `hreflang`.** The `/hi/*` pages point at their English twins,
+    but `/`, `/articles`, `/learn` and `/missions` don't point back. Google
+    ignores a one-directional annotation, so the pairs aren't yet honoured.
   - **Mission `timeline`** entries (structured JSON) are not yet translated —
     only name + description are. Can be added without a schema change.
   - When a sitemap is added, include the `/hi/*` detail URLs for translated items

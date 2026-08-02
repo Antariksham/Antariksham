@@ -35,6 +35,29 @@ async function fetchMissionTranslations(missionId: string): Promise<MissionTrans
   return data as MissionTranslation[]
 }
 
+interface MissionCardTranslation { name: string; description: string | null }
+
+// Card overlay (name/description) for a page of missions, for one language.
+// Tolerant in the same way as the single-mission lookup above: any failure
+// resolves to "no translation" and the English cards render unchanged.
+async function fetchMissionCardTranslations(
+  ids: string[], lang: LanguageCode,
+): Promise<Map<string, MissionCardTranslation>> {
+  const map = new Map<string, MissionCardTranslation>()
+  if (lang === DEFAULT_LANGUAGE || ids.length === 0) return map
+
+  const { data, error } = await supabase
+    .from('mission_translations')
+    .select('mission_id, name, description')
+    .in('mission_id', ids)
+    .eq('language_code', lang)
+    .eq('is_published', true)
+
+  if (error || !data) return map
+  for (const r of data as any[]) map.set(r.mission_id, { name: r.name, description: r.description })
+  return map
+}
+
 const MISSION_CARD_SELECT = `
   id, name, slug, description, status, launch_date,
   mission_type, featured_image, destination, featured,
@@ -54,11 +77,13 @@ export async function getMissions({
   perPage = 12,
   status,
   type,
+  lang    = DEFAULT_LANGUAGE,
 }: {
   page?    : number
   perPage? : number
   status?  : MissionStatus
   type?    : MissionType
+  lang?    : LanguageCode
 } = {}) {
   const from = (page - 1) * perPage
   const to   = from + perPage - 1
@@ -80,13 +105,16 @@ export async function getMissions({
   }
 
   return {
-    missions:   normalizeCards(data || []),
+    missions:   await toCards(data || [], lang),
     total:      count || 0,
     totalPages: Math.ceil((count || 0) / perPage),
   }
 }
 
-export async function getFeaturedMissions(limit = 4): Promise<MissionCard[]> {
+export async function getFeaturedMissions(
+  limit = 4,
+  lang: LanguageCode = DEFAULT_LANGUAGE,
+): Promise<MissionCard[]> {
   const { data, error } = await supabase
     .from('missions')
     .select(MISSION_CARD_SELECT)
@@ -95,7 +123,7 @@ export async function getFeaturedMissions(limit = 4): Promise<MissionCard[]> {
     .limit(limit)
 
   if (error) return []
-  return normalizeCards(data || [])
+  return toCards(data || [], lang)
 }
 
 // Homepage "Active & Upcoming Missions" grid. Driven by status, NOT the
@@ -105,7 +133,10 @@ export async function getFeaturedMissions(limit = 4): Promise<MissionCard[]> {
 // featured for the hero. Active/upcoming missions come first; if there aren't
 // enough to fill the grid, it tops up with the most recent missions of any
 // status so the section never looks sparse.
-export async function getActiveMissions(limit = 4): Promise<MissionCard[]> {
+export async function getActiveMissions(
+  limit = 4,
+  lang: LanguageCode = DEFAULT_LANGUAGE,
+): Promise<MissionCard[]> {
   const { data, error } = await supabase
     .from('missions')
     .select(MISSION_CARD_SELECT)
@@ -115,7 +146,7 @@ export async function getActiveMissions(limit = 4): Promise<MissionCard[]> {
 
   if (error) return []
   const primary = data || []
-  if (primary.length >= limit) return normalizeCards(primary)
+  if (primary.length >= limit) return toCards(primary, lang)
 
   // Top up with the most recent missions of any other status.
   const excludeIds = primary.map((m: any) => m.id)
@@ -128,7 +159,7 @@ export async function getActiveMissions(limit = 4): Promise<MissionCard[]> {
   if (excludeIds.length) fill = fill.not('id', 'in', `(${excludeIds.join(',')})`)
 
   const { data: extra } = await fill
-  return normalizeCards([...primary, ...(extra || [])])
+  return toCards([...primary, ...(extra || [])], lang)
 }
 
 // Wrapped in cache() so the page's generateMetadata + body share one read.
@@ -195,6 +226,21 @@ async function fetchCollaborators(classification: any): Promise<MissionCollabora
   return out
 }
 
+// Slugs that HAVE a published translation in `lang` — see the matching helper
+// in the learn service for why the sitemap needs this rather than every slug.
+export async function getTranslatedMissionSlugs(lang: LanguageCode): Promise<string[]> {
+  if (lang === DEFAULT_LANGUAGE) return getAllMissionSlugs()
+
+  const { data, error } = await supabase
+    .from('mission_translations')
+    .select('missions!inner ( slug )')
+    .eq('language_code', lang)
+    .eq('is_published', true)
+
+  if (error || !data) return []
+  return (data as any[]).map(r => r.missions?.slug).filter(Boolean)
+}
+
 export async function getAllMissionSlugs(): Promise<string[]> {
   const { data, error } = await supabase
     .from('missions')
@@ -217,22 +263,24 @@ export async function getRelatedMissions(
     .limit(limit)
 
   if (error) return []
-  const cards = normalizeCards(data || [])
-  if (lang === DEFAULT_LANGUAGE || cards.length === 0) return cards
-
-  // Overlay translated names (tolerant — English on any failure).
-  const { data: tr } = await supabase
-    .from('mission_translations')
-    .select('mission_id, name')
-    .in('mission_id', cards.map(c => c.id))
-    .eq('language_code', lang)
-    .eq('is_published', true)
-  if (!tr) return cards
-  const names = new Map((tr as any[]).map(r => [r.mission_id, r.name]))
-  return cards.map(c => ({ ...c, name: names.get(c.id) || c.name }))
+  return toCards(data || [], lang)
 }
 
 // ── Normalizers ───────────────────────────────────────────────
+
+// Normalize + overlay the requested language onto a page of mission cards.
+// English (the default) skips the translation query entirely.
+async function toCards(rows: any[], lang: LanguageCode): Promise<MissionCard[]> {
+  const cards = normalizeCards(rows)
+  if (lang === DEFAULT_LANGUAGE || cards.length === 0) return cards
+
+  const overlay = await fetchMissionCardTranslations(cards.map(c => c.id), lang)
+  if (overlay.size === 0) return cards
+  return cards.map(c => {
+    const t = overlay.get(c.id)
+    return t ? { ...c, name: t.name, description: t.description ?? c.description } : c
+  })
+}
 
 function normalizeCards(rows: any[]): MissionCard[] {
   return rows.map(row => ({

@@ -4,7 +4,8 @@ import Link from 'next/link'
 import katex from 'katex'
 import type { KnowledgeArticle, DifficultyLevel } from '@/types/knowledge'
 import { LanguageToggle } from '@/components/LanguageToggle'
-import { sectionHref, HI_SANS, HI_SERIF, type LanguageCode } from '@/lib/i18n'
+import { sectionHref, sectionListHref, HI_SANS, HI_SERIF, type LanguageCode } from '@/lib/i18n'
+import { strings, type UIKey } from '@/lib/ui'
 import { buildLearnJsonLd, buildBreadcrumbs } from '@/modules/seo/jsonLd'
 import { siteConfig } from '@/config/site'
 
@@ -14,10 +15,10 @@ const DIFFICULTY_COLORS: Record<DifficultyLevel, string> = {
   advanced:     'var(--red)',
 }
 
-const DIFFICULTY_LABELS: Record<DifficultyLevel, string> = {
-  beginner:     'Beginner',
-  intermediate: 'Intermediate',
-  advanced:     'Advanced',
+const DIFFICULTY_KEYS: Record<DifficultyLevel, UIKey> = {
+  beginner:     'learn.beginner',
+  intermediate: 'learn.intermediate',
+  advanced:     'learn.advanced',
 }
 
 interface Props {
@@ -26,9 +27,11 @@ interface Props {
 }
 
 export function LearnArticlePage({ article, lang = 'en' }: Props) {
-  const diffColor  = DIFFICULTY_COLORS[article.difficultyLevel] ?? 'var(--accent)'
-  const diffLabel  = DIFFICULTY_LABELS[article.difficultyLevel] ?? article.difficultyLevel
   const isHi       = lang === 'hi'
+  const ui         = strings(lang)
+  const diffColor  = DIFFICULTY_COLORS[article.difficultyLevel] ?? 'var(--accent)'
+  const diffKey    = DIFFICULTY_KEYS[article.difficultyLevel]
+  const diffLabel  = diffKey ? ui(diffKey) : article.difficultyLevel
 
   const htmlContent = markdownToHtml(article.content)
 
@@ -49,9 +52,12 @@ export function LearnArticlePage({ article, lang = 'en' }: Props) {
             createdAt:       article.createdAt,
             updatedAt:       article.updatedAt,
           }, siteConfig),
+          // Language-aware: on /hi/learn/:slug the crumbs have to describe the
+          // Hindi URLs, or the structured data contradicts the page's own
+          // canonical.
           buildBreadcrumbs([
-            { name: 'Learn', path: '/learn' },
-            { name: article.title, path: `/learn/${article.slug}` },
+            { name: ui('learn.title'), path: sectionListHref('learn', lang) },
+            { name: article.title, path: sectionHref('learn', article.slug, lang) },
           ], siteConfig),
         ]) }}
       />
@@ -59,10 +65,10 @@ export function LearnArticlePage({ article, lang = 'en' }: Props) {
       {/* ── Back link + language switch ────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '40px' }}>
         <Link
-          href="/learn"
+          href={sectionListHref('learn', lang)}
           style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(var(--ink),0.65)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
         >
-          ← Back to Learn
+          {ui('learn.back')}
         </Link>
         <div style={{ marginBottom: '-24px' }}>
           <LanguageToggle current={article.language} available={article.availableLanguages} hrefFor={c => sectionHref('learn', article.slug, c)} />
@@ -137,7 +143,7 @@ export function LearnArticlePage({ article, lang = 'en' }: Props) {
       {/* ── Footer ─────────────────────────────────────────── */}
       <div style={{ marginTop: '64px', paddingTop: '32px', borderTop: '1px solid var(--border)' }}>
         <Link
-          href="/learn"
+          href={sectionListHref('learn', lang)}
           style={{
             display:        'inline-flex',
             alignItems:     'center',
@@ -154,7 +160,7 @@ export function LearnArticlePage({ article, lang = 'en' }: Props) {
             background:     'rgba(79,142,247,0.06)',
           }}
         >
-          ← All Articles
+          {ui('learn.allArticles')}
         </Link>
       </div>
 

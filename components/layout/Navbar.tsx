@@ -6,8 +6,11 @@ import { usePathname } from 'next/navigation'
 import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { siteConfig } from '@/config/site'
 import { mainNav, desktopNav, isCurrent, sectionIsCurrent, type NavItem } from '@/config/navigation'
+import { langFromPathname, stripLangPrefix, localizeHref } from '@/lib/i18n'
+import { strings, navLabel } from '@/lib/ui'
 import { Logo } from '@/components/brand/Logo'
 import { ThemeToggle } from './ThemeToggle'
+import { LanguageSwitch } from './LanguageSwitch'
 import { MegaMenu } from './MegaMenu'
 
 /** How long the pointer must rest on a trigger before the panel opens, and how
@@ -18,8 +21,19 @@ const OPEN_DELAY_MS  = 110
 const CLOSE_DELAY_MS = 220
 
 export function Navbar() {
-  const pathname = usePathname() ?? ''
+  const rawPath = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
+
+  /* The reader's current language, and the two things it changes.
+     `href` — every chrome link is pointed into this language, so following the
+     nav from /hi keeps you in Hindi instead of dropping you back into English.
+     `pathname` — current-page marking compares against the *bare* path, since
+     the nav config is written in English hrefs; without this, nothing in the
+     bar would ever be marked current while reading Hindi. */
+  const lang     = langFromPathname(rawPath)
+  const pathname = stripLangPrefix(rawPath)
+  const href     = useCallback((h: string) => localizeHref(h, lang), [lang])
+  const ui       = strings(lang)
 
   /* Desktop mega-menu: which section's panel is open, or null. */
   const [mega, setMega] = useState<NavItem | null>(null)
@@ -122,7 +136,10 @@ export function Navbar() {
   }, [cancelHoverTimer, mega])
 
   // Close on route change, and clear any timer still pending on unmount.
-  useEffect(() => { setMenuOpen(false); setMega(null) }, [pathname])
+  // Keyed on the raw path, not the stripped one: crossing languages on the same
+  // page (/articles → /hi/articles) leaves the bare path identical, and the
+  // menu has to close for that too.
+  useEffect(() => { setMenuOpen(false); setMega(null) }, [rawPath])
   useEffect(() => () => clearTimeout(hoverTimer.current), [])
 
   useEffect(() => {
@@ -225,7 +242,7 @@ export function Navbar() {
     const label = (
       <span className="nav-drawer__label">
         {item.isLive && <span className="nav-drawer__dot" aria-hidden="true" />}
-        {item.label}
+        {navLabel(item, lang)}
       </span>
     )
     const Icon = hasChildren ? ChevronRight : ArrowRight
@@ -248,7 +265,7 @@ export function Navbar() {
           </button>
         ) : (
           <Link
-            href={item.href}
+            href={href(item.href)}
             className={className}
             data-live={item.isLive ? 'true' : undefined}
             aria-current={current ? 'page' : undefined}
@@ -275,7 +292,7 @@ export function Navbar() {
         {/* LOGO — mark + wordmark, no .org. Both inherit var(--white), so the
             mark is white in dark mode and near-black in light mode. */}
         <Link
-          href="/"
+          href={href('/')}
           className="press"
           aria-label={`${siteConfig.name} — home`}
           style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}
@@ -307,7 +324,7 @@ export function Navbar() {
             const inner = (
               <>
                 {item.isLive && <span className="nav-bar__dot" aria-hidden="true" />}
-                {item.label}
+                {navLabel(item, lang)}
               </>
             )
 
@@ -320,7 +337,7 @@ export function Navbar() {
                     onMouseLeave={scheduleClose}
                   >
                     <Link
-                      href={item.href}
+                      href={href(item.href)}
                       className="nav-bar__item press"
                       data-live={item.isLive ? 'true' : undefined}
                       data-open={open}
@@ -343,7 +360,7 @@ export function Navbar() {
                       className="nav-bar__caret-btn"
                       data-live={item.isLive ? 'true' : undefined}
                       data-open={open}
-                      aria-label={`${item.label} submenu`}
+                      aria-label={`${navLabel(item, lang)} submenu`}
                       aria-expanded={open}
                       aria-haspopup="true"
                       aria-controls="site-mega"
@@ -354,7 +371,7 @@ export function Navbar() {
                   </div>
                 ) : (
                   <Link
-                    href={item.href}
+                    href={href(item.href)}
                     className="nav-bar__item press"
                     data-live={item.isLive ? 'true' : undefined}
                     aria-current={sectionIsCurrent(pathname, item) ? 'page' : undefined}
@@ -371,11 +388,16 @@ export function Navbar() {
           })}
         </ul>
 
-        {/* DESKTOP RIGHT — search bar */}
+        {/* DESKTOP RIGHT — language switch, search bar, theme.
+            The switch sits here rather than in the nav row: it is a setting for
+            the whole site, like the theme toggle beside it, not another section
+            to visit. It replaces the one hardcoded "हिन्दी (Hindi)" drawer link
+            that always went to /hi/articles no matter where you were. */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="desktop-nav">
+          <LanguageSwitch />
           <Link href="/search" className="press" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', border: '1px solid rgba(var(--ink),0.2)', borderRadius: '6px', background: 'rgba(var(--ink),0.05)', color: 'rgba(var(--ink),0.75)', fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.08em', textDecoration: 'none' }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            Search
+            {ui('chrome.search')}
           </Link>
           <ThemeToggle />
         </div>
@@ -387,10 +409,10 @@ export function Navbar() {
             icon here rather than a drawer row — it is one tap either way. */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }} className="mobile-nav">
           <ThemeToggle size={36} />
-          <Link href="/search" aria-label="Search" className="press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', flexShrink: 0, border: '1px solid rgba(var(--ink),0.15)', borderRadius: '6px', background: 'rgba(var(--ink),0.04)', color: 'var(--white)', textDecoration: 'none' }}>
+          <Link href="/search" aria-label={ui('chrome.search')} className="press" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', flexShrink: 0, border: '1px solid rgba(var(--ink),0.15)', borderRadius: '6px', background: 'rgba(var(--ink),0.04)', color: 'var(--white)', textDecoration: 'none' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           </Link>
-          <button onClick={toggleMenu} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="site-menu" style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', flexShrink: 0, background: 'none', border: '1px solid rgba(var(--ink),0.15)', borderRadius: '6px', cursor: 'pointer', padding: 0 }}>
+          <button onClick={toggleMenu} aria-label={menuOpen ? ui('chrome.closeMenu') : ui('chrome.openMenu')} aria-expanded={menuOpen} aria-controls="site-menu" style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', flexShrink: 0, background: 'none', border: '1px solid rgba(var(--ink),0.15)', borderRadius: '6px', cursor: 'pointer', padding: 0 }}>
             <span style={{ width: '16px', height: '1.5px', background: 'var(--white)', display: 'block', transition: 'all 0.2s', transform: menuOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none' }} />
             <span style={{ width: '16px', height: '1.5px', background: 'var(--white)', display: 'block', opacity: menuOpen ? 0 : 1 }} />
             <span style={{ width: '16px', height: '1.5px', background: 'var(--white)', display: 'block', transition: 'all 0.2s', transform: menuOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none' }} />
@@ -415,6 +437,7 @@ export function Navbar() {
           <MegaMenu
             section={mega}
             pathname={pathname}
+            lang={lang}
             onSectionChange={setMega}
             onNavigate={closeMega}
             panelRef={megaRef}
@@ -437,26 +460,26 @@ export function Navbar() {
               key={panel.section ? `${i}-${panel.section.href}` : 'root'}
               className="nav-drawer__panel"
               id={`site-menu-panel-${i}`}
-              aria-label={panel.section ? `${panel.section.label} section` : 'Main'}
+              aria-label={panel.section ? `${navLabel(panel.section, lang)} section` : ui('chrome.main')}
               aria-hidden={i !== depth}
             >
               {panel.section && (
                 <>
                   <button type="button" className="nav-drawer__back" onClick={drillBack}>
                     <ChevronLeft size={15} aria-hidden="true" />
-                    Back
+                    {ui('chrome.back')}
                   </button>
 
                   {/* The section's own landing page. A parent row drills in, so
                       this is how you still reach the section itself. */}
                   <Link
-                    href={panel.section.href}
+                    href={href(panel.section.href)}
                     className="nav-drawer__section"
-                    aria-label={`${panel.section.label} — section overview`}
+                    aria-label={`${navLabel(panel.section, lang)} — section overview`}
                     aria-current={isCurrent(pathname, panel.section.href) ? 'page' : undefined}
                     onClick={closeMenu}
                   >
-                    {panel.section.label}
+                    {navLabel(panel.section, lang)}
                     <span className="nav-drawer__section-go" aria-hidden="true">
                       <ArrowRight size={15} />
                     </span>
@@ -466,6 +489,10 @@ export function Navbar() {
 
               <ul className="nav-drawer__list">
                 {panel.items.map((item) => renderRow(item, i, i))}
+                {/* Top-level panel only — a site-wide setting, not a section,
+                    so it sits below the sections rather than inside one (which
+                    is where the old hardcoded Hindi link was stranded). */}
+                {i === 0 && <LanguageSwitch variant="drawer" onNavigate={closeMenu} />}
               </ul>
             </nav>
           ))}

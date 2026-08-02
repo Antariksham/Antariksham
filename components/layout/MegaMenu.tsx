@@ -6,6 +6,11 @@ import { ArrowRight, ChevronRight } from 'lucide-react'
 import { mainNav, isCurrent, sectionIsCurrent, type NavItem } from '@/config/navigation'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { formatDateShort } from '@/lib/utils'
+import {
+  localizeHref, articleHref, articlesListHref,
+  DEFAULT_LANGUAGE, type LanguageCode,
+} from '@/lib/i18n'
+import { strings, navLabel } from '@/lib/ui'
 
 /** The shape the /api/articles proxy returns, narrowed to what a card needs. */
 type Highlight = {
@@ -28,32 +33,40 @@ const HIGHLIGHT_COUNT = 3
  * cleanup cancels the only attempt and then declines to retry it. Caching the
  * promise instead makes the double-mount harmless and dedupes concurrent opens.
  */
-let cache: Highlight[] | null = null
-let inflight: Promise<Highlight[]> | null = null
+/* Keyed by language: a reader who crosses into Hindi must not be served the
+   English titles the panel happened to cache before the switch. */
+const cache    = new Map<LanguageCode, Highlight[]>()
+const inflight = new Map<LanguageCode, Promise<Highlight[]>>()
 
-function loadHighlights(): Promise<Highlight[]> {
-  if (cache) return Promise.resolve(cache)
-  if (inflight) return inflight
+function loadHighlights(lang: LanguageCode): Promise<Highlight[]> {
+  const hit = cache.get(lang)
+  if (hit) return Promise.resolve(hit)
+  const pending = inflight.get(lang)
+  if (pending) return pending
 
   /* Lazily fetched on first open rather than server-rendered with the nav. The
      bar is in the root layout, so SSR-ing this would put an articles query on
      every page load site-wide to fill a panel most visits never open. */
-  inflight = fetch(`/api/articles?page=1&perPage=${HIGHLIGHT_COUNT}`)
+  const params = new URLSearchParams({ page: '1', perPage: String(HIGHLIGHT_COUNT) })
+  if (lang !== DEFAULT_LANGUAGE) params.set('lang', lang)
+
+  const req = fetch(`/api/articles?${params}`)
     .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
     .then((data) => {
       const list: Highlight[] = Array.isArray(data?.articles)
         ? data.articles.slice(0, HIGHLIGHT_COUNT)
         : []
-      cache = list
-      inflight = null
+      cache.set(lang, list)
+      inflight.delete(lang)
       return list
     })
     .catch((err) => {
-      inflight = null          // let a later open try again
+      inflight.delete(lang)    // let a later open try again
       throw err
     })
 
-  return inflight
+  inflight.set(lang, req)
+  return req
 }
 
 /**
@@ -74,29 +87,35 @@ function loadHighlights(): Promise<Highlight[]> {
 export function MegaMenu({
   section,
   pathname,
+  lang = DEFAULT_LANGUAGE,
   onSectionChange,
   onNavigate,
   panelRef,
 }: {
   section: NavItem
+  /** Already stripped of its language prefix — see Navbar. */
   pathname: string
+  /** The reader's language, so every link here keeps them in it. */
+  lang?: LanguageCode
   onSectionChange: (next: NavItem) => void
   onNavigate: () => void
   panelRef?: React.RefObject<HTMLDivElement>
 }) {
   // Seeded from the cache, so a second open paints instantly with no skeleton.
-  const [highlights, setHighlights] = useState<Highlight[] | null>(cache)
+  const [highlights, setHighlights] = useState<Highlight[] | null>(cache.get(lang) ?? null)
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
     let alive = true
-    loadHighlights()
+    loadHighlights(lang)
       .then((list) => { if (alive) setHighlights(list) })
       .catch(() => { if (alive) setFailed(true) })   // the column degrades away
     return () => { alive = false }
-  }, [])
+  }, [lang])
 
   const children = section.children ?? []
+  const href = (h: string) => localizeHref(h, lang)
+  const ui   = strings(lang)
 
   return (
     <div className="mega" ref={panelRef}>
@@ -107,7 +126,7 @@ export function MegaMenu({
             *focusing* one deliberately does not: tabbing through the list would
             then swap the detail column out from under a keyboard user, so they
             could never tab from the section they opened to its own links. */}
-        <ul className="mega__sections" aria-label="Sections">
+        <ul className="mega__sections" aria-label={ui('chrome.sections')}>
           {mainNav.map((item) => {
             const open = item.href === section.href
             const hasChildren = Boolean(item.children?.length)
@@ -127,12 +146,12 @@ export function MegaMenu({
                     onClick={() => onSectionChange(item)}
                   >
                     {item.isLive && <span className="mega__dot" aria-hidden="true" />}
-                    {item.label}
+                    {navLabel(item, lang)}
                     <ChevronRight className="mega__section-icon" size={15} aria-hidden="true" />
                   </button>
                 ) : (
                   <Link
-                    href={item.href}
+                    href={href(item.href)}
                     className="mega__section"
                     data-open={open}
                     data-live={item.isLive ? 'true' : undefined}
@@ -141,7 +160,7 @@ export function MegaMenu({
                     onClick={onNavigate}
                   >
                     {item.isLive && <span className="mega__dot" aria-hidden="true" />}
-                    {item.label}
+                    {navLabel(item, lang)}
                     <ArrowRight className="mega__section-icon" size={15} aria-hidden="true" />
                   </Link>
                 )}
@@ -153,13 +172,13 @@ export function MegaMenu({
         {/* ── COLUMN 2 — the open section ── */}
         <div className="mega__detail">
           <Link
-            href={section.href}
+            href={href(section.href)}
             className="mega__title"
-            aria-label={`${section.label} — section overview`}
+            aria-label={`${navLabel(section, lang)} — section overview`}
             aria-current={isCurrent(pathname, section.href) ? 'page' : undefined}
             onClick={onNavigate}
           >
-            {section.label}
+            {navLabel(section, lang)}
             <span className="mega__title-go" aria-hidden="true"><ArrowRight size={16} /></span>
           </Link>
 
@@ -170,12 +189,12 @@ export function MegaMenu({
               {children.map((child) => (
                 <li key={child.href}>
                   <Link
-                    href={child.href}
+                    href={href(child.href)}
                     className="mega__link"
                     aria-current={isCurrent(pathname, child.href) ? 'page' : undefined}
                     onClick={onNavigate}
                   >
-                    <span>{child.label}</span>
+                    <span>{navLabel(child, lang)}</span>
                     <ArrowRight size={15} aria-hidden="true" />
                   </Link>
                 </li>
@@ -186,7 +205,7 @@ export function MegaMenu({
 
         {/* ── COLUMN 3 — highlights ── */}
         <div className="mega__highlights">
-          <div className="mega__eyebrow">Highlights</div>
+          <div className="mega__eyebrow">{ui('chrome.highlights')}</div>
 
           {/* Skeletons while in flight; the whole column simply goes away if
               the request failed or there is nothing published yet. */}
@@ -209,7 +228,7 @@ export function MegaMenu({
               {highlights.map((article) => (
                 <Link
                   key={article.slug}
-                  href={`/article/${article.slug}`}
+                  href={articleHref(article.slug, lang)}
                   className="mega__card"
                   onClick={onNavigate}
                 >
@@ -226,10 +245,10 @@ export function MegaMenu({
                   </div>
                   <div className="mega__card-body">
                     <div className="mega__card-meta">
-                      {article.readingTime > 0 && <span>{article.readingTime} min read</span>}
-                      {article.publishedAt && <span>{formatDateShort(article.publishedAt)}</span>}
+                      {article.readingTime > 0 && <span>{ui('chrome.minRead', { n: article.readingTime })}</span>}
+                      {article.publishedAt && <span>{formatDateShort(article.publishedAt, lang)}</span>}
                     </div>
-                    <div className="mega__card-title">{article.title}</div>
+                    <div className="mega__card-title" lang={lang}>{article.title}</div>
                   </div>
                 </Link>
               ))}
@@ -237,11 +256,11 @@ export function MegaMenu({
           )}
 
           {(failed || highlights?.length === 0) && (
-            <p className="mega__desc">Fresh coverage lands on the articles page.</p>
+            <p className="mega__desc">{ui('chrome.noHighlights')}</p>
           )}
 
-          <Link href="/articles" className="mega__all" onClick={onNavigate}>
-            All articles
+          <Link href={articlesListHref(lang)} className="mega__all" onClick={onNavigate}>
+            {ui('chrome.allArticles')}
             <ArrowRight size={14} aria-hidden="true" />
           </Link>
         </div>

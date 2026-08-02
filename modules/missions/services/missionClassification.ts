@@ -21,48 +21,50 @@ export type StatusGroup = 'Pre-Launch' | 'In Flight' | 'Concluded'
 export interface StatusOption {
   value:  string
   label:  string
+  /** Hindi label — see lib/ui.ts for why chrome strings live beside their data here. */
+  hi:     string
   color:  string          // theme-safe CSS token value
   group:  StatusGroup
   legacy: MissionStatus   // projection written to the base `status` column
 }
 
 export const MISSION_STATUSES: StatusOption[] = [
-  { value: 'concept',            label: 'Concept',            group: 'Pre-Launch', color: 'rgba(var(--ink),0.5)', legacy: 'in-development' },
-  { value: 'planning',           label: 'Planning',           group: 'Pre-Launch', color: 'var(--gold)',          legacy: 'in-development' },
-  { value: 'testing',            label: 'Testing',            group: 'Pre-Launch', color: 'var(--gold)',          legacy: 'in-development' },
-  { value: 'awaiting-launch',    label: 'Awaiting Launch',    group: 'Pre-Launch', color: 'var(--accent)',        legacy: 'upcoming' },
-  { value: 'launch-window-open', label: 'Launch Window Open', group: 'Pre-Launch', color: 'var(--accent)',        legacy: 'upcoming' },
-  { value: 'upcoming',           label: 'Upcoming',           group: 'Pre-Launch', color: 'var(--accent)',        legacy: 'upcoming' },
-  { value: 'active',             label: 'Active',             group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
-  { value: 'cruise',             label: 'Cruise',             group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
-  { value: 'orbiting',           label: 'Orbiting',           group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
-  { value: 'landing',            label: 'Landing',            group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
-  { value: 'surface-operations', label: 'Surface Operations', group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
-  { value: 'extended-mission',   label: 'Extended Mission',   group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
-  { value: 'completed',          label: 'Completed',          group: 'Concluded',  color: 'rgba(var(--ink),0.5)', legacy: 'completed' },
-  { value: 'failed',             label: 'Failed',             group: 'Concluded',  color: 'var(--red)',           legacy: 'failed' },
-  { value: 'cancelled',          label: 'Cancelled',          group: 'Concluded',  color: 'var(--red)',           legacy: 'cancelled' },
+  { value: 'concept',            label: 'Concept', hi: 'संकल्पना',            group: 'Pre-Launch', color: 'rgba(var(--ink),0.5)', legacy: 'in-development' },
+  { value: 'planning',           label: 'Planning', hi: 'नियोजन',           group: 'Pre-Launch', color: 'var(--gold)',          legacy: 'in-development' },
+  { value: 'testing',            label: 'Testing', hi: 'परीक्षण',            group: 'Pre-Launch', color: 'var(--gold)',          legacy: 'in-development' },
+  { value: 'awaiting-launch',    label: 'Awaiting Launch', hi: 'लॉन्च की प्रतीक्षा',    group: 'Pre-Launch', color: 'var(--accent)',        legacy: 'upcoming' },
+  { value: 'launch-window-open', label: 'Launch Window Open', hi: 'लॉन्च विंडो खुली', group: 'Pre-Launch', color: 'var(--accent)',        legacy: 'upcoming' },
+  { value: 'upcoming',           label: 'Upcoming', hi: 'आगामी',           group: 'Pre-Launch', color: 'var(--accent)',        legacy: 'upcoming' },
+  { value: 'active',             label: 'Active', hi: 'सक्रिय',             group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
+  { value: 'cruise',             label: 'Cruise', hi: 'परिभ्रमण',             group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
+  { value: 'orbiting',           label: 'Orbiting', hi: 'परिक्रमारत',           group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
+  { value: 'landing',            label: 'Landing', hi: 'अवतरण',            group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
+  { value: 'surface-operations', label: 'Surface Operations', hi: 'सतह संचालन', group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
+  { value: 'extended-mission',   label: 'Extended Mission', hi: 'विस्तारित मिशन',   group: 'In Flight',  color: 'var(--green)',         legacy: 'active' },
+  { value: 'completed',          label: 'Completed', hi: 'पूर्ण',          group: 'Concluded',  color: 'rgba(var(--ink),0.5)', legacy: 'completed' },
+  { value: 'failed',             label: 'Failed', hi: 'विफल',             group: 'Concluded',  color: 'var(--red)',           legacy: 'failed' },
+  { value: 'cancelled',          label: 'Cancelled', hi: 'रद्द',          group: 'Concluded',  color: 'var(--red)',           legacy: 'cancelled' },
 ]
 
 export const STATUS_GROUPS: StatusGroup[] = ['Pre-Launch', 'In Flight', 'Concluded']
 
 // Legacy-only display meta, for rows whose stored base status predates the 15
 // (e.g. 'in-development', which has no 1:1 extended value).
-const LEGACY_STATUS_META: Record<MissionStatus, { label: string; color: string }> = {
-  active:           { label: 'Active',         color: 'var(--green)' },
-  upcoming:         { label: 'Upcoming',       color: 'var(--accent)' },
-  'in-development': { label: 'In Development',  color: 'var(--gold)' },
-  completed:        { label: 'Completed',      color: 'rgba(var(--ink),0.5)' },
-  failed:           { label: 'Failed',         color: 'var(--red)' },
-  cancelled:        { label: 'Cancelled',      color: 'var(--red)' },
+const LEGACY_STATUS_META: Record<MissionStatus, { label: string; hi: string; color: string }> = {
+  active:           { label: 'Active', hi: 'सक्रिय',         color: 'var(--green)' },
+  upcoming:         { label: 'Upcoming', hi: 'आगामी',       color: 'var(--accent)' },
+  'in-development': { label: 'In Development', hi: 'विकासाधीन',  color: 'var(--gold)' },
+  completed:        { label: 'Completed', hi: 'पूर्ण',      color: 'rgba(var(--ink),0.5)' },
+  failed:           { label: 'Failed', hi: 'विफल',         color: 'var(--red)' },
+  cancelled:        { label: 'Cancelled', hi: 'रद्द',      color: 'var(--red)' },
 }
 
 /** Display meta (label + color) for ANY status value, extended or legacy. */
-export function statusMeta(value: string): { label: string; color: string } {
+export function statusMeta(value: string, lang?: string): { label: string; color: string } {
   const ext = MISSION_STATUSES.find(s => s.value === value)
-  if (ext) return { label: ext.label, color: ext.color }
+  if (ext) return { label: lang === 'hi' ? ext.hi : ext.label, color: ext.color }
   const legacy = LEGACY_STATUS_META[value as MissionStatus]
-  if (legacy) return legacy
+  if (legacy) return { label: lang === 'hi' ? legacy.hi : legacy.label, color: legacy.color }
   return { label: humanize(value), color: 'rgba(var(--ink),0.5)' }
 }
 
@@ -85,34 +87,36 @@ export function extendedStatusFromLegacy(status: MissionStatus): string {
 
 // ── Mission type (multi-select, ~22 tags) ────────────────────────────
 
-export interface TypeOption { value: string; label: string; legacy: MissionType }
+export interface TypeOption { value: string; label: string; hi: string; legacy: MissionType }
 
 export const MISSION_TYPE_TAGS: TypeOption[] = [
-  { value: 'human-spaceflight',       label: 'Human Spaceflight',       legacy: 'crewed' },
-  { value: 'robotic',                 label: 'Robotic',                 legacy: 'robotic' },
-  { value: 'orbiter',                 label: 'Orbiter',                 legacy: 'orbiter' },
-  { value: 'flyby',                   label: 'Flyby',                   legacy: 'flyby' },
-  { value: 'lander',                  label: 'Lander',                  legacy: 'lander' },
-  { value: 'rover',                   label: 'Rover',                   legacy: 'rover' },
-  { value: 'helicopter',              label: 'Helicopter',              legacy: 'robotic' },
-  { value: 'space-telescope',         label: 'Space Telescope',         legacy: 'telescope' },
-  { value: 'space-station',           label: 'Space Station',           legacy: 'crewed' },
-  { value: 'sample-return',           label: 'Sample Return',           legacy: 'sample-return' },
-  { value: 'cubesat',                 label: 'CubeSat',                 legacy: 'robotic' },
-  { value: 'cargo',                   label: 'Cargo',                   legacy: 'robotic' },
-  { value: 'crewed',                  label: 'Crewed',                  legacy: 'crewed' },
-  { value: 'technology-demonstration',label: 'Technology Demonstration',legacy: 'robotic' },
-  { value: 'planetary-science',       label: 'Planetary Science',       legacy: 'robotic' },
-  { value: 'earth-observation',       label: 'Earth Observation',       legacy: 'robotic' },
-  { value: 'communications',          label: 'Communications',          legacy: 'robotic' },
-  { value: 'navigation',              label: 'Navigation',              legacy: 'robotic' },
-  { value: 'astronomy',               label: 'Astronomy',               legacy: 'telescope' },
-  { value: 'deep-space',              label: 'Deep Space',              legacy: 'robotic' },
-  { value: 'experimental',            label: 'Experimental',            legacy: 'robotic' },
+  { value: 'human-spaceflight',       label: 'Human Spaceflight', hi: 'मानव अंतरिक्ष उड़ान',       legacy: 'crewed' },
+  { value: 'robotic',                 label: 'Robotic', hi: 'रोबोटिक',                 legacy: 'robotic' },
+  { value: 'orbiter',                 label: 'Orbiter', hi: 'ऑर्बिटर',                 legacy: 'orbiter' },
+  { value: 'flyby',                   label: 'Flyby', hi: 'फ्लाईबाई',                   legacy: 'flyby' },
+  { value: 'lander',                  label: 'Lander', hi: 'लैंडर',                  legacy: 'lander' },
+  { value: 'rover',                   label: 'Rover', hi: 'रोवर',                   legacy: 'rover' },
+  { value: 'helicopter',              label: 'Helicopter', hi: 'हेलिकॉप्टर',              legacy: 'robotic' },
+  { value: 'space-telescope',         label: 'Space Telescope', hi: 'अंतरिक्ष दूरबीन',         legacy: 'telescope' },
+  { value: 'space-station',           label: 'Space Station', hi: 'अंतरिक्ष स्टेशन',           legacy: 'crewed' },
+  { value: 'sample-return',           label: 'Sample Return', hi: 'नमूना वापसी',           legacy: 'sample-return' },
+  { value: 'cubesat',                 label: 'CubeSat', hi: 'CubeSat',                 legacy: 'robotic' },
+  { value: 'cargo',                   label: 'Cargo', hi: 'कार्गो',                   legacy: 'robotic' },
+  { value: 'crewed',                  label: 'Crewed', hi: 'चालक दल सहित',                  legacy: 'crewed' },
+  { value: 'technology-demonstration',label: 'Technology Demonstration', hi: 'प्रौद्योगिकी प्रदर्शन',legacy: 'robotic' },
+  { value: 'planetary-science',       label: 'Planetary Science', hi: 'ग्रहीय विज्ञान',       legacy: 'robotic' },
+  { value: 'earth-observation',       label: 'Earth Observation', hi: 'पृथ्वी अवलोकन',       legacy: 'robotic' },
+  { value: 'communications',          label: 'Communications', hi: 'संचार',          legacy: 'robotic' },
+  { value: 'navigation',              label: 'Navigation', hi: 'नेविगेशन',              legacy: 'robotic' },
+  { value: 'astronomy',               label: 'Astronomy', hi: 'खगोल विज्ञान',               legacy: 'telescope' },
+  { value: 'deep-space',              label: 'Deep Space', hi: 'गहन अंतरिक्ष',              legacy: 'robotic' },
+  { value: 'experimental',            label: 'Experimental', hi: 'प्रायोगिक',            legacy: 'robotic' },
 ]
 
-export function typeLabel(value: string): string {
-  return MISSION_TYPE_TAGS.find(t => t.value === value)?.label || humanize(value)
+export function typeLabel(value: string, lang?: string): string {
+  const tag = MISSION_TYPE_TAGS.find(t => t.value === value)
+  if (!tag) return humanize(value)
+  return lang === 'hi' ? tag.hi : tag.label
 }
 
 /** Legacy projection for the base `mission_type` column from an extended type. */
