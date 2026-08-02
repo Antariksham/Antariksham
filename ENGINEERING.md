@@ -46,6 +46,36 @@ Every change builds (`next build` compiles; the only build error is a
 pre-existing `supabaseUrl is required` during page-data collection when Supabase
 env vars are absent — unrelated to app code).
 
+- ✅ **Mobile scroll lock — the closed nav drawer was eating every touch.**
+  Reported as "the whole site is frozen on a phone, fine on desktop", on more
+  than one handset. It was one CSS selector, and the mechanism is worth keeping:
+  - `.nav-drawer` is `position: fixed` over the **entire viewport** below the
+    64px bar, and hides itself when shut with `opacity: 0` + `visibility:
+    hidden`.
+  - `visibility` is **inherited**, so a descendant that re-declares `visible`
+    beats a hidden ancestor. `.nav-drawer__panel[aria-hidden='false']` did
+    exactly that — and panel 0 always carries `aria-hidden="false"`, because
+    `depth` is 0 whenever the drawer is closed.
+  - `opacity: 0` removes a box from *sight*, never from **hit-testing**. So the
+    shut drawer stayed a live, invisible, viewport-covering overlay. Measured on
+    production before the fix: **27 of 27 points sampled across the viewport hit
+    the closed drawer**, on both a Pixel and an iPhone viewport, and Tab landed
+    on its eight rows before reaching any page content.
+  - Desktop was untouched only because `@media (min-width: 1100px)` sets the
+    drawer `display: none` — which is precisely why the bug read as
+    "mobile-only".
+  - Fix: scope the `visible` half to an open drawer
+    (`.nav-drawer[data-open='true'] .nav-drawer__panel[aria-hidden='false']`),
+    plus `.nav-drawer:not([data-open='true']) { pointer-events: none }` as a
+    guard that no descendant can defeat. The close animation is unchanged: on
+    the way out the panel inherits the drawer's own visibility, which the
+    existing `visibility 0s linear 0.22s` delay already holds at `visible` for
+    the length of the fade (verified frame by frame).
+  - Also fixed by the same change: taps on page content were being swallowed
+    (a tap on a drill row silently re-pointed the hidden drawer; a tap on a leaf
+    row would have navigated), and the keyboard tab order no longer detours
+    through invisible links.
+
 - ✅ **Desktop mega-menu** (`components/layout/MegaMenu.tsx`) — the wide panel
   under the bar, in the nasa.gov arrangement. Hovering or clicking a bar section
   opens it; the desktop nav was six flat links to six landing pages before.
@@ -2273,6 +2303,24 @@ still need a human on the Vercel preview URL.
   exactly. Cache the *promise* at module scope instead — the double-mount
   becomes harmless, concurrent opens dedupe, and the result is reused across
   the page's lifetime.
+- **`opacity: 0` hides a box from the eye, not from the finger.** An element
+  faded to zero still hit-tests, still takes clicks and still swallows touch
+  gestures. Only `visibility: hidden`, `display: none` or `pointer-events: none`
+  make a box inert. Pair that with the fact that **`visibility` is inherited** —
+  a descendant declaring `visible` overrides a hidden ancestor — and a
+  full-viewport `position: fixed` overlay that *looks* closed can silently own
+  every touch on the site. That is exactly how the mobile scroll lock happened
+  (§2). When something is meant to be dismissed, assert it on the container and
+  scope any `visibility: visible` on its children to the open state.
+- **"Works on desktop, broken on mobile" usually means a breakpoint, not a
+  device.** Before blaming iOS or a handset, check what a media query adds or
+  removes at that width — here the whole bug was an element the desktop
+  breakpoint happened to `display: none`. And when driving a headless browser to
+  reproduce a touch bug, **verify the input method itself first**: CDP's
+  `Input.synthesizeScrollGesture` with `gestureSourceType: 'touch'` silently
+  does nothing in this Chromium build, which manufactures a convincing false
+  positive on any page. Dispatch `Input.dispatchTouchEvent` manually, and prove
+  the harness can scroll a plain tall page before trusting a negative result.
 - **`overflow: hidden` is still programmatically scrollable** — it clips, but
   the box remains a scroll container, so the browser will happily scroll it to
   bring a focused descendant into view. Moving focus into the incoming drawer

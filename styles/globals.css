@@ -838,9 +838,28 @@ a { color: inherit; text-decoration: none; }
   padding: 14px 1.5rem calc(24px + env(safe-area-inset-bottom));
 }
 /* The outgoing panel stays visible for the length of the slide, then leaves
-   the tab order entirely — otherwise Tab walks into off-screen links. */
-.nav-drawer__panel[aria-hidden='true']  { visibility: hidden; transition: visibility 0s linear 0.32s; }
-.nav-drawer__panel[aria-hidden='false'] { visibility: visible; transition: visibility 0s; }
+   the tab order entirely — otherwise Tab walks into off-screen links.
+
+   The `visible` half MUST stay scoped to an open drawer. `visibility` is
+   inherited, so a descendant that re-declares `visible` overrides the
+   `visibility: hidden` the closed drawer sets on itself — and panel 0 always
+   carries aria-hidden="false" (depth is 0 whenever the drawer is shut). An
+   unscoped rule therefore un-hid the top-level panel inside a *closed* drawer,
+   and since `opacity: 0` hides a box from the eye but not from hit-testing,
+   the drawer stayed a live, invisible, viewport-covering fixed overlay on every
+   page below 1100px: it swallowed every touch (the page could not be scrolled
+   or tapped on a phone at all) and Tab walked into its rows. Desktop was fine
+   only because the drawer is `display: none` above the breakpoint.
+
+   Scoping it to [data-open='true'] costs the close animation nothing: on the
+   way out the panel simply inherits the drawer's own visibility, which the
+   0.22s delay above already holds at `visible` for the length of the fade. */
+.nav-drawer__panel[aria-hidden='true'] { visibility: hidden; transition: visibility 0s linear 0.32s; }
+.nav-drawer[data-open='true'] .nav-drawer__panel[aria-hidden='false'] { visibility: visible; transition: visibility 0s; }
+
+/* Belt and braces for the above: a closed drawer is never a touch target,
+   whatever a descendant does to its own visibility. */
+.nav-drawer:not([data-open='true']) { pointer-events: none; }
 
 .nav-drawer__list { list-style: none; margin: 0; padding: 0; }
 
