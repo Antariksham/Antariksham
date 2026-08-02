@@ -881,6 +881,20 @@ env vars are absent — unrelated to app code).
   types cannot — a Hindi value left as a copy of the English, Devanagari leaking
   into an English string, and a `{n}` placeholder surviving into the output.
 
+  **Names are not translated.** `APOD`, `NASA`, `ISRO`, `ESA`, `ISS`, `JWST`,
+  `Voyager 1`, `CubeSat` stay in Latin script, because respelling them in
+  Devanagari (`नासा एपीओडी`, `वॉयेजर 1`) is *transliteration*, not translation —
+  the same letters in a different alphabet, harder to recognise, not what a
+  reader searches for, and it severs the label from the source it names. The
+  line is script, not language: a **loanword in ordinary Hindi use** is
+  correctly Devanagari (लाइव, गैलरी, ट्रैकर, रोवर, लैंडर, टेलीमेट्री), and
+  Latinising *those* would be the mirror-image mistake. Mixed labels are the
+  right outcome — `ISS ट्रैकर`, `APOD संग्रह`. Two tests hold the line:
+  `ui.test.ts` keeps an explicit allow-list of exempted proper nouns (so an
+  English string is a recorded decision, never an oversight) and asserts they
+  stay Latin; `navigation.test.ts` fails if any all-caps acronym in a label
+  goes missing from its Hindi counterpart.
+
   **Not yet translated: the mission detail page's field labels** (`ROLE_LABEL`,
   the 17 `SPEC_ROWS`, objective groups, launch-information rows). That is a
   mission-domain vocabulary rather than site chrome — see §10.

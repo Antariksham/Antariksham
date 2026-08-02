@@ -57,12 +57,31 @@ test('every key resolves to a non-empty string in every language', () => {
 
 test('no Hindi string was left as a copy of the English', () => {
   // The quiet failure mode: a key added to the table and filled in on both
-  // sides with the same text. Proper nouns and bare punctuation would be
-  // legitimate matches, but none of these keys are that.
-  const allowed = new Set<UIKey>([])
+  // sides with the same text.
+  //
+  // The exemptions are names, and they are listed rather than pattern-matched
+  // on purpose — keeping a string in English has to be a decision someone
+  // wrote down, not something a regex quietly permits. Respelling these in
+  // Devanagari (नासा एपीओडी, वॉयेजर 1) would be transliteration, not
+  // translation: the same letters in another alphabet, harder to recognise and
+  // not what a reader searches for. See the policy note in lib/ui.ts.
+  const PROPER_NOUNS = new Set<UIKey>([
+    'strip.apod',     // NASA APOD — an agency name and a product acronym
+    'strip.voyager',  // Voyager 1 — a spacecraft name
+  ])
+
   for (const key of KEYS) {
-    if (allowed.has(key)) continue
+    if (PROPER_NOUNS.has(key)) continue
     assert.notEqual(t(key, 'hi'), t(key, 'en'), `"${key}" is still English in hi`)
+  }
+})
+
+test('the proper-noun exemptions really are still in Latin script', () => {
+  // The other half of the rule: an exemption is a promise that the string stays
+  // a name. If someone "helpfully" transliterates one later, the allow-list
+  // above would silently stop protecting anything.
+  for (const key of ['strip.apod', 'strip.voyager'] as UIKey[]) {
+    assert.doesNotMatch(t(key, 'hi'), /[ऀ-ॿ]/, `"${key}" should stay in Latin script`)
   }
 })
 

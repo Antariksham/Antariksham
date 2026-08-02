@@ -10,6 +10,26 @@
 // beside their English originals — that tree is data, and splitting a label
 // from the href it names makes the nav harder to edit, not easier.
 //
+// ── What does NOT get translated ─────────────────────────────────────────
+//
+// Names stay in Latin script, always. **APOD, NASA, ISRO, ESA, ISS, JWST,
+// Voyager 1, CubeSat** are what these things are *called* — respelling them in
+// Devanagari (नासा एपीओडी, वॉयेजर 1) produces the same letters in a different
+// alphabet, which is not a translation and helps nobody: it is harder to
+// recognise, it does not match what a reader would search for, and it breaks
+// the link between the label and the source it names.
+//
+// The line is script, not language. A **loanword in ordinary Hindi use** is
+// correctly written in Devanagari — लाइव, गैलरी, ट्रैकर, रोवर, लैंडर, टेलीमेट्री
+// are how Hindi actually writes those words, and Latinising them would be the
+// mirror-image mistake. Mixed strings are normal and expected: `ISS ट्रैकर`,
+// `APOD संग्रह`.
+//
+// Test: `no Hindi string was left as a copy of the English` in ui.test.ts
+// enforces that everything else IS translated, and carries an explicit
+// allow-list of the proper nouns exempted here — so a name kept in English is
+// a recorded decision and a forgotten translation is still a failure.
+//
 // `satisfies` below is doing real work: it pins the key union for `UIKey` while
 // still requiring **every** language on **every** entry, so adding a language
 // to `lib/i18n.ts` turns each missing translation into a compile error rather
@@ -48,14 +68,14 @@ const UI = {
   'footer.description':  { en: 'Scientific journalism, live mission tracking, deep-space telemetry, and an educational knowledge engine — all in one independent platform.', hi: 'वैज्ञानिक पत्रकारिता, लाइव मिशन ट्रैकिंग, गहन-अंतरिक्ष टेलीमेट्री और एक शैक्षिक ज्ञान इंजन — सब एक स्वतंत्र मंच पर।' },
 
   // ── Live status strip (home) ─────────────────────────────────
-  'strip.issPosition':   { en: 'ISS Position',      hi: 'आईएसएस स्थिति'     },
+  'strip.issPosition':   { en: 'ISS Position',      hi: 'ISS स्थिति'        },
   'strip.liveTracking':  { en: '● Live tracking',   hi: '● लाइव ट्रैकिंग'    },
   'strip.nextLaunch':    { en: 'Next Launch',       hi: 'अगला लॉन्च'        },
   'strip.viewSchedule':  { en: 'View Schedule',     hi: 'कार्यक्रम देखें'     },
-  'strip.apod':          { en: 'NASA APOD',         hi: 'नासा एपीओडी'       },
+  'strip.apod':          { en: 'NASA APOD',         hi: 'NASA APOD'         },
   'strip.todaysImage':   { en: "Today's Image",     hi: 'आज की तस्वीर'      },
   'strip.updatedDaily':  { en: 'Updated daily',     hi: 'रोज़ अपडेट'         },
-  'strip.voyager':       { en: 'Voyager 1',         hi: 'वॉयेजर 1'          },
+  'strip.voyager':       { en: 'Voyager 1',         hi: 'Voyager 1'         },
   'strip.interstellar':  { en: 'Interstellar · 46 yrs', hi: 'तारेतर अंतरिक्ष · 46 वर्ष' },
   'strip.interstellarKms': { en: 'Interstellar · {n} km/s', hi: 'तारेतर अंतरिक्ष · {n} किमी/से' },
   'strip.kmh':           { en: '{n} km/h',          hi: '{n} किमी/घंटा'     },

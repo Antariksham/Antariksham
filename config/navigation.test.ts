@@ -130,6 +130,33 @@ test('every nav entry a reader can see carries a Hindi label', () => {
   assert.deepEqual(missing, [], `nav entries with no Hindi label: ${missing.join(', ')}`)
 })
 
+test('an acronym in a label survives into the Hindi label', () => {
+  // Names are not translated — NASA, APOD, ISS are what these things are
+  // called, and respelling them in Devanagari (नासा एपीओडी) is transliteration,
+  // not translation: the same letters in another alphabet, harder to recognise
+  // and not what a reader would search for. Mixed labels are the correct
+  // outcome — `ISS ट्रैकर`, `APOD संग्रह`. See the policy note in lib/ui.ts.
+  const ACRONYM = /\b[A-Z]{2,}\b/g
+  const missing: string[] = []
+
+  const walk = (items: NavItem[]) => {
+    for (const item of items) {
+      const acronyms = item.label.match(ACRONYM) ?? []
+      const hi = item.labels?.hi
+      if (hi) {
+        for (const a of acronyms) {
+          if (!hi.includes(a)) missing.push(`"${item.label}" → "${hi}" drops ${a}`)
+        }
+      }
+      if (item.children) walk(item.children)
+    }
+  }
+  walk(mainNav)
+  for (const list of Object.values(footerNav)) walk(list as NavItem[])
+
+  assert.deepEqual(missing, [], `acronyms lost in translation: ${missing.join('; ')}`)
+})
+
 test('every top-level section has a description for the mega-menu', () => {
   // For Home, Missions and Learn this line IS the mega-menu's middle column —
   // they have no children — so a missing one leaves a visibly empty panel.

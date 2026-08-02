@@ -100,7 +100,7 @@ export const MISSION_TYPE_TAGS: TypeOption[] = [
   { value: 'space-telescope',         label: 'Space Telescope', hi: 'अंतरिक्ष दूरबीन',         legacy: 'telescope' },
   { value: 'space-station',           label: 'Space Station', hi: 'अंतरिक्ष स्टेशन',           legacy: 'crewed' },
   { value: 'sample-return',           label: 'Sample Return', hi: 'नमूना वापसी',           legacy: 'sample-return' },
-  { value: 'cubesat',                 label: 'CubeSat', hi: 'क्यूबसैट',                 legacy: 'robotic' },
+  { value: 'cubesat',                 label: 'CubeSat', hi: 'CubeSat',                 legacy: 'robotic' },
   { value: 'cargo',                   label: 'Cargo', hi: 'कार्गो',                   legacy: 'robotic' },
   { value: 'crewed',                  label: 'Crewed', hi: 'चालक दल सहित',                  legacy: 'crewed' },
   { value: 'technology-demonstration',label: 'Technology Demonstration', hi: 'प्रौद्योगिकी प्रदर्शन',legacy: 'robotic' },

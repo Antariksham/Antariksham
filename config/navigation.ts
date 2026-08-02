@@ -108,9 +108,9 @@ export const mainNav: NavItem[] = [
     isLive: true,
     description: 'Real-time space intelligence — station tracking, launch countdowns and deep-space telemetry.',
     children: [
-      { label: 'ISS Tracker', labels: { hi: 'आईएसएस ट्रैकर' }, href: '/live/iss-tracker' },
+      { label: 'ISS Tracker', labels: { hi: 'ISS ट्रैकर' }, href: '/live/iss-tracker' },
       { label: 'Launch Tracker', labels: { hi: 'लॉन्च ट्रैकर' }, href: '/live/launches'    },
-      { label: 'NASA APOD', labels: { hi: 'नासा एपीओडी' }, href: '/live/apod'        },
+      { label: 'NASA APOD', labels: { hi: 'NASA APOD' }, href: '/live/apod'        },
       { label: 'Deep Space', labels: { hi: 'गहन अंतरिक्ष' }, href: '/live/deep-space'  },
       { label: 'Lunar Landing Simulator', labels: { hi: 'चंद्र लैंडिंग सिम्युलेटर' }, href: '/lunar-sim'        },
     ],
@@ -127,7 +127,7 @@ export const mainNav: NavItem[] = [
     href:  '/gallery',
     description: 'Imagery from NASA\u2019s archives — telescopes, spacecraft, launches and the Picture of the Day.',
     children: [
-      { label: 'APOD Archive', labels: { hi: 'एपीओडी संग्रह' }, href: '/gallery/apod' },
+      { label: 'APOD Archive', labels: { hi: 'APOD संग्रह' }, href: '/gallery/apod' },
     ],
   },
   {
@@ -180,11 +180,11 @@ export const footerNav = {
     { label: 'Gallery', labels: { hi: 'गैलरी' }, href: '/gallery' },
   ],
   intelligence: [
-    { label: 'ISS Tracker', labels: { hi: 'आईएसएस ट्रैकर' }, href: '/live/iss-tracker' },
+    { label: 'ISS Tracker', labels: { hi: 'ISS ट्रैकर' }, href: '/live/iss-tracker' },
     { label: 'Launch Schedule', labels: { hi: 'लॉन्च कार्यक्रम' }, href: '/live/launches' },
     { label: 'Deep Space', labels: { hi: 'गहन अंतरिक्ष' }, href: '/live/deep-space' },
     { label: 'Lunar Lander Sim', labels: { hi: 'चंद्र लैंडर सिम' }, href: '/lunar-sim' },
-    { label: 'NASA APOD', labels: { hi: 'नासा एपीओडी' }, href: '/live/apod' },
+    { label: 'NASA APOD', labels: { hi: 'NASA APOD' }, href: '/live/apod' },
     { label: 'All Missions', labels: { hi: 'सभी मिशन' }, href: '/missions' },
   ],
   organization: [
