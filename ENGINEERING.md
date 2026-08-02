@@ -921,6 +921,35 @@ env vars are absent — unrelated to app code).
   CSS cannot select on script, and a broken shirorekha is far worse than an
   untracked Latin label.
 
+- ✅ **The Hindi section is discoverable**: everything above was invisible to
+  search. `app/sitemap.ts` listed **zero** `/hi` URLs, and hreflang ran one way
+  — the `/hi/*` pages named their English twins while `/`, `/articles`,
+  `/learn` and `/missions` stayed silent. Google discards an annotation the
+  other side does not confirm, so **neither** half of any pair was clustered.
+
+  The sitemap now emits one entry per language a path exists in, each carrying
+  the **same** `alternates.languages` map naming all of them plus `x-default`.
+  Two rules do the work:
+
+  - **A Hindi detail URL is listed only when that item has a published
+    translation** (`getTranslatedArticleSlugs` / `…KnowledgeSlugs` /
+    `…MissionSlugs`). The route renders for any slug, but an untranslated one
+    serves the English text under `canonical → EN` + `noindex` — advertising
+    that in a sitemap asks Google to crawl a page whose own head tells it to go
+    away.
+  - **A single-language URL gets no annotation at all.** hreflang describes a
+    relationship; a set naming only the page itself states none.
+    `localizedAlternates` was emitting exactly that on every untranslated
+    article, so it now returns `languages: undefined` below two languages — the
+    page head and the sitemap have to agree, or one is telling Google something
+    the other denies.
+
+  The Hindi path comes from **`localizeHref`**, the same function the nav and
+  the language switch use, so the sitemap cannot drift from where the site
+  actually links; adding a section to `LOCALIZED_SECTIONS` brings it into the
+  sitemap with no edit. Verified by parsing the generated XML and walking every
+  annotation: **zero one-directional links**.
+
 - ✅ **Click & navigation feedback indicators**: clicks worked but gave users no
   signal that the click registered or that a page was loading. Added (1) pressed
   `:active` states for `.btn`/`.card`/`.tag` plus an opt-in `.press` helper

@@ -110,11 +110,10 @@ drops them back into English. What is still missing:
   launch-information rows in `MissionSlugPage.tsx`. That is a mission-domain
   vocabulary (~40 entries) rather than site chrome; the dictionary and the
   `lang` plumbing are already there, so it is now mechanical.
-- **`/hi/*` URLs in `app/sitemap.ts` with `hreflang` alternates.** No translated
-  page is in the sitemap at all, so none of it is indexed. Related: the `/hi/*`
-  pages declare `hreflang` back to English, but `/`, `/articles`, `/learn` and
-  `/missions` do not declare it forward — and Google ignores a one-directional
-  annotation, so no pair is currently honoured.
+- ~~`/hi/*` URLs in `app/sitemap.ts` with `hreflang` alternates~~ **done** — see
+  §2. The sitemap lists every Hindi URL that actually exists, both sides of each
+  pair carry the same `alternates.languages` map, and the four English pages
+  that were silent now point back.
 
 ### 2.3 No component or route tests
 

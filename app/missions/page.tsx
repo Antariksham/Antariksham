@@ -7,6 +7,11 @@ export const metadata: Metadata = buildPageMetadata({
   path:        '/missions',
   title:       'Space Missions',
   description: 'Active, upcoming, and historic space missions from NASA, ISRO, SpaceX, ESA and all major agencies — tracked in one place.',
+  languages: {
+    en:          '/missions',
+    hi:          '/hi/missions',
+    'x-default': '/missions',
+  },
 })
 
 export const revalidate = 600

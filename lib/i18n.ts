@@ -195,13 +195,21 @@ export function localizedAlternates(
   availableLanguages: string[],
   servedLang: string,
   requestedLang: string,
-): { isFallback: boolean; canonical: string; languages: Record<string, string> } {
+): { isFallback: boolean; canonical: string; languages?: Record<string, string> } {
   const isFallback = servedLang !== requestedLang
-  const languages: Record<string, string> = {}
-  for (const code of availableLanguages) languages[code] = sectionHref(section, slug, code)
-  languages['x-default'] = sectionHref(section, slug, DEFAULT_LANGUAGE)
   const canonical = isFallback
     ? sectionHref(section, slug, DEFAULT_LANGUAGE)
     : sectionHref(section, slug, requestedLang)
+
+  // An item with no translation gets **no** annotation rather than a set naming
+  // only itself. hreflang describes a *relationship* between URLs; a one-entry
+  // set states none, and shipping it on every untranslated article is noise on
+  // every crawl. Same rule the sitemap applies — the two have to agree, or one
+  // of them is telling Google something the other denies.
+  if (availableLanguages.length < 2) return { isFallback, canonical }
+
+  const languages: Record<string, string> = {}
+  for (const code of availableLanguages) languages[code] = sectionHref(section, slug, code)
+  languages['x-default'] = sectionHref(section, slug, DEFAULT_LANGUAGE)
   return { isFallback, canonical, languages }
 }

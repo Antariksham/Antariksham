@@ -22,6 +22,7 @@ import {
   localizeHref,
   sectionHref,
   sectionListHref,
+  localizedAlternates,
   HI_SANS,
   HI_SERIF,
 } from './i18n.ts'
@@ -132,4 +133,36 @@ test('the Hindi stacks lead with the loaded webfont, then degrade locally', () =
   // The Latin token stays last as the final fallback.
   assert.ok(HI_SANS.endsWith('var(--font-sans)'))
   assert.ok(HI_SERIF.endsWith('var(--font-serif)'))
+})
+
+test('localizedAlternates: an untranslated item gets no annotation at all', () => {
+  // hreflang describes a relationship between URLs. A set naming only the page
+  // itself states none, so shipping it on every untranslated article is noise
+  // on every crawl — and it has to match what the sitemap does, or the two are
+  // telling Google different things.
+  const only = localizedAlternates('articles', 'x', ['en'], 'en', 'en')
+  assert.equal(only.languages, undefined)
+  assert.equal(only.canonical, '/article/x')
+  assert.equal(only.isFallback, false)
+})
+
+test('localizedAlternates: a translated item names both sides plus x-default', () => {
+  const both = localizedAlternates('articles', 'x', ['en', 'hi'], 'hi', 'hi')
+  assert.deepEqual(both.languages, {
+    en:          '/article/x',
+    hi:          '/hi/article/x',
+    'x-default': '/article/x',
+  })
+  assert.equal(both.canonical, '/hi/article/x')
+  assert.equal(both.isFallback, false)
+})
+
+test('localizedAlternates: a /hi URL serving English falls back to canonical→EN', () => {
+  // The case that must never be indexed twice: /hi/article/x exists as a route
+  // but has no translation, so it renders the English text. Canonical points
+  // home and the caller turns that into noindex.
+  const fb = localizedAlternates('articles', 'x', ['en'], 'en', 'hi')
+  assert.equal(fb.isFallback, true)
+  assert.equal(fb.canonical, '/article/x')
+  assert.equal(fb.languages, undefined)
 })

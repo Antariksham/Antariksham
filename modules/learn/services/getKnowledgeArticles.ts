@@ -120,6 +120,24 @@ export const getKnowledgeArticleBySlug = cache(async (
 })
 
 // ── All slugs (for generateStaticParams) ─────────────────────
+// Slugs that HAVE a published translation in `lang`. The sitemap lists a
+// /hi/learn/:slug only when one exists: the route renders for any slug, but an
+// untranslated one serves the English text under canonical→EN + noindex, and
+// advertising that in a sitemap asks Google to crawl a page that tells it to
+// go away. Tolerant: [] if the translations table isn't there yet.
+export async function getTranslatedKnowledgeSlugs(lang: LanguageCode): Promise<string[]> {
+  if (lang === DEFAULT_LANGUAGE) return getAllKnowledgeSlugs()
+
+  const { data, error } = await supabase
+    .from('knowledge_translations')
+    .select('knowledge_articles!inner ( slug )')
+    .eq('language_code', lang)
+    .eq('is_published', true)
+
+  if (error || !data) return []
+  return (data as any[]).map(r => r.knowledge_articles?.slug).filter(Boolean)
+}
+
 export async function getAllKnowledgeSlugs(): Promise<string[]> {
   const { data, error } = await supabase
     .from('knowledge_articles')

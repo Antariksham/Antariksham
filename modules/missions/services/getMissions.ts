@@ -226,6 +226,21 @@ async function fetchCollaborators(classification: any): Promise<MissionCollabora
   return out
 }
 
+// Slugs that HAVE a published translation in `lang` — see the matching helper
+// in the learn service for why the sitemap needs this rather than every slug.
+export async function getTranslatedMissionSlugs(lang: LanguageCode): Promise<string[]> {
+  if (lang === DEFAULT_LANGUAGE) return getAllMissionSlugs()
+
+  const { data, error } = await supabase
+    .from('mission_translations')
+    .select('missions!inner ( slug )')
+    .eq('language_code', lang)
+    .eq('is_published', true)
+
+  if (error || !data) return []
+  return (data as any[]).map(r => r.missions?.slug).filter(Boolean)
+}
+
 export async function getAllMissionSlugs(): Promise<string[]> {
   const { data, error } = await supabase
     .from('missions')
